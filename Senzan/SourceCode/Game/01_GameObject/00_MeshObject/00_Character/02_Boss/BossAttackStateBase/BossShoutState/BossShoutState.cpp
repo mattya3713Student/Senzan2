@@ -111,9 +111,6 @@ void BossShoutState::Exit()
 
 void BossShoutState::BoneDraw()
 {
-    Transform def = m_pOwner->GetTransform();
-    std::shared_ptr<Transform> transform = std::make_shared<Transform>(def);
-
     if (m_pOwner->GetAttachMesh().expired()) return;
 
     std::shared_ptr<SkinMesh> staticMesh = std::dynamic_pointer_cast<SkinMesh>(m_pOwner->GetAttachMesh().lock());
@@ -124,7 +121,7 @@ void BossShoutState::BoneDraw()
     DirectX::XMFLOAT3 BonePos{};
     if (staticMesh->GetPosFromBone(TargetBoneName.c_str(), &BonePos))
     {
-        DirectX::XMFLOAT3 ForWard = def.GetForward();
+        DirectX::XMFLOAT3 ForWard = m_pOwner->GetTransform()->GetForward();
 
         float OffSetDist = 0.0f;
 
@@ -136,7 +133,7 @@ void BossShoutState::BoneDraw()
         DirectX::XMStoreFloat3(&BonePos, OffSetPos);
         BonePos.y = 2.5f;
 
-        transform->SetPosition(BonePos);
+        m_pOwner->GetTransform()->SetPosition(BonePos);
     }
     else return;
 

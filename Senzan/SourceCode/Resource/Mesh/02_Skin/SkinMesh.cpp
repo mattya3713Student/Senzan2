@@ -930,8 +930,11 @@ void SkinMesh::SendCBufferPerMesh()
 		CBUFFER_PER_MESH cb;
 		cb.mW = m_WorldMatrix; 
 		cb.mW = DirectX::XMMatrixTranspose(cb.mW);
-		cb.mWVP = m_WorldMatrix * m_mView * m_mProj;
-		cb.mWVP = DirectX::XMMatrixTranspose(cb.mWVP);	//行列を転置する.
+			DirectX::XMMATRIX aa =  m_mView * m_mProj;
+		
+			cb.mWVP = m_WorldMatrix * aa;
+
+			cb.mWVP = DirectX::XMMatrixTranspose(cb.mWVP);	//行列を転置する.
 		//※行列の計算方法がDirectXとGPUで異なるため転置が必要.
 
 		DirectX::XMMATRIX lightView = LightManager::GetDirectionLight()->GetViewMatrix();

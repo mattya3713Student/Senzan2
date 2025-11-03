@@ -81,7 +81,7 @@ void Player::Draw()
 {
     MeshObject::Draw();
 
-    //m_pCollider->SetDebugInfo();
+    m_pCollider->SetDebugInfo();
 }
 
 // スタン中か.

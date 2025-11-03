@@ -1,4 +1,4 @@
-#include "BossMoveState.h"
+﻿#include "BossMoveState.h"
 
 #include "Game/04_Time/Time.h"
 
@@ -99,10 +99,6 @@ void BossMoveState::Exit()
 
 void BossMoveState::DrawBone()
 {
-	const Transform& ownerTransform = m_pOwner->GetTransform();
-
-	std::shared_ptr<Transform> transform = std::make_shared<Transform>(ownerTransform);
-
 	if (m_pOwner->GetAttachMesh().expired()) return;
 
 	std::shared_ptr<SkinMesh> staticMesh = std::dynamic_pointer_cast<SkinMesh>(m_pOwner->GetAttachMesh().lock());
@@ -114,7 +110,7 @@ void BossMoveState::DrawBone()
 	if (staticMesh->GetPosFromBone(TargetBoneName.c_str(), &BonePos))
 	{
 		// 向きを取得.
-		DirectX::XMFLOAT3 ForWard = ownerTransform.GetForward();
+		DirectX::XMFLOAT3 ForWard = m_pOwner->GetTransform()->GetForward();
 
 		float OffSetDist = 0.0f;
 
@@ -126,7 +122,7 @@ void BossMoveState::DrawBone()
 		DirectX::XMStoreFloat3(&BonePos, OffSetPos);
 		BonePos.y = 2.5f;
 
-		transform->SetPosition(BonePos);
+		m_pOwner->GetTransform()->SetPosition(BonePos);
   }
 	else return;
 

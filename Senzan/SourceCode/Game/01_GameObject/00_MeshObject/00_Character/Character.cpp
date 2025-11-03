@@ -5,7 +5,7 @@
 
 Character::Character()
 	: MeshObject()
-	, m_pCollider(nullptr)
+	, m_pCollider(std::make_shared<CapsuleCollider>(m_Transform))
 {
 }
 
