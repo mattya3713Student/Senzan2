@@ -232,9 +232,6 @@ void BossSlashState::UpdateBoneCheck()
 		//capsule->Draw(transform);
 	}
 
-	Transform def = m_pOwner->GetTransform();
-	std::shared_ptr<Transform> transfrom = std::make_shared<Transform>(def);
-
 	//
 	if (m_pOwner->GetAttachMesh().expired()) return;
 

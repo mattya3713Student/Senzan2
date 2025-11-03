@@ -1,6 +1,8 @@
 #include "Movement.h"
 #include "Game/01_GameObject/00_MeshObject/00_Character/01_Player/Player.h"
 
+#include "Game/03_Collision/Capsule/CapsuleCollider.h"
+
 #include "Game/05_InputDevice/VirtualPad.h"    
 #include "Game/04_Time/Time.h"   
 

@@ -26,7 +26,7 @@ public:
 	inline void SetTransform(std::shared_ptr<Transform>&& transformPtr) { m_Transform = std::move(transformPtr); }
 	
 	//----------------------------------------.
-	// 座標を取得. (インライン化、noexcept を追加)
+	// 座標を取得.
 	inline const DirectX::XMFLOAT3& GetPosition() const noexcept { return m_Transform->Position; }
 	inline float GetPositionX() const noexcept { return m_Transform->Position.x; }
 	inline float GetPositionY() const noexcept { return m_Transform->Position.y; }
@@ -80,29 +80,17 @@ public:
 	void SetScaleZ(float Z);
 
 
-	/***********************************************************************
-	* @brief タグを取得・設定.
-	* @note GetTag：取得.
-	* @note SetTag：設定.
-	***********************************************************************/
+	// タグを取得・設定.
 	const std::string& GetTag()const;
 	void SetTag(const std::string& tag);
 
 
-	/***********************************************************************
-	* @brief アクティブ状態を判定・設定.
-	* @note IsActive	：判定.
-	* @note SetIsActive	：設定.
-	***********************************************************************/
+	// アクティブ状態を判定・設定.
 	const bool IsActive()const;
 	void SetIsActive(const bool isActive);
 
 
-	/***********************************************************************
-	* @brief 描画するか判定・設定.
-	* @note IsRenderActive：判定.
-	* @note SetIsRenderActive：設定.
-	***********************************************************************/
+	// 描画するか判定・設定.
 	const bool IsRenderActive()const;
 	void SetIsRenderActive(const bool isActive);
 

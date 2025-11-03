@@ -144,11 +144,6 @@ void BossStompState::Exit()
 
 void BossStompState::BoneDraw()
 {
-	std::weak_ptr<Transform> ownerTransform = m_pOwner->GetTransform();
-
-	// オーナーのTransformの内容をコピーした新しいTransformを準備.
-	std::shared_ptr<Transform> transfrom = std::make_shared<Transform>(ownerTransform);
-
 	if (m_pOwner->GetAttachMesh().expired()) return;
 
 	std::shared_ptr<SkinMesh> staticMesh = std::dynamic_pointer_cast<SkinMesh>(m_pOwner->GetAttachMesh().lock());
@@ -160,7 +155,7 @@ void BossStompState::BoneDraw()
 	if (staticMesh->GetPosFromBone(targetBoneName.c_str(), &BonePos))
 	{
 		// 向きを取得.
-		DirectX::XMFLOAT3 ForWard = ownerTransform.lock()->GetForward();
+		DirectX::XMFLOAT3 ForWard = m_pOwner->GetTransform()->GetForward();
 
 		// オフセット距離.
 		float OffSetDist = 0.0f;
@@ -177,7 +172,7 @@ void BossStompState::BoneDraw()
 		BonePos.y -= 2.5f;
 
 		// トランスフォームを更新.
-		transfrom->SetPosition(BonePos);
+		m_pOwner->GetTransform()->SetPosition(BonePos);
 	}
 	else
 	{

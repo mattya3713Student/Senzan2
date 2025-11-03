@@ -1,4 +1,4 @@
-#include "BossIdleState.h"
+﻿#include "BossIdleState.h"
 
 #include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/Boss.h"
 #include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossMoveState/BossMoveState.h"
@@ -100,10 +100,6 @@ void BossIdleState::Exit()
 
 void BossIdleState::DrawBone()
 {
-	std::weak_ptr<Transform> ownerTransform = m_pOwner->GetTransform();
-
-	std::shared_ptr<Transform> transform = std::make_shared<Transform>(ownerTransform);
-
 	// メッシュとボーンのチェック.
 	if (m_pOwner->GetAttachMesh().expired()) return;
 
@@ -115,7 +111,7 @@ void BossIdleState::DrawBone()
 	DirectX::XMFLOAT3 BonePos{};
 	if (staticMesh->GetPosFromBone(TargetBoneName.c_str(), &BonePos))
 	{
-		DirectX::XMFLOAT3 ForWard = ownerTransform.lock()->GetForward();
+		DirectX::XMFLOAT3 ForWard = m_pOwner->GetTransform()->GetForward();
 		float OffSetDist = 0.0f;
 		DirectX::XMVECTOR FwdVec = DirectX::XMVector3Normalize(DirectX::XMLoadFloat3(&ForWard));
 
@@ -125,7 +121,7 @@ void BossIdleState::DrawBone()
 		XMStoreFloat3(&BonePos, OffSetPos);
 		BonePos.y = 2.5f;
 
-		transform->SetPosition(BonePos);
+		m_pOwner->GetTransform()->SetPosition(BonePos);
 	}
 	else return;
 
