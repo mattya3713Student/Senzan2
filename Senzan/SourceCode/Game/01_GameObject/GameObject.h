@@ -1,0 +1,121 @@
+#pragma once
+#include <DirectXMath.h>
+
+/**************************************************
+*	ゲームオブジェクトクラス.
+**************************************************/
+class GameObject
+{
+public:
+	GameObject();
+	virtual ~GameObject();
+
+	virtual void Update() = 0;
+	virtual void LateUpdate() = 0;
+	virtual void Draw() = 0;
+
+public: 
+
+	// Transform取得.
+	inline const std::shared_ptr<Transform>& GetTransform() const noexcept { return m_Transform; }	
+	// コピー.
+	void SetTransform(const Transform& Transform);															
+	// sharedのコピー.
+	inline void SetTransform(const std::shared_ptr<Transform>& transformPtr) { m_Transform = transformPtr; }		
+	// sharedのMove.
+	inline void SetTransform(std::shared_ptr<Transform>&& transformPtr) { m_Transform = std::move(transformPtr); }
+	
+	//----------------------------------------.
+	// 座標を取得. (インライン化、noexcept を追加)
+	inline const DirectX::XMFLOAT3& GetPosition() const noexcept { return m_Transform->Position; }
+	inline float GetPositionX() const noexcept { return m_Transform->Position.x; }
+	inline float GetPositionY() const noexcept { return m_Transform->Position.y; }
+	inline float GetPositionZ() const noexcept { return m_Transform->Position.z; }
+
+	// 座標を設定.
+	void SetPosition(const DirectX::XMFLOAT3& Position);
+	void SetPosition(float X, float Y, float Z);
+	void SetPositionX(float X);
+	void SetPositionY(float Y);
+	void SetPositionZ(float Z);
+
+	// 座標を加算. 
+	void AddPosition(const DirectX::XMFLOAT3& Position);
+	void AddPosition(float X, float Y, float Z);
+	void AddPositionX(float X);
+	void AddPositionY(float Y);
+	void AddPositionZ(float Z);
+
+
+	//----------------------------------------.
+	// 回転を取得.
+	inline const DirectX::XMFLOAT3& GetRotation() const noexcept { return m_Transform->Rotation; }
+	inline float GetRotationX() const noexcept { return m_Transform->Rotation.x; }
+	inline float GetRotationY() const noexcept { return m_Transform->Rotation.y; }
+	inline float GetRotationZ() const noexcept { return m_Transform->Rotation.z; }
+	inline const DirectX::XMFLOAT4& Quaternion() const noexcept { return m_Transform->Quaternion; }
+
+	// 回転を設定.
+	void SetRotation(const DirectX::XMFLOAT3& Rotation);
+	void SetRotation(float X, float Y, float Z);
+	void SetRotationX(float X);
+	void SetRotationY(float Y);
+	void SetRotationZ(float Z);
+	void SetRotationAroundAxis(const DirectX::XMFLOAT3& Axis, float Angle);
+
+
+	//----------------------------------------.
+	// 拡縮を取得.
+	inline const DirectX::XMFLOAT3& GetScale() const noexcept { return m_Transform->Scale; }
+	inline float GetScaleX() const noexcept { return m_Transform->Scale.x; }
+	inline float GetScaleY() const noexcept { return m_Transform->Scale.y; }
+	inline float GetScaleZ() const noexcept { return m_Transform->Scale.z; }
+
+	// 拡縮を設定.
+	void SetScale(const DirectX::XMFLOAT3& Scale);
+	void SetScale(float XYZ);
+	void SetScale(float X, float Y, float Z);
+	void SetScaleX(float X);
+	void SetScaleY(float Y);
+	void SetScaleZ(float Z);
+
+
+	/***********************************************************************
+	* @brief タグを取得・設定.
+	* @note GetTag：取得.
+	* @note SetTag：設定.
+	***********************************************************************/
+	const std::string& GetTag()const;
+	void SetTag(const std::string& tag);
+
+
+	/***********************************************************************
+	* @brief アクティブ状態を判定・設定.
+	* @note IsActive	：判定.
+	* @note SetIsActive	：設定.
+	***********************************************************************/
+	const bool IsActive()const;
+	void SetIsActive(const bool isActive);
+
+
+	/***********************************************************************
+	* @brief 描画するか判定・設定.
+	* @note IsRenderActive：判定.
+	* @note SetIsRenderActive：設定.
+	***********************************************************************/
+	const bool IsRenderActive()const;
+	void SetIsRenderActive(const bool isActive);
+
+protected:
+	std::shared_ptr<Transform> m_Transform;
+	std::string			m_Tag;
+
+	// 時間の尺度(通常1f, 2fで二倍の尺度で動く).
+	float m_TimeScale;
+
+	bool m_IsActive;
+	bool m_IsRenderActive;
+
+
+	Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_pContext11;
+};

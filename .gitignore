@@ -410,6 +410,9 @@ FodyWeavers.xsd
 # Built Visual Studio Code Extensions
 *.vsix
 
+# ImGui settings file
+**/imgui.rul
+
 # Windows Installer files from build outputs
 *.cab
 *.msi

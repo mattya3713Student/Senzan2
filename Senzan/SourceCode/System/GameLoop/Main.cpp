@@ -1,0 +1,301 @@
+﻿#include "Main.h"
+#include "System/Singleton/SceneManager/SceneManager.h"
+#include "Game/04_Time/Time.h"
+#include "Game/05_InputDevice/Input.h"
+#include "Game/04_Time/Time.h"
+#include "System/Singleton/ResourceManager/ResourceManager.h"
+#include "System/GameLoop/Loader.h"
+#include "Graphic/DirectX/DirectX9/DirectX9.h"
+#include "Graphic/DirectX/DirectX11/DirectX11.h"
+
+//ImGui実装のためにインクルードします.
+#include "System/Singleton/ImGui/CImGuiManager.h"
+#include "../../Data/ImGui/Library/imgui.h"
+#include "../../Data/ImGui/Library/imgui_impl_win32.h"
+
+#ifdef _DEBUG
+#include <crtdbg.h>
+#endif
+
+// ウィンドウを画面中央で起動を有効にする.
+#define ENABLE_WINDOWS_CENTERING
+
+//=================================================
+// 定数.
+//=================================================
+const TCHAR WND_TITLE[] = _T("閃斬");
+const TCHAR APP_NAME[] = _T("閃斬");
+
+//=================================================
+// コンストラクタ.
+//=================================================
+Main::Main()
+    : m_hWnd            ( nullptr )
+    , m_pResourceLoader(std::make_unique<Loader>())
+{
+}
+
+//=================================================
+// デストラクタ.
+//=================================================
+Main::~Main()
+{
+    CImGuiManager::Relese(); // ImGuiの終了処理
+}
+
+// データロード処理.
+HRESULT Main::LoadData()
+{
+    // DirectXの初期化.
+    if (FAILED(DirectX9::GetInstance().Create(m_hWnd))) {
+        _ASSERT_EXPR(false, "DirectX9の初期化に失敗");
+    }
+
+    if (FAILED(DirectX11::GetInstance().Create(m_hWnd))) {
+        _ASSERT_EXPR(false, "DirectX11の初期化に失敗");
+    }
+    
+    // ウィンドウハンドルを設定.
+    Input::SethWnd(m_hWnd);
+    ResourceManager::SethWnd(m_hWnd);
+
+    // ロード画面で使用するデータの読み込み.
+    m_pResourceLoader->LoadData();
+
+    // リソースの読み込み開始.
+    m_pResourceLoader->StartLoading();
+
+    // 必要に応じてデータロード処理を追加.
+    return S_OK;
+}
+
+void Main::Crate()
+{
+    CImGuiManager::Init(m_hWnd);
+
+    SceneManager::GetInstance().LoadData();
+}
+
+// 更新処理.
+void Main::Update()
+{
+    // ImGuiの新しいフレームを開始する (描画の前に)
+    CImGuiManager::NewFrameSetting();
+
+    Time::Update();
+    Time::MaintainFPS();
+
+	SceneManager::GetInstance().Update();
+
+    // マウスホイールのスクロール方向を初期化.
+    Input::SetWheelDirection(0);
+
+    // マウスを画面中央に固定する.
+    constexpr int Esc = VK_ESCAPE;
+    static bool wasEscPressed = false;
+#if _DEBUG
+    if (Input::IsKeyDown(Esc))
+    {
+        wasEscPressed = !wasEscPressed;
+    }
+#endif // _DEBUG
+
+    Input::SetCenterMouseCursor(wasEscPressed);
+    Input::SetShowCursor(!wasEscPressed);
+
+    // マウスを画面中央に固定する.
+    Input::CenterMouseCursor();
+
+    IsExitGame();
+}
+
+// 描画処理.
+void Main::Draw()
+{
+    // リソースの読み込みが終わるまでゲームの描画を行わない.
+    if (!m_pResourceLoader->IsLoadCompletion())
+    {
+        m_pResourceLoader->Draw();
+        return;
+    }
+
+    // バックバッファのクリア.
+    DirectX11::GetInstance().ClearBackBuffer();
+
+    // シーンの描画.
+    SceneManager::Draw();
+
+    CImGuiManager::Render();
+
+
+    // 画面に表示.
+    DirectX11::GetInstance().Present();
+
+
+}
+
+// 解放処理.
+void Main::Release()
+{
+   
+}
+
+// メッセージループ.
+
+void Main::Loop()
+{
+
+    // ゲームの構築.
+    if (FAILED(LoadData())) {
+        return;
+    }
+
+    float rate = 0.0f;   // フレームレート制御用.
+    DWORD syncOld = timeGetTime();
+    DWORD syncNow;
+    // 読み込みが完了していなければ処理しない.
+    DWORD lastTime = timeGetTime(); // 前のフレームの時間.
+    const float loadUpdateInterval = 1.0f / 60.0f; // 読み込み更新の間隔 (60FPS目安).
+    float accumulatedTime = 0.0f;
+
+    while (!m_pResourceLoader->IsLoadCompletion()) {
+        DWORD currentTime = timeGetTime();                 // 現在の時間を取得.
+        float deltaTime = (currentTime - lastTime) / 1000.0f; // ミリ秒から秒に変換.
+        lastTime = currentTime;                            // 前の時間を更新.
+
+        accumulatedTime += deltaTime;
+        if (accumulatedTime >= loadUpdateInterval) {
+            accumulatedTime = 0.0f; // タイマーをリセット.
+
+            // データ読み込み.
+            m_pResourceLoader->Update();
+            m_pResourceLoader->Draw();
+        }
+    }
+
+    // データの読み込みが終わったらゲームを構築.
+    Crate();
+
+    MSG msg = {};
+    while (msg.message != WM_QUIT) {
+        syncNow = timeGetTime();
+
+        if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+        else if (syncNow - syncOld >= rate) {
+            syncOld = syncNow;
+            Update();
+            Draw();
+        }
+    }
+}
+
+// ウィンドウ初期化関数.
+HRESULT Main::InitWindow(HINSTANCE hInstance, INT x, INT y, INT width, INT height)
+{
+    WNDCLASSEX wc = {};
+    wc.cbSize = sizeof(wc);
+    wc.style = CS_HREDRAW | CS_VREDRAW;
+    wc.lpfnWndProc = MsgProc;
+    wc.hInstance = hInstance;
+    wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+    wc.hbrBackground = (HBRUSH)GetStockObject(LTGRAY_BRUSH);
+    wc.lpszClassName = APP_NAME;
+
+    if (!RegisterClassEx(&wc)) {
+        return E_FAIL;
+    }
+
+    RECT rect = { 0, 0, width, height };
+    AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, FALSE);
+
+    INT winWidth = rect.right - rect.left;
+    INT winHeight = rect.bottom - rect.top;
+    INT winX = (GetSystemMetrics(SM_CXSCREEN) - winWidth) / 2;
+    INT winY = (GetSystemMetrics(SM_CYSCREEN) - winHeight) / 2;
+
+    m_hWnd = CreateWindow(
+        APP_NAME, WND_TITLE,
+        WS_OVERLAPPEDWINDOW,
+        winX, winY, winWidth, winHeight,
+        nullptr, nullptr, hInstance, this
+    );
+
+    if (!m_hWnd) {
+        return E_FAIL;
+    }
+
+    ShowWindow(m_hWnd, SW_SHOW);
+    UpdateWindow(m_hWnd);
+
+    return S_OK;
+}
+
+// ウィンドウ関数（メッセージ毎の処理）.
+LRESULT CALLBACK Main::MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+    if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
+    {
+        return true;
+    }
+    // hWndに関連付けられたCMainを取得.
+    // MEMO : ウィンドウが作成されるまでは nullptr になる可能性がある.
+    Main* pMain = reinterpret_cast<Main*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+
+    // ウィンドウが初めて作成された時.
+    if (uMsg == WM_NCCREATE) {
+        // CREATESTRUCT構造体からCMainのポインタを取得.
+        CREATESTRUCT* pCreateStruct = reinterpret_cast<CREATESTRUCT*>(lParam);
+        // SetWindowLongPtrを使用しhWndにCMainインスタンスを関連付ける.
+        SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pCreateStruct->lpCreateParams));
+        // デフォルトのウィンドウプロシージャを呼び出して処理を進める.
+        return DefWindowProc(hWnd, uMsg, wParam, lParam);
+    }
+
+    if (pMain) {
+        switch (uMsg) {
+            // ウィンドウが破棄されるとき.
+        case WM_DESTROY:
+            PostQuitMessage(0);
+            break;
+
+        default:
+            return DefWindowProc(hWnd, uMsg, wParam, lParam);
+        }
+    }
+
+    return DefWindowProc(hWnd, uMsg, wParam, lParam);
+}
+
+// Escキーのダブルタップでゲームを終了する.
+void Main::IsExitGame()
+{
+    constexpr int Esc = VK_ESCAPE;
+    bool wasEscPressed = !Input::IsKeyPress(Esc);
+
+    float currentTime = Time::GetNowTime(); // 現在のゲーム内時刻を取得
+
+    if (Input::IsKeyDown(Esc)) // Escキーが押された瞬間
+    {
+        // 1. 前回からの経過時間を計算
+        float elapsedTime = currentTime - m_LastEscPressTime;
+
+        // 2. ダブルタップの判定
+        if (elapsedTime < DOUBLE_TAP_TIME_THRESHOLD)
+        {
+            if (MessageBox(m_hWnd, _T("ゲームを終了しますか？"), _T("警告"), MB_YESNO) == IDYES) {
+                DestroyWindow(m_hWnd);
+            }
+            m_LastEscPressTime = 0.0f;
+        }
+        else
+        {
+            // 3. シングルタップとみなし、次回判定のために時刻を更新
+            m_LastEscPressTime = currentTime;
+        }
+    }
+}

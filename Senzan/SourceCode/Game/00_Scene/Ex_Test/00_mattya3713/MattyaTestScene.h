@@ -1,0 +1,44 @@
+#pragma once
+
+#include "../../00_Base/SceneBase.h"
+
+class Ground;
+class Player;
+class CameraBase;
+class DirectionLight;
+class CapsuleCollider;
+
+#include <vector>
+
+
+/*********************************************
+*	ゲームメイン画像クラス.
+**/
+
+class MattyaTestScene
+	: public SceneBase
+{
+public:
+	MattyaTestScene();
+	~MattyaTestScene() override;
+
+	void Initialize() override;
+	void Create() override;
+	void Update() override;
+	void LateUpdate() override;
+	void Draw() override;
+
+	HRESULT LoadData();
+
+private:
+
+	std::shared_ptr<CameraBase>			m_pCamera;			// カメラ.
+	std::shared_ptr<DirectionLight>		m_pLight;			// ライト
+
+	std::unique_ptr<CapsuleCollider>		m_CapsuleCollider;
+
+	std::unique_ptr<Ground>		m_pGround;
+	std::unique_ptr<Player>		m_pPlayer;
+
+
+};

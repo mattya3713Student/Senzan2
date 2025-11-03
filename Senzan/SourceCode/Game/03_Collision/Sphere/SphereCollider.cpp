@@ -1,0 +1,66 @@
+﻿#include "System/Singleton/Debug/CollisionVisualizer/CollisionVisualizer.h"
+
+#include "SphereCollider.h"
+
+
+namespace {
+    // 球体の分割数.
+    static constexpr int DIVIDE_X = 16;
+    static constexpr int DIVIDE_Y = 16;
+}
+
+SphereCollider::SphereCollider()
+	: ColliderBase	()
+	, m_Radius		( 0.5f )
+{
+}
+SphereCollider::SphereCollider(std::weak_ptr<const Transform> parentTransform)
+	: ColliderBase	(parentTransform)
+	, m_Radius		( 0.5f )
+{
+}
+
+SphereCollider::~SphereCollider()
+{
+}
+
+void SphereCollider::Update()
+{
+    SetDebugInfo();
+}
+
+// デバッグ描画用設定.
+void SphereCollider::SetDebugInfo()
+{
+    CollisionVisualizer& visualizer = CollisionVisualizer::GetInstance();
+    DebugColliderInfo info = {};
+
+
+    auto spParentTransform = m_wpTransform.lock();
+    if (!spParentTransform) { return; }
+    const Transform& p_parent_transform = *spParentTransform;
+
+
+    // 親のワールド行列.
+    DirectX::XMMATRIX m_parent_world = p_parent_transform.GetWorldMatrix();
+
+    // オフセット行列.
+    DirectX::XMMATRIX m_offset = DirectX::XMMatrixTranslation(
+        m_PositionOffset.x, m_PositionOffset.y, m_PositionOffset.z
+    );
+
+    // 親のワールド行列にオフセットを乗算してデバッグ用ワールド行列を作成.
+    DirectX::XMMATRIX m_debug_world = DirectX::XMMatrixMultiply(m_offset, m_parent_world);
+
+    info.ShapeType = eShapeType::Sphere;
+    info.Color = DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f); // 仮の色: 青
+
+    DirectX::XMStoreFloat4x4(&info.WorldMatrix, m_debug_world);
+
+    // 半径を Data0.x に設定.
+    // (デバッグメッシュが単位半径を想定している場合、この値でスケーリングを行う)
+    info.Data0 = DirectX::XMFLOAT4(m_Radius, 0.0f, 0.0f, 0.0f);
+    info.Data1 = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
+
+    visualizer.RegisterCollider(info);
+}

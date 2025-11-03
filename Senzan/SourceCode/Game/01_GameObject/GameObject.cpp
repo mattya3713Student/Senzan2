@@ -1,0 +1,219 @@
+#include "GameObject.h"
+#include "System/Utility/Transform/Transform.h"
+#include "Utility\Math\Math.h"
+
+GameObject::GameObject()
+	: m_Transform		( std::make_shared<Transform>() )
+	, m_Tag				( "Untagged" )
+	, m_IsActive		( true )
+	, m_IsRenderActive	( true )
+	, m_TimeScale		( 1.0f )
+{
+}
+
+GameObject::~GameObject()
+{
+}
+
+// コピー.
+void GameObject::SetTransform(const Transform& transform) 
+{
+	// m_Transformが有効なポインタを持っているか確認し、中身を上書きする.
+	if (m_Transform) {
+		*m_Transform = transform;
+	}
+	else {
+		// nullの場合は新しく作成.
+		m_Transform = std::make_shared<Transform>(transform);
+	}
+}
+
+// ====================================================================================================
+// 座標設定 (SetPosition)
+// ====================================================================================================
+
+void GameObject::SetPosition(const DirectX::XMFLOAT3& Position)
+{
+    m_Transform->Position = Position;
+}
+
+void GameObject::SetPosition(float X, float Y, float Z)
+{
+    m_Transform->Position = DirectX::XMFLOAT3(X, Y, Z);
+}
+
+void GameObject::SetPositionX(float X)
+{
+    m_Transform->Position.x = X;
+}
+
+void GameObject::SetPositionY(float Y)
+{
+    m_Transform->Position.y = Y;
+}
+
+void GameObject::SetPositionZ(float Z)
+{
+    m_Transform->Position.z = Z;
+}
+
+
+// ====================================================================================================
+// 座標加算 (AddPosition)
+// ====================================================================================================
+
+void GameObject::AddPosition(const DirectX::XMFLOAT3& Position)
+{
+    // SIMD演算を使用して加算
+    DirectX::XMVECTOR v_pos = DirectX::XMLoadFloat3(&m_Transform->Position);
+    DirectX::XMVECTOR v_add = DirectX::XMLoadFloat3(&Position);
+    DirectX::XMVECTOR v_new = DirectX::XMVectorAdd(v_pos, v_add);
+    DirectX::XMStoreFloat3(&m_Transform->Position, v_new);
+}
+
+void GameObject::AddPosition(float X, float Y, float Z)
+{
+    m_Transform->Position.x += X;
+    m_Transform->Position.y += Y;
+    m_Transform->Position.z += Z;
+}
+
+void GameObject::AddPositionX(float X)
+{
+    m_Transform->Position.x += X;
+}
+
+void GameObject::AddPositionY(float Y)
+{
+    m_Transform->Position.y += Y;
+}
+
+void GameObject::AddPositionZ(float Z)
+{
+    m_Transform->Position.z += Z;
+}
+
+
+// ====================================================================================================
+// 回転設定 (SetRotation)
+// ====================================================================================================
+
+void GameObject::SetRotation(const DirectX::XMFLOAT3& Rotation)
+{
+    m_Transform->Rotation = Rotation;
+    m_Transform->UpdateQuaternionFromRotation();
+}
+
+void GameObject::SetRotation(float X, float Y, float Z)
+{
+    m_Transform->Rotation = DirectX::XMFLOAT3(X, Y, Z);
+    m_Transform->UpdateQuaternionFromRotation(); 
+}
+
+void GameObject::SetRotationX(float X)
+{
+    m_Transform->Rotation.x = X;
+    m_Transform->UpdateQuaternionFromRotation(); 
+}
+
+void GameObject::SetRotationY(float Y)
+{
+    m_Transform->Rotation.y = Y;
+    m_Transform->UpdateQuaternionFromRotation(); 
+}
+
+void GameObject::SetRotationZ(float Z)
+{
+    m_Transform->Rotation.z = Z;
+    m_Transform->UpdateQuaternionFromRotation();
+}
+
+void GameObject::SetRotationAroundAxis(const DirectX::XMFLOAT3& Axis, float Angle)
+{
+    DirectX::XMVECTOR v_axis = DirectX::XMLoadFloat3(&Axis);
+    DirectX::XMVECTOR q_axis = DirectX::XMQuaternionRotationAxis(v_axis, Angle);
+    DirectX::XMVECTOR q_current = DirectX::XMLoadFloat4(&m_Transform->Quaternion);
+
+    // 現在のクォータニオンに新しい回転を乗算
+    DirectX::XMVECTOR q_new = DirectX::XMQuaternionMultiply(q_current, q_axis);
+    DirectX::XMStoreFloat4(&m_Transform->Quaternion, q_new);
+
+    m_Transform->UpdateRotationFromQuaternion();
+}
+
+
+// ====================================================================================================
+// 拡縮設定 (SetScale)
+// ====================================================================================================
+
+void GameObject::SetScale(const DirectX::XMFLOAT3& Scale)
+{
+    m_Transform->Scale = Scale;
+}
+
+void GameObject::SetScale(float XYZ)
+{
+    m_Transform->Scale = DirectX::XMFLOAT3(XYZ, XYZ, XYZ);
+}
+
+void GameObject::SetScale(float X, float Y, float Z)
+{
+    m_Transform->Scale = DirectX::XMFLOAT3(X, Y, Z);
+}
+
+void GameObject::SetScaleX(float X)
+{
+    m_Transform->Scale.x = X;
+}
+
+void GameObject::SetScaleY(float Y)
+{
+    m_Transform->Scale.y = Y;
+}
+
+void GameObject::SetScaleZ(float Z)
+{
+    m_Transform->Scale.z = Z;
+}
+
+//-----------------------------------------------------------------------.
+
+const std::string& GameObject::GetTag() const
+{
+	return m_Tag;
+}
+
+//-----------------------------------------------------------------------.
+
+void GameObject::SetTag(const std::string& tag)
+{
+	m_Tag = tag;
+}
+
+//-----------------------------------------------------------------------.
+
+const bool GameObject::IsActive() const
+{
+	return m_IsActive;
+}
+
+//-----------------------------------------------------------------------.
+
+void GameObject::SetIsActive(const bool isActive)
+{
+	m_IsActive = isActive;
+}
+
+//-----------------------------------------------------------------------.
+
+const bool GameObject::IsRenderActive() const
+{
+	return m_IsRenderActive;
+}
+
+//-----------------------------------------------------------------------.
+
+void GameObject::SetIsRenderActive(const bool isActive)
+{
+	m_IsRenderActive = isActive; 
+}
