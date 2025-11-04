@@ -175,6 +175,8 @@ void CollisionVisualizer::Draw()
     }
     else { m_DebugInfoQueue.clear(); return; }
 
+    Log::GetInstance().Info("", m_DebugInfoQueue[0].WorldMatrix);
+
 
     // ---------------------------------------------
     // 2. CBufferの更新とセット (ViewProj行列のみ)
@@ -565,28 +567,42 @@ void CollisionVisualizer::CreateCapsuleResources(ShapeData& out_data, float half
     // 総層数は DIVIDE_Y = 2M。両極を除くので TotalRings - 2 = 2M - 2 層の間のメッシュ。
     int sideIndexLen = N * (TotalRings - 1) * 2 * 3; // (2M-1)層の間の四角形
     int loop1stIndex = 0;
+    int loop2ndtIndex = 0;
     int lapDiv = N * 2 * 3;
     int createSquareFaceCount = 0;
 
     for (int i = 0; i < sideIndexLen; i++)
     {
+        // 一周の頂点数を超えたら更新(初回も含む).
         if (i % lapDiv == 0)
         {
             loop1stIndex = startIndex;
+            loop2ndtIndex = startIndex + N; // Nは水平分割数 (DIVIDE_X).
             createSquareFaceCount++;
         }
 
-        if (i % 6 == 0 || i % 6 == 3) { indices.emplace_back(startIndex); }
-        else if (i % 6 == 1) { indices.emplace_back(startIndex + N); }
+        if (i % 6 == 0 || i % 6 == 3)
+        {
+            indices.emplace_back(startIndex);
+        }
+        else if (i % 6 == 1)
+        {
+            indices.emplace_back(startIndex + N); // Nは水平分割数 (DIVIDE_X).
+        }
         else if (i % 6 == 2 || i % 6 == 4)
         {
             if (i > 0 &&
                 (i % (lapDiv * createSquareFaceCount - 2) == 0 ||
-                i % (lapDiv * createSquareFaceCount - 4) == 0))
+                    i % (lapDiv * createSquareFaceCount - 4) == 0))
             {
-                indices.emplace_back(startIndex + N - N); // 1つ上の行の最初の頂点
+                // 一周したときのループ処理.
+                // 周回ポリゴンの最後から２番目のIndex.
+                indices.emplace_back(loop2ndtIndex); // 💡 修正: loop2ndtIndex を使用
             }
-            else { indices.emplace_back(startIndex + N + 1); }
+            else
+            {
+                indices.emplace_back(startIndex + N + 1);
+            }
         }
         else if (i % 6 == 5)
         {
@@ -612,7 +628,10 @@ void CollisionVisualizer::CreateCapsuleResources(ShapeData& out_data, float half
             indices.emplace_back(bottom_pole_index);
             offsetIndex++;
         }
-        else if (i % 3 == 1) { indices.emplace_back(offsetIndex); }
+        else if (i % 3 == 1) 
+        { 
+            indices.emplace_back(offsetIndex);
+        }
         else if (i % 3 == 2)
         {
             int value = 1 + offsetIndex;

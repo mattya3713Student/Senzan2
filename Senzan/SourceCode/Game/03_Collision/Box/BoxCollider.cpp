@@ -21,7 +21,7 @@ BoxCollider::~BoxCollider()
 
 void BoxCollider::Update()
 {
-    SetDebugInfo();
+
 }
 
 // デバッグ描画用設定.
@@ -37,20 +37,20 @@ void BoxCollider::SetDebugInfo()
     const Transform& p_parent_transform = *spParentTransform;
 
     // 親のワールド行列.
-    DirectX::XMMATRIX m_parent_world = p_parent_transform.GetWorldMatrix();
+    DirectX::XMMATRIX mat_parent_world = p_parent_transform.GetWorldMatrix();
 
     // オフセット行列.
-    DirectX::XMMATRIX m_offset = DirectX::XMMatrixTranslation(
+    DirectX::XMMATRIX mat_offset = DirectX::XMMatrixTranslation(
         m_PositionOffset.x, m_PositionOffset.y, m_PositionOffset.z
     );
 
     // 親のワールド行列にオフセットを乗算してデバッグ用ワールド行列を作成.
-    DirectX::XMMATRIX m_debug_world = DirectX::XMMatrixMultiply(m_offset, m_parent_world);
+    DirectX::XMMATRIX mat_debug_world = DirectX::XMMatrixMultiply(mat_offset, mat_parent_world);
 
     info.ShapeType = eShapeType::Box;
-    info.Color = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
+    info.Color = m_Color;
 
-    DirectX::XMStoreFloat4x4(&info.WorldMatrix, m_debug_world);
+    DirectX::XMStoreFloat4x4(&info.WorldMatrix, mat_debug_world);
 
     // Boxのサイズを Data0 に設定 (Boxのメッシュは単位サイズを想定).
     info.Data0 = DirectX::XMFLOAT4(m_Size.x, m_Size.y, m_Size.z, 1.0f);

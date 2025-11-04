@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-
 #include <vector>
 #include <string>
 #include <memory>
@@ -37,6 +36,8 @@ public:
 
 	// 座標のオフセット値を取得する.
 	inline const DirectX::XMFLOAT3 GetPositionOffset() const noexcept { return m_PositionOffset; }
+	inline void SetPositionOffset(DirectX::XMFLOAT3 NewOffset) noexcept { m_PositionOffset = NewOffset; }
+	inline void SetPositionOffset(float NewOffset_x, float NewOffset_y, float NewOffset_z) noexcept { m_PositionOffset = DirectX::XMFLOAT3(NewOffset_x, NewOffset_y, NewOffset_z); }
 
 	// 大きさ取得(派生で実装).
 	virtual float GetRadius() const noexcept { return 0.0f; }
@@ -48,11 +49,17 @@ public:
 	virtual void SetHeight(float Height) noexcept {}
 	virtual void SetSize(DirectX::XMFLOAT3 Size) noexcept {}
 
+	// 色の設定.
+	void SetColor(Color::eColor NewColor) noexcept { m_Color = Color::GetColorValue(NewColor); }
+	inline void SetColor(DirectX::XMFLOAT4 NewColor) noexcept { m_Color = NewColor; }
+	inline void SetColor(float NewR, float NewG, float NewB, float NewA) noexcept { m_Color = DirectX::XMFLOAT4(NewR, NewG, NewB, NewA); }
+
 protected:
 
 	std::weak_ptr<const Transform> m_wpTransform; // 持ち主のトランスフォーム.
 	DirectX::XMFLOAT3	m_PositionOffset;	// オフセット位置.
 
+	DirectX::XMFLOAT4	m_Color;			// 表示色.
 	
 #if _DEBUG
 public:

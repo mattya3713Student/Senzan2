@@ -37,3 +37,57 @@ namespace Axis {
     static const DirectX::XMVECTOR FORWARD_VECTOR = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
     static const DirectX::XMVECTOR BACK_VECTOR  = DirectX::XMVectorSet(0.0f, 0.0f, -1.0f, 0.0f);
 }
+
+// 色系の定義.
+namespace Color {
+
+// RGBの定義.
+enum class eColor
+{
+    Red = 0,
+    Green,
+    Blue,
+    Yellow,
+    Cyan,   // 水色
+    Magenta, // マゼンタ
+    Gray,   // 灰色
+    Black,
+    White,
+};
+
+static DirectX::XMFLOAT4 GetColorValue(eColor debugColor)
+{
+    switch (debugColor)
+    {
+    case eColor::Red:
+        return DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
+
+    case eColor::Green:
+        return DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
+
+    case eColor::Blue:
+        return DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
+
+    case eColor::Yellow:
+        return DirectX::XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f);
+
+    case eColor::Cyan:
+        return DirectX::XMFLOAT4(0.0f, 1.0f, 1.0f, 1.0f);
+
+    case eColor::Magenta:
+        return DirectX::XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f);
+
+    case eColor::Gray:
+        return DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+
+    case eColor::Black:
+        return DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+
+    case eColor::White:
+        return DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+
+    default:
+        return DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+    }
+};
+}

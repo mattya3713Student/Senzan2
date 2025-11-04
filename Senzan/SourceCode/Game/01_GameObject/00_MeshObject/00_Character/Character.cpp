@@ -5,8 +5,12 @@
 
 Character::Character()
 	: MeshObject()
-	, m_pCollider(std::make_shared<CapsuleCollider>(m_Transform))
+	, m_pPressCollider(std::make_shared<CapsuleCollider>(m_Transform))
 {
+	m_pPressCollider->SetColor(Color::eColor::Cyan);
+	m_pPressCollider->SetPositionOffset(0.f, 50.f, 0.f);
+	m_pPressCollider->SetRadius(50.f);
+	m_pPressCollider->SetHeight(50.f);
 }
 
 Character::~Character()
@@ -24,6 +28,8 @@ void Character::LateUpdate()
 
 void Character::Draw()
 {
+	MeshObject::Draw();
+	m_pPressCollider->SetDebugInfo();
 }
 
 //------------------------------------------------------------------------------------.
@@ -31,7 +37,7 @@ void Character::Draw()
 void Character::UpdateAfterCollision()
 {
 	// “–‚½‚è”»’è‚ªÚ‘±‚³‚ê‚Ä‚¢‚È‚©‚Á‚½‚çˆ—‚µ‚È‚¢.
-	if (m_pCollider == nullptr)
+	if (m_pPressCollider == nullptr)
 	{
 		return;
 	}
@@ -47,10 +53,10 @@ void Character::UpdateAfterCollision()
 
 void Character::DetachCollider()
 {
-	m_pCollider.reset();
+	m_pPressCollider.reset();
 }
 
 const std::shared_ptr<ColliderBase>& Character::GetCollider() const
 {
-	return m_pCollider;
+	return m_pPressCollider;
 }

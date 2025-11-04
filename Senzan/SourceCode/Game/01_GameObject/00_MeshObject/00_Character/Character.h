@@ -43,5 +43,5 @@ public:
 	const std::shared_ptr<ColliderBase>& GetCollider()const;
 
 protected:
-	std::shared_ptr<ColliderBase>	m_pCollider;	// 衝突.
+	std::shared_ptr<ColliderBase>	m_pPressCollider;	// 衝突.
 };
