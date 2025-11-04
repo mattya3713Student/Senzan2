@@ -3,10 +3,11 @@
 #include "ThirdPersonCamera.h"
 #include "Game/01_GameObject/00_MeshObject/00_Character/01_Player/Player.h"
 
-/**************************************************
-*	プレイヤーの用三人称カメラ.
-*	担当 : 淵脇 未来.
-**/
+/**********************************************************************************
+* @author    : 淵脇 未来.
+* @date      : 2025/11/4.
+* @brief     : プレイヤーの用三人称カメラ.
+**********************************************************************************/
 class PlayerThirdPersonCamera final
 	: public ThirdPersonCamera
 {

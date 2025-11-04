@@ -5,7 +5,6 @@
     <FxCompile Include="Data\Shader\PMX\Vertex.hlsl" />
     <FxCompile Include="Data\Shader\Wire\WireVS.hlsl" />
     <FxCompile Include="Data\Shader\Wire\WirePS.hlsl" />
-    <FxCompile Include="Data\Shader\Collision.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SourceCode\Game\00_Scene\00_Base\SceneBase.cpp" />
@@ -122,6 +121,7 @@
     <ClCompile Include="Data\ImGui\Library\imgui_widgets.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\ImGui\CImGuiManager.cpp" />
     <ClCompile Include="SourceCode\Game\05_InputDevice\XInputConfig\XInputConfig.cpp" />
+    <ClCompile Include="SourceCode\Game\02_Camera\CameraManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SourceCode\Constant.h" />
@@ -257,6 +257,7 @@
     <ClInclude Include="Data\ImGui\Library\imstb_truetype.h" />
     <ClInclude Include="SourceCode\System\Singleton\ImGui\CImGuiManager.h" />
     <ClInclude Include="SourceCode\Game\05_InputDevice\XInputConfig\XInputConfig.h" />
+    <ClInclude Include="SourceCode\Game\02_Camera\CameraManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Shader\PMX\Header.hlsli" />

@@ -45,54 +45,54 @@ VS_OUTPUT VS_Main(VS_INPUT_VERTEX inputV, VS_INPUT_INSTANCE inputI)
     
     // それぞれの形状に合わせてサイズを変更.
     float4 ScaledPosition = inputV.Position;
-    int shapeType = (int) inputI.ShapeInfo.x;
+    int ShapeType = (int) inputI.ShapeInfo.x;
     
     // それぞれの値.
-    float R_new = inputI.Data0.x;       // Sphere, Capsule  : 半径.
-    float H_new_cyl = inputI.Data0.y;   // Capsule          : 高さ.
-    float3 S_new = inputI.Data0.xyz;    // Box              : サイズ.
+    float Radius = inputI.Data0.x;      // Sphere, Capsule  : 半径.
+    float Height = inputI.Data0.y;      // Capsule          : 高さ.
+    float3 Size  = inputI.Data0.xyz;    // Box              : サイズ.
     
     // 単位メッシュの基準値.
     float R_unit = 0.5f;
     float H_unit_half = 1.0f;
 
     // Boxの場合.
-    if (shapeType == 0)
+    if (ShapeType == 0)
     {
-        ScaledPosition.xyz *= S_new;
+        ScaledPosition.xyz *= Size;
     }
     
     // Sphereの場合.
-    else if (shapeType == 1)
+    else if (ShapeType == 1)
     {
-        float scaleFactor = R_new / R_unit;
+        float scaleFactor = Radius / R_unit;
         ScaledPosition.xyz *= scaleFactor;
     }
     // Capsulの場合.
-    else if (shapeType == 2)
+    else if (ShapeType == 2)
     {
-        float scaleXZ = R_new / R_unit;
-        ScaledPosition.x *= scaleXZ;
-        ScaledPosition.z *= scaleXZ;
-        float H_new_half = H_new_cyl / 2.0f;
+        float ScaleXZ = Radius / R_unit;
+        ScaledPosition.x *= ScaleXZ;
+        ScaledPosition.z *= ScaleXZ;
+        float HalfHeight = Height / 2.0f;
         
         // 南極側の半球.
         if (ScaledPosition.y < -H_unit_half + 0.001f)
         {
             // Y座標を球の中心からの相対座標に戻し、新しい半分の高さからのオフセットを計算.
-            ScaledPosition.y = -H_new_half + ((ScaledPosition.y + H_unit_half) * scaleXZ);
+            ScaledPosition.y = -HalfHeight + ((ScaledPosition.y + H_unit_half) * ScaleXZ);
         }
         // 北極側の半球
         else if (ScaledPosition.y > H_unit_half - 0.001f)
         {
             // Y座標を球の中心からの相対座標に戻し、新しい半分の高さからのオフセットを計算.
-            ScaledPosition.y = H_new_half + ((ScaledPosition.y - H_unit_half) * scaleXZ);
+            ScaledPosition.y = HalfHeight + ((ScaledPosition.y - H_unit_half) * ScaleXZ);
         }
         // 円筒部分.
         else
         {
             // 円筒部分のY座標を新しい半分の高さにスケーリング.
-            float scaleY_cylinder = H_new_half / H_unit_half;
+            float scaleY_cylinder = HalfHeight / H_unit_half;
             ScaledPosition.y *= scaleY_cylinder;
         }
     }
