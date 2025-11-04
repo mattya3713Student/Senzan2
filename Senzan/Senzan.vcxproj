@@ -277,7 +277,6 @@
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UIObjectManager.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\GameObject.cpp" />
     <ClCompile Include="SourceCode\Game\02_Camera\CameraBase.cpp" />
-    <ClCompile Include="SourceCode\Game\02_Camera\CameraManager.cpp" />
     <ClCompile Include="SourceCode\Game\03_Collision\Box\BoxCollider.cpp" />
     <ClCompile Include="SourceCode\Game\03_Collision\Capsule\CapsuleCollider.cpp" />
     <ClCompile Include="SourceCode\Game\03_Collision\ColliderBase.cpp" />
@@ -400,7 +399,6 @@
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\UIObjectManager.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\GameObject.h" />
     <ClInclude Include="SourceCode\Game\02_Camera\CameraBase.h" />
-    <ClInclude Include="SourceCode\Game\02_Camera\CameraManager.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\Box\BoxCollider.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\Capsule\CapsuleCollider.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\ColliderBase.h" />
