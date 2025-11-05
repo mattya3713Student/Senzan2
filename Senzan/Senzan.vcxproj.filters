@@ -256,6 +256,7 @@
     <ClInclude Include="Data\ImGui\Library\imstb_truetype.h" />
     <ClInclude Include="SourceCode\System\Singleton\ImGui\CImGuiManager.h" />
     <ClInclude Include="SourceCode\Game\05_InputDevice\XInputConfig\XInputConfig.h" />
+    <ClInclude Include="SourceCode\Game\03_Collision\CollisionDetector.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Shader\PMX\Header.hlsli" />

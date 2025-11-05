@@ -5,6 +5,9 @@
 #include "System/Utility/Transform/Transform.h"
 #include "System/Singleton/CameraManager/CameraManager.h"
 
+#include "Box/BoxCollider.h"
+#include "Capsule/CapsuleCollider.h"
+#include "Sphere/SphereCollider.h"
 
 ColliderBase::ColliderBase()
 	: m_wpTransform     (  )

@@ -1,6 +1,8 @@
-#include "System/Singleton/Debug/CollisionVisualizer/CollisionVisualizer.h"
 
 #include "CapsuleCollider.h"
+#include "../CollisionDetector.h"
+
+#include "System/Singleton/Debug/CollisionVisualizer/CollisionVisualizer.h"
 
 namespace {
 // 分割数.
@@ -30,6 +32,31 @@ CapsuleCollider::~CapsuleCollider()
 void CapsuleCollider::Update()
 {
 
+}
+
+bool CapsuleCollider::CheckCollision(const ColliderBase& other) const
+{
+	// フィルター判断.
+    if (!ShouldCollide(other)) {
+        return false;
+    }
+
+    return CollisionDetector::CheckCollision(*this, other);
+}
+
+bool CapsuleCollider::DispatchCollision(const SphereCollider& other) 
+{
+    return false;
+}
+
+bool CapsuleCollider::DispatchCollision(const CapsuleCollider& other)
+{
+    return false;
+}
+
+bool CapsuleCollider::DispatchCollision(const BoxCollider& other)
+{
+    return false;
 }
 
 // デバッグ描画用設定.

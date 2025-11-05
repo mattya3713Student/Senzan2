@@ -3,6 +3,7 @@
 
 #include "../ColliderBase.h"
 
+class CollisionDetector;
 
 /**********************************************************************************
 * @author    : •£˜e –¢—ˆ.
@@ -31,6 +32,14 @@ public:
 	inline void SetRadius(float Radius) noexcept override { m_Radius = Radius; }
 	// ‚‚³‚ğİ’è‚·‚é.
 	inline void SetHeight(float Height) noexcept override { m_Height = Height; }
+
+	// Õ“Ë”»’è.
+	bool CheckCollision(const ColliderBase& other) const override;
+
+protected:
+	bool DispatchCollision(const SphereCollider& other) override;
+	bool DispatchCollision(const CapsuleCollider& other) override;
+	bool DispatchCollision(const BoxCollider& other) override;
 
 private:
 	float m_Radius; // ”¼Œa.

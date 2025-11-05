@@ -29,6 +29,26 @@ void SphereCollider::Update()
   
 }
 
+bool SphereCollider::CheckCollision(const ColliderBase& other)
+{
+    return false;
+}
+
+bool SphereCollider::DispatchCollision(const SphereCollider& other)
+{
+    return false;
+}
+
+bool SphereCollider::DispatchCollision(const CapsuleCollider& other)
+{
+    return false;
+}
+
+bool SphereCollider::DispatchCollision(const BoxCollider& other)
+{
+    return false;
+}
+
 // デバッグ描画用設定.
 void SphereCollider::SetDebugInfo()
 {

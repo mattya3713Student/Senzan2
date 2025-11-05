@@ -4,6 +4,10 @@
 #include <string>
 #include <memory>
 
+class CollisionDetector;
+class BoxCollider;
+class CapsuleCollider;
+class SphereCollider;
 
 /**********************************************************************************
 * @author    : 淵脇 未来.
@@ -14,7 +18,22 @@
 class ColliderBase
 {
 public:
+	// 当たり判定.
+	enum class eCollisionGroup : uint32_t
+	{
+		None = 0,
 
+		Player_Attack = 1 << 0,
+		Player_Damage = 1 << 1,
+		Player_JustDodge = 1 << 2,
+		Enemy_Attack = 1 << 3,
+		Enemy_Damage = 1 << 4,
+		Press = 1 << 5,
+
+		_Max = 0xFFFFFFFF,
+	};
+
+	// 当たり判定の形.
 	enum class eShapeType : uint32_t
 	{
 		Box = 0,
@@ -24,6 +43,8 @@ public:
 	};
 
 public:
+	friend class CollisionDetector;
+
 	ColliderBase();
 	ColliderBase(std::weak_ptr<const Transform> parentTransform);
 	virtual ~ColliderBase();	
@@ -56,18 +77,54 @@ public:
 	inline void SetColor(DirectX::XMFLOAT4 NewColor) noexcept { m_Color = NewColor; }
 	inline void SetColor(float NewR, float NewG, float NewB, float NewA) noexcept { m_Color = DirectX::XMFLOAT4(NewR, NewG, NewB, NewA); }
 
+
+	// コリジョングループとマスクの設定.
+	
+	// 自身のグループを設定.
+	inline void SetGroup(uint32_t group) noexcept { m_MyGroup = group; }
+	// 衝突を許可するグループを設定.
+	inline void SetMask(uint32_t mask) noexcept { m_CollisionMask = mask; }
+
+	inline uint32_t GetGroup() const noexcept { return m_MyGroup; }
+	inline uint32_t GetMask() const noexcept { return m_CollisionMask; }
+
+	// 相手と衝突すべきか.
+	inline bool ShouldCollide(const ColliderBase& other) const noexcept
+	{
+		bool A_collides_with_B = (m_CollisionMask & other.m_MyGroup) != 0;
+		bool B_collides_with_A = (other.m_CollisionMask & m_MyGroup) != 0;
+		return A_collides_with_B && B_collides_with_A;
+	}
+
+	// 他のColliderとの衝突.
+	virtual bool CheckCollision(const ColliderBase& other) const = 0;
+
+protected:
+	// 形状ごとの衝突処理(ディスパッチ用).
+	virtual bool DispatchCollision(const SphereCollider& other) = 0;
+	virtual bool DispatchCollision(const CapsuleCollider& other) = 0;
+	virtual bool DispatchCollision(const BoxCollider& other) = 0;
+
+
 protected:
 
-	std::weak_ptr<const Transform> m_wpTransform; // 持ち主のトランスフォーム.
-	DirectX::XMFLOAT3	m_PositionOffset;	// オフセット位置.
+	std::weak_ptr<const Transform> m_wpTransform;	// 持ち主のトランスフォーム.
+	DirectX::XMFLOAT3	m_PositionOffset;			// オフセット位置.
 
-	DirectX::XMFLOAT4	m_Color;			// 表示色.
-	
+	// コリジョンフィルター用.
+	uint32_t m_MyGroup = (uint32_t)eCollisionGroup::_Max;		// 自身が所属するグループ.
+	uint32_t m_CollisionMask = (uint32_t)eCollisionGroup::_Max;	// 衝突対象とするグループ.
+
 #if _DEBUG
 public:
+
 	//------------デバッグ描画用-----------.
 
 	virtual void SetDebugInfo() = 0;
+
+protected:
+	DirectX::XMFLOAT4	m_Color;					// 表示色.
+
 #endif // _DEBUG.
 
 }; 
