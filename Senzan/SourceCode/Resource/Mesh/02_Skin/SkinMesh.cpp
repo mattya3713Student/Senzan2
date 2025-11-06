@@ -320,9 +320,9 @@ HRESULT SkinMesh::CreateIndexBuffer(
 
 void SkinMesh::Render(LPD3DXANIMATIONCONTROLLER pAC)
 {
-	m_mView = CameraManager::GetInstance().GetViewMatrix();
-	m_mProj = CameraManager::GetInstance().GetProjMatrix();
-	m_CamPos = CameraManager::GetInstance().GetPosition();
+	m_mView = CameraManager::GetViewMatrix();
+	m_mProj = CameraManager::GetProjMatrix();
+	m_CamPos = CameraManager::GetPosition();
 
 	//使用するシェーダのセット.
 	m_pContext11->VSSetShader(m_pVertexShader->GetVertexShader(), nullptr, 0);
@@ -353,9 +353,9 @@ void SkinMesh::Render(LPD3DXANIMATIONCONTROLLER pAC)
 
 void SkinMesh::RenderDepth(const LPD3DXANIMATIONCONTROLLER pAC)
 {
-	m_mView = CameraManager::GetInstance().GetViewMatrix();
-	m_mProj = CameraManager::GetInstance().GetProjMatrix();
-	m_CamPos = CameraManager::GetInstance().GetPosition();
+	m_mView = CameraManager::GetViewMatrix();
+	m_mProj = CameraManager::GetProjMatrix();
+	m_CamPos = CameraManager::GetPosition();
 
 	//使用するシェーダのセット.
 	ShaderResource::GetInstance().GetVSShadowMapSkinMesh()->SetVertexShader();
@@ -1077,6 +1077,9 @@ HRESULT SkinMesh::DestroyAppMeshFromD3DXMesh(LPD3DXFRAME p)
 	MYFRAME* pFrame = reinterpret_cast<MYFRAME*>(p);
 
 	MYMESHCONTAINER* pMeshContainerTmp = reinterpret_cast<MYMESHCONTAINER*>(pFrame->pMeshContainer);
+
+	//MYMESHCONTAINERの中身の解放.
+	// ... (解放処理はD3DX/D3D11のRelease/Deleteなので変更なし) ...
 
 	//SKIN_PARTS_MESHの解放.
 	if (pFrame->pPartsMesh != nullptr)

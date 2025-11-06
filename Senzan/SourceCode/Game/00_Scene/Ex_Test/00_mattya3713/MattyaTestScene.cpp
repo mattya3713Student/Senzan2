@@ -42,7 +42,7 @@ void MattyaTestScene::Initialize()
 	// ƒJƒƒ‰Ý’è.
 	m_pCamera->SetPosition(DirectX::XMFLOAT3(0.0f, 5.0f, -50.0f));
 	m_pCamera->SetLook(DirectX::XMFLOAT3(0.0f, 2.0f, 5.0f));
-	CameraManager::GetInstance().SetCamera(m_pCamera);
+	CameraManager::AttachCamera(m_pCamera);
 
 	// ƒ‰ƒCƒgÝ’è.
 	m_pLight->SetDirection(DirectX::XMFLOAT3(1.5f, 1.f, -1.f));
@@ -66,12 +66,14 @@ void MattyaTestScene::Update()
 void MattyaTestScene::LateUpdate()
 {
 	m_pPlayer->LateUpdate();
-	CameraManager::GetInstance().LateUpdate();
+	CameraManager::Update();
 }
 
 
 void MattyaTestScene::Draw()
 {
+	CameraManager::ViewAndProjectionUpdate();
+
 	Shadow::Begin();
 	m_pGround->DrawDepth();
 	Shadow::End();

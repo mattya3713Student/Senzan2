@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include "System/Singleton/SingletonTemplate.h"
-#include "Game/02_Camera/CameraBase.h"
 
 /************************************
 *   カメラ管理クラス.
@@ -59,5 +58,5 @@ private:
 	void ViewAndProjectionUpdate();
 
 private:
-	std::weak_ptr<CameraBase> m_wpCamera;
+	std::weak_ptr<CameraBase> m_Camera;
 };
