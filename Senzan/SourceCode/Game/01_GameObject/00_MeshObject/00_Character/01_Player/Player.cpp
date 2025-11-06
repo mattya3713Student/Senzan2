@@ -36,6 +36,7 @@ Player::Player()
     , m_RunMoveSpeed    (1.f)
     , m_MoveVec         (0.0f, 0.0f)
 {
+    // ステートの初期化.
     InitializeStateRefMap();
 
     // メッシュのアタッチ.
@@ -52,8 +53,6 @@ Player::Player()
 
     //m_pCollider = std::make_shared<CapsuleCollider>(m_Transform);
 
- /*   m_pCollider->SetRadius(1000.f);
-    m_pCollider->SetHeight(100.f);*/
 }
 
 Player::~Player()
@@ -79,9 +78,7 @@ void Player::LateUpdate()
 
 void Player::Draw()
 {
-    MeshObject::Draw();
-
-    m_pPressCollider->SetDebugInfo();
+    Character::Draw();
 }
 
 // スタン中か.

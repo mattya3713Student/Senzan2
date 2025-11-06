@@ -1078,9 +1078,6 @@ HRESULT SkinMesh::DestroyAppMeshFromD3DXMesh(LPD3DXFRAME p)
 
 	MYMESHCONTAINER* pMeshContainerTmp = reinterpret_cast<MYMESHCONTAINER*>(pFrame->pMeshContainer);
 
-	//MYMESHCONTAINERの中身の解放.
-	// ... (解放処理はD3DX/D3D11のRelease/Deleteなので変更なし) ...
-
 	//SKIN_PARTS_MESHの解放.
 	if (pFrame->pPartsMesh != nullptr)
 	{

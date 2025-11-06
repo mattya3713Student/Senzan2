@@ -64,14 +64,15 @@ CollisionInfo CapsuleCollider::DispatchCollision(const SphereCollider& other) co
     // 1. 自分のカプセルの線分 P1, P2 の終点を計算.
     const DirectX::XMVECTOR p1 = GetCulcCapsuleSegmentStart(this);
     const DirectX::XMVECTOR p2 = GetCulcCapsuleSegmentEnd(this);
-    // 相手 (球体) の中心座標 Q.
-	const DirectX::XMFLOAT3 spherePos = other.GetPosition();
-    const DirectX::XMVECTOR q = DirectX::XMLoadFloat3(&spherePos);
+    // 2. 相手 (球体) の中心座標 Q.
+	const DirectX::XMFLOAT3 other_position = other.GetPosition();
+    const DirectX::XMVECTOR q = DirectX::XMLoadFloat3(&other_position);
+
+    DirectX::XMVECTOR closest_p; // 線分上の最短点P (カプセル側の接触点)
 
     // --- 最短点Pの計算（ClosestPtPointSegmentSqロジックから流用）---
     DirectX::XMVECTOR ab = DirectX::XMVectorSubtract(p2, p1);
     DirectX::XMVECTOR ap = DirectX::XMVectorSubtract(q, p1);
-    DirectX::XMVECTOR closest_p = {};
 
     // ap を ab に投影し、スカラー値 e (Dot(ap, ab)) を求める.
     float e = DirectX::XMVectorGetX(DirectX::XMVector3Dot(ap, ab));
@@ -244,8 +245,8 @@ CollisionInfo CapsuleCollider::DispatchCollision(const BoxCollider& other) const
 // カプセルの中心線分の終点 P1 を「計算し」取得.
 DirectX::XMVECTOR CapsuleCollider::GetCulcCapsuleSegmentStart(const CapsuleCollider* capsule)
 {
-    const DirectX::XMFLOAT3 pos = capsule->GetPosition();
-    const DirectX::XMVECTOR v_pos = DirectX::XMLoadFloat3(&pos);
+    const DirectX::XMFLOAT3 other_position = capsule->GetPosition();
+    const DirectX::XMVECTOR v_pos = DirectX::XMLoadFloat3(&other_position);
     const float radius = capsule->GetRadius();
     const float height = capsule->GetHeight();
 
@@ -261,8 +262,8 @@ DirectX::XMVECTOR CapsuleCollider::GetCulcCapsuleSegmentStart(const CapsuleColli
 // カプセルの中心線分の終点 P2 を「計算し」取得.
 DirectX::XMVECTOR CapsuleCollider::GetCulcCapsuleSegmentEnd(const CapsuleCollider* capsule)
 {
-    const DirectX::XMFLOAT3 pos = capsule->GetPosition();
-    const DirectX::XMVECTOR v_pos = DirectX::XMLoadFloat3(&pos);
+    const DirectX::XMFLOAT3 other_position = capsule->GetPosition();
+    const DirectX::XMVECTOR v_pos = DirectX::XMLoadFloat3(&other_position);
     const float radius = capsule->GetRadius();
     const float height = capsule->GetHeight();
 

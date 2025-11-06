@@ -12,8 +12,10 @@ CameraManager::~CameraManager()
 
 void CameraManager::LateUpdate()
 {
+	if (m_wpCamera.expired()) { return; }
+	ViewAndProjectionUpdate();
+	m_wpCamera.lock()->Update();
 }
-
 void CameraManager::SetPosition(DirectX::XMFLOAT3 Position)
 {
 	if (m_wpCamera.expired()) { return; }
