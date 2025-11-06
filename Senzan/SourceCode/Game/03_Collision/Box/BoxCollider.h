@@ -29,11 +29,11 @@ public:
 	inline void SetSize(DirectX::XMFLOAT3 size) noexcept override { m_Size = size; }
 
 	// 衝突判定.
-	bool CheckCollision(const ColliderBase& other) const override;
+	CollisionInfo CheckCollision(const ColliderBase& other) const override;
 
-	bool DispatchCollision(const SphereCollider& other) const override;
-	bool DispatchCollision(const CapsuleCollider& other) const override;
-	bool DispatchCollision(const BoxCollider& other) const override;
+	CollisionInfo DispatchCollision(const SphereCollider& other) const override;
+	CollisionInfo DispatchCollision(const CapsuleCollider& other) const override;
+	CollisionInfo DispatchCollision(const BoxCollider& other) const override;
 
 private:
 	DirectX::XMFLOAT3 m_Size; // 一片の長さ.	

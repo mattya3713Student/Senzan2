@@ -280,6 +280,7 @@
     <ClCompile Include="SourceCode\Game\03_Collision\Box\BoxCollider.cpp" />
     <ClCompile Include="SourceCode\Game\03_Collision\Capsule\CapsuleCollider.cpp" />
     <ClCompile Include="SourceCode\Game\03_Collision\ColliderBase.cpp" />
+    <ClCompile Include="SourceCode\System\Singleton\CollisionDetector\CollisionDetector.cpp" />
     <ClCompile Include="SourceCode\Game\03_Collision\Sphere\SphereCollider.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\CameraManager\CameraManager.cpp" />
     <ClCompile Include="SourceCode\Game\02_Camera\ThirdPersonCamera\ThirdPersonCamera.cpp" />
@@ -402,6 +403,8 @@
     <ClInclude Include="SourceCode\Game\03_Collision\Box\BoxCollider.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\Capsule\CapsuleCollider.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\ColliderBase.h" />
+    <ClInclude Include="SourceCode\Game\03_Collision\CollisionInfo.h" />
+    <ClInclude Include="SourceCode\System\Singleton\CollisionDetector\CollisionDetector.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\Sphere\SphereCollider.h" />
     <ClInclude Include="SourceCode\System\Singleton\CameraManager\CameraManager.h" />
     <ClInclude Include="SourceCode\Game\02_Camera\ThirdPersonCamera\PlayerThirdPersonCamera.h" />
