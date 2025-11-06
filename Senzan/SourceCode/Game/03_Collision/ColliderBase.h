@@ -35,7 +35,7 @@ public:
 		Press				= 1 << 6,
 
 		_Max = 0xFFFFFFFF,
-	};
+	}; 
 
 	// 当たり判定の形.
 	enum class eShapeType : uint32_t
@@ -92,12 +92,12 @@ public:
 	inline void ClearCollisionEvents() noexcept { m_CollisionEvents.clear(); }
 	
 	// 自身のグループを設定.
-	inline void SetGroup(uint32_t group) noexcept { m_MyGroup = group; }
+	inline void SetGroup(eCollisionGroup group) noexcept { m_MyGroup = group; }
 	// 衝突を許可するグループを設定.
-	inline void SetMask(uint32_t mask) noexcept { m_CollisionMask = mask; }
+	inline void SetMask(eCollisionGroup mask) noexcept { m_CollisionMask = mask; }
 
-	inline uint32_t GetGroup() const noexcept { return m_MyGroup; }
-	inline uint32_t GetMask() const noexcept { return m_CollisionMask; }
+	inline eCollisionGroup GetGroup() const noexcept { return m_MyGroup; }
+	inline eCollisionGroup GetMask() const noexcept { return m_CollisionMask; }
 
 	// 相手と衝突すべきか.
 	inline bool ShouldCollide(const ColliderBase& other) const noexcept
@@ -122,8 +122,8 @@ protected:
 	DirectX::XMFLOAT3	m_PositionOffset;			// オフセット位置.
 
 	// コリジョンフィルター用.
-	uint32_t m_MyGroup = (uint32_t)eCollisionGroup::_Max;		// 自身が所属するグループ.
-	uint32_t m_CollisionMask = (uint32_t)eCollisionGroup::_Max;	// 衝突対象とするグループ.
+	eCollisionGroup m_MyGroup = eCollisionGroup::_Max;		// 自身が所属するグループ.
+	eCollisionGroup m_CollisionMask = eCollisionGroup::_Max;	// 衝突対象とするグループ.
 
 	// 検出された衝突情報のリスト.
 	std::vector<CollisionInfo> m_CollisionEvents;

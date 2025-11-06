@@ -410,12 +410,12 @@ void CapsuleCollider::SetDebugInfo()
     DebugColliderInfo info = {};
 
     std::shared_ptr<const Transform> spParentTransform = m_wpTransform.lock();
-    if (!spParentTransform) { return; }
-    const Transform& p_parent_transform = *spParentTransform;
 
-    // 親のワールド行列.
-    DirectX::XMMATRIX mat_parent_world = p_parent_transform.GetWorldMatrix();
-
+    // 親の単位行列を作成.
+    DirectX::XMMATRIX mat_parent_world = spParentTransform
+        ? spParentTransform->GetWorldMatrix()
+        : DirectX::XMMatrixIdentity();
+    
     // オフセット行列.
     DirectX::XMMATRIX mat_offset = DirectX::XMMatrixTranslation(
         m_PositionOffset.x, m_PositionOffset.y, m_PositionOffset.z

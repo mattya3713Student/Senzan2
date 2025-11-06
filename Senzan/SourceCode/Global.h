@@ -51,6 +51,7 @@
 #include <string>       // 文字列.
 #include <fstream>		// ファイル入出力.	
 #include <chrono>		// 時間計測.	
+#include<type_traits>
 
 #include "Utility/Assert/Assert.inl"	// HRESULTのtrycatchをする.
 #include "Utility/Math/Math.h"			// 算数系.	
