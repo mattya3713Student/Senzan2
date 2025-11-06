@@ -18,6 +18,12 @@ class SphereCollider;
 class ColliderBase
 {
 public:
+	// 形状派生クラスから判定関数(DispatchCollision)を2重ディスパッチするためフレンドに追加.
+	friend class BoxCollider;
+	friend class CapsuleCollider;
+	friend class SphereCollider;
+
+public:
 	// 当たり判定.
 	enum class eCollisionGroup : uint32_t
 	{
@@ -43,8 +49,6 @@ public:
 	};
 
 public:
-	friend class CollisionDetector;
-
 	ColliderBase();
 	ColliderBase(std::weak_ptr<const Transform> parentTransform);
 	virtual ~ColliderBase();	
@@ -56,6 +60,9 @@ public:
 
 	// 座標を取得する.
 	inline const DirectX::XMFLOAT3 GetPosition() const noexcept; 
+
+	// 自身の形状を取得する.
+	inline virtual const eShapeType GetShapeType() const noexcept = 0;
 
 	// 座標のオフセット値を取得する.
 	inline const DirectX::XMFLOAT3 GetPositionOffset() const noexcept { return m_PositionOffset; }
@@ -100,11 +107,10 @@ public:
 	virtual bool CheckCollision(const ColliderBase& other) const = 0;
 
 protected:
-	// 形状ごとの衝突処理(ディスパッチ用).
-	virtual bool DispatchCollision(const SphereCollider& other) = 0;
-	virtual bool DispatchCollision(const CapsuleCollider& other) = 0;
-	virtual bool DispatchCollision(const BoxCollider& other) = 0;
-
+	// 形状ごとの衝突処理.
+	virtual bool DispatchCollision(const SphereCollider& other) const = 0;
+	virtual bool DispatchCollision(const CapsuleCollider& other) const = 0;
+	virtual bool DispatchCollision(const BoxCollider& other) const = 0;
 
 protected:
 

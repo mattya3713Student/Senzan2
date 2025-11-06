@@ -1,7 +1,6 @@
 ﻿#pragma once
 #include "System/Singleton/SingletonTemplate.h"
-
-class CameraBase;
+#include "Game/02_Camera/CameraBase.h"
 
 
 /**********************************************************************************
@@ -19,7 +18,7 @@ private:
 	CameraManager();
 public:
 	~CameraManager();
-	void Update();
+	void LateUpdate();
 
 	// カメラの設定.
 	inline void SetCamera(std::shared_ptr<CameraBase> spCamera) noexcept { m_wpCamera = spCamera; };
@@ -42,11 +41,6 @@ public:
         if (auto spCamera = m_wpCamera.lock()) {
             spCamera->SetPosition(DirectX::XMFLOAT3(NewPosition_x, NewPosition_y, NewPosition_z));
         }
-    }
-
-    // カメラの設定.
-    inline void SetCamera(std::shared_ptr<CameraBase> spCamera) noexcept {
-        m_wpCamera = spCamera; 
     }
 
     // 注視点を設定.
@@ -79,6 +73,22 @@ public:
     inline DirectX::XMMATRIX GetViewProjMatrix() const noexcept {
         if (auto spCamera = m_wpCamera.lock()) {
             return spCamera->GetViewProjMatrix();
+        }
+        return DirectX::XMMatrixIdentity(); 
+    }
+
+    // ビュー行列を取得.
+    inline DirectX::XMMATRIX GetViewMatrix() const noexcept {
+        if (auto spCamera = m_wpCamera.lock()) {
+            return spCamera->GetViewMatrix();
+        }
+        return DirectX::XMMatrixIdentity(); 
+    }
+
+    // プロジェクションの合成行列を取得.
+    inline DirectX::XMMATRIX GetProjMatrix() const noexcept {
+        if (auto spCamera = m_wpCamera.lock()) {
+            return spCamera->GetViewMatrix();
         }
         return DirectX::XMMatrixIdentity(); 
     }

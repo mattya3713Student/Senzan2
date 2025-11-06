@@ -1,7 +1,6 @@
 ﻿#include "System/Singleton/Debug/CollisionVisualizer/CollisionVisualizer.h"
 
 #include "BoxCollider.h"
-#include "../CollisionDetector.h"
 
 
 BoxCollider::BoxCollider()
@@ -32,20 +31,20 @@ bool BoxCollider::CheckCollision(const ColliderBase& other) const
         return false;
     }
 
-    return CollisionDetector::CheckCollision(*this, other);
+    return other.DispatchCollision(*this);
 }
 
-bool BoxCollider::DispatchCollision(const SphereCollider& other)
+bool BoxCollider::DispatchCollision(const SphereCollider& other) const
 {
     return false;
 }
 
-bool BoxCollider::DispatchCollision(const CapsuleCollider& other)
+bool BoxCollider::DispatchCollision(const CapsuleCollider& other) const
 {
     return false;
 }
 
-bool BoxCollider::DispatchCollision(const BoxCollider& other)
+bool BoxCollider::DispatchCollision(const BoxCollider& other) const
 {
     return false;
 }

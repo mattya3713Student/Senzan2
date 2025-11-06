@@ -14,6 +14,7 @@ SphereCollider::SphereCollider()
 	, m_Radius		( 0.5f )
 {
 }
+
 SphereCollider::SphereCollider(std::weak_ptr<const Transform> parentTransform)
 	: ColliderBase	(parentTransform)
 	, m_Radius		( 0.5f )
@@ -29,22 +30,28 @@ void SphereCollider::Update()
   
 }
 
-bool SphereCollider::CheckCollision(const ColliderBase& other)
+bool SphereCollider::CheckCollision(const ColliderBase& other) const
+{	
+    // フィルター判断.
+    if (!ShouldCollide(other)) {
+        return false;
+    }
+
+	// 形状ごとの衝突判定へディスパッチ.
+    return other.DispatchCollision(*this);
+}
+
+bool SphereCollider::DispatchCollision(const SphereCollider& other) const
 {
     return false;
 }
 
-bool SphereCollider::DispatchCollision(const SphereCollider& other)
+bool SphereCollider::DispatchCollision(const CapsuleCollider& other) const
 {
     return false;
 }
 
-bool SphereCollider::DispatchCollision(const CapsuleCollider& other)
-{
-    return false;
-}
-
-bool SphereCollider::DispatchCollision(const BoxCollider& other)
+bool SphereCollider::DispatchCollision(const BoxCollider& other) const
 {
     return false;
 }

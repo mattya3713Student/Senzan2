@@ -10,7 +10,7 @@ CameraManager::~CameraManager()
 {
 }
 
-void CameraManager::Update()
+void CameraManager::LateUpdate()
 {
 	m_wpCamera.lock()->Update();
 	m_wpCamera.lock()->ViewAndProjectionUpdate();
