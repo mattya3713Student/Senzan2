@@ -51,7 +51,8 @@ bool CapsuleCollider::DispatchCollision(const SphereCollider& other) const
     const DirectX::XMVECTOR p2 = GetCulcCapsuleSegmentEnd(this);
 
     // 相手 (球体) の中心座標 Q.
-    const DirectX::XMVECTOR q = DirectX::XMLoadFloat3(&other.GetPosition());
+	const DirectX::XMFLOAT3 spherePos = other.GetPosition();
+    const DirectX::XMVECTOR q = DirectX::XMLoadFloat3(&spherePos);
 
     // 線分 P1P2 と 点 Q の最短距離の二乗を計算.
     const float distSq = GetCulcClosestPtPointSegmentSq(q, p1, p2);
@@ -104,7 +105,9 @@ bool CapsuleCollider::DispatchCollision(const BoxCollider& other) const
 // カプセルの中心線分の終点 P1 を「計算し」取得.
 DirectX::XMVECTOR CapsuleCollider::GetCulcCapsuleSegmentStart(const CapsuleCollider* capsule)
 {
-    const DirectX::XMVECTOR pos = DirectX::XMLoadFloat3(&capsule->GetPosition());
+    // 相手 (球体) の中心座標 Q.
+    const DirectX::XMFLOAT3 sphere_pos = capsule->GetPosition();
+    const DirectX::XMVECTOR v_pos = DirectX::XMLoadFloat3(&sphere_pos);
     const float radius = capsule->GetRadius();
     const float height = capsule->GetHeight();
 
@@ -114,13 +117,14 @@ DirectX::XMVECTOR CapsuleCollider::GetCulcCapsuleSegmentStart(const CapsuleColli
     // Y軸沿いの線分と仮定.
     const DirectX::XMVECTOR v_y = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
-    return DirectX::XMVectorSubtract(pos, DirectX::XMVectorScale(v_y, half_segment_length));
+    return DirectX::XMVectorSubtract(v_pos, DirectX::XMVectorScale(v_y, half_segment_length));
 }
 
 // カプセルの中心線分の終点 P2 を「計算し」取得.
 DirectX::XMVECTOR CapsuleCollider::GetCulcCapsuleSegmentEnd(const CapsuleCollider* capsule)
 {
-    const DirectX::XMVECTOR v_pos = DirectX::XMLoadFloat3(&capsule->GetPosition());
+    const DirectX::XMFLOAT3 sphere_pos = capsule->GetPosition();
+    const DirectX::XMVECTOR v_pos = DirectX::XMLoadFloat3(&sphere_pos);
     const float radius = capsule->GetRadius();
     const float height = capsule->GetHeight();
 
