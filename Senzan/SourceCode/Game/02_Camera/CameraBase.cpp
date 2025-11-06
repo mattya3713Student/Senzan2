@@ -32,6 +32,7 @@ CameraBase::~CameraBase()
 
 //---------------------------------------------------------------------.
 
+// ビューとプロジェクションの更新.
 void CameraBase::ViewAndProjectionUpdate()
 {
 	ViewUpdate();

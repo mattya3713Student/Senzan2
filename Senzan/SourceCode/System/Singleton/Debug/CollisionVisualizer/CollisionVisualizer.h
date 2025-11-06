@@ -39,6 +39,13 @@ struct DebugColliderInfo
 };
 
 
+/**********************************************************************************
+* @author    : 淵脇 未来.
+* @date      : 2025/11/4.
+* @brief     : 当たり判定描画クラス, インスタンス描画により軽量化.
+* @pattern   : Singleton.
+**********************************************************************************/
+
 class CollisionVisualizer
     : public Singleton<CollisionVisualizer>
 {

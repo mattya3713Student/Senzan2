@@ -31,7 +31,7 @@ void MemeuTestScene::Initialize()
 	// ƒJƒƒ‰Ý’è.
 	m_pCamera->SetPosition(DirectX::XMFLOAT3(0.0f, 5.0f, -5.0f));
 	m_pCamera->SetLook(DirectX::XMFLOAT3(0.0f, 2.0f, 5.0f));
-	CameraManager::AttachCamera(m_pCamera);
+	CameraManager::GetInstance().SetCamera(m_pCamera);
 
 	// ƒ‰ƒCƒgÝ’è.
 	m_pLight->SetDirection(DirectX::XMFLOAT3(1.5f, 1.f, -1.f));
@@ -47,22 +47,23 @@ void MemeuTestScene::Create()
 void MemeuTestScene::Update()
 {
 	m_pGround->Update();
+
 }
 
 void MemeuTestScene::LateUpdate()
 {
+	CameraManager::GetInstance().LateUpdate();
+
 }
 
 
 void MemeuTestScene::Draw()
 {
-	CameraManager::ViewAndProjectionUpdate();
-
 	Shadow::Begin();
 	m_pGround->DrawDepth();
 	Shadow::End();
 	m_pGround->Draw();
-
+	
 
 }
 

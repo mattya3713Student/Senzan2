@@ -368,7 +368,7 @@ void Sprite3D::Render()
 
 	//ビルボード用.
 	if (m_Billboard == true) {
-		DirectX::XMMATRIX CancelRotation = CameraManager::GetViewMatrix();//ビュー行列.
+		DirectX::XMMATRIX CancelRotation = CameraManager::GetInstance().GetViewMatrix();//ビュー行列.
 
 		// 【D3DXからXMへ】行列成分アクセスをXMVectorSet/Storeに置き換え
 		// ビュー行列から回転成分のみを抽出するため、平行移動成分をゼロにする
@@ -397,7 +397,7 @@ void Sprite3D::Render()
 	{
 		//ワールド,ビュー,プロジェクション行列を渡す.
 		// 【D3DXからXMへ】行列乗算をXMMatrixMultiplyに置き換え
-		DirectX::XMMATRIX m = DirectX::XMMatrixMultiply(mWorld, CameraManager::GetViewProjMatrix());
+		DirectX::XMMATRIX m = DirectX::XMMatrixMultiply(mWorld, CameraManager::GetInstance().GetViewProjMatrix());
 
 		// 【D3DXからXMへ】行列を転置する
 		m = DirectX::XMMatrixTranspose(m);

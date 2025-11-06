@@ -1,11 +1,15 @@
 ﻿#pragma once
 #include "System/Singleton/SingletonTemplate.h"
+#include "Game/02_Camera/CameraBase.h"
 
-class CameraBase;
 
-/************************************
-*   カメラ管理クラス.
-************************************/
+/**********************************************************************************
+* @author    : 淵脇 未来.
+* @date      : 2025/11/4.
+* @brief     : カメラ管理クラス.
+* @patarm    : Singleton.
+**********************************************************************************/
+
 class CameraManager final
 	: public Singleton<CameraManager>
 {
@@ -14,101 +18,115 @@ private:
 	CameraManager();
 public:
 	~CameraManager();
+	void LateUpdate();
 
-	/****************************************************
-	* @brief カメラの接続.
-	* @param pCamera：使用するカメラの共有ポインタ.
-	****************************************************/
-	static void AttachCamera(std::shared_ptr<CameraBase> pCamera);
+	// カメラの設定.
+	inline void SetCamera(std::shared_ptr<CameraBase> spCamera) noexcept { m_wpCamera = spCamera; };
 
+    // 座標の取得.
+    inline const DirectX::XMFLOAT3 GetPosition() const noexcept {
+        if (auto spCamera = m_wpCamera.lock()) {
+            return spCamera->GetPosition();
+        }
+        return DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+    }
 
-	/****************************************************
-	* @brief カメラの更新.
-	****************************************************/
-	static void Update();
+    // 座標の設定.
+    inline void SetPosition(DirectX::XMFLOAT3 NewPosition) noexcept {
+        if (auto spCamera = m_wpCamera.lock()) {
+            spCamera->SetPosition(NewPosition);
+        } 
+    }
+    inline void SetPositionOffset(float NewPosition_x, float NewPosition_y, float NewPosition_z) noexcept   {
+        if (auto spCamera = m_wpCamera.lock()) {
+            spCamera->SetPosition(DirectX::XMFLOAT3(NewPosition_x, NewPosition_y, NewPosition_z));
+        }
+    }
 
-	
-	/****************************************************
-	* @brief ビューとプロジェクションの更新.
-	****************************************************/
-	static void ViewAndProjectionUpdate();
+    // 注視点を設定.
+    inline void SetLook(const DirectX::XMFLOAT3& look) noexcept {
+        if (auto spCamera = m_wpCamera.lock()) {
+            spCamera->SetLook(look);
+        }
+    }
 
-	
-	/****************************************************
-	* @brief 指定座標が視錐体内にあるか.
-	* @param point：判定したい座標.
-	****************************************************/
-	static bool IsPointInFrustum(const DirectX::XMFLOAT3& point);
+    // 注視点を取得.
+    inline DirectX::XMFLOAT3 GetLook() const noexcept {
+        if (auto spCamera = m_wpCamera.lock()) {
+            return spCamera->GetLook();
+        }
+        return DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f); 
+    }
 
-	static bool VFCulling(const DirectX::XMFLOAT3& Position, const float radius);
+    // 視線の方向を取得.
+    inline const DirectX::XMFLOAT3 GetLookDirection() const noexcept {
+        if (auto spCamera = m_wpCamera.lock()) {
+            return spCamera->GetLookDirection();
+        }
+        return DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f);
+    }
 
-	/****************************************************
-	* @brief 視点を設定.
-	****************************************************/
-	static void SetPosition(const DirectX::XMFLOAT3& Position);
+    // 現在のカメラを取得
+    inline std::shared_ptr<CameraBase> GetCurrentCamera() const noexcept { return m_wpCamera.lock(); }
 
-	/****************************************************
-	* @brief 視点を取得.
-	****************************************************/
-	static DirectX::XMFLOAT3 GetPosition();
+    // ビュー・プロジェクションの合成行列を取得.
+    inline DirectX::XMMATRIX GetViewProjMatrix() const noexcept {
+        if (auto spCamera = m_wpCamera.lock()) {
+            return spCamera->GetViewProjMatrix();
+        }
+        return DirectX::XMMatrixIdentity(); 
+    }
 
+    // ビュー行列を取得.
+    inline DirectX::XMMATRIX GetViewMatrix() const noexcept {
+        if (auto spCamera = m_wpCamera.lock()) {
+            return spCamera->GetViewMatrix();
+        }
+        return DirectX::XMMatrixIdentity(); 
+    }
 
-	/****************************************************
-	* @brief  注視点を設定.
-	****************************************************/
-	static void SetLook(const DirectX::XMFLOAT3& look);
+    // プロジェクションの合成行列を取得.
+    inline DirectX::XMMATRIX GetProjMatrix() const noexcept {
+        if (auto spCamera = m_wpCamera.lock()) {
+            return spCamera->GetViewMatrix();
+        }
+        return DirectX::XMMatrixIdentity(); 
+    }
 
-	/****************************************************
-	* @brief  注視点を取得.
-	****************************************************/
-	static DirectX::XMFLOAT3 GetLook();
+    // 前方向ベクトルを取得.
+    inline DirectX::XMFLOAT3 GetForwardVec() const noexcept {
+        if (auto spCamera = m_wpCamera.lock()) {
+            return spCamera->GetForwardVec();
+        }
+        return DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f); 
+    }
 
-	/****************************************************
-	* @brief  視線の方向を取得.
-	****************************************************/
-	static const DirectX::XMFLOAT3 GetLookDirection();
-	
+    // 右方向ベクトルを取得.
+    inline DirectX::XMFLOAT3 GetRightVec() const noexcept {
+        if (auto spCamera = m_wpCamera.lock()) {
+            return spCamera->GetRightVec();
+        }
+        return DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f);
+    }
 
-	/****************************************************
-	* @brief  現在のを取得
-	****************************************************/
-	static std::shared_ptr<CameraBase> GetCurrentCamera();
-	
-	/****************************************************
-	* @brief  ビュー行列を取得
-	****************************************************/
-	static DirectX::XMMATRIX GetViewMatrix();
+    // Yawを取得.
+    inline float GetYaw() const noexcept {
+        if (auto spCamera = m_wpCamera.lock()) {
+            return spCamera->GetYaw();
+        }
+        return 0.0f;
+    }
 
-	/****************************************************
-	* @brief プロジェクション行列を取得.
-	****************************************************/
-	static DirectX::XMMATRIX GetProjMatrix();
-
-	/****************************************************
-	* @brief ビュー・プロジェクションの合成行列を取得.
-	****************************************************/
-	static DirectX::XMMATRIX GetViewProjMatrix();
-
-
-	/****************************************************
-	* @brief 前方向ベクトルを取得.
-	****************************************************/
-	static DirectX::XMFLOAT3 GetForwardVec();
-	
-	/****************************************************
-	* @breif 右方向ベクトルを取得.
-	****************************************************/
-	static DirectX::XMFLOAT3 GetRightVec();
-	
-	/****************************************************
-	* @breif Yawを取得.
-	****************************************************/
-	static float GetYaw();
-	
-	/****************************************************
-	* @breif Pitchを取得.
-	****************************************************/
-	static float GetPitch();
+    // Pitchを取得.
+    inline float GetPitch() const noexcept {
+        if (auto spCamera = m_wpCamera.lock()) {
+            return spCamera->GetPitch();
+        }
+        return 0.0f; 
+    }
 private:
-	std::weak_ptr<CameraBase> m_Camera;
+	void ViewAndProjectionUpdate();
+
+private:
+	std::weak_ptr<CameraBase> m_wpCamera;
 };
