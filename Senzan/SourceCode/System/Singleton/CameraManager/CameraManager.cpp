@@ -2,7 +2,7 @@
 #include "Game\02_Camera\CameraBase.h"
 
 CameraManager::CameraManager()
-	: m_wpCamera()
+	: m_Camera()
 {
 }
 
@@ -10,7 +10,7 @@ CameraManager::~CameraManager()
 {
 }
 
-void CameraManager::LateUpdate()
+bool CameraManager::IsPointInFrustum(const DirectX::XMFLOAT3& point)
 {
 	if (m_wpCamera.expired()) { return; }
 	ViewAndProjectionUpdate();

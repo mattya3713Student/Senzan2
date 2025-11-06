@@ -146,7 +146,7 @@ void StaticMesh::Render()
 
 		// カメラ位置.		
 		// CameraManager::GetPosition() は XMFLOAT3 を返すと仮定
-		cb.CameraPos = DirectX::XMFLOAT4(CameraManager::GetInstance().GetPosition().x, CameraManager::GetInstance().GetPosition().y, CameraManager::GetInstance().GetPosition().z, 0.0f);
+		cb.CameraPos = DirectX::XMFLOAT4(CameraManager::GetPosition().x, CameraManager::GetPosition().y, CameraManager::GetPosition().z, 0.0f);
 
 		// ライト方向の計算をD3DXからXMへ移行
 		// 1. ライト方向を取得し、XMVECTORにロード
@@ -182,8 +182,8 @@ void StaticMesh::Render()
 
 
 	// メッシュのレンダリング.
-	DirectX::XMMATRIX View = CameraManager::GetInstance().GetViewMatrix();
-	DirectX::XMMATRIX Proj = CameraManager::GetInstance().GetProjMatrix();
+	DirectX::XMMATRIX View = CameraManager::GetViewMatrix();
+	DirectX::XMMATRIX Proj = CameraManager::GetProjMatrix();
 	RenderMesh(m_WorldMatrix, View, Proj);
 }
 //-------------------------------------------------------------------------------------------------------------------------------------
