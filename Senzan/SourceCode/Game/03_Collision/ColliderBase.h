@@ -1,8 +1,5 @@
 ﻿#pragma once
-
-#include <vector>
-#include <string>
-#include <memory>
+#include "CollisionInfo.h"
 
 class CollisionDetector;
 class BoxCollider;
@@ -29,12 +26,13 @@ public:
 	{
 		None = 0,
 
-		Player_Attack = 1 << 0,
-		Player_Damage = 1 << 1,
-		Player_JustDodge = 1 << 2,
-		Enemy_Attack = 1 << 3,
-		Enemy_Damage = 1 << 4,
-		Press = 1 << 5,
+		Player_Attack		= 1 << 0,
+		Player_Damage		= 1 << 1,
+		Player_Dodge		= 1 << 2,
+		Player_JustDodge	= 1 << 3,
+		Enemy_Attack		= 1 << 4,
+		Enemy_Damage		= 1 << 5,
+		Press				= 1 << 6,
 
 		_Max = 0xFFFFFFFF,
 	};
@@ -84,8 +82,14 @@ public:
 	inline void SetColor(DirectX::XMFLOAT4 NewColor) noexcept { m_Color = NewColor; }
 	inline void SetColor(float NewR, float NewG, float NewB, float NewA) noexcept { m_Color = DirectX::XMFLOAT4(NewR, NewG, NewB, NewA); }
 
+	// 衝突情報を追加する.
+	inline void AddCollisionInfo(const CollisionInfo& info) noexcept { m_CollisionEvents.push_back(info); }
 
-	// コリジョングループとマスクの設定.
+	// 衝突情報を取得する.
+	inline const std::vector<CollisionInfo>& GetCollisionEvents() const noexcept { return m_CollisionEvents; }
+
+	// 情報をクリアするメソッド.
+	inline void ClearCollisionEvents() noexcept { m_CollisionEvents.clear(); }
 	
 	// 自身のグループを設定.
 	inline void SetGroup(uint32_t group) noexcept { m_MyGroup = group; }
@@ -104,13 +108,13 @@ public:
 	}
 
 	// 他のColliderとの衝突.
-	virtual bool CheckCollision(const ColliderBase& other) const = 0;
+	virtual CollisionInfo CheckCollision(const ColliderBase& other) const = 0;
 
 protected:
 	// 形状ごとの衝突処理.
-	virtual bool DispatchCollision(const SphereCollider& other) const = 0;
-	virtual bool DispatchCollision(const CapsuleCollider& other) const = 0;
-	virtual bool DispatchCollision(const BoxCollider& other) const = 0;
+	virtual CollisionInfo DispatchCollision(const SphereCollider& other) const = 0;
+	virtual CollisionInfo DispatchCollision(const CapsuleCollider& other) const = 0;
+	virtual CollisionInfo DispatchCollision(const BoxCollider& other) const = 0;
 
 protected:
 
@@ -120,6 +124,9 @@ protected:
 	// コリジョンフィルター用.
 	uint32_t m_MyGroup = (uint32_t)eCollisionGroup::_Max;		// 自身が所属するグループ.
 	uint32_t m_CollisionMask = (uint32_t)eCollisionGroup::_Max;	// 衝突対象とするグループ.
+
+	// 検出された衝突情報のリスト.
+	std::vector<CollisionInfo> m_CollisionEvents;
 
 #if _DEBUG
 public:

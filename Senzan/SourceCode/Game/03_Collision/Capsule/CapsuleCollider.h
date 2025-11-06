@@ -37,12 +37,12 @@ public:
 	inline void SetHeight(float Height) noexcept override { m_Height = Height; }
 
 	// 衝突判定.
-	bool CheckCollision(const ColliderBase& other) const override;
+	CollisionInfo CheckCollision(const ColliderBase& other) const override;
 
 protected:
-	bool DispatchCollision(const SphereCollider& other) const override;
-	bool DispatchCollision(const CapsuleCollider& other) const override;
-	bool DispatchCollision(const BoxCollider& other) const override;
+	CollisionInfo DispatchCollision(const SphereCollider& other) const override;
+	CollisionInfo DispatchCollision(const CapsuleCollider& other) const override;
+	CollisionInfo DispatchCollision(const BoxCollider& other) const override;
 
 private:
 	// カプセルの中心線分の終点 P1 を「計算し」取得.

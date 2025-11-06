@@ -24,29 +24,29 @@ void BoxCollider::Update()
 
 }
 
-bool BoxCollider::CheckCollision(const ColliderBase& other) const
+CollisionInfo BoxCollider::CheckCollision(const ColliderBase& other) const
 {
     // フィルター判断.
     if (!ShouldCollide(other)) {
-        return false;
+        return {};
     }
 
     return other.DispatchCollision(*this);
 }
 
-bool BoxCollider::DispatchCollision(const SphereCollider& other) const
+CollisionInfo BoxCollider::DispatchCollision(const SphereCollider& other) const
 {
-    return false;
+    return {};
 }
 
-bool BoxCollider::DispatchCollision(const CapsuleCollider& other) const
+CollisionInfo BoxCollider::DispatchCollision(const CapsuleCollider& other) const
 {
-    return false;
+    return {};
 }
 
-bool BoxCollider::DispatchCollision(const BoxCollider& other) const
+CollisionInfo BoxCollider::DispatchCollision(const BoxCollider& other) const
 {
-    return false;
+    return {};
 }
 
 // デバッグ描画用設定.

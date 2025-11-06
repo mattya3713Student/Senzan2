@@ -29,11 +29,11 @@ public:
 	inline void SetRadius(float Radius) noexcept override { m_Radius = Radius; }
 
 	// 衝突判定.
-	bool CheckCollision(const ColliderBase& other) const override;
+	CollisionInfo CheckCollision(const ColliderBase& other) const override;
 
-	bool DispatchCollision(const SphereCollider& other) const override;
-	bool DispatchCollision(const CapsuleCollider& other) const override;
-	bool DispatchCollision(const BoxCollider& other) const override;
+	CollisionInfo DispatchCollision(const SphereCollider& other) const override;
+	CollisionInfo DispatchCollision(const CapsuleCollider& other) const override;
+	CollisionInfo DispatchCollision(const BoxCollider& other) const override;
 
 private:
 	float m_Radius; // 半径.

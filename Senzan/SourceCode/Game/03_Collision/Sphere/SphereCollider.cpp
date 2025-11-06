@@ -30,30 +30,30 @@ void SphereCollider::Update()
   
 }
 
-bool SphereCollider::CheckCollision(const ColliderBase& other) const
+CollisionInfo SphereCollider::CheckCollision(const ColliderBase& other) const
 {	
     // フィルター判断.
     if (!ShouldCollide(other)) {
-        return false;
+        return {};
     }
 
 	// 形状ごとの衝突判定へディスパッチ.
     return other.DispatchCollision(*this);
 }
 
-bool SphereCollider::DispatchCollision(const SphereCollider& other) const
+CollisionInfo SphereCollider::DispatchCollision(const SphereCollider& other) const
 {
-    return false;
+    return {};
 }
 
-bool SphereCollider::DispatchCollision(const CapsuleCollider& other) const
+CollisionInfo SphereCollider::DispatchCollision(const CapsuleCollider& other) const
 {
-    return false;
+    return {};
 }
 
-bool SphereCollider::DispatchCollision(const BoxCollider& other) const
+CollisionInfo SphereCollider::DispatchCollision(const BoxCollider& other) const
 {
-    return false;
+    return {};
 }
 
 // デバッグ描画用設定.
