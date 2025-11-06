@@ -320,9 +320,9 @@ HRESULT SkinMesh::CreateIndexBuffer(
 
 void SkinMesh::Render(LPD3DXANIMATIONCONTROLLER pAC)
 {
-	m_mView = CameraManager::GetViewMatrix();
-	m_mProj = CameraManager::GetProjMatrix();
-	m_CamPos = CameraManager::GetPosition();
+	m_mView = CameraManager::GetInstance().GetViewMatrix();
+	m_mProj = CameraManager::GetInstance().GetProjMatrix();
+	m_CamPos = CameraManager::GetInstance().GetPosition();
 
 	//使用するシェーダのセット.
 	m_pContext11->VSSetShader(m_pVertexShader->GetVertexShader(), nullptr, 0);
@@ -353,9 +353,9 @@ void SkinMesh::Render(LPD3DXANIMATIONCONTROLLER pAC)
 
 void SkinMesh::RenderDepth(const LPD3DXANIMATIONCONTROLLER pAC)
 {
-	m_mView = CameraManager::GetViewMatrix();
-	m_mProj = CameraManager::GetProjMatrix();
-	m_CamPos = CameraManager::GetPosition();
+	m_mView = CameraManager::GetInstance().GetViewMatrix();
+	m_mProj = CameraManager::GetInstance().GetProjMatrix();
+	m_CamPos = CameraManager::GetInstance().GetPosition();
 
 	//使用するシェーダのセット.
 	ShaderResource::GetInstance().GetVSShadowMapSkinMesh()->SetVertexShader();

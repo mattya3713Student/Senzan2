@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "System/Singleton/SingletonTemplate.h"
+#include "Game/02_Camera/CameraBase.h"
 
 /************************************
 *   カメラ管理クラス.
@@ -27,8 +28,8 @@ public:
 	inline DirectX::XMFLOAT3 GetPosition() const noexcept { return m_wpCamera.lock()->GetPosition(); }
 
 	// 座標を設定.
-	 void SetPosition(DirectX::XMFLOAT3 Position);
-	 void SetPosition(float x, float y, float z);
+	void SetPosition(DirectX::XMFLOAT3 Position);
+	void SetPosition(float x, float y, float z);
 
 	// 注視点を取得.
 	inline DirectX::XMFLOAT3 GetLook() const noexcept { return m_wpCamera.lock()->GetLook(); }
@@ -58,5 +59,5 @@ private:
 	void ViewAndProjectionUpdate();
 
 private:
-	std::weak_ptr<CameraBase> m_Camera;
+	std::weak_ptr<CameraBase> m_wpCamera;
 };
