@@ -4,22 +4,22 @@
 void CollisionDetector::ExecuteCollisionDetection()
 {
     // 前フレームの情報をクリア.
-    for (const auto& collider : m_colliders)
+    for (const auto& collider : m_Colliders)
     {
         if (collider)
         {
             collider->ClearCollisionEvents();
         }
     }
-    m_pendingResponses.clear();
+    m_PendingResponses.clear();
 
     // 2. コライダーリストの総当たりチェック
-    for (size_t i = 0; i < m_colliders.size(); ++i)
+    for (size_t i = 0; i < m_Colliders.size(); ++i)
     {
-        for (size_t j = i + 1; j < m_colliders.size(); ++j)
+        for (size_t j = i + 1; j < m_Colliders.size(); ++j)
         {
-            ColliderBase* colliderA = m_colliders[i].get();
-            ColliderBase* colliderB = m_colliders[j].get();
+            ColliderBase* colliderA = m_Colliders[i].get();
+            ColliderBase* colliderB = m_Colliders[j].get();
 
             if (!colliderA || !colliderB) { continue; }
 
@@ -32,8 +32,8 @@ void CollisionDetector::ExecuteCollisionDetection()
             // 3. 衝突情報の記録と伝達
 
             // Detector側の記録リストに追加
-            m_pendingResponses.push_back(info);
-
+            m_PendingResponses.push_back(info);
+            
             // Collider A への情報追加 (A -> B の視点)
             // info は CheckCollision 内で A視点に修正されているため、そのまま A に追加
             colliderA->AddCollisionInfo(info);
@@ -63,13 +63,13 @@ void CollisionDetector::RegisterCollider(std::shared_ptr<ColliderBase> collider)
 {
     if (collider)
     {
-        m_colliders.push_back(collider);
+        m_Colliders.push_back(collider);
     }
 }
 
 // コライダーの解除.
 void CollisionDetector::UnregisterCollider(std::shared_ptr<ColliderBase> collider)
 {
-    auto it = std::remove(m_colliders.begin(), m_colliders.end(), collider);
-    m_colliders.erase(it, m_colliders.end());
+    auto it = std::remove(m_Colliders.begin(), m_Colliders.end(), collider);
+    m_Colliders.erase(it, m_Colliders.end());
 }

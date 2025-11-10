@@ -29,9 +29,9 @@ private:
 
 private:
     // 登録されたコライダーリスト.
-    std::vector<std::shared_ptr<ColliderBase>> m_colliders;
+    std::vector<std::shared_ptr<ColliderBase>> m_Colliders;
     
     // 毎フレーム検出された全ての衝突情報を保持するリスト.
-    std::vector<CollisionInfo> m_pendingResponses;
+    std::vector<CollisionInfo> m_PendingResponses;
 
 };

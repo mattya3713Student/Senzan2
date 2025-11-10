@@ -37,6 +37,8 @@ public:
 		_Max = 0xFFFFFFFF,
 	}; 
 
+	DEFINE_ENUM_FLAG_OPERATORS(eCollisionGroup); // ビット演算子を定義.
+
 	// 当たり判定の形.
 	enum class eShapeType : uint32_t
 	{
