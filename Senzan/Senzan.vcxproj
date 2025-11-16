@@ -349,6 +349,7 @@
     <ClInclude Include="Data\ImGui\Library\imstb_textedit.h" />
     <ClInclude Include="Data\ImGui\Library\imstb_truetype.h" />
     <ClInclude Include="SourceCode\Constant.h" />
+    <ClInclude Include="SourceCode\EnumFlags.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\00_Base\SceneBase.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\01_Title\Title.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\02_GameMain\GameMain.h" />

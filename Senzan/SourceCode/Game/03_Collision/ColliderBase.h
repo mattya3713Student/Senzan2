@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "CollisionInfo.h"
+#include "../../EnumFlags.h"
 
 class CollisionDetector;
 class BoxCollider;
@@ -35,9 +36,7 @@ public:
 		Press				= 1 << 6,
 
 		_Max = 0xFFFFFFFF,
-	}; 
-
-	DEFINE_ENUM_FLAG_OPERATORS(eCollisionGroup); // ビット演算子を定義.
+	};
 
 	// 当たり判定の形.
 	enum class eShapeType : uint32_t
@@ -104,8 +103,8 @@ public:
 	// 相手と衝突すべきか.
 	inline bool ShouldCollide(const ColliderBase& other) const noexcept
 	{
-		bool A_collides_with_B = (m_CollisionMask & other.m_MyGroup) != 0;
-		bool B_collides_with_A = (other.m_CollisionMask & m_MyGroup) != 0;
+		bool A_collides_with_B = (m_CollisionMask & other.m_MyGroup) != eCollisionGroup::None;
+		bool B_collides_with_A = (other.m_CollisionMask & m_MyGroup) != eCollisionGroup::None;
 		return A_collides_with_B && B_collides_with_A;
 	}
 
@@ -142,7 +141,7 @@ protected:
 
 #endif // _DEBUG.
 
-}; 
+};
 
 // 座標を取得する.
 inline const DirectX::XMFLOAT3 ColliderBase::GetPosition() const noexcept
@@ -160,3 +159,5 @@ inline const DirectX::XMFLOAT3 ColliderBase::GetPosition() const noexcept
 	}
 	return DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
 }
+
+ENABLE_ENUM_FLAG_OPERATORS(ColliderBase::eCollisionGroup);
