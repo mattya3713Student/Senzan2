@@ -52,8 +52,9 @@ void MattyaTestScene::Initialize()
 	m_pGround = std::make_unique<Ground>();
 
 	// ƒeƒXƒg.
-	m_TestPressCollision->SetHeight(3.0f);
-	m_TestPressCollision->SetRadius(3.0f);
+	m_TestPressCollision->SetHeight(1.0f);
+	m_TestPressCollision->SetRadius(1.0f);
+	m_TestPressCollision->SetPositionOffset(0.f,1.5f,0.f);
 	m_TestPressCollision->SetMask(eCollisionGroup::Press);
 	CollisionDetector::GetInstance().RegisterCollider(m_TestPressCollision);
 

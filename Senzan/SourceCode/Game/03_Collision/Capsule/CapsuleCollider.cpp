@@ -245,35 +245,73 @@ CollisionInfo CapsuleCollider::DispatchCollision(const BoxCollider& other) const
 // カプセルの中心線分の終点 P1 を「計算し」取得.
 DirectX::XMVECTOR CapsuleCollider::GetCulcCapsuleSegmentStart(const CapsuleCollider* capsule)
 {
-    const DirectX::XMFLOAT3 other_position = capsule->GetPosition();
-    const DirectX::XMVECTOR v_pos = DirectX::XMLoadFloat3(&other_position);
-    const float radius = capsule->GetRadius();
-    const float height = capsule->GetHeight();
+    if (auto spTransform = capsule->m_wpTransform.lock())
+    {
+        const float radius = capsule->GetRadius();
+        const float height = capsule->GetHeight();
 
-    // カプセルの線分長 = 全体の高さ - 両端の半球半径 (2 * Radius).
-    const float half_segment_length = (height - 2.0f * radius) * 0.5f;
+        // 親の変換行列を取得.
+        DirectX::XMMATRIX mat_parent_world = spTransform->GetWorldMatrix();
 
-    // Y軸沿いの線分と仮定.
-    const DirectX::XMVECTOR v_y = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+        // カプセルの中心位置(オフセットを含む).
+        const DirectX::XMFLOAT3 offset_pos = capsule->GetPosition();
+        DirectX::XMVECTOR v_pos = DirectX::XMLoadFloat3(&offset_pos);
 
-    return DirectX::XMVectorSubtract(v_pos, DirectX::XMVectorScale(v_y, half_segment_length));
+        // オフセット行列を作成し、親の行列に乗算 (デバッグ描画と同じ処理).
+        DirectX::XMMATRIX mat_offset = DirectX::XMMatrixTranslation(
+            capsule->m_PositionOffset.x, capsule->m_PositionOffset.y, capsule->m_PositionOffset.z
+        );
+        DirectX::XMMATRIX mat_combined_world = DirectX::XMMatrixMultiply(mat_offset, mat_parent_world);
+
+        // カプセルのローカルな半線分ベクトルを計算.
+        const float half_segment_length = (height - 2.0f * radius) * 0.5f;
+
+        // ローカル座標 (0, -half_segment_length, 0) にワールド変換を適用.
+        DirectX::XMVECTOR v_local_start = DirectX::XMVectorSet(0.0f, -half_segment_length, 0.0f, 1.0f);
+
+        // ローカル開始点を親のワールド変換行列で変換. (結合行列を使用)
+        DirectX::XMVECTOR v_world_start = DirectX::XMVector3TransformCoord(v_local_start, mat_combined_world);
+
+        return v_world_start;
+    }
+    // 親Transformがない場合、オフセットなしのローカル座標を返す
+    const DirectX::XMFLOAT3 pos = capsule->GetPosition();
+    const float half_segment_length = (capsule->GetHeight() / 2.0f - capsule->GetRadius());
+    return DirectX::XMVectorSet(pos.x, pos.y - half_segment_length, pos.z, 1.0f);
 }
 
 // カプセルの中心線分の終点 P2 を「計算し」取得.
 DirectX::XMVECTOR CapsuleCollider::GetCulcCapsuleSegmentEnd(const CapsuleCollider* capsule)
 {
-    const DirectX::XMFLOAT3 other_position = capsule->GetPosition();
-    const DirectX::XMVECTOR v_pos = DirectX::XMLoadFloat3(&other_position);
-    const float radius = capsule->GetRadius();
-    const float height = capsule->GetHeight();
+    if (auto spTransform = capsule->m_wpTransform.lock())
+    {
+        const float radius = capsule->GetRadius();
+        const float height = capsule->GetHeight();
 
-    // カプセルの線分長 = 全体の高さ - 両端の半球半径 (2 * Radius).
-    const float half_segment_length = (height - 2.0f * radius) * 0.5f;
+        // 親の変換行列を取得.
+        DirectX::XMMATRIX mat_parent_world = spTransform->GetWorldMatrix();
 
-    // Y軸沿いの線分と仮定.
-    const DirectX::XMVECTOR v_y = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+        // オフセット行列を作成し、親の行列に乗算 (デバッグ描画と同じ処理).
+        DirectX::XMMATRIX mat_offset = DirectX::XMMatrixTranslation(
+            capsule->m_PositionOffset.x, capsule->m_PositionOffset.y, capsule->m_PositionOffset.z
+        );
+        DirectX::XMMATRIX mat_combined_world = DirectX::XMMatrixMultiply(mat_offset, mat_parent_world);
 
-    return DirectX::XMVectorAdd(v_pos, DirectX::XMVectorScale(v_y, half_segment_length));
+        // カプセルのローカルな半線分ベクトルを計算.
+        const float half_segment_length = (height - 2.0f * radius) * 0.5f;
+
+        // ローカル座標 (0, +half_segment_length, 0) にワールド変換を適用.
+        DirectX::XMVECTOR v_local_end = DirectX::XMVectorSet(0.0f, half_segment_length, 0.0f, 1.0f);
+
+        // ローカル終点を親のワールド変換行列で変換. (結合行列を使用)
+        DirectX::XMVECTOR v_world_end = DirectX::XMVector3TransformCoord(v_local_end, mat_combined_world);
+
+        return v_world_end;
+    }
+    // 親Transformがない場合、オフセットなしのローカル座標を返す.
+    const DirectX::XMFLOAT3 pos = capsule->GetPosition();
+    const float half_segment_length = (capsule->GetHeight() / 2.0f - capsule->GetRadius());
+    return DirectX::XMVectorSet(pos.x, pos.y + half_segment_length, pos.z, 1.0f);
 }
 
 // 点 P から線分 AB への最短距離の二乗を「計算し」取得.
@@ -403,6 +441,7 @@ float CapsuleCollider::GetCulcClosestPtSegmentSegmentSq(
     const DirectX::XMVECTOR pq = DirectX::XMVectorSubtract(closest_p, closest_q);
     return DirectX::XMVectorGetX(DirectX::XMVector3LengthSq(pq));
 }
+
 // デバッグ描画用設定.
 void CapsuleCollider::SetDebugInfo()
 {
@@ -415,13 +454,25 @@ void CapsuleCollider::SetDebugInfo()
     DirectX::XMMATRIX mat_parent_world = spParentTransform
         ? spParentTransform->GetWorldMatrix()
         : DirectX::XMMatrixIdentity();
-    
+
+    DirectX::XMVECTOR v_scale, v_rotation, v_translation;
+    DirectX::XMMatrixDecompose(&v_scale, &v_rotation, &v_translation, mat_parent_world);
+
+    // スケールを(1, 1, 1)に固定し、回転と位置のみを適用した行列を再構築
+    DirectX::XMMATRIX mat_parent_no_scale = DirectX::XMMatrixAffineTransformation(
+        DirectX::XMVectorSet(1.0f, 1.0f, 1.0f, 0.0f), // スケールを破棄し 1.0f を適用
+        DirectX::XMVectorZero(),
+        v_rotation,              // 親の回転を適用
+        v_translation            // 親の位置を適用
+    );
+
     // オフセット行列.
     DirectX::XMMATRIX mat_offset = DirectX::XMMatrixTranslation(
         m_PositionOffset.x, m_PositionOffset.y, m_PositionOffset.z
     );
+
     // 親のワールド行列にオフセットを乗算してデバッグ用ワールド行列を作成.
-    DirectX::XMMATRIX mat_debug_world = DirectX::XMMatrixMultiply(mat_offset, mat_parent_world);
+    DirectX::XMMATRIX mat_debug_world = DirectX::XMMatrixMultiply(mat_offset, mat_parent_no_scale);
 
     info.ShapeType = eShapeType::Capsule;
     info.Color = m_Color; 

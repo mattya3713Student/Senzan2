@@ -9,9 +9,10 @@ Character::Character()
 	, m_pPressCollider(std::make_shared<CapsuleCollider>(m_Transform))
 {
 	m_pPressCollider->SetColor(Color::eColor::Cyan);
-	m_pPressCollider->SetPositionOffset(0.f, 50.f, 0.f);
-	m_pPressCollider->SetRadius(50.f);
-	m_pPressCollider->SetHeight(50.f);
+
+    m_pPressCollider->SetHeight(1.0f);
+    m_pPressCollider->SetRadius(1.0f);
+    m_pPressCollider->SetPositionOffset(0.f, 1.5f, 0.f);
 }
 
 Character::~Character()
