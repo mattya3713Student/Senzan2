@@ -1,5 +1,4 @@
-﻿
-#include "ColliderBase.h"
+﻿#include "ColliderBase.h"
 #include "Graphic/DirectX/DirectX11/DirectX11.h"
 
 #include "System/Utility/Transform/Transform.h"
