@@ -39,16 +39,12 @@ private:
 	// 名前変更を行う
 	void RenameUIObjects();
 
-	// 選択されたUIをハイライトする
-	void ImGuiSetShader(std::shared_ptr<UIObject> object);
 	// 座標調整関数(選択されたUIObect)
 	void ImGuiPosEdit(std::shared_ptr<UIObject> object);
 	// Z座標を元にソートする関数(選択されたUIObect)
 	void SortBySpritePosZ(std::shared_ptr<UIObject> object);
 	// 情報調整関数(選択されたUIObect)
 	void ImGuiInfoEdit(std::shared_ptr<UIObject> object);
-	// パターンお試し関数(選択されたUIObect)
-	void ImGuiPatternTest(std::shared_ptr<UIObject> object);
 	// その他の情報調整関数(選択されたUIObect)
 	void ImGuiEtcInfoEdit(std::shared_ptr<UIObject> object);
 

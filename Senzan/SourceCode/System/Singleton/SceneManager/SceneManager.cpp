@@ -12,6 +12,7 @@
 #include "Game/00_Scene/Ex_Test/00_mattya3713/MattyaTestScene.h"
 #include "Game/00_Scene/Ex_Test/01_memeu1101/MemeuTestScene.h"
 #include "Game/00_Scene/Ex_Test/02_L/LTestScene.h"
+#include "Game/00_Scene/Ex_Test/03_UIEditor/UIEditor.h"
 
 #if _DEBUG
 #include "ImGui/CImGuiManager.h"
@@ -143,6 +144,9 @@ void SceneManager::MakeScene(eList Scene)
 			break;
 		case eList::L:
 			m_pScene = std::make_unique<LTestScene>();
+			break;
+		case eList::UIEditor:
+			m_pScene = std::make_unique<UIEditor>();
 			break;
 #endif // _DEBUG
 		case eList::MAX:

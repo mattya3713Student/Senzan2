@@ -2,6 +2,8 @@
 #include "FileManager/FileManager.h"
 #include "ResourceManager/SpriteManager/SpriteManager.h"
 #include "Game/05_InputDevice/Input.h"
+#include "Game/03_Collision/Sprite/SpriteCollider.h"
+#include "Graphic/DirectX/DirectX11/DirectX11.h"
 
 #if _DEBUG
 #include "ImGui/CImGuiManager.h"
@@ -13,35 +15,6 @@ using Json = nlohmann::json;
 
 
 namespace {
-	struct Vertex
-	{
-		DirectX::XMFLOAT3 pos;
-		D3DXVECTOR4 color;
-	};
-
-	Vertex lineVertices[] =
-	{
-		{ { -50.0f, 360.0f, 0.0f }, { 1, 0, 0, 1 } },  // 左上
-		{ {  50.0f, 360.0f, 0.0f }, { 1, 0, 0, 1 } },  // 右上
-
-		{ {  50.0f, 360.0f, 0.0f }, { 1, 0, 0, 1 } },  // 右上
-		{ {  50.0f, -360.0f, 0.0f }, { 1, 0, 0, 1 } }, // 右下
-
-		{ {  50.0f, -360.0f, 0.0f }, { 1, 0, 0, 1 } }, // 右下
-		{ { -50.0f, -360.0f, 0.0f }, { 1, 0, 0, 1 } }, // 左下
-
-		{ { -50.0f, -360.0f, 0.0f }, { 1, 0, 0, 1 } }, // 左下
-		{ { -50.0f, 360.0f, 0.0f }, { 1, 0, 0, 1 } },  // 左上
-	};
-
-	struct CBUFFER_MATRIX {
-		D3DXMATRIX mWorld;
-		D3DXMATRIX mView;
-		D3DXMATRIX mProj;
-		float LineThickness; // 太さ（ピクセル単位）
-		DirectX::XMFLOAT3 padding; // サイズ調整 (16バイト境界)
-	};
-
 	char m_NewSceneName[64] = ""; // 新規作成用バッファをメンバ変数に追加
 }
 
@@ -125,10 +98,8 @@ void UIEditor::Update()
 	//-----------------------------------------------------------
 	if (m_SelectedUIIndex >= 0 && m_SelectedUIIndex < m_pUIs.size()) {
 		// 選択されているUIを表示
-		ImGui::Text(IMGUI_JP("選択されているUI: %s"), m_pUIs[m_SelectedUIIndex]->GetResourceName());
+		ImGui::Text(IMGUI_JP("選択されているUI: %s"), m_pUIs[m_SelectedUIIndex]->GetResourceName().c_str());
 
-		// 選択されたUIをハイライトする
-		ImGuiSetShader(m_pUIs[m_SelectedUIIndex]);
 
 		// 座標の調整
 		ImGuiPosEdit(m_pUIs[m_SelectedUIIndex]);
@@ -137,8 +108,6 @@ void UIEditor::Update()
 
 		// 画像情報の調整
 		ImGuiInfoEdit(m_pUIs[m_SelectedUIIndex]);
-		// 画像パターンを試す
-		ImGuiPatternTest(m_pUIs[m_SelectedUIIndex]);
 		// その他の情報の調整
 		ImGuiEtcInfoEdit(m_pUIs[m_SelectedUIIndex]);
 	}
@@ -154,6 +123,11 @@ void UIEditor::Update()
 		m_MoveAny = false;
 	}
 	ImGui::End();
+}
+
+
+void UIEditor::LateUpdate() 
+{
 }
 
 
@@ -174,7 +148,9 @@ void UIEditor::KeyInput()
 void UIEditor::Draw()
 {
 	if (m_pUIs.empty()) { return; }
+	DirectX11::GetInstance().SetDepth(false);
 	for (size_t i = 0; i < m_pUIs.size(); ++i) { m_pUIs[i]->Draw(); }
+	DirectX11::GetInstance().SetDepth(true);
 }
 
 
@@ -190,17 +166,17 @@ void UIEditor::SelectSceneLoad(const std::string& sceneName)
 	m_SpritePosList.clear();
 
 	m_CurrentSceneName = sceneName;
-	m_ScenePath = "Data\\Texture\\UIData\\" + sceneName + ".json";
+	m_ScenePath = "Data\\Image\\Sprite\\UIData\\" + sceneName + ".json";
 
 	// JSON読み込み
 	Json jsonData = FileManager::JsonLoad(m_ScenePath);
 
 	// 空なら初期UIを1個追加
 	if (jsonData.is_null() || jsonData.empty()) {
-		std::shared_ptr<Sprite2D> sprite;
-		std::shared_ptr<UIObject> ui;
+		std::shared_ptr<Sprite2D> sprite = std::make_shared<Sprite2D>();
+		std::shared_ptr<UIObject> ui = std::make_shared<UIObject>();
 
-		sprite->Initialize("Data\\Texture\\Other\\Black.png"); // 黒画像を初期で出す
+		sprite->Initialize("Data\\Image\\Sprite\\Other\\White.png"); // 黒画像を初期で出す
 		ui->AttachSprite(sprite);
 		ui->SetPosition(0.f, 0.f, 0.f);
 
@@ -230,7 +206,7 @@ void UIEditor::SelectSceneLoad(const std::string& sceneName)
 
 		// 各UIインスタンスを展開
 		for (auto& value : spriteArray) {
-			std::shared_ptr<UIObject> ui;
+			std::shared_ptr<UIObject> ui = std::make_shared<UIObject>();
 
 			ui->SetPosition(DirectX::XMFLOAT3(value["Pos"]["x"], value["Pos"]["y"], value["Pos"]["z"]));
 			ui->SetColor(DirectX::XMFLOAT4(value["Color"]["x"], value["Color"]["y"], value["Color"]["z"], value["Color"]["a"]));
@@ -252,7 +228,7 @@ void UIEditor::SelectSceneLoad(const std::string& sceneName)
 		}
 	}
 	// Z座標を基準にソートする
-	std::sort(m_pUIs.begin(), m_pUIs.end(), [](const UIObject* a, const UIObject* b) {
+	std::sort(m_pUIs.begin(), m_pUIs.end(), [](std::shared_ptr<UIObject> a, std::shared_ptr<UIObject> b) {
 		return a->GetPosition().z < b->GetPosition().z;
 		});
 }
@@ -283,6 +259,7 @@ HRESULT UIEditor::SaveScene()
 		SpriteState["Color"]["x"] = m_pUIs[i]->GetColor().x;
 		SpriteState["Color"]["y"] = m_pUIs[i]->GetColor().y;
 		SpriteState["Color"]["z"] = m_pUIs[i]->GetColor().z;
+		SpriteState["Color"]["a"] = m_pUIs[i]->GetColor().w;
 		SpriteState["Alpha"] = m_pUIs[i]->GetAlpha();
 
 		SpriteState["Scale"]["x"] = m_pUIs[i]->GetScale().x;
@@ -297,7 +274,7 @@ HRESULT UIEditor::SaveScene()
 		// jsonData[画像名] に配列として追加
 		jsonData[imageName].push_back(SpriteState);
 	}
-	std::string outPath = "Data\\Texture\\UIData\\" + m_CurrentSceneName + ".json";
+	std::string outPath = "Data\\Image\\Sprite\\UIData\\" + m_CurrentSceneName + ".json";
 	if (!SUCCEEDED(FileManager::JsonSave(outPath, jsonData))) return E_FAIL;
 
 	return S_OK;
@@ -355,7 +332,7 @@ void UIEditor::ImGuiSelectScene()
 	// 新規シーンの作成
 	ImGui::InputText(IMGUI_JP("新規シーン名"), m_NewSceneName, IM_ARRAYSIZE(m_NewSceneName));
 	if (ImGui::Button(IMGUI_JP("新規シーン作成"))) {
-		std::string newPath = "Data\\Texture\\UIData\\" + std::string(m_NewSceneName) + ".json";
+		std::string newPath = "Data\\Image\\Sprite\\UIData\\" + std::string(m_NewSceneName) + ".json";
 		if (!std::filesystem::exists(newPath)) {
 			std::ofstream ofs(newPath);
 			ofs << "{}"; // 空のJSONを書き込む
@@ -372,7 +349,7 @@ void UIEditor::ImGuiSelectScene()
 	static std::string sceneToDelete; // 削除候補のシーン名
 	static bool showDeleteConfirm = false; // 削除確認ダイアログ表示フラグ
 
-	for (const auto& entry : std::filesystem::directory_iterator("Data\\Texture\\UIData\\")) {
+	for (const auto& entry : std::filesystem::directory_iterator("Data\\Image\\Sprite\\UIData\\")) {
 		if (entry.path().extension() == ".json") {
 			std::string sceneName = entry.path().stem().string();
 
@@ -403,7 +380,7 @@ void UIEditor::ImGuiSelectScene()
 		ImGui::Separator();
 
 		if (ImGui::Button(IMGUI_JP("はい"), ImVec2(120, 0))) {
-			std::string deletePath = "Data\\Texture\\UIData\\" + sceneToDelete + ".json";
+			std::string deletePath = "Data\\Image\\Sprite\\UIData\\" + sceneToDelete + ".json";
 			if (std::filesystem::exists(deletePath)) {
 				try {
 					std::filesystem::remove(deletePath);
@@ -505,7 +482,7 @@ void UIEditor::AddDeleteSprite()
 				std::shared_ptr<Sprite2D> pSprite = SpriteManager::GetSprite2D(m_SelectedSpriteName);
 				if (!pSprite) return;
 
-				std::shared_ptr<UIObject> ui;
+				std::shared_ptr<UIObject> ui = std::make_shared<UIObject>();
 				ui->AttachSprite(pSprite);
 
 				m_pSprite2Ds.push_back(pSprite);
@@ -563,29 +540,30 @@ void UIEditor::ImGuiPosEdit(std::shared_ptr<UIObject> object)
 {
 	if (ImGui::TreeNode(IMGUI_JP("座標")))
 	{
-		// ドラッグ用にマウス操作のDirectInpuを用意
+		// ドラッグ&ドロップ用にマウス操作のDirectInputを用意
 		DirectX::XMFLOAT3 pos = object->GetPosition();
-		bool posdrag = ImGui::DragFloat3("##Position", pos, m_DragValue);
+		bool posdrag = ImGui::DragFloat3("##Position", &pos.x, m_DragValue);
 	
-		// マウス位置を取得
 		POINT MousePos;
 		GetCursorPos(&MousePos);
-
 		RECT rect;
 		GetWindowRect(GetForegroundWindow(), &rect);
+		DirectX::XMFLOAT2 objectpos = DirectX::XMFLOAT2(object->GetPosition().x + rect.left, object->GetPosition().y + rect.top);
+
 		// 画像範囲内で左クリック入力中の場合、ドラッグ操作を開始
-		if (object->PointInSquare(MousePos, rect) && !m_DoDrag) {
-			if (Mouse->IsLAction()) {
+		if (SpriteCollider::PointInSquare(MousePos, objectpos,object->GetDrawSize()) && !m_DoDrag) {
+			// 怪しいポイント(ほんまに判定とれるのこれ？？)
+			if (Input::IsMouseGrab()) {
 				m_DoDrag = true;
-				m_OffSetPosition = DirectX::XMFLOAT2(pos.x - MousePos.x, pos.y - MousePos.y);
+				m_OffsetPos = DirectX::XMFLOAT2(pos.x - MousePos.x, pos.y - MousePos.y);
 			}
 		}
 		if (m_DoDrag) {
 			posdrag = true;
 			// 補正値+マウス座標した座標を入れる
-			pos = DirectX::XMFLOAT3(MousePos.x + m_OffSetPosition.x, MousePos.y + m_OffSetPosition.y, pos.z);
+			pos = DirectX::XMFLOAT3(MousePos.x + m_OffsetPos.x, MousePos.y + m_OffsetPos.y, pos.z);
 			// マウスの左クリックを話した場合、ドラッグ操作を停止
-			if (!Mouse->IsLDown()) { m_DoDrag = false; }
+			if (!Input::IsMouseGrab()) { m_DoDrag = false; }
 		}
 
 		// 変更があった場合保存する
@@ -604,134 +582,39 @@ void UIEditor::ImGuiPosEdit(std::shared_ptr<UIObject> object)
 //-----------------------------------------------------------------------------
 void UIEditor::ImGuiInfoEdit(std::shared_ptr<UIObject> object)
 {
-	if (!ISDEBUG) { return; }
 	if (ImGui::TreeNode(IMGUI_JP("画像情報")))
 	{
 		// 元、表示、分割それぞれのサイズを代入
-		DirectX::XMFLOAT2 base = DirectX::XMFLOAT2(
-			object->GetSpriteData().Base.w,
-			object->GetSpriteData().Base.h);
+		//DirectX::XMFLOAT2 base = DirectX::XMFLOAT2(
+		//	object->GetSpriteData().x,
+		//	object->GetSpriteData().y);
+		//DirectX::XMFLOAT2 stride = DirectX::XMFLOAT2(
+		//	object->GetSpriteData().Stride.w,
+		//	object->GetSpriteData().Stride.h);
 		DirectX::XMFLOAT2 disp = DirectX::XMFLOAT2(
-			object->GetSpriteData().Disp.w,
-			object->GetSpriteData().Disp.h);
-		DirectX::XMFLOAT2 stride = DirectX::XMFLOAT2(
-			object->GetSpriteData().Stride.w,
-			object->GetSpriteData().Stride.h);
+			object->GetDrawSize().x,
+			object->GetDrawSize().y);
 
-		ImGui::Text(IMGUI_JP("元のサイズ(x,y)"));
-		bool basedrag = ImGui::DragFloat2("##BaseDrag", base, m_DragValue);
+		//ImGui::Text(IMGUI_JP("元のサイズ(x,y)"));
+		//bool basedrag = ImGui::DragFloat2("##BaseDrag", base, m_DragValue);
 
 		ImGui::Text(IMGUI_JP("表示サイズ(x,y)"));
-		bool dispdrag = ImGui::DragFloat2("##DispDrag", disp, m_DragValue);
+		bool dispdrag = ImGui::DragFloat2("##DispDrag", &disp.x, m_DragValue);
 
-		ImGui::Text(IMGUI_JP("分割サイズ(x,y)"));
-		bool stridedrag = ImGui::DragFloat2("##StrideDrag", stride, m_DragValue);
+		//ImGui::Text(IMGUI_JP("分割サイズ(x,y)"));
+		//bool stridedrag = ImGui::DragFloat2("##StrideDrag", stride, m_DragValue);
 
 		// 変更があった場合保存する
-		if (basedrag
-			|| dispdrag
-			|| stridedrag)
+		if (dispdrag
+			//|| basedrag
+			//|| stridedrag
+			)
 		{
-			object->SetBase(base);
-			object->SetDisp(disp);
-			object->SetStride(stride);
+			object->SetDrawSize(disp);
+		//	object->SetBase(base);
+		//	object->SetStride(stride);
 			m_MoveAny = true;
 		}
-		ImGui::TreePop();
-	}
-}
-
-
-//-----------------------------------------------------------------------------
-//		画像パターンお試し関数(選択されたUIObect)
-//-----------------------------------------------------------------------------
-void UIEditor::ImGuiPatternTest(std::shared_ptr<UIObject> object)
-{
-	if (!ISDEBUG) { return; }
-	if (ImGui::TreeNode(IMGUI_JP("画像パターンを試す")))
-	{
-		m_PatternNo = object->GetPatternNo();
-		int pattern[2] = { m_PatternNo.x,m_PatternNo.y };
-		int patternmax[2] = { m_PatternMax.x,m_PatternMax.y };
-
-		// パターンの最大数を決める
-		ImGui::Text(IMGUI_JP("パターンの上限"));
-		ImGui::PushItemWidth(100.0f);
-		ImGui::InputInt("##x", &patternmax[0]); ImGui::SameLine(); ImGui::InputInt("##y", &patternmax[1]);
-		ImGui::PopItemWidth();
-
-		// 下限は1固定
-		if (patternmax[0] < 1) { patternmax[0] = 1; }
-		if (patternmax[1] < 1) { patternmax[1] = 1; }
-		m_PatternMax = POINTS(patternmax[0], patternmax[1]);
-
-		// パターンのクリック調整
-		if (ImGui::TreeNode(IMGUI_JP("クリック調整"))) {
-			ImGui::PushItemWidth(100.0f);
-			ImGui::InputInt("##xclickpattern", &pattern[0]); ImGui::SameLine(); ImGui::InputInt("##yclickpattern", &pattern[1]);
-			ImGui::PopItemWidth();
-			ImGui::TreePop();
-		}
-
-		// パターンのオートラン調整
-		if (ImGui::TreeNode(IMGUI_JP("オートラン調整"))) {
-			// 実行中の処理
-			if (m_PatternAuto) {
-				ImGui::Text("On");
-				m_AnimationSpeed -= Time::GetInstance()->GetDeltaTime();
-				if (m_AnimationSpeed < 0) {
-					m_AnimationSpeed = m_AnimationSpeedMax * Time::GetInstance()->GetDeltaTime();
-					pattern[0]++;
-
-					// xが最大値を超え、yが最大値の場合アニメーションが最初から送られるようにする
-					if (m_PatternMax.x < pattern[0] && m_PatternMax.y == pattern[1]) {
-						// yが0以下になった場合は初期状態にする
-						pattern[0] = 0; pattern[1] = 0;
-					}
-				}
-			}
-			else {
-				ImGui::Text("Off");
-				m_AnimationSpeed = m_AnimationSpeedMax * Time::GetInstance()->GetDeltaTime();
-			}
-			ImGui::PushItemWidth(100.0f);
-			// 実行の切り替え
-			if (ImGui::Button(IMGUI_JP("切替"))) { m_PatternAuto = !m_PatternAuto; }
-			// 送り速度の設定
-			ImGui::DragFloat(IMGUI_JP("送り速度設定(フレーム)"), &m_AnimationSpeedMax, m_DragValue);
-			ImGui::PopItemWidth();
-
-			ImGui::TreePop();
-		}
-
-		// Xが最大値を超えた場合
-		if (m_PatternMax.x < pattern[0]) {
-			// Yが最大値以上の場合、Xを最大値にする
-			if (m_PatternMax.y <= pattern[1]) {
-				pattern[0] = m_PatternMax.x;
-			}
-			else {
-				pattern[0] = 0; pattern[1]++;
-			}
-		}
-		else if (pattern[0] < 0) {
-			// 最低値は0に固定し、yの値を繰り下げる
-			pattern[0] = 0; pattern[1]--;
-		}
-
-		// Yが最大値を超えた場合
-		if (m_PatternMax.y < pattern[1]) {
-			pattern[0] = m_PatternMax.x;
-			pattern[1] = m_PatternMax.y;
-		}
-		else if (pattern[1] < 0) {
-			// yが0以下になった場合は初期状態にする
-			pattern[0] = 0; pattern[1] = 0;
-		}
-
-		// 反映する
-		m_PatternNo = POINTS(pattern[0], pattern[1]);
-		object->SetPatternNo(m_PatternNo.x, m_PatternNo.y);
 		ImGui::TreePop();
 	}
 }
@@ -742,24 +625,21 @@ void UIEditor::ImGuiPatternTest(std::shared_ptr<UIObject> object)
 //-----------------------------------------------------------------------------
 void UIEditor::ImGuiEtcInfoEdit(std::shared_ptr<UIObject> object)
 {
-	if (!ISDEBUG) { return; }
 	if (ImGui::TreeNode(IMGUI_JP("その他")))
 	{
-		D3DXVECTOR4 color = D3DXVECTOR4(object->GetColor(), object->GetAlpha());
+		DirectX::XMFLOAT4 color = object->GetColor();
 		DirectX::XMFLOAT3 scale = object->GetScale();
-		DirectX::XMFLOAT3 rot = object->GetRot();
-		DirectX::XMFLOAT3 pivot = object->GetPivot();
+		DirectX::XMFLOAT3 rot = object->GetRotation();
+		DirectX::XMFLOAT2 pivot = object->GetPivot();
 
 		ImGui::Text(IMGUI_JP("カラー"));
-		bool colorslider = ImGui::ColorEdit4("##Color", color);
-
+		bool colorslider = ImGui::ColorEdit4("##Color", &color.x);
 		ImGui::Text(IMGUI_JP("スケール"));
-		bool scaledrag = ImGui::DragFloat3("##ScaleDrag", scale, m_DragValue);
-
+		bool scaledrag = ImGui::DragFloat3("##ScaleDrag", &scale.x, m_DragValue);
 		ImGui::Text(IMGUI_JP("回転軸"));
-		bool Pivotdrag = ImGui::DragFloat3("##PivotDrag", pivot, m_DragValue);
+		bool Pivotdrag = ImGui::DragFloat3("##PivotDrag", &pivot.x, m_DragValue);
 		ImGui::Text(IMGUI_JP("回転"));
-		bool rotdrag = ImGui::DragFloat3("##RotDrag", rot, m_DragValue);
+		bool rotdrag = ImGui::DragFloat3("##RotDrag", &rot.x, m_DragValue);
 
 		// 変更があった場合保存する
 		if (scaledrag
@@ -767,11 +647,11 @@ void UIEditor::ImGuiEtcInfoEdit(std::shared_ptr<UIObject> object)
 			|| rotdrag
 			|| colorslider)
 		{
-			object->SetColor(DirectX::XMFLOAT3(color.x, color.y, color.z));
+			object->SetColor(DirectX::XMFLOAT4(color.x, color.y, color.z,color.w));
 			object->SetAlpha(color.w);
 			object->SetScale(scale);
 			object->SetPivot(pivot);
-			object->SetRot(rot);
+			object->SetRotation(rot);
 			m_MoveAny = true;
 		}
 		ImGui::TreePop();
