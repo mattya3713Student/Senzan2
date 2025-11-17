@@ -190,7 +190,7 @@ CollisionInfo CapsuleCollider::DispatchCollision(const CapsuleCollider& other) c
     // --- 衝突判定と情報計算 ---
 
     // 最短ベクトル V = Q - P (相手の最短点から自分の最短点へ向かうベクトル)
-    DirectX::XMVECTOR v_shortest = DirectX::XMVectorSubtract(closest_p, closest_q);
+    DirectX::XMVECTOR v_shortest = DirectX::XMVectorSubtract(closest_q, closest_p);
 
     float distSq = DirectX::XMVectorGetX(DirectX::XMVector3LengthSq(v_shortest));
 
