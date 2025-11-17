@@ -145,7 +145,6 @@ void StaticMesh::Render()
 		CBUFFER_PER_FRAME cb;
 
 		// カメラ位置.		
-		// CameraManager::GetPosition() は XMFLOAT3 を返すと仮定
 		cb.CameraPos = DirectX::XMFLOAT4(CameraManager::GetInstance().GetPosition().x, CameraManager::GetInstance().GetPosition().y, CameraManager::GetInstance().GetPosition().z, 0.0f);
 
 		// ライト方向の計算をD3DXからXMへ移行
