@@ -61,14 +61,14 @@ CollisionInfo CapsuleCollider::DispatchCollision(const SphereCollider& other) co
 {
     CollisionInfo info = {};
 
-    // 1. 自分のカプセルの線分 P1, P2 の終点を計算.
+    // 自分のカプセルの線分 P1, P2 の終点を計算.
     const DirectX::XMVECTOR p1 = GetCulcCapsuleSegmentStart(this);
     const DirectX::XMVECTOR p2 = GetCulcCapsuleSegmentEnd(this);
-    // 2. 相手 (球体) の中心座標 Q.
+    // 相手 (球体) の中心座標 Q.
 	const DirectX::XMFLOAT3 other_position = other.GetPosition();
     const DirectX::XMVECTOR q = DirectX::XMLoadFloat3(&other_position);
 
-    DirectX::XMVECTOR closest_p; // 線分上の最短点P (カプセル側の接触点)
+    DirectX::XMVECTOR closest_p; // 線分上の最短点P (カプセル側の接触点).
 
     // --- 最短点Pの計算（ClosestPtPointSegmentSqロジックから流用）---
     DirectX::XMVECTOR ab = DirectX::XMVectorSubtract(p2, p1);

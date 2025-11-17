@@ -1,11 +1,30 @@
 ﻿#pragma once
 #include "CollisionInfo.h"
-#include "../../EnumFlags.h"
 
 class CollisionDetector;
 class BoxCollider;
 class CapsuleCollider;
 class SphereCollider;
+
+// MEMO : ビット演算を定義するためにネームスペースの外に宣言.
+// 当たり判定.
+enum class eCollisionGroup : uint32_t
+{
+	None = 0,
+
+	Player_Attack = 1 << 0,
+	Player_Damage = 1 << 1,
+	Player_Dodge = 1 << 2,
+	Player_JustDodge = 1 << 3,
+	Enemy_Attack = 1 << 4,
+	Enemy_Damage = 1 << 5,
+	Press = 1 << 6,
+
+	_Max = 0xFFFFFFFF,
+};
+
+DEFINE_ENUM_FLAG_OPERATORS(eCollisionGroup)
+
 
 /**********************************************************************************
 * @author    : 淵脇 未来.
@@ -22,21 +41,6 @@ public:
 	friend class SphereCollider;
 
 public:
-	// 当たり判定.
-	enum class eCollisionGroup : uint32_t
-	{
-		None = 0,
-
-		Player_Attack		= 1 << 0,
-		Player_Damage		= 1 << 1,
-		Player_Dodge		= 1 << 2,
-		Player_JustDodge	= 1 << 3,
-		Enemy_Attack		= 1 << 4,
-		Enemy_Damage		= 1 << 5,
-		Press				= 1 << 6,
-
-		_Max = 0xFFFFFFFF,
-	};
 
 	// 当たり判定の形.
 	enum class eShapeType : uint32_t
@@ -159,5 +163,3 @@ inline const DirectX::XMFLOAT3 ColliderBase::GetPosition() const noexcept
 	}
 	return DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
 }
-
-ENABLE_ENUM_FLAG_OPERATORS(ColliderBase::eCollisionGroup);

@@ -54,7 +54,7 @@ void MattyaTestScene::Initialize()
 	// ƒeƒXƒg.
 	m_TestPressCollision->SetHeight(3.0f);
 	m_TestPressCollision->SetRadius(3.0f);
-	m_TestPressCollision->SetMask(ColliderBase::eCollisionGroup::Press);
+	m_TestPressCollision->SetMask(eCollisionGroup::Press);
 	CollisionDetector::GetInstance().RegisterCollider(m_TestPressCollision);
 
 }

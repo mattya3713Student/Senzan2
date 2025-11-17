@@ -23,35 +23,30 @@ void CollisionDetector::ExecuteCollisionDetection()
 
             if (!colliderA || !colliderB) { continue; }
 
-            // CheckCollision は A -> B の視点で情報を計算し、ポインタを A:this, B:&other に修正済み。
+            // フィルタの判断と接触の判断を行う.
             CollisionInfo info = colliderA->CheckCollision(*colliderB);
 
-            if (!info.IsHit) { continue; }
 			// 当たってたら情報を記録して伝達.
+            if (!info.IsHit) { continue; }
 
-            // 3. 衝突情報の記録と伝達
-
-            // Detector側の記録リストに追加
+            // Detector側の記録リストに追加.
             m_PendingResponses.push_back(info);
             
-            // Collider A への情報追加 (A -> B の視点)
-            // info は CheckCollision 内で A視点に修正されているため、そのまま A に追加
+            // Collider A への情報追加.
             colliderA->AddCollisionInfo(info);
 
-            // Collider B への情報追加 (B -> A の視点)
-            // Bから見ると、法線は逆方向 (-Normal) となり、AとBのポインタが逆転する。
+            // Collider B への情報追加.
             CollisionInfo info_reverse = info;
 
-            // 法線ベクトルを反転 (BをAから押し出す Normal を、AをBから押し出す -Normal に変換)
+            // 法線ベクトルを反転.
             info_reverse.Normal = DirectX::XMVectorNegate(info.Normal);
 
-            // ポインタを入れ替え (AをBに、BをAに)
+            // ポインタを入れ替え.
             const ColliderBase* temp_collider = info.ColliderA;
             info_reverse.ColliderA = info.ColliderB;
             info_reverse.ColliderB = temp_collider;
 
-            // 接触点はワールド座標なのでそのまま使用
-
+            // 接触点はワールド座標なのでそのまま使用.
             colliderB->AddCollisionInfo(info_reverse);
 
         }
