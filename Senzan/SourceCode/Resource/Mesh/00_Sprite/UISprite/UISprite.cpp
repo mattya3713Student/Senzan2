@@ -175,6 +175,14 @@ const std::string& Sprite2D::GetResourceName() const
     return m_ResourceName;
 }
 
+
+//-----------------------------------------------------------------------------------------------------------------
+void Sprite2D::SetResourceName(const std::string& name)
+{
+    m_ResourceName = name;
+}
+
+
 //-----------------------------------------------------------------------------------------------------------------
 
 ID3D11ShaderResourceView* Sprite2D::GetTexture()
