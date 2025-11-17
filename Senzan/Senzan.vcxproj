@@ -82,7 +82,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>L_PC</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>;SourceCode;Data</AdditionalIncludeDirectories>
     </ClCompile>
@@ -97,7 +97,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>L_PC</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>;SourceCode</AdditionalIncludeDirectories>
     </ClCompile>
@@ -112,7 +112,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>MATTYA_PC</PreprocessorDefinitions>
+      <PreprocessorDefinitions>L_PC</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp23</LanguageStandard>
       <AdditionalIncludeDirectories>SourceCode;SourceCode\Ggraphic;SourceCode\Resource;SourceCode\System;SourceCode\System\GameLoop;SourceCode\System\Singleton;SourceCode\System\Utility;SourceCode\Game\Scene;SourceCode\Game\01_GameObject;Data;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -139,7 +139,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>MATTYA_PC</PreprocessorDefinitions>
+      <PreprocessorDefinitions>L_PC</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp23</LanguageStandard>
       <AdditionalIncludeDirectories>SourceCode;SourceCode\Ggraphic;SourceCode\Resource;SourceCode\System;SourceCode\System\GameLoop;SourceCode\System\Singleton;SourceCode\System\Utility;SourceCode\Game\Scene;SourceCode\Game\01_GameObject;Data;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -231,6 +231,7 @@
     <ClCompile Include="SourceCode\Game\00_Scene\01_Title\Title.cpp" />
     <ClCompile Include="SourceCode\Game\00_Scene\02_GameMain\GameMain.cpp" />
     <ClCompile Include="SourceCode\Game\00_Scene\03_GameOver\GameOver.cpp" />
+    <ClCompile Include="SourceCode\Game\00_Scene\03_Setting\Setting.cpp" />
     <ClCompile Include="SourceCode\Game\00_Scene\04_Ending\Ending.cpp" />
     <ClCompile Include="SourceCode\Game\00_Scene\Ex_Test\00_mattya3713\MattyaTestScene.cpp" />
     <ClCompile Include="SourceCode\Game\00_Scene\Ex_Test\01_memeu1101\MemeuTestScene.cpp" />
@@ -259,6 +260,7 @@
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\Boss.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossAttackStateBase.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossChargeSlashState\BossChargeSlashState.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossDeadState\BossDeadState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossLaserState\BossLaserState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossShoutState\BossShoutState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossSlashState\BossSlashState.cpp" />
@@ -269,6 +271,7 @@
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossMoveState\BossMoveState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossMoveState\test1.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\Character.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\01_Key\Key.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\MeshObject.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\01_SpriteObject\CSpriteObject.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\Fade\Fade.cpp" />
@@ -282,6 +285,7 @@
     <ClCompile Include="SourceCode\Game\03_Collision\Capsule\CapsuleCollider.cpp" />
     <ClCompile Include="SourceCode\Game\03_Collision\ColliderBase.cpp" />
     <ClCompile Include="SourceCode\Game\03_Collision\Sphere\SphereCollider.cpp" />
+    <ClCompile Include="SourceCode\Game\05_InputDevice\TestKeyBoud\TestKeyBoud.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\CameraManager\CameraManager.cpp" />
     <ClCompile Include="SourceCode\Game\02_Camera\ThirdPersonCamera\ThirdPersonCamera.cpp" />
     <ClCompile Include="SourceCode\Game\04_Time\Time.cpp" />
@@ -353,6 +357,7 @@
     <ClInclude Include="SourceCode\Game\00_Scene\01_Title\Title.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\02_GameMain\GameMain.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\03_GameOver\GameOver.h" />
+    <ClInclude Include="SourceCode\Game\00_Scene\03_Setting\Setting.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\04_Ending\Ending.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\Ex_Test\00_mattya3713\MattyaTestScene.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\Ex_Test\01_memeu1101\MemeuTestScene.h" />
@@ -382,6 +387,7 @@
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\Boss.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossAttackStateBase.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossChargeSlashState\BossChargeSlashState.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossDeadState\BossDeadState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossLaserState\BossLaserState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossShoutState\BossShoutState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossSlashState\BossSlashState.h" />
@@ -392,6 +398,7 @@
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossMoveState\BossMoveState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossMoveState\test1.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\Character.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\01_Key\Key.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\MeshObject.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\01_SpriteObject\CSpriteObject.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\Fade\Fade.h" />
@@ -405,6 +412,7 @@
     <ClInclude Include="SourceCode\Game\03_Collision\Capsule\CapsuleCollider.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\ColliderBase.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\Sphere\SphereCollider.h" />
+    <ClInclude Include="SourceCode\Game\05_InputDevice\TestKeyBoud\TestKeyBoud.h" />
     <ClInclude Include="SourceCode\System\Singleton\CameraManager\CameraManager.h" />
     <ClInclude Include="SourceCode\Game\02_Camera\ThirdPersonCamera\PlayerThirdPersonCamera.h" />
     <ClInclude Include="SourceCode\Game\02_Camera\ThirdPersonCamera\ThirdPersonCamera.h" />

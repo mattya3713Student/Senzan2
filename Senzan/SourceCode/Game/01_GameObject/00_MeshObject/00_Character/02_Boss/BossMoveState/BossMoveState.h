@@ -4,6 +4,7 @@
 #include "System/Utility/StateMachine/StateBase.h"
 #include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/Boss.h"
 #include "Game\03_Collision\Capsule\CapsuleCollider.h"
+#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossSpecialState/BossSpecialState.h"
 
 //前方宣言.
 class Time;
@@ -30,7 +31,7 @@ public:
 	//終わるときに一回だけ入る.
 	void Exit() override;
 
-	void DrawBone();
+	//void DrawBone();
 
 public:
 	//初期角度を設定する関数.
@@ -47,5 +48,10 @@ private:
 	double						m_AnimTimer;// アニメ―ション経過時間.
 	DirectX::XMFLOAT3			m_BonePos;	// ボーン座標.
 
+	DirectX::XMFLOAT3 m_InitBossPos;
 //	std::shared_ptr<CapsuleCollider> m_pColl;
+
+	float timer = 0.0f;
+
+	std::shared_ptr<BossSpecialState> m_pAttack;
 };

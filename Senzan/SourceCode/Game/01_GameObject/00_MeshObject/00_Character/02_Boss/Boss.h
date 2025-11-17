@@ -32,6 +32,7 @@ class BossChargeSlashState;	//ó≠ÇﬂçUåÇ.
 class BossShoutState;		//ã©Ç—çUåÇ.
 class BossSpecialState;
 class BossLaserState;
+class BossDeadState;
 
 class SkinMesh;
 
@@ -49,6 +50,7 @@ class Boss
 	friend BossShoutState;
 	friend BossSpecialState;
 	friend BossLaserState;
+	friend BossDeadState;
 public:
 	Boss();
 	~Boss() override;
@@ -69,6 +71,8 @@ public:
 	float boss_x = 0.f;
 	float boss_y = 0.f;
 	float boss_z = 0.f;
+
+	void Hit();
 
 
 public:
@@ -92,4 +96,7 @@ protected:
 
 
 	float deleta_time;
+
+	float m_HitPoint;
+
 };

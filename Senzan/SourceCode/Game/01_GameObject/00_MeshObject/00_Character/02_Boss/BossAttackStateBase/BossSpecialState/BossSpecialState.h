@@ -1,11 +1,11 @@
 #pragma once
-#include "00_MeshObject//00_Character//02_Boss//BossAttackStateBase//BossAttackStateBase.h"
+#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossAttackStateBase.h"
 
-/*******************************************************************
-*	ボスの特殊攻撃.
+/*****************************************************************************
+*	BossSpecialAttackClass
 **/
 
-class BossSpecialState final
+class BossSpecialState
 	: public BossAttackStateBase
 {
 public:
@@ -21,12 +21,13 @@ public:
 private:
 	void BossAttack() override;
 private:
-	enum class Phase
+	//ボスの攻撃をSwitchで回すために列挙を使用する.
+	enum class Phase : byte
 	{
-		Charge,		//ため.
-		Jump,		//飛んでプレイヤーの方へ行く.
-		Attack,		//突進ぎり.
-		Cooldown	//硬直.
+		Charge,		//ため時間.
+		Jump,		//飛んでプレイヤーの方に来る.
+		Attack,		//突進攻撃.
+		CoolDown,	//硬直.
 	};
 
 	Phase m_CurrentPhase;
@@ -48,5 +49,5 @@ private:
 	DirectX::XMFLOAT3 m_StartPos;       // 攻撃開始時の位置（Jumpの始点）
 	DirectX::XMFLOAT3 m_JumpTargetPos;  // Jumpフェーズの目標地点（突進の始点）
 	DirectX::XMFLOAT3 m_AttackDir;  // 突進方向（Attackフェーズの開始時に決定）
-	
+
 };

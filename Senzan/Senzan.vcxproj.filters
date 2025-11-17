@@ -122,6 +122,10 @@
     <ClCompile Include="SourceCode\System\Singleton\ImGui\CImGuiManager.cpp" />
     <ClCompile Include="SourceCode\Game\05_InputDevice\XInputConfig\XInputConfig.cpp" />
     <ClCompile Include="SourceCode\Game\02_Camera\CameraManager.cpp" />
+    <ClCompile Include="SourceCode\Game\00_Scene\03_Setting\Setting.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\01_Key\Key.cpp" />
+    <ClCompile Include="SourceCode\Game\05_InputDevice\TestKeyBoud\TestKeyBoud.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossDeadState\BossDeadState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SourceCode\Constant.h" />
@@ -258,6 +262,10 @@
     <ClInclude Include="SourceCode\System\Singleton\ImGui\CImGuiManager.h" />
     <ClInclude Include="SourceCode\Game\05_InputDevice\XInputConfig\XInputConfig.h" />
     <ClInclude Include="SourceCode\Game\02_Camera\CameraManager.h" />
+    <ClInclude Include="SourceCode\Game\00_Scene\03_Setting\Setting.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\01_Key\Key.h" />
+    <ClInclude Include="SourceCode\Game\05_InputDevice\TestKeyBoud\TestKeyBoud.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossDeadState\BossDeadState.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Shader\PMX\Header.hlsli" />

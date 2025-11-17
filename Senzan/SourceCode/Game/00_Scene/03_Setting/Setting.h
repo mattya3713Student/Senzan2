@@ -4,7 +4,6 @@
 #include "Game/02_Camera/CameraBase.h"
 #include "Game/01_GameObject/00_MeshObject/00_Character/00_Ground/Ground.h"	// 地面Static.
 
-// XInputConfigのヘッダーをインクルード
 #include "Game/05_InputDevice/XInputConfig/XInputConfig.h" // パスは仮定です。プロジェクトに合わせて修正してください。
 
 #include "Game/05_InputDevice/TestKeyBoud/TestKeyBoud.h"
@@ -36,9 +35,13 @@ private:
 	std::unique_ptr<Key> m_pKey;
 	std::unique_ptr<Ground>		m_pGround;
 
+
+	std::unique_ptr<XInputConfig> m_pCConfig;
+	// Setting.h の private 内
 	std::unique_ptr<TestKeyBoud> m_pKeyboardConfig; // キーボード用キーコンフィグ
 
-	DWORD m_prevButtons = 0;
+	//... 既存のメンバー変数 ...
+	DWORD m_prevButtons = 0; // 前フレームのボタン状態を保持
 
 	bool isDisplaying = false;
 };

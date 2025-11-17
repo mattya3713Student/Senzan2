@@ -1,10 +1,11 @@
 #pragma once
 #include <XInput.h>	//ボタン配置変更のため.
-#include "../../Data/Library/json/json.hpp"
 #include <string>
 #include <map>
 #include <vector>
+#include <fstream>
 
+#include "../../Data/Library/json/json.hpp"
 //nlohmann::jsonを使用.
 using json = nlohmann::json;
 
@@ -18,29 +19,42 @@ public:
 	XInputConfig();
 	~XInputConfig();
 
-	void Update();
+	//コントローラー情報をアクション名で取得.
+	//見つからなかったら-1で返す.
+	int GetController(const std::string& ActionName) const;
 
-	//設定ファイルからキー設定を読み込む.
-	bool LoadConfig(const std::string& filename = "InputConfig.json");
+	//コントローラーからアクション名を取得.
+	//割り当てられていない場合は空文字列を返す.
+	std::string GetActionName(int Controller) const;
 
-	//現在のキー設定をファイルに保存する.
-	bool SaveConfig(const std::string& filename = "InputConfig.json") const;
+	//コントローラーの再割り当て.
+	//第二引数を-1にしたら割り当てを解除できます.
+	void RebindController(const std::string& ActionName, int newController);
 
-	std::string GetActionName(DWORD xinput_button_code) const;
+	//ロードデータ.
+	bool LoadData();
 
-	DWORD GetButtonCode(const std::string& action_name) const;
+	//セーブデータ(保存用).
+	//変更できないようにしておく.
+	bool SaveData() const;
 
-	void LoadDefaultConfig();
-
+	//コントローラーの配置のリセット.
+	void LoadDefaultData();
 private:
-	std::map<DWORD, std::string> m_ConfigMap;
+	//アクション名から仮想コントローラーの対応.
+	std::map<std::string, int> m_ControllerMap;
 
-	//JSONのファイル名.
-	const std::string DEFAULT_FILENAME = "InputConfig.json";
+	//仮想コントローラーからアクション名.
+	void UpdateReverseMap();
+	std::map<int, std::string> m_ControllerReverseMap;
 
-	//
-	const std::vector<std::string> JSON_PATH =
-	{ "Data","Json","Input","InputConfig" };
+	//デフォルトのコントローラー設定を初期化する関数.
+	void SetupDefaultController();
 
-	const json* findConfigObject(const json& root_json) const;
+	//ファイルのパス.
+	const std::string Json_Path = "Data\\Json\\Input\\XInputConfig.json";
+
+	//Json操作関数.
+	bool ParseJson(const std::string& JsonContent);
+	std::string SerializeJson() const;
 };
