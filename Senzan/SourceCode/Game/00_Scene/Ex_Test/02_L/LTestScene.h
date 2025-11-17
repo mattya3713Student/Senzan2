@@ -13,6 +13,9 @@ class CapsuleCollider;
 
 #include <vector>
 
+#include "Game/05_InputDevice/TestKeyBoud/TestKeyBoud.h"
+#include "Game/05_InputDevice/XInputConfig/XInputConfig.h"
+
 
 /*********************************************
 *	ゲームメイン画像クラス.
@@ -49,5 +52,6 @@ private:
 	float m_Radius; // 半径.
 	float m_Height;	// 高さ.
 
-
+	std::unique_ptr<TestKeyBoud>		m_pKeyboardConfig;
+	std::unique_ptr<XInputConfig>		m_pCConfig;
 };

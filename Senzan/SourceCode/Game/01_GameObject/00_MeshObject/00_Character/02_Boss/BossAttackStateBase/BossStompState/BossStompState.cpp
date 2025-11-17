@@ -7,15 +7,15 @@
 
 BossStompState::BossStompState(Boss* owner)
 	: BossAttackStateBase(owner)
-	, m_StopmDuration(1.0f)
-	, m_JumpHeigt(3.0f)
-	, m_StopmRadius(5.0f)
+	, m_StopmDuration(10.0f)
+	, m_JumpHeigt(30.0f)
+	, m_StopmRadius(50.0f)
 	, m_InitBossPos()
 	, m_HasHitGround(false)
 
-	, m_IdolDuration(1.5f)      // 1.5秒予兆
-	, m_AttackDuration(1.0f)      // 1.0秒かけて薙ぎ払う
-	, m_CoolDownDuration(1.5f)      // 1.5秒硬直
+	, m_IdolDuration(50.0f)      // 1.5秒予兆
+	, m_AttackDuration(100.0f)      // 1.0秒かけて薙ぎ払う
+	, m_CoolDownDuration(50.0f)      // 1.5秒硬直
 
 	, m_CurrentPhase(Phase::Idol)
 	, m_PhaseTime(0.0f)
@@ -78,36 +78,36 @@ void BossStompState::Update()
 	m_PhaseTime += Time::GetInstance().GetDeltaTime();
 
 
-	//switch (m_CurrentPhase)
-	//{
-	//case BossStompState::Phase::Idol:
-	//	if (m_PhaseTime >= m_IdolDuration)
-	//	{
-	//		//予兆から攻撃.
-	//		m_CurrentPhase = Phase::Attack;
-	//		m_PhaseTime = 0.0f;
-	//	}
-	//	break;
-	//case BossStompState::Phase::Attack:
-	//	BossAttack();
-	//	if (m_PhaseTime >= m_AttackDuration)
-	//	{
-	//		//攻撃からクールダウン.
-	//		m_CurrentPhase = Phase::CoolDown;
-	//		m_PhaseTime = 0.0f;
-	//	}
-	//	break;
-	//case BossStompState::Phase::CoolDown:
-	//	if (m_PhaseTime >= m_CoolDownDuration)
-	//	{
-	//		//動作クラスへの移動.
-	//		m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossMoveState>(m_pOwner));
-	//		return;
-	//	}
-	//	break;
-	//default:
-	//	break;
-	//}
+	switch (m_CurrentPhase)
+	{
+	case BossStompState::Phase::Idol:
+		if (m_PhaseTime >= m_IdolDuration)
+		{
+			//予兆から攻撃.
+			m_CurrentPhase = Phase::Attack;
+			m_PhaseTime = 0.0f;
+		}
+		break;
+	case BossStompState::Phase::Attack:
+		BossAttack();
+		if (m_PhaseTime >= m_AttackDuration)
+		{
+			//攻撃からクールダウン.
+			m_CurrentPhase = Phase::CoolDown;
+			m_PhaseTime = 0.0f;
+		}
+		break;
+	case BossStompState::Phase::CoolDown:
+		if (m_PhaseTime >= m_CoolDownDuration)
+		{
+			//動作クラスへの移動.
+			m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossMoveState>(m_pOwner));
+			return;
+		}
+		break;
+	default:
+		break;
+	}
 
 	//アニメーション切替
 	m_AnimNo = 0;		//登場アニメーション

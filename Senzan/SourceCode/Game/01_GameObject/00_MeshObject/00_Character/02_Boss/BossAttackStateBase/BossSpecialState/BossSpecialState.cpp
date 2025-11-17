@@ -1,35 +1,26 @@
 ﻿#include "BossSpecialState.h"
-// 必須ヘッダー
-#include <DirectXMath.h> 
-#include <cmath> 
-#include <memory> // std::make_shared に必要
 
 #include "Game//04_Time//Time.h"
 #include "Game//01_GameObject//00_MeshObject//00_Character//02_Boss//Boss.h"
 #include "Game//01_GameObject//00_MeshObject//00_Character//01_Player//Player.h"
 #include "..//..//BossMoveState//BossMoveState.h"
 
-using namespace DirectX;
-
-//---------------------------------------------------------------------
-// コンストラクタ
-//---------------------------------------------------------------------
 BossSpecialState::BossSpecialState(Boss* owner)
-	: BossAttackStateBase(owner)
+    : BossAttackStateBase(owner)
     , m_CurrentPhase(Phase::Charge)
     , m_PhaseTime(0.0f)
     , m_AttackTime(0.0f)
     , m_HasHit(false)
     // 時間設定
-    , m_ChargeDuration(0.5f)      // 溜め時間
-    , m_JumpDuration(0.8f)      // ジャンプ移動時間
-    , m_AttackDuration(0.5f)      // 突進斬り時間
-    , m_CoolDownDuration(1.0f)      // 硬直時間
-    // Jump パラメータ
+    , m_ChargeDuration(1.5f)      // 溜め時間: 1.5秒
+    , m_JumpDuration(1.0f)        // ジャンプ移動時間: 1.0秒
+    , m_AttackDuration(1.0f)      // 突進斬り時間: 1.0秒
+    , m_CoolDownDuration(1.0f)    // 硬直時間: 1.0秒    // Jump パラメータ
     , m_JumpHeght(5.0f)      // 最大到達高度 (地表からの高さ)
     // Attack パラメータ
-    , m_AttackSpeed(20.0f)     // 突進の速度 (未使用、突進ロジックで使用予定)
-    , m_SlashRange(1.0f)      // 突進斬りの判定幅 (未使用、突進ロジックで使用予定)
+    //m_AttackSpeedなんだけど距離になっている.
+    , m_AttackSpeed(30.0f)        // 突進の速度: 30.0 ユニット/秒 (要調整)
+    , m_SlashRange(1.0f) // 突進斬りの判定幅 (未使用、突進ロジックで使用予定)
     // 位置と方向
     , m_StartPos()
     , m_JumpTargetPos()
@@ -41,167 +32,261 @@ BossSpecialState::~BossSpecialState()
 {
 }
 
-//---------------------------------------------------------------------
-// Enter
-//---------------------------------------------------------------------
+//void BossSpecialState::Enter()
+//{
+//    //Bossの行動の初期化.
+//    m_AttackTime = 0.0f;
+//    m_PhaseTime = 0.0f;
+//    m_CurrentPhase = Phase::Charge;
+//
+//    //Bossの向きを設定(チャージ開始時にプレイヤーの方向に向く).
+//    //Bossの位置を取得する.
+//    const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
+//    DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&BossPosF);
+//
+//    //Playerの位置を取得する.
+//    const DirectX::XMFLOAT3 PlayerPosF = m_pOwner->m_PlayerPos;
+//    DirectX::XMVECTOR PlayerPosXM = DirectX::XMLoadFloat3(&PlayerPosF);
+//
+//    //PlayerとBossの距離を求める？
+//    DirectX::XMVECTOR Direction = DirectX::XMVectorSubtract(PlayerPosXM, BossPosXM);
+//    //PlayerとBossの距離を取得する.
+//    Direction = DirectX::XMVectorSetY(Direction, 0.0f);
+//
+//    //Y軸回転角度を計算して、BossをPlayerの方へ向かせる.
+//    float dx = DirectX::XMVectorGetX(Direction);
+//    float dz = DirectX::XMVectorGetZ(Direction);
+//    float Angle_Radian = std::atan2(dx, dz);
+//    m_pOwner->SetRotationY(Angle_Radian);
+//
+//    //攻撃開始位置の保存.
+//    DirectX::XMStoreFloat3(&m_StartPos, BossPosXM);
+//
+//    //Jumpフェーズの目的地点(突進の地点)を計算.
+//    DirectX::XMVECTOR DirToPlayerXZ = DirectX::XMVectorSubtract(PlayerPosXM, BossPosXM);
+//    DirToPlayerXZ = DirectX::XMVectorSetY(DirToPlayerXZ, 0.0f);
+//    //正規化.
+//    DirToPlayerXZ = DirectX::XMVector3Normalize(DirToPlayerXZ);
+//
+//    // Bossの着地地点の設定.
+//        // 変更点: JumpTargetPosをプレイヤーのXZ位置、Yを地面の高さ(0.0f)に設定する.
+//    DirectX::XMVECTOR TargetPosXM = DirectX::XMLoadFloat3(&PlayerPosF); // PlayerPosFを使用
+//    TargetPosXM = DirectX::XMVectorSetY(TargetPosXM, 0.0f); // Y座標を地面に固定
+//
+//    // BossのJumpの最高地点を設定しているコードは、JumpTargetPosの計算では不要なため削除/修正.
+//    // TargetPosXM = DirectX::XMVectorSetY(TargetPosXM, 5.0f); // 削除するかコメントアウト
+//
+//    // JumpTargetPosは、Jumpフェーズの終点（Attackフェーズの始点）= プレイヤーの足元に設定する.
+//    DirectX::XMStoreFloat3(&m_JumpTargetPos, TargetPosXM);
+//
+//    //位置をm_StartPosに固定する.
+//    m_pOwner->SetPosition(m_StartPos);
+//}
+
+
 void BossSpecialState::Enter()
 {
-    m_Attacktime = 0.0f;
+    // ボスの行動の初期化.
+    m_AttackTime = 0.0f;
     m_PhaseTime = 0.0f;
     m_CurrentPhase = Phase::Charge;
-    m_HasHit = false;
 
-    // 1. ボスの向きを設定（チャージ開始時にプレイヤーの方向を向く）
-    const XMFLOAT3 BossPosF = m_pOwner->GetPosition();
-    XMVECTOR BossPosXM = XMLoadFloat3(&BossPosF);
+    // Bossの向きを設定(チャージ開始時にプレイヤーの方向に向く).
+    // Bossの位置を取得する.
+    const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
+    DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&BossPosF);
 
-    const XMFLOAT3 PlayerPosF = m_pOwner->m_PlayerPos;
-    XMVECTOR PlayerPosXM = XMLoadFloat3(&PlayerPosF);
+    // Playerの位置を取得する.
+    const DirectX::XMFLOAT3 PlayerPosF = m_pOwner->m_PlayerPos;
+    DirectX::XMVECTOR PlayerPosXM = DirectX::XMLoadFloat3(&PlayerPosF);
 
-    XMVECTOR Direction = XMVectorSubtract(PlayerPosXM, BossPosXM);
-    Direction = XMVectorSetY(Direction, 0.0f); // XZ平面の方向ベクトル
+    // PlayerとBossの方向ベクトルを求める.
+    DirectX::XMVECTOR Direction = DirectX::XMVectorSubtract(PlayerPosXM, BossPosXM);
 
-    // Y軸回転角度を計算し、ボスをプレイヤーに向かせる
-    float dx = XMVectorGetX(Direction);
-    float dz = XMVectorGetZ(Direction);
-    float angle_radian = std::atan2f(dx, dz);
-    m_pOwner->SetRotationY(angle_radian);
+    // Y軸方向の成分を0にして、水平方向の向きだけにする.
+    Direction = DirectX::XMVectorSetY(Direction, 0.0f);
 
-    // 2. 攻撃開始位置を保存 (m_StartPos)
-    XMStoreFloat3(&m_StartPos, BossPosXM);
+    // Y軸回転角度を計算して、BossをPlayerの方へ向かせる.
+    float dx = DirectX::XMVectorGetX(Direction);
+    float dz = DirectX::XMVectorGetZ(Direction);
+    float Angle_Radian = std::atan2(dx, dz);
+    m_pOwner->SetRotationY(Angle_Radian);
 
-    // 3. Jumpフェーズの目標地点 (突進の始点) を計算
-    // ターゲット地点: プレイヤーから 1.0m 後ろ (手前) の上空 4.0m
-    XMVECTOR dirToPlayerXZ = XMVectorSubtract(PlayerPosXM, BossPosXM);
-    dirToPlayerXZ = XMVectorSetY(dirToPlayerXZ, 0.0f);
-    dirToPlayerXZ = XMVector3Normalize(dirToPlayerXZ);
+    // 攻撃開始位置の保存.
+    // ※ Jumpフェーズの始点 (水平移動と放物線計算の基準点)
+    //始まった瞬間にまず最初の位置にボスをワープさせて攻撃をする.
+    DirectX::XMStoreFloat3(&m_StartPos, BossPosXM);
 
-    XMVECTOR TargetOffset = XMVectorScale(dirToPlayerXZ, -1.0f); // プレイヤー方向と逆 (手前)
-    XMVECTOR TargetPosXM = XMVectorAdd(PlayerPosXM, TargetOffset);
-    TargetPosXM = XMVectorSetY(TargetPosXM, 4.0f); // 高度 4.0m
+    // Jumpフェーズの目標地点 (着地地点 / 突進の始点) を計算.
+    // 目標地点はプレイヤーのXZ座標とし、Y座標を地面の高さ(0.0f)に固定する.
+    //Playerのポジションをターゲットに変更する.
+    DirectX::XMVECTOR TargetPosXM = PlayerPosXM;
 
-    // m_JumpTargetPos に保存
-    XMStoreFloat3(&m_JumpTargetPos, TargetPosXM);
+    // Y座標を地面に固定する. これが距離に関わらずジャンプで到達するためのポイント.
+    TargetPosXM = DirectX::XMVectorSetY(TargetPosXM, 0.0f);
 
-    // 位置を m_StartPos に固定 (Chargeフェーズ開始)
+    // m_JumpTargetPosに保存する.
+    DirectX::XMStoreFloat3(&m_JumpTargetPos, TargetPosXM);
+
+    // 位置をm_StartPosに固定する. (チャージ開始時は移動しないため)
+    //原点？.
     m_pOwner->SetPosition(m_StartPos);
 }
-
-//---------------------------------------------------------------------
-// Update (フェーズ遷移とジャンプ軌道ロジック)
-//---------------------------------------------------------------------
 void BossSpecialState::Update()
 {
+    //----------------------------------------
+    // Bossの攻撃.
+    //----------------------------------------
     const float deltaTime = Time::GetInstance().GetDeltaTime();
-    const float Time_Rate = 1.0f;
 
-    // 時間の更新
-    m_Attacktime += Time_Rate * deltaTime;
+    //時間の更新.
+    m_AttackTime += deltaTime;
     m_PhaseTime += deltaTime;
 
     switch (m_CurrentPhase)
     {
-    case Phase::Charge:
+    case BossSpecialState::Phase::Charge:
         if (m_PhaseTime >= m_ChargeDuration)
         {
             m_PhaseTime -= m_ChargeDuration;
+            //次の動作へ移動.
             m_CurrentPhase = Phase::Jump;
         }
         break;
-
-    case Phase::Jump:
+    case BossSpecialState::Phase::Jump:
     {
-        float t = m_PhaseTime / m_JumpDuration; // t は 0.0f -> 1.0f
-        DirectX::XMVECTOR start = DirectX::XMLoadFloat3(&m_StartPos);
-        DirectX::XMVECTOR target = DirectX::XMLoadFloat3(&m_JumpTargetPos);
+        float t = m_PhaseTime / m_JumpDuration;
 
-        // 1. 水平移動: start から target へ線形に移動
-        DirectX::XMVECTOR xzPos = DirectX::XMVectorLerp(start, target, t);
+        t = std::min(t, 1.0f);
 
-        // 2. 垂直移動: 放物線を描く
-        float currentY = (DirectX::XMVectorGetY(start) * (1.0f - t)) + (DirectX::XMVectorGetY(target) * t);
-        // m_JumpHeght は m_JumpHeight の誤字と仮定して修正
-        float jumpCurve = 4.0f * m_JumpHeght * t * (1.0f - t);
+        DirectX::XMVECTOR Start = DirectX::XMLoadFloat3(&m_StartPos);
+        DirectX::XMVECTOR Target = DirectX::XMLoadFloat3(&m_JumpTargetPos);
 
-        DirectX::XMVECTOR newPos = DirectX::XMVectorSetY(xzPos, currentY + jumpCurve);
+        // 水平移動: StartからTargetに移動.
+        DirectX::XMVECTOR XZPos = DirectX::XMVectorLerp(Start, Target, t);
 
-        // ボスの位置を更新
-        DirectX::XMFLOAT3 newPosF;
-        DirectX::XMStoreFloat3(&newPosF, newPos);
-        m_pOwner->SetPosition(newPosF);
+        // 垂直移動: 山なりに描くような感じにする.
+        float StartY = m_StartPos.y; // Bossの初期Y座標 (通常は0.0f)
+        float TargetY = m_JumpTargetPos.y; // JumpTargetPosのY座標 (通常は0.0f)
+
+        // Yの線形補間
+        float LinearY = StartY * (1.0f - t) + TargetY * t;
+
+        // 放物線カーブの計算（t=0.5で最高点m_JumpHeghtとなるように）
+        float JumpCurve = m_JumpHeght * (1.0f - std::pow(2.0f * t - 1.0f, 2.0f));
+
+        DirectX::XMVECTOR NewPos = DirectX::XMVectorSetY(XZPos, LinearY + JumpCurve);
+
+        //Bossの位置を更新.
+        DirectX::XMFLOAT3 NewPosF;
+        DirectX::XMStoreFloat3(&NewPosF, NewPos);
+        m_pOwner->SetPosition(NewPosF);
 
         if (m_PhaseTime >= m_JumpDuration)
         {
-            // ジャンプ完了 -> 突進斬りフェーズへ
+            //ジャンプが実行できたらAttackへ移動.
             m_PhaseTime -= m_JumpDuration;
             m_CurrentPhase = Phase::Attack;
 
-            // Attackフェーズの開始時に突進方向を決定（現在のボスの位置からプレイヤーへ）
-            DirectX::XMFLOAT3 playerPosXM = m_pOwner->m_PlayerPos; // ターゲットのポジションを使用
-            DirectX::XMVECTOR v_playerPosXM = DirectX::XMLoadFloat3(&playerPosXM); // ターゲットのポジションを使用
-            DirectX::XMFLOAT3 currentBossPos = m_pOwner->GetPosition();
-            DirectX::XMVECTOR v_currentBossPos = DirectX::XMLoadFloat3(&currentBossPos);
+            // Attackフェーズ開始時: 最初の突進方向を決定する（現在のBossの位置からPlayerの方）.
+            // ※ Attackフェーズに入ると、以下のAttackケース内で方向を毎フレーム更新します。
+            DirectX::XMFLOAT3 PlayerPosXM = m_pOwner->m_PlayerPos;
+            DirectX::XMVECTOR v_PlayerPosXM = DirectX::XMLoadFloat3(&PlayerPosXM);
 
-            // プレイヤーへ向かう方向ベクトル
-            DirectX::XMVECTOR dir = DirectX::XMVectorSubtract(v_playerPosXM, v_currentBossPos);
-            dir = DirectX::XMVector3Normalize(dir);
-            DirectX::XMStoreFloat3(&m_AttackDir, dir); // 方向を保存
+            DirectX::XMFLOAT3 CurrentBossPos = m_pOwner->GetPosition();
+            DirectX::XMVECTOR v_CurrentBossPos = DirectX::XMLoadFloat3(&CurrentBossPos);
+
+            // Playerへ向かう方向ベクトル.
+            DirectX::XMVECTOR Dir = DirectX::XMVectorSubtract(v_PlayerPosXM, v_CurrentBossPos);
+            Dir = DirectX::XMVectorSetY(Dir, 0.0f); // Y成分を0にし、水平方向のみの突進にする
+
+            //正規化.
+            Dir = DirectX::XMVector3Normalize(Dir);
+            DirectX::XMStoreFloat3(&m_AttackDir, Dir); //方向を保存.
         }
     }
     break;
-
-    case Phase::Attack:
-        // 突進移動ロジック
-        BossAttack();
+    case BossSpecialState::Phase::Attack:
     {
-        DirectX::XMFLOAT3  currentBossPos = m_pOwner->GetPosition();
-        DirectX::XMVECTOR v_currentBossPos = DirectX::XMLoadFloat3(&currentBossPos);
-        DirectX::XMVECTOR attackDir = DirectX::XMLoadFloat3(&m_AttackDir);
+        // 1. 突進方向を現在のPlayerの位置へ毎フレーム更新 (追尾)
 
-        // 速度 * 時間 = 移動量 (V * dt)
-        DirectX::XMVECTOR moveDelta = DirectX::XMVectorScale(attackDir, m_AttackSpeed * deltaTime);
-        DirectX::XMVECTOR newPos = DirectX::XMVectorAdd(v_currentBossPos, moveDelta);
+        DirectX::XMFLOAT3 PlayerPosF = m_pOwner->m_PlayerPos;
+        DirectX::XMVECTOR v_PlayerPosXM = DirectX::XMLoadFloat3(&PlayerPosF);
 
-        // ボスの位置を更新
-        DirectX::XMFLOAT3 newPosF;
-        DirectX::XMStoreFloat3(&newPosF, newPos);
-        m_pOwner->SetPosition(newPosF);
+        DirectX::XMFLOAT3 CurrentBossPos = m_pOwner->GetPosition();
+        DirectX::XMVECTOR v_CurrentBossPos = DirectX::XMLoadFloat3(&CurrentBossPos);
 
-        // 攻撃判定の実行
+        // Playerへ向かう方向ベクトルを再計算.
+        DirectX::XMVECTOR Dir = DirectX::XMVectorSubtract(v_PlayerPosXM, v_CurrentBossPos);
+        Dir = DirectX::XMVectorSetY(Dir, 0.0f); // 水平方向のみの追尾
+        Dir = DirectX::XMVector3Normalize(Dir);
+        DirectX::XMStoreFloat3(&m_AttackDir, Dir);
+
+
+        // 2. 移動処理
+        DirectX::XMVECTOR AttackDir = DirectX::XMLoadFloat3(&m_AttackDir);
+
+        DirectX::XMVECTOR MoveDelta = DirectX::XMVectorScale(AttackDir, m_AttackSpeed * deltaTime);
+        DirectX::XMVECTOR NewPos = DirectX::XMVectorAdd(v_CurrentBossPos, MoveDelta);
+
+        // ボスの位置を更新.
+        DirectX::XMFLOAT3 NewPosF;
+        DirectX::XMStoreFloat3(&NewPosF, NewPos);
+        m_pOwner->SetPosition(NewPosF);
+
+        // 攻撃判定の実行.
         BossAttack();
 
-        // 突進時間が終了したら Cooldown へ
-        if (m_PhaseTime >= m_AttackDuration)
+        // 3. 終了条件: 時間切れ OR Playerへの近接到達 (確実な到達)
+
+        // PlayerとBossの水平距離の二乗を計算する.
+        DirectX::XMVECTOR Diff = DirectX::XMVectorSubtract(v_PlayerPosXM, v_CurrentBossPos);
+        DirectX::XMVECTOR XZ_Diff = DirectX::XMVectorSetY(Diff, 0.0f);
+        float distanceSq = DirectX::XMVectorGetX(DirectX::XMVector3LengthSq(XZ_Diff));
+
+        // Playerに近づいたと判定するしきい値 (例: 2.0ユニットの二乗 = 4.0f)
+        const float proximityThresholdSq = 4.0f;
+
+        if (m_PhaseTime >= m_AttackDuration || distanceSq <= proximityThresholdSq)
         {
             m_PhaseTime -= m_AttackDuration;
-            m_CurrentPhase = Phase::Cooldown;
-            m_HasHit = false; // 次の攻撃に備えてリセット
+            m_CurrentPhase = Phase::CoolDown;
+
+            // 💡 備考: CoolDown移行時にPlayerの位置にZ軸を合わせるなど、最後の調整をしても良い
         }
     }
     break;
-
-    case Phase::Cooldown:
-        // 硬直時間終了
+    case BossSpecialState::Phase::CoolDown:
+        //硬直時間終了.
         if (m_PhaseTime >= m_CoolDownDuration)
         {
-            // 地面に確実に着地させる処理 (Exit でも良い)
-            DirectX::XMFLOAT3 posF = m_pOwner->GetPosition();
-            m_pOwner->SetPosition({ posF.x, 0.0f, posF.z });
+            //地面に確実に着地させる処理.
+            DirectX::XMFLOAT3 PosF = m_pOwner->GetPosition();
+            m_pOwner->SetPosition({ PosF.x, 0.0f, PosF.z });
 
-            m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossMoveState>(m_pOwner));
-            return;
+            // 攻撃を最初から繰り返すか、次の移動ステートへ戻る
+            m_CurrentPhase = Phase::Charge;
+            // m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossMoveState>(m_pOwner));
+            // return;
         }
+        break;
+    default:
         break;
     }
 }
-//---------------------------------------------------------------------
-// BossAttack (未実装)
-//---------------------------------------------------------------------
-void BossSpecialState::BossAttack()
+
+void BossSpecialState::LateUpdate()
 {
-    // ★ 突進中の移動と当たり判定ロジックを実装予定
 }
 
-void BossSpecialState::LateUpdate() {}
-void BossSpecialState::Draw() {}
-void BossSpecialState::Exit() {}
+void BossSpecialState::Draw()
+{
+}
+
+void BossSpecialState::Exit()
+{
+}
+
+void BossSpecialState::BossAttack()
+{
+}

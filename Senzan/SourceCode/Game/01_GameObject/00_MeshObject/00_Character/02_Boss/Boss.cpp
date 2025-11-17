@@ -15,6 +15,10 @@
 
 #include "Resource/Mesh/02_Skin/SkinMesh.h"
 
+#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossDeadState/BossDeadState.h"
+
+constexpr float HP_Max = 100.0f;
+
 Boss::Boss()
 	: Character()
 	, m_State					(std::make_unique<StateMachine<Boss>>(this))
@@ -23,11 +27,11 @@ Boss::Boss()
 	, m_MoveSpeed				(0.3f)
 	, m_vCurrentMoveVelocity	(0.f, 0.f, 0.f)
 	, deleta_time				(0.f)
+	, m_HitPoint				(0.0f)
 {
 	AttachMesh(MeshManager::GetInstance().GetSkinMesh("extinger"));
 
 	//bm_pChargeSlsh = std::make_unique<SlashCharge>();
-
 	DirectX::XMFLOAT3 pos = { 0.05f, 0.05f, 20.05f };
 	DirectX::XMFLOAT3 scale = { 0.05f, 0.05f, 0.05f };
 	DirectX::XMFLOAT3 Rotation = { 0.0f,0.0f,0.0f };
@@ -42,6 +46,9 @@ Boss::Boss()
 
 	//攻撃動作の確認用のために書いている.
 	//m_State->ChangeState(std::make_shared<BossStompState>(this));
+
+	//ボスの最大体力.
+	m_HitPoint = HP_Max;
 }
 
 Boss::~Boss()
@@ -73,6 +80,34 @@ StateMachine<Boss>* Boss::GetStateMachine()
 LPD3DXANIMATIONCONTROLLER Boss::GetAnimCtrl() const
 {
 	return m_pAnimCtrl;
+}
+
+void Boss::Hit()
+{
+	//ボスの体力の最小値.
+	constexpr float zero = 0.0f; 
+	//ボスがPlayerからの攻撃を受けるダメージ変数.
+	//このダメージは今は仮でおいているだけです
+	//通常攻撃.
+	constexpr float ten = 10.0f;
+	//必殺技.
+	constexpr float twenty = 20.0f;
+	//ジャスト回避時の攻撃.
+	constexpr float Five = 5.0f;
+	//パリィの時の与えるダメージ.
+	constexpr float Fifteen = 15.0f;
+	
+	//Bossの体力でのステートにいれる.
+	constexpr float Dead_HP = zero;
+	//いったんこの10ダメだけにしておく.
+	//最後はTenをBaseにして+や-を使用する感じになると思っている.
+	m_HitPoint -= ten;
+	if (m_HitPoint <= ten)
+	{
+		m_HitPoint = ten;
+		//死んだときにDeadStateclassに入る.
+		m_State->ChangeState(std::make_shared<BossDeadState>(this));
+	}
 }
 
 void Boss::SetTargetPos(const DirectX::XMFLOAT3 Player_Pos)

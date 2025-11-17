@@ -68,7 +68,7 @@ void BossIdleState::Update()
 		float initalAngle = atan2f(dx, dz); // DirectXMathでは atan2f を使用
 
 		//今ジョイントのためにここをコメント化している.
-		//同期の原因はここかな？(予想)
+		//このコードでBossのState系統を変更している.
 		auto MoveState = std::make_shared<BossMoveState>(m_pOwner);
 		MoveState->SetInitialAngle(initalAngle);
 
@@ -77,11 +77,9 @@ void BossIdleState::Update()
 	//アニメーション切替
 	m_AnimNo = 0;		//登場アニメーション
 	m_AnimTimer = 0.0;	//アニメーション経過時間初期化
-	m_pOwner->SetAnimSpeed(m_AnimSpeed);
 
 	//アニメーション再生の無限ループ用.
 	//m_pOwner->SetIsLoop(true);
-	m_pOwner->ChangeAnim(m_AnimNo);
 
 }
 
