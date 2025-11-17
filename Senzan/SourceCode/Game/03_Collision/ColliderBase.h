@@ -22,7 +22,6 @@ enum class eCollisionGroup : uint32_t
 
 	_Max = 0xFFFFFFFF,
 };
-
 DEFINE_ENUM_FLAG_OPERATORS(eCollisionGroup)
 
 
@@ -41,7 +40,6 @@ public:
 	friend class SphereCollider;
 
 public:
-
 	// 当たり判定の形.
 	enum class eShapeType : uint32_t
 	{
@@ -111,6 +109,7 @@ public:
 		bool B_collides_with_A = (other.m_CollisionMask & m_MyGroup) != eCollisionGroup::None;
 		return A_collides_with_B && B_collides_with_A;
 	}
+
 
 	// 他のColliderとの衝突.
 	virtual CollisionInfo CheckCollision(const ColliderBase& other) const = 0;

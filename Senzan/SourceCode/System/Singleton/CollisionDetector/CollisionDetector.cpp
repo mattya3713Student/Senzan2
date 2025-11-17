@@ -48,7 +48,6 @@ void CollisionDetector::ExecuteCollisionDetection()
 
             // 接触点はワールド座標なのでそのまま使用.
             colliderB->AddCollisionInfo(info_reverse);
-
         }
     }
 }

@@ -60,6 +60,7 @@ Player::Player()
 
 Player::~Player()
 {
+    CollisionDetector::GetInstance().UnregisterCollider(m_pPressCollider);
 }
 
 void Player::Update()

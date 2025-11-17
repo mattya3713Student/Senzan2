@@ -30,4 +30,5 @@ template <typename T> inline enable_if_flag_ref<T> operator&=(T& a, T b) noexcep
 template <typename T> inline enable_if_flag_ref<T> operator^=(T& a, T b) noexcept { a = a ^ b; return a; }
 
 // EnumType をビットフラグとして有効化する.
-#define ENABLE_ENUM_FLAG_OPERATORS(EnumType) template <> inline struct is_scoped_enum_flag<EnumType> : std::true_type {};
+#define ENABLE_ENUM_FLAG_OPERATORS(EnumType) \
+    template <> struct is_scoped_enum_flag<EnumType> : std::true_type {};

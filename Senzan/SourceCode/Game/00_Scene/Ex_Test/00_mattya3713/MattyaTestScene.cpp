@@ -68,13 +68,13 @@ void MattyaTestScene::Update()
 	Input::Update();
 	m_pGround->Update();
 	m_pPlayer->Update();
-	m_TestPressCollision->Update();
 }
 
 void MattyaTestScene::LateUpdate()
 {
 	m_pPlayer->LateUpdate();
 	CameraManager::GetInstance().LateUpdate();
+
 	CollisionDetector::GetInstance().ExecuteCollisionDetection();
 }
 
