@@ -42,7 +42,7 @@ void Character::HandleCollisionResponse()
     const auto events = m_pPressCollider->GetCollisionEvents();
 
     // ターゲットグループのビットマスクを定義.
-    constexpr uint32_t PRESS_GROUP = (uint32_t)ColliderBase::eCollisionGroup::Press;
+    constexpr eCollisionGroup PRESS_GROUP = eCollisionGroup::Press;
 
     for (const auto& info : events)
     {
@@ -51,7 +51,7 @@ void Character::HandleCollisionResponse()
         if (!otherCollider) { continue; }
 
         // 相手のグループが Press であるか (このPressグループとの衝突のみを処理する)
-        if ((otherCollider->GetGroup() & PRESS_GROUP) == 0) { continue; }
+        if ((otherCollider->GetGroup() & PRESS_GROUP) == eCollisionGroup::None) { continue; }
 
         if (info.PenetrationDepth > 0.0f)
         {

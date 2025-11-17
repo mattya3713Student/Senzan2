@@ -30,6 +30,8 @@
 
 #include "Game/04_Time/Time.h"
 
+#include "System/Singleton/CollisionDetector/CollisionDetector.h"
+
 Player::Player()    
 	: Character         ()
 	, m_RootState       (std::make_unique<PlayerState::Root>(this))
@@ -52,11 +54,13 @@ Player::Player()
     m_Transform->SetScale(scale);
 
     //m_pCollider = std::make_shared<CapsuleCollider>(m_Transform);
+    CollisionDetector::GetInstance().RegisterCollider(m_pPressCollider);
 
 }
 
 Player::~Player()
 {
+    CollisionDetector::GetInstance().UnregisterCollider(m_pPressCollider);
 }
 
 void Player::Update()

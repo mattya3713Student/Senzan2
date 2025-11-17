@@ -6,6 +6,25 @@ class BoxCollider;
 class CapsuleCollider;
 class SphereCollider;
 
+// MEMO : ビット演算を定義するためにネームスペースの外に宣言.
+// 当たり判定.
+enum class eCollisionGroup : uint32_t
+{
+	None = 0,
+
+	Player_Attack = 1 << 0,
+	Player_Damage = 1 << 1,
+	Player_Dodge = 1 << 2,
+	Player_JustDodge = 1 << 3,
+	Enemy_Attack = 1 << 4,
+	Enemy_Damage = 1 << 5,
+	Press = 1 << 6,
+
+	_Max = 0xFFFFFFFF,
+};
+DEFINE_ENUM_FLAG_OPERATORS(eCollisionGroup)
+
+
 /**********************************************************************************
 * @author    : 淵脇 未来.
 * @date      : 2025/10/5.
@@ -21,22 +40,6 @@ public:
 	friend class SphereCollider;
 
 public:
-	// 当たり判定.
-	enum class eCollisionGroup : uint32_t
-	{
-		None = 0,
-
-		Player_Attack		= 1 << 0,
-		Player_Damage		= 1 << 1,
-		Player_Dodge		= 1 << 2,
-		Player_JustDodge	= 1 << 3,
-		Enemy_Attack		= 1 << 4,
-		Enemy_Damage		= 1 << 5,
-		Press				= 1 << 6,
-
-		_Max = 0xFFFFFFFF,
-	};
-
 	// 当たり判定の形.
 	enum class eShapeType : uint32_t
 	{
@@ -92,20 +95,21 @@ public:
 	inline void ClearCollisionEvents() noexcept { m_CollisionEvents.clear(); }
 	
 	// 自身のグループを設定.
-	inline void SetGroup(uint32_t group) noexcept { m_MyGroup = group; }
+	inline void SetGroup(eCollisionGroup group) noexcept { m_MyGroup = group; }
 	// 衝突を許可するグループを設定.
-	inline void SetMask(uint32_t mask) noexcept { m_CollisionMask = mask; }
+	inline void SetMask(eCollisionGroup mask) noexcept { m_CollisionMask = mask; }
 
-	inline uint32_t GetGroup() const noexcept { return m_MyGroup; }
-	inline uint32_t GetMask() const noexcept { return m_CollisionMask; }
+	inline eCollisionGroup GetGroup() const noexcept { return m_MyGroup; }
+	inline eCollisionGroup GetMask() const noexcept { return m_CollisionMask; }
 
 	// 相手と衝突すべきか.
 	inline bool ShouldCollide(const ColliderBase& other) const noexcept
 	{
-		bool A_collides_with_B = (m_CollisionMask & other.m_MyGroup) != 0;
-		bool B_collides_with_A = (other.m_CollisionMask & m_MyGroup) != 0;
+		bool A_collides_with_B = (m_CollisionMask & other.m_MyGroup) != eCollisionGroup::None;
+		bool B_collides_with_A = (other.m_CollisionMask & m_MyGroup) != eCollisionGroup::None;
 		return A_collides_with_B && B_collides_with_A;
 	}
+
 
 	// 他のColliderとの衝突.
 	virtual CollisionInfo CheckCollision(const ColliderBase& other) const = 0;
@@ -122,8 +126,8 @@ protected:
 	DirectX::XMFLOAT3	m_PositionOffset;			// オフセット位置.
 
 	// コリジョンフィルター用.
-	uint32_t m_MyGroup = (uint32_t)eCollisionGroup::_Max;		// 自身が所属するグループ.
-	uint32_t m_CollisionMask = (uint32_t)eCollisionGroup::_Max;	// 衝突対象とするグループ.
+	eCollisionGroup m_MyGroup = eCollisionGroup::_Max;		// 自身が所属するグループ.
+	eCollisionGroup m_CollisionMask = eCollisionGroup::_Max;	// 衝突対象とするグループ.
 
 	// 検出された衝突情報のリスト.
 	std::vector<CollisionInfo> m_CollisionEvents;
@@ -140,7 +144,7 @@ protected:
 
 #endif // _DEBUG.
 
-}; 
+};
 
 // 座標を取得する.
 inline const DirectX::XMFLOAT3 ColliderBase::GetPosition() const noexcept

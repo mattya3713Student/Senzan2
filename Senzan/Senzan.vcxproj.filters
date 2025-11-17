@@ -121,6 +121,7 @@
     <ClCompile Include="Data\ImGui\Library\imgui_widgets.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\ImGui\CImGuiManager.cpp" />
     <ClCompile Include="SourceCode\Game\05_InputDevice\XInputConfig\XInputConfig.cpp" />
+    <ClCompile Include="SourceCode\System\Singleton\CollisionDetector\CollisionDetector.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SourceCode\Constant.h" />
@@ -256,7 +257,9 @@
     <ClInclude Include="Data\ImGui\Library\imstb_truetype.h" />
     <ClInclude Include="SourceCode\System\Singleton\ImGui\CImGuiManager.h" />
     <ClInclude Include="SourceCode\Game\05_InputDevice\XInputConfig\XInputConfig.h" />
-    <ClInclude Include="SourceCode\Game\03_Collision\CollisionDetector.h" />
+    <ClInclude Include="SourceCode\Game\03_Collision\CollisionInfo.h" />
+    <ClInclude Include="SourceCode\System\Singleton\CollisionDetector\CollisionDetector.h" />
+    <ClInclude Include="SourceCode\EnumFlags.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Shader\PMX\Header.hlsli" />
