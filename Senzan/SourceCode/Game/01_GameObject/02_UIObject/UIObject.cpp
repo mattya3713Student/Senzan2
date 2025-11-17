@@ -178,3 +178,10 @@ const std::string UIObject::GetResourceName() const
 	}
 	return std::string("Non");
 }
+
+//----------------------------------------------------------------.
+
+void UIObject::SetResourceName(const std::string& name)
+{
+	m_pSprite.lock()->SetResourceName(name);
+}

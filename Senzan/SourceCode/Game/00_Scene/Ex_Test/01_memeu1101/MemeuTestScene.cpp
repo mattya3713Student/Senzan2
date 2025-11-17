@@ -18,6 +18,7 @@ MemeuTestScene::MemeuTestScene()
 	: SceneBase()
 	, m_pCamera(std::make_shared<ThirdPersonCamera>())
 	, m_pLight(std::make_shared<DirectionLight>())
+	, m_TestSprite(std::make_shared<UIObject>())
 {
 	Initialize();
 }
@@ -66,8 +67,6 @@ void MemeuTestScene::Draw()
 	m_pGround->DrawDepth();
 	Shadow::End();
 	m_pGround->Draw();
-	
-
 }
 
 HRESULT MemeuTestScene::LoadData()

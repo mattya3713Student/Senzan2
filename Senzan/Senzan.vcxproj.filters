@@ -122,6 +122,8 @@
     <ClCompile Include="SourceCode\System\Singleton\ImGui\CImGuiManager.cpp" />
     <ClCompile Include="SourceCode\Game\05_InputDevice\XInputConfig\XInputConfig.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\CollisionDetector\CollisionDetector.cpp" />
+    <ClCompile Include="SourceCode\Game\00_Scene\Ex_Test\03_UIEditor\UIEditor.cpp" />
+    <ClCompile Include="SourceCode\Game\03_Collision\Sprite\SpriteCollider.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SourceCode\Constant.h" />
@@ -259,6 +261,8 @@
     <ClInclude Include="SourceCode\Game\05_InputDevice\XInputConfig\XInputConfig.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\CollisionInfo.h" />
     <ClInclude Include="SourceCode\System\Singleton\CollisionDetector\CollisionDetector.h" />
+    <ClInclude Include="SourceCode\Game\00_Scene\Ex_Test\03_UIEditor\UIEditor.h" />
+    <ClInclude Include="SourceCode\Game\03_Collision\Sprite\SpriteCollider.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Shader\PMX\Header.hlsli" />
