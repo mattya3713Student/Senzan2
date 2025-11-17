@@ -3,6 +3,7 @@
 #include "System/Singleton/CameraManager/CameraManager.h"
 #include "Game/02_Camera/CameraBase.h"
 #include "Game/02_Camera/ThirdPersonCamera/ThirdPersonCamera.h"
+#include "ResourceManager/SpriteManager/SpriteManager.h"
 
 #include "Graphic/Shadow/Shadow.h"
 #include "Graphic/Light/DirectionLight/DirectionLight.h"
@@ -38,6 +39,8 @@ void MemeuTestScene::Initialize()
 	LightManager::AttachDirectionLight(m_pLight);
 
 	m_pGround = std::make_unique<Ground>();
+
+	SpriteManager::LoadSprites();
 }
 
 void MemeuTestScene::Create()

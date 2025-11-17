@@ -112,8 +112,8 @@ void SceneManager::MakeScene(eList Scene)
 			m_pScene = std::make_unique<MattyaTestScene>();
 			break;
 		case eList::Memeu:
-			break;
 			m_pScene = std::make_unique<MemeuTestScene>();
+			break;
 		case eList::L:
 			m_pScene = std::make_unique<LTestScene>();
 			break;
