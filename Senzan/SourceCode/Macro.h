@@ -38,3 +38,18 @@ inline void XMMatrixToD3DXMatrix(D3DXMATRIX & outD3d9Matrix, const DirectX::XMMA
 	DirectX::XMStoreFloat4(reinterpret_cast<DirectX::XMFLOAT4*>(&outD3d9Matrix.m[2]), Row2);
 	DirectX::XMStoreFloat4(reinterpret_cast<DirectX::XMFLOAT4*>(&outD3d9Matrix.m[3]), Row3);
 }
+
+// IMGUI日本語対応.
+#define IMGUI_JP(str) reinterpret_cast<const char*>(u8##str)
+
+// UIEditorに使用、ナンバリング削除マクロ.
+#include <regex>
+inline std::string GetBaseName(const std::string& name)
+{
+	std::regex re(R"((.*?)(?:_\d+)?$)");
+	std::smatch match;
+	if (std::regex_match(name, match, re)) {
+		return match[1].str();
+	}
+	return name;
+}

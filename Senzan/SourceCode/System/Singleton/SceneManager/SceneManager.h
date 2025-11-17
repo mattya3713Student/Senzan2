@@ -25,6 +25,8 @@ enum class eList
 	Mattya, 
 	Memeu, 	
 	L, 	
+
+	UIEditor,
 #endif // _DEBUG
 
 	MAX,

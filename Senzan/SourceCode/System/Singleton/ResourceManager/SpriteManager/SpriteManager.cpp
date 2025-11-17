@@ -78,7 +78,7 @@ bool SpriteManager::LoadSprites2D()
 		{
 			const std::string	extension = Entry.path().extension().string();	// 拡張子.
 			const std::string	fileName = Entry.path().stem().string();		// ファイル名.
-			const std::wstring	filePath = Entry.path().wstring();				// ファイルパス.
+			const std::string	filePath = Entry.path().string();				// ファイルパス.
 
 			// 拡張子が".png"でない場合読み込まない.
 			if (extension != ".png" && extension != ".PNG") { return; }
@@ -103,7 +103,7 @@ bool SpriteManager::LoadSprites2D()
 	}
 	catch (const std::exception& e)
 	{
-		_ASSERT_EXPR(false, e.what());
+		//_ASSERT_EXPR(false, e.what());
 		return false;
 	}
 
