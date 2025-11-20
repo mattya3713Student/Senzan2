@@ -115,7 +115,7 @@ protected:
 	std::vector<DirectX::XMFLOAT4> CalcFrustum();
 
 protected:
-	Transform			m_Transform;
+	Transform			m_spTransform;
 	DirectX::XMFLOAT3	m_LookPos;	// 注視点.
 	float m_Distance;
 

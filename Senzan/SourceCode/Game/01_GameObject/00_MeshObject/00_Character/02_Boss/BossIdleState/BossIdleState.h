@@ -2,7 +2,7 @@
 
 //基底クラス.
 #include "System//Utility//StateMachine//StateBase.h"
-#include "Game\03_Collision\Capsule\CapsuleCollider.h"
+#include "Game\03_Collision\00_Core\01_Capsule\CapsuleCollider.h"
 
 //前方宣言.
 class Boss;

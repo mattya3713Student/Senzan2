@@ -46,10 +46,10 @@
     <ClCompile Include="SourceCode\Game\02_Camera\CameraBase.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\CameraManager\CameraManager.cpp" />
     <ClCompile Include="SourceCode\Game\02_Camera\ThirdPersonCamera\ThirdPersonCamera.cpp" />
-    <ClCompile Include="SourceCode\Game\03_Collision\Box\BoxCollider.cpp" />
-    <ClCompile Include="SourceCode\Game\03_Collision\Capsule\CapsuleCollider.cpp" />
-    <ClCompile Include="SourceCode\Game\03_Collision\ColliderBase.cpp" />
-    <ClCompile Include="SourceCode\Game\03_Collision\Sphere\SphereCollider.cpp" />
+    <ClCompile Include="SourceCode\Game\03_Collision\00_Core\00_Box\BoxCollider.cpp" />
+    <ClCompile Include="SourceCode\Game\03_Collision\00_Core\01_Capsule\CapsuleCollider.cpp" />
+    <ClCompile Include="SourceCode\Game\03_Collision\00_Core\ColliderBase.cpp" />
+    <ClCompile Include="SourceCode\Game\03_Collision\00_Core\02_Sphere\SphereCollider.cpp" />
     <ClCompile Include="SourceCode\Game\04_Time\Time.cpp" />
     <ClCompile Include="SourceCode\Game\05_InputDevice\Input.cpp" />
     <ClCompile Include="SourceCode\Game\05_InputDevice\KeyInput\KeyInput.cpp" />
@@ -177,10 +177,10 @@
     <ClInclude Include="SourceCode\Game\02_Camera\CameraBase.h" />
     <ClInclude Include="SourceCode\System\Singleton\CameraManager\CameraManager.h" />
     <ClInclude Include="SourceCode\Game\02_Camera\ThirdPersonCamera\ThirdPersonCamera.h" />
-    <ClInclude Include="SourceCode\Game\03_Collision\Box\BoxCollider.h" />
-    <ClInclude Include="SourceCode\Game\03_Collision\Capsule\CapsuleCollider.h" />
-    <ClInclude Include="SourceCode\Game\03_Collision\ColliderBase.h" />
-    <ClInclude Include="SourceCode\Game\03_Collision\Sphere\SphereCollider.h" />
+    <ClInclude Include="SourceCode\Game\03_Collision\00_Core\00_Box\BoxCollider.h" />
+    <ClInclude Include="SourceCode\Game\03_Collision\00_Core\01_Capsule\CapsuleCollider.h" />
+    <ClInclude Include="SourceCode\Game\03_Collision\00_Core\ColliderBase.h" />
+    <ClInclude Include="SourceCode\Game\03_Collision\00_Core\02_Sphere\SphereCollider.h" />
     <ClInclude Include="SourceCode\Game\04_Time\Time.h" />
     <ClInclude Include="SourceCode\Game\05_InputDevice\Input.h" />
     <ClInclude Include="SourceCode\Game\05_InputDevice\KeyInput\KeyInput.h" />
@@ -257,9 +257,10 @@
     <ClInclude Include="Data\ImGui\Library\imstb_truetype.h" />
     <ClInclude Include="SourceCode\System\Singleton\ImGui\CImGuiManager.h" />
     <ClInclude Include="SourceCode\Game\05_InputDevice\XInputConfig\XInputConfig.h" />
-    <ClInclude Include="SourceCode\Game\03_Collision\CollisionInfo.h" />
+    <ClInclude Include="SourceCode\Game\03_Collision\00_Core\CollisionInfo.h" />
     <ClInclude Include="SourceCode\System\Singleton\CollisionDetector\CollisionDetector.h" />
-    <ClInclude Include="SourceCode\EnumFlags.h" />
+    <ClInclude Include="SourceCode\System\Utility\EnumFlags\EnumFlags.h" />
+    <ClInclude Include="SourceCode\Game\03_Collision\00_Core\Ex_CompositeCollider\CompositeCollider.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Shader\PMX\Header.hlsli" />

@@ -10,7 +10,7 @@
 #include <D3DX11async.h> // D3DX11CompileFromFile のため
 #include <cassert>
 
-#include "Game/03_Collision/ColliderBase.h"
+#include "Game/03_Collision/00_Core/ColliderBase.h"
 
 class DirectX11;
 class CameraManager;

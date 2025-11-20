@@ -130,7 +130,7 @@ protected:
 	ID3D11Buffer* m_pCBufferPerMaterial;	// コンスタントバッファ(マテリアル毎).
 	ID3D11Buffer* m_pCBufferPerFrame;		// コンスタントバッファ(フレーム毎).
 
-	Transform		m_Transform;
+	Transform		m_spTransform;
 	DirectX::XMFLOAT4	m_Quaternion;
 
 	DirectX::XMMATRIX		m_WorldMatrix;// ワールド行列.

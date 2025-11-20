@@ -17,20 +17,20 @@ public:
 public: 
 
 	// Transformæ“¾.
-	inline const std::shared_ptr<Transform>& GetTransform() const noexcept { return m_Transform; }	
+	inline const std::shared_ptr<Transform>& GetTransform() const noexcept { return m_spTransform; }	
 	// ƒRƒs[.
 	void SetTransform(const Transform& Transform);															
 	// shared‚ÌƒRƒs[.
-	inline void SetTransform(const std::shared_ptr<Transform>& transformPtr) { m_Transform = transformPtr; }		
+	inline void SetTransform(const std::shared_ptr<Transform>& transformPtr) { m_spTransform = transformPtr; }		
 	// shared‚ÌMove.
-	inline void SetTransform(std::shared_ptr<Transform>&& transformPtr) { m_Transform = std::move(transformPtr); }
+	inline void SetTransform(std::shared_ptr<Transform>&& transformPtr) { m_spTransform = std::move(transformPtr); }
 	
 	//----------------------------------------.
 	// À•W‚ğæ“¾.
-	inline const DirectX::XMFLOAT3& GetPosition() const noexcept { return m_Transform->Position; }
-	inline float GetPositionX() const noexcept { return m_Transform->Position.x; }
-	inline float GetPositionY() const noexcept { return m_Transform->Position.y; }
-	inline float GetPositionZ() const noexcept { return m_Transform->Position.z; }
+	inline const DirectX::XMFLOAT3& GetPosition() const noexcept { return m_spTransform->Position; }
+	inline float GetPositionX() const noexcept { return m_spTransform->Position.x; }
+	inline float GetPositionY() const noexcept { return m_spTransform->Position.y; }
+	inline float GetPositionZ() const noexcept { return m_spTransform->Position.z; }
 
 	// À•W‚ğİ’è.
 	void SetPosition(const DirectX::XMFLOAT3& Position);
@@ -49,11 +49,11 @@ public:
 
 	//----------------------------------------.
 	// ‰ñ“]‚ğæ“¾.
-	inline const DirectX::XMFLOAT3& GetRotation() const noexcept { return m_Transform->Rotation; }
-	inline float GetRotationX() const noexcept { return m_Transform->Rotation.x; }
-	inline float GetRotationY() const noexcept { return m_Transform->Rotation.y; }
-	inline float GetRotationZ() const noexcept { return m_Transform->Rotation.z; }
-	inline const DirectX::XMFLOAT4& Quaternion() const noexcept { return m_Transform->Quaternion; }
+	inline const DirectX::XMFLOAT3& GetRotation() const noexcept { return m_spTransform->Rotation; }
+	inline float GetRotationX() const noexcept { return m_spTransform->Rotation.x; }
+	inline float GetRotationY() const noexcept { return m_spTransform->Rotation.y; }
+	inline float GetRotationZ() const noexcept { return m_spTransform->Rotation.z; }
+	inline const DirectX::XMFLOAT4& Quaternion() const noexcept { return m_spTransform->Quaternion; }
 
 	// ‰ñ“]‚ğİ’è.
 	void SetRotation(const DirectX::XMFLOAT3& Rotation);
@@ -66,10 +66,10 @@ public:
 
 	//----------------------------------------.
 	// Šgk‚ğæ“¾.
-	inline const DirectX::XMFLOAT3& GetScale() const noexcept { return m_Transform->Scale; }
-	inline float GetScaleX() const noexcept { return m_Transform->Scale.x; }
-	inline float GetScaleY() const noexcept { return m_Transform->Scale.y; }
-	inline float GetScaleZ() const noexcept { return m_Transform->Scale.z; }
+	inline const DirectX::XMFLOAT3& GetScale() const noexcept { return m_spTransform->Scale; }
+	inline float GetScaleX() const noexcept { return m_spTransform->Scale.x; }
+	inline float GetScaleY() const noexcept { return m_spTransform->Scale.y; }
+	inline float GetScaleZ() const noexcept { return m_spTransform->Scale.z; }
 
 	// Šgk‚ğİ’è.
 	void SetScale(const DirectX::XMFLOAT3& Scale);
@@ -95,7 +95,7 @@ public:
 	void SetIsRenderActive(const bool isActive);
 
 protected:
-	std::shared_ptr<Transform> m_Transform;
+	std::shared_ptr<Transform> m_spTransform;
 	std::string			m_Tag;
 
 	// ŠÔ‚ÌÚ“x(’Êí1f, 2f‚Å“ñ”{‚ÌÚ“x‚Å“®‚­).

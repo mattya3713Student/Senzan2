@@ -14,7 +14,7 @@ MeshBase::MeshBase()
 	, m_pCBufferPerMesh(nullptr)
 	, m_pCBufferPerMaterial(nullptr)
 	, m_pCBufferPerFrame(nullptr)
-	, m_Transform()
+	, m_spTransform()
 	, m_Quaternion()
 	, m_WorldMatrix()
 	, m_ResourceName()
@@ -35,14 +35,14 @@ MeshBase::~MeshBase()
 
 void MeshBase::SetPosition(const DirectX::XMFLOAT3& Position)
 {
-	m_Transform.Position = Position;
+	m_spTransform.Position = Position;
 }
 
 //--------------------------------------------------------------------------------------
 
 void MeshBase::SetRotation(const DirectX::XMFLOAT3& Rotation)
 {
-	m_Transform.Rotation = Rotation;
+	m_spTransform.Rotation = Rotation;
 }
 
 //--------------------------------------------------------------------------------------
@@ -56,7 +56,7 @@ void MeshBase::SetQuaternion(const DirectX::XMFLOAT4& quaternion)
 
 void MeshBase::SetScale(const DirectX::XMFLOAT3& Scale)
 {
-	m_Transform.Scale = Scale;
+	m_spTransform.Scale = Scale;
 }
 
 //--------------------------------------------------------------------------------------
@@ -89,21 +89,21 @@ void MeshBase::CalcWorldMatrix()
 
 	// ägëÂèkè¨çsóÒçÏê¨.
 	mScale = DirectX::XMMatrixScaling(
-		m_Transform.Scale.x,
-		m_Transform.Scale.y,
-		m_Transform.Scale.z);
+		m_spTransform.Scale.x,
+		m_spTransform.Scale.y,
+		m_spTransform.Scale.z);
 
 	// ïΩçsà⁄ìÆçsóÒçÏê¨.
 	mTran = DirectX::XMMatrixTranslation(
-		m_Transform.Position.x,
-		m_Transform.Position.y,
-		m_Transform.Position.z);
+		m_spTransform.Position.x,
+		m_spTransform.Position.y,
+		m_spTransform.Position.z);
 
 	// å¬ï ÇÃâÒì]çsóÒÇåvéZ (D3DXÇ©ÇÁXMÇ÷)
 	DirectX::XMMATRIX mYaw, mPitch, mRoll;
-	mYaw = DirectX::XMMatrixRotationY(m_Transform.Rotation.y); // Yaw (Yé≤)
-	mPitch = DirectX::XMMatrixRotationX(m_Transform.Rotation.x); // Pitch (Xé≤)
-	mRoll = DirectX::XMMatrixRotationZ(m_Transform.Rotation.z); // Roll (Zé≤)
+	mYaw = DirectX::XMMatrixRotationY(m_spTransform.Rotation.y); // Yaw (Yé≤)
+	mPitch = DirectX::XMMatrixRotationX(m_spTransform.Rotation.x); // Pitch (Xé≤)
+	mRoll = DirectX::XMMatrixRotationZ(m_spTransform.Rotation.z); // Roll (Zé≤)
 
 	// âÒì]çsóÒÇçáê¨ (Yaw * Pitch * Roll ÇÃèá)
 	// ÅyD3DXÇ©ÇÁXMÇ÷ÅzçsóÒèÊéZÇXMMatrixMultiplyÇ…íuÇ´ä∑Ç¶
