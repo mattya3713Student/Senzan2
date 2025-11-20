@@ -2,14 +2,19 @@
 #include "Graphic/DirectX/DirectX11/DirectX11.h"       
 #include "System/Singleton/CameraManager/CameraManager.h"       
 
+// TODO : リファタリング前.
+
+
 CollisionVisualizer::CollisionVisualizer()
     : m_DebugInfoQueue()
 {
-    // 1. 共通リソースの作成
+    /*try
+        catch()*/
+    // 共通リソースの作成.
     CreateShader();
     CreateConstantBuffer();
 
-    // 2. 形状ごとのメッシュリソースの作成と登録
+    // 形状ごとのメッシュリソースの作成と登録.
     CreateBoxResources(m_ShapeResources[ColliderBase::eShapeType::Box]);
     CreateSphereResources(m_ShapeResources[ColliderBase::eShapeType::Sphere], 12);
     CreateCapsuleResources(m_ShapeResources[ColliderBase::eShapeType::Capsule], 1.0f, 12);
@@ -21,6 +26,7 @@ CollisionVisualizer::~CollisionVisualizer()
 {
 }
 
+// 描画する当たり判定の登録(毎フレーム登録).
 void CollisionVisualizer::RegisterCollider(const DebugColliderInfo& info)
 {
     m_DebugInfoQueue.push_back(info);
@@ -33,7 +39,7 @@ void CollisionVisualizer::CreateConstantBuffer()
 
     D3D11_BUFFER_DESC desc = {};
     desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-    desc.ByteWidth = sizeof(CBuffer); // ViewProj行列 (64バイト) のみ
+    desc.ByteWidth = sizeof(CBuffer); 
     desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     desc.MiscFlags = 0;
     desc.StructureByteStride = 0;
@@ -54,41 +60,45 @@ void CollisionVisualizer::CreateShader()
 #endif
     HRESULT hr;
 
-    // 1. 頂点シェーダー & インプットレイアウト
-    hr = D3DX11CompileFromFile(_T("Data\\Shader\\Wire\\WireVS.hlsl"), nullptr, nullptr, "VS_Main", "vs_5_0", uCompileFlag, 0, nullptr, compiledShader.GetAddressOf(), errors.GetAddressOf(), nullptr);
-
-    if (FAILED(hr) && errors) {
-        // エラーチェックは重要
-        // OutputDebugStringA((char*)errors->GetBufferPointer());
-        assert(0 && "頂点シェーダーのコンパイル失敗");
-        return;
-    }
+    MyAssert::IsFailed(
+        _T("頂点シェーダーの読み込み."),
+        &D3DX11CompileFromFileA,
+        _T("Data\\Shader\\Wire\\WireVS.hlsl"),
+        nullptr,
+        nullptr,
+        "VS_Main",
+        "vs_5_0",
+        uCompileFlag,
+        0,
+        nullptr,
+        compiledShader.GetAddressOf(),
+        errors.GetAddressOf(),
+        nullptr);
 
     // HLSLの VS_INPUT_VERTEX (スロット0) と VS_INPUT_INSTANCE (スロット1) に対応
     std::vector<D3D11_INPUT_ELEMENT_DESC> layout =
     {
-        // スロット0: 頂点データ
+        // スロット0: 頂点データ.
         {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
 
-        // 1. World Matrix (Offset 0 - 64)
-        // World Matrix (float4x4) を float4 4つに分解
+        // 転倒させる為,行ごとに送る.
+        // World Matrix (Offset 0 - 64).
         {"WORLD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0,  D3D11_INPUT_PER_INSTANCE_DATA, 1},
         {"WORLD", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1},
         {"WORLD", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1},
-        {"WORLD", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1}, // Offset 48
+        {"WORLD", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1}, 
 
-        // 2. Color (Offset 64)
-        {"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 64, D3D11_INPUT_PER_INSTANCE_DATA, 1}, // Offset 64
+        // Color (Offset 64).
+        {"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 64, D3D11_INPUT_PER_INSTANCE_DATA, 1}, 
 
-        // 3. ShapeType + Padding (Offset 80)
-        // C++側の4バイト + 12バイトパディングの16バイト全体を float4 として読み込みます。
-        {"SHAPETYPE", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 80, D3D11_INPUT_PER_INSTANCE_DATA, 1}, // Offset 80
+        // ShapeType + Padding (Offset 80).
+        {"SHAPETYPE", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 80, D3D11_INPUT_PER_INSTANCE_DATA, 1}, 
 
-        // 4. Data0 (Offset 96)
-        {"DATA", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 96, D3D11_INPUT_PER_INSTANCE_DATA, 1}, // Offset 96
+        // Data0 (Offset 96).
+        {"DATA", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 96, D3D11_INPUT_PER_INSTANCE_DATA, 1}, 
 
-        // 5. Data1 (Offset 112)
-        {"DATA", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 112, D3D11_INPUT_PER_INSTANCE_DATA, 1}, // Offset 112
+        // Data1 (Offset 112).
+        {"DATA", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 112, D3D11_INPUT_PER_INSTANCE_DATA, 1},
     };
 
     pDevice->CreateVertexShader(compiledShader->GetBufferPointer(), compiledShader->GetBufferSize(), nullptr, m_VertexShader.GetAddressOf());
@@ -97,7 +107,7 @@ void CollisionVisualizer::CreateShader()
     pDevice->CreateInputLayout(layout.data(), static_cast<UINT>(layout.size()), compiledShader->GetBufferPointer(), compiledShader->GetBufferSize(), m_InputLayout.GetAddressOf());
 
 
-    // 2. ピクセルシェーダー
+    // ピクセルシェーダー
     hr = D3DX11CompileFromFile(_T("Data\\Shader\\Wire\\WirePS.hlsl"), nullptr, nullptr, "PS_Main", "ps_5_0", uCompileFlag, 0, nullptr, compiledShader.ReleaseAndGetAddressOf(), errors.ReleaseAndGetAddressOf(), nullptr);
     if (FAILED(hr) && errors) {
         // OutputDebugStringA((char*)errors->GetBufferPointer());
@@ -174,9 +184,6 @@ void CollisionVisualizer::Draw()
         pDeviceContext->Unmap(m_InstanceBuffer.Get(), 0);
     }
     else { m_DebugInfoQueue.clear(); return; }
-
-    Log::GetInstance().Info("", m_DebugInfoQueue[0].WorldMatrix);
-
 
     // ---------------------------------------------
     // 2. CBufferの更新とセット (ViewProj行列のみ)
@@ -285,8 +292,6 @@ void CollisionVisualizer::Draw()
 // ----------------------------------------------------
 void CollisionVisualizer::CreateBoxResources(ShapeData& out_data)
 {
-    // 単位立方体 (幅1, 高さ1, 奥行き1) のワイヤーフレーム頂点とインデックスを作成
-
     // 各辺の半分の長さは 0.5f に固定
     float half_size = 0.5f;
 

@@ -53,7 +53,6 @@ Player::Player()
     DirectX::XMFLOAT3 scale = { 0.05f, 0.05f, 0.05f };
     m_Transform->SetScale(scale);
 
-    //m_pCollider = std::make_shared<CapsuleCollider>(m_Transform);
     CollisionDetector::GetInstance().RegisterCollider(m_pPressCollider);
 }
 
@@ -72,6 +71,8 @@ void Player::Update()
 
 void Player::LateUpdate()
 {
+    Character::LateUpdate();
+ 
     if (!m_RootState) {
         return;
     }
