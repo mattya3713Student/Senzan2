@@ -17,7 +17,7 @@ public:
 
     inline void Update() override{ for (auto& collider : m_Colliders) collider->Update(); }
 
-    // 形状の追加 (所有権を移動するため unique_ptr を推奨)
+    // 形状の追加 (所有権を移動するため unique_ptr を推奨).
     void AddCollider(std::unique_ptr<ColliderBase> collider) {
         m_Colliders.push_back(std::move(collider));
     }
@@ -27,6 +27,9 @@ public:
     }
 
 protected:
+
+    void SetDebugInfo() { return; }
+    CollisionInfo CheckCollision(const ColliderBase& other) const { return CollisionInfo(); };
     CollisionInfo DispatchCollision(const SphereCollider& other) const override { return CollisionInfo(); }
     CollisionInfo DispatchCollision(const CapsuleCollider& other) const override { return CollisionInfo(); }
     CollisionInfo DispatchCollision(const BoxCollider& other) const override { return CollisionInfo(); }
