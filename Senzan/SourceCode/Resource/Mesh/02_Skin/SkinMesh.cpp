@@ -1203,10 +1203,10 @@ bool SkinMesh::GetPosFromBone(
 			// 【修正】モデルのトランスフォームをXMで構築
 			DirectX::XMMATRIX mScale, mRot;
 
-			// m_TransformはXMFLOAT3/4と仮定してロード
-			DirectX::XMVECTOR scale = DirectX::XMLoadFloat3(&m_Transform.Scale);
-			DirectX::XMVECTOR rotation = DirectX::XMLoadFloat3(&m_Transform.Rotation);
-			DirectX::XMVECTOR position = DirectX::XMLoadFloat3(&m_Transform.Position);
+			// m_spTransformはXMFLOAT3/4と仮定してロード
+			DirectX::XMVECTOR scale = DirectX::XMLoadFloat3(&m_spTransform.Scale);
+			DirectX::XMVECTOR rotation = DirectX::XMLoadFloat3(&m_spTransform.Rotation);
+			DirectX::XMVECTOR position = DirectX::XMLoadFloat3(&m_spTransform.Position);
 			
 			// XM 行列の作成
 			mScale = DirectX::XMMatrixScalingFromVector(scale);
@@ -1261,9 +1261,9 @@ bool SkinMesh::GetDeviaPosFromBone(
 
 			// 【修正】ここから GetPosFromBone と同様のモデル全体トランスフォームを適用
 
-			DirectX::XMVECTOR scale = DirectX::XMLoadFloat3(&m_Transform.Scale);
-			DirectX::XMVECTOR rotation = DirectX::XMLoadFloat3(&m_Transform.Rotation);
-			DirectX::XMVECTOR position = DirectX::XMLoadFloat3(&m_Transform.Position);
+			DirectX::XMVECTOR scale = DirectX::XMLoadFloat3(&m_spTransform.Scale);
+			DirectX::XMVECTOR rotation = DirectX::XMLoadFloat3(&m_spTransform.Rotation);
+			DirectX::XMVECTOR position = DirectX::XMLoadFloat3(&m_spTransform.Position);
 
 			DirectX::XMMATRIX mScale = DirectX::XMMatrixScalingFromVector(scale);
 			DirectX::XMMATRIX mRot = DirectX::XMMatrixRotationRollPitchYawFromVector(rotation);

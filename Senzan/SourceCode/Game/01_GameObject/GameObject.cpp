@@ -3,7 +3,7 @@
 #include "Utility\Math\Math.h"
 
 GameObject::GameObject()
-	: m_Transform		( std::make_shared<Transform>() )
+	: m_spTransform		( std::make_shared<Transform>() )
 	, m_Tag				( "Untagged" )
 	, m_IsActive		( true )
 	, m_IsRenderActive	( true )
@@ -18,13 +18,13 @@ GameObject::~GameObject()
 // コピー.
 void GameObject::SetTransform(const Transform& transform) 
 {
-	// m_Transformが有効なポインタを持っているか確認し、中身を上書きする.
-	if (m_Transform) {
-		*m_Transform = transform;
+	// m_spTransformが有効なポインタを持っているか確認し、中身を上書きする.
+	if (m_spTransform) {
+		*m_spTransform = transform;
 	}
 	else {
 		// nullの場合は新しく作成.
-		m_Transform = std::make_shared<Transform>(transform);
+		m_spTransform = std::make_shared<Transform>(transform);
 	}
 }
 
@@ -34,27 +34,27 @@ void GameObject::SetTransform(const Transform& transform)
 
 void GameObject::SetPosition(const DirectX::XMFLOAT3& Position)
 {
-    m_Transform->Position = Position;
+    m_spTransform->Position = Position;
 }
 
 void GameObject::SetPosition(float X, float Y, float Z)
 {
-    m_Transform->Position = DirectX::XMFLOAT3(X, Y, Z);
+    m_spTransform->Position = DirectX::XMFLOAT3(X, Y, Z);
 }
 
 void GameObject::SetPositionX(float X)
 {
-    m_Transform->Position.x = X;
+    m_spTransform->Position.x = X;
 }
 
 void GameObject::SetPositionY(float Y)
 {
-    m_Transform->Position.y = Y;
+    m_spTransform->Position.y = Y;
 }
 
 void GameObject::SetPositionZ(float Z)
 {
-    m_Transform->Position.z = Z;
+    m_spTransform->Position.z = Z;
 }
 
 
@@ -65,32 +65,32 @@ void GameObject::SetPositionZ(float Z)
 void GameObject::AddPosition(const DirectX::XMFLOAT3& Position)
 {
     // SIMD演算を使用して加算
-    DirectX::XMVECTOR v_pos = DirectX::XMLoadFloat3(&m_Transform->Position);
+    DirectX::XMVECTOR v_pos = DirectX::XMLoadFloat3(&m_spTransform->Position);
     DirectX::XMVECTOR v_add = DirectX::XMLoadFloat3(&Position);
     DirectX::XMVECTOR v_new = DirectX::XMVectorAdd(v_pos, v_add);
-    DirectX::XMStoreFloat3(&m_Transform->Position, v_new);
+    DirectX::XMStoreFloat3(&m_spTransform->Position, v_new);
 }
 
 void GameObject::AddPosition(float X, float Y, float Z)
 {
-    m_Transform->Position.x += X;
-    m_Transform->Position.y += Y;
-    m_Transform->Position.z += Z;
+    m_spTransform->Position.x += X;
+    m_spTransform->Position.y += Y;
+    m_spTransform->Position.z += Z;
 }
 
 void GameObject::AddPositionX(float X)
 {
-    m_Transform->Position.x += X;
+    m_spTransform->Position.x += X;
 }
 
 void GameObject::AddPositionY(float Y)
 {
-    m_Transform->Position.y += Y;
+    m_spTransform->Position.y += Y;
 }
 
 void GameObject::AddPositionZ(float Z)
 {
-    m_Transform->Position.z += Z;
+    m_spTransform->Position.z += Z;
 }
 
 
@@ -100,45 +100,45 @@ void GameObject::AddPositionZ(float Z)
 
 void GameObject::SetRotation(const DirectX::XMFLOAT3& Rotation)
 {
-    m_Transform->Rotation = Rotation;
-    m_Transform->UpdateQuaternionFromRotation();
+    m_spTransform->Rotation = Rotation;
+    m_spTransform->UpdateQuaternionFromRotation();
 }
 
 void GameObject::SetRotation(float X, float Y, float Z)
 {
-    m_Transform->Rotation = DirectX::XMFLOAT3(X, Y, Z);
-    m_Transform->UpdateQuaternionFromRotation(); 
+    m_spTransform->Rotation = DirectX::XMFLOAT3(X, Y, Z);
+    m_spTransform->UpdateQuaternionFromRotation(); 
 }
 
 void GameObject::SetRotationX(float X)
 {
-    m_Transform->Rotation.x = X;
-    m_Transform->UpdateQuaternionFromRotation(); 
+    m_spTransform->Rotation.x = X;
+    m_spTransform->UpdateQuaternionFromRotation(); 
 }
 
 void GameObject::SetRotationY(float Y)
 {
-    m_Transform->Rotation.y = Y;
-    m_Transform->UpdateQuaternionFromRotation(); 
+    m_spTransform->Rotation.y = Y;
+    m_spTransform->UpdateQuaternionFromRotation(); 
 }
 
 void GameObject::SetRotationZ(float Z)
 {
-    m_Transform->Rotation.z = Z;
-    m_Transform->UpdateQuaternionFromRotation();
+    m_spTransform->Rotation.z = Z;
+    m_spTransform->UpdateQuaternionFromRotation();
 }
 
 void GameObject::SetRotationAroundAxis(const DirectX::XMFLOAT3& Axis, float Angle)
 {
     DirectX::XMVECTOR v_axis = DirectX::XMLoadFloat3(&Axis);
     DirectX::XMVECTOR q_axis = DirectX::XMQuaternionRotationAxis(v_axis, Angle);
-    DirectX::XMVECTOR q_current = DirectX::XMLoadFloat4(&m_Transform->Quaternion);
+    DirectX::XMVECTOR q_current = DirectX::XMLoadFloat4(&m_spTransform->Quaternion);
 
     // 現在のクォータニオンに新しい回転を乗算
     DirectX::XMVECTOR q_new = DirectX::XMQuaternionMultiply(q_current, q_axis);
-    DirectX::XMStoreFloat4(&m_Transform->Quaternion, q_new);
+    DirectX::XMStoreFloat4(&m_spTransform->Quaternion, q_new);
 
-    m_Transform->UpdateRotationFromQuaternion();
+    m_spTransform->UpdateRotationFromQuaternion();
 }
 
 
@@ -148,32 +148,32 @@ void GameObject::SetRotationAroundAxis(const DirectX::XMFLOAT3& Axis, float Angl
 
 void GameObject::SetScale(const DirectX::XMFLOAT3& Scale)
 {
-    m_Transform->Scale = Scale;
+    m_spTransform->Scale = Scale;
 }
 
 void GameObject::SetScale(float XYZ)
 {
-    m_Transform->Scale = DirectX::XMFLOAT3(XYZ, XYZ, XYZ);
+    m_spTransform->Scale = DirectX::XMFLOAT3(XYZ, XYZ, XYZ);
 }
 
 void GameObject::SetScale(float X, float Y, float Z)
 {
-    m_Transform->Scale = DirectX::XMFLOAT3(X, Y, Z);
+    m_spTransform->Scale = DirectX::XMFLOAT3(X, Y, Z);
 }
 
 void GameObject::SetScaleX(float X)
 {
-    m_Transform->Scale.x = X;
+    m_spTransform->Scale.x = X;
 }
 
 void GameObject::SetScaleY(float Y)
 {
-    m_Transform->Scale.y = Y;
+    m_spTransform->Scale.y = Y;
 }
 
 void GameObject::SetScaleZ(float Z)
 {
-    m_Transform->Scale.z = Z;
+    m_spTransform->Scale.z = Z;
 }
 
 //-----------------------------------------------------------------------.

@@ -1,5 +1,5 @@
 ﻿#include "CollisionDetector.h"
-#include "Game/03_Collision/ColliderBase.h" 
+#include "Game/03_Collision/00_Core/ColliderBase.h" 
 
 void CollisionDetector::ExecuteCollisionDetection()
 {

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "System//Utility//StateMachine//StateBase.h"
-#include "Game\03_Collision\Capsule\CapsuleCollider.h"
+#include "Game\03_Collision\00_Core\01_Capsule\CapsuleCollider.h"
 
 /*****************************************************************
 *	ボスの攻撃ベースクラス(基底クラス).

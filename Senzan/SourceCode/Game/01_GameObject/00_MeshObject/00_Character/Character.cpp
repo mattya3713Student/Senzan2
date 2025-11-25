@@ -1,18 +1,29 @@
 ﻿#include "Character.h"
-#include "Game/03_Collision/ColliderBase.h"
-#include "Game/03_Collision/Box/BoxCollider.h"
-#include "Game/03_Collision/Capsule/CapsuleCollider.h"
-#include "Game/03_Collision/Sphere/SphereCollider.h"
+#include "Game/03_Collision/00_Core/ColliderBase.h"
+#include "Game/03_Collision/00_Core/Ex_CompositeCollider/CompositeCollider.h"
+#include "Game/03_Collision/00_Core/00_Box/BoxCollider.h"
+#include "Game/03_Collision/00_Core/01_Capsule/CapsuleCollider.h"
+#include "Game/03_Collision/00_Core/02_Sphere/SphereCollider.h"
+
+// 押し戻し判定.
+constexpr eCollisionGroup PRESS_GROUP = eCollisionGroup::Press;
 
 Character::Character()
 	: MeshObject()
-	, m_pPressCollider(std::make_shared<CapsuleCollider>(m_Transform))
+	, m_upColliders()
 {
-	m_pPressCollider->SetColor(Color::eColor::Cyan);
+    m_upColliders = std::make_unique<CompositeCollider>();
 
-    m_pPressCollider->SetHeight(1.0f);
-    m_pPressCollider->SetRadius(1.0f);
-    m_pPressCollider->SetPositionOffset(0.f, 1.5f, 0.f);
+    // 押し戻しの追加.
+    std::unique_ptr<CapsuleCollider> pressCollider = std::make_unique<CapsuleCollider>(m_spTransform);
+
+    pressCollider->SetColor(Color::eColor::Cyan);
+    pressCollider->SetHeight(1.0f);
+    pressCollider->SetRadius(1.0f);
+    pressCollider->SetPositionOffset(0.f, 1.5f, 0.f);
+    pressCollider->SetGroup(PRESS_GROUP);
+
+    m_upColliders->AddCollider(std::move(pressCollider));
 }
 
 Character::~Character()
@@ -21,6 +32,7 @@ Character::~Character()
 
 void Character::Update()
 {
+    m_upColliders->SetDebugInfo();
 }
 
 void Character::LateUpdate()
@@ -31,38 +43,51 @@ void Character::LateUpdate()
 void Character::Draw()
 {
 	MeshObject::Draw();
-	m_pPressCollider->SetDebugInfo();
 }
 
 // 衝突応答処理.
 void Character::HandleCollisionResponse()
 {
-    if (!m_pPressCollider) return;
+    if (!m_upColliders) return;
 
-    // 衝突イベントリストを取得.
-    const auto events = m_pPressCollider->GetCollisionEvents();
+    // このオブジェクトの当たり判定を取得.
+    const  std::vector<std::unique_ptr<ColliderBase>>& internal_colliders = m_upColliders->GetInternalColliders();
 
-    // ターゲットグループのビットマスクを定義.
-    constexpr eCollisionGroup PRESS_GROUP = eCollisionGroup::Press;
-
-    for (const auto& info : events)
+    // 当たり判定を走査.
+    for (const std::unique_ptr<ColliderBase>& collider_ptr : internal_colliders)
     {
-        if (!info.IsHit) continue;
-        const ColliderBase* otherCollider = info.ColliderB;
-        if (!otherCollider) { continue; }
+        const ColliderBase* current_collider = collider_ptr.get();
+        if (!current_collider) { continue; }
 
-        // 相手のグループが Press であるか (このPressグループとの衝突のみを処理する)
-        if ((otherCollider->GetGroup() & PRESS_GROUP) == eCollisionGroup::None) { continue; }
+        // 自分がPress属性出ないならreturn.
+        if ((current_collider->GetGroup() & PRESS_GROUP) == eCollisionGroup::None) {
+            continue;
+        }
 
-        if (info.PenetrationDepth > 0.0f)
+        // 衝突イベントリストを取得.
+        const std::vector<CollisionInfo>& events = current_collider->GetCollisionEvents();
+
+        // イベントを走査.
+        for (const CollisionInfo& info : events)
         {
-            // 押し戻しベクトル = Normal * Depth
-            // info.Normal は A (自分) を B (相手) から押し出す方向
-            DirectX::XMVECTOR v_correction = DirectX::XMVectorScale(info.Normal, info.PenetrationDepth);
-            DirectX::XMFLOAT3 correction = {};
-            DirectX::XMStoreFloat3(&correction , v_correction);
+            if (!info.IsHit) continue;
+            const ColliderBase* otherCollider = info.ColliderB;
+            if (!otherCollider) { continue; }
 
-			AddPosition(correction);
+            // 相手のグループが Press であるか (このPressグループとの衝突のみを処理する).
+            if ((otherCollider->GetGroup() & PRESS_GROUP) == eCollisionGroup::None) { continue; }
+
+            if (info.PenetrationDepth > 0.0f)
+            {
+                DirectX::XMVECTOR v_correction = DirectX::XMVectorScale(info.Normal, info.PenetrationDepth);
+                DirectX::XMFLOAT3 correction = {};
+                DirectX::XMStoreFloat3(&correction, v_correction);
+
+                // このゲームにy座標の概念はないのでyは切り捨て.
+                correction.y = 0.f;
+
+                AddPosition(correction);
+            }
         }
     }
 }

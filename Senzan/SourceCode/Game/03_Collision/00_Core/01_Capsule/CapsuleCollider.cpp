@@ -1,8 +1,8 @@
 ﻿#include "System/Singleton/Debug/CollisionVisualizer/CollisionVisualizer.h"
 
 #include "CapsuleCollider.h"
-#include "Game/03_Collision/Box/BoxCollider.h"
-#include "Game/03_Collision/Sphere/SphereCollider.h"
+#include "Game/03_Collision/00_Core/00_Box/BoxCollider.h"
+#include "Game/03_Collision/00_Core/02_Sphere/SphereCollider.h"
 
 namespace {
 // 分割数.
@@ -204,16 +204,16 @@ CollisionInfo CapsuleCollider::DispatchCollision(const CapsuleCollider& other) c
 
         float distance = sqrtf(distSq);
 
-        // 法線 N = Normalize(V) (自分カプセルから相手カプセルを押し出す方向 P -> Q)
+        // 法線 N = Normalize(V) (自分カプセルから相手カプセルを押し出す方向 P -> Q).
         info.Normal = DirectX::XMVector3Normalize(v_shortest);
 
-        // めり込み深さ D = (R1 + R2) - |V|
+        // めり込み深さ D = (R1 + R2) - |V|.
         info.PenetrationDepth = requiredDistance - distance;
 
-        // 接触点: ２つの最短点を結ぶ線分の中点
+        // 接触点: ２つの最短点を結ぶ線分の中点.
         info.ContactPoint = DirectX::XMVectorScale(DirectX::XMVectorAdd(closest_p, closest_q), 0.5f);
 
-        // 衝突に関わったコライダーへのポインタ設定
+        // 衝突に関わったコライダーへのポインタ設定.
         info.ColliderA = this;
         info.ColliderB = &other;
     }

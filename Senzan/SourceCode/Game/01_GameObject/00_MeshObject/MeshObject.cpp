@@ -46,9 +46,9 @@ void MeshObject::Draw()
 	// 描画直前で必要な情報をMesh本体に送る.
 	if (auto pMesh = m_pMesh.lock())
 	{
-		pMesh->SetPosition(m_Transform->Position);
-		pMesh->SetRotation(m_Transform->Rotation);
-		pMesh->SetScale(m_Transform->Scale);
+		pMesh->SetPosition(m_spTransform->Position);
+		pMesh->SetRotation(m_spTransform->Rotation);
+		pMesh->SetScale(m_spTransform->Scale);
 		pMesh->SetIsLight(m_IsLight);
 		pMesh->SetIsShadow(m_IsShadow);
 	}
@@ -79,9 +79,9 @@ void MeshObject::DrawDepth()
 	// 描画直前で必要な情報をMesh本体に送る.
 	if (auto pMesh = m_pMesh.lock())
 	{
-		pMesh->SetPosition(m_Transform->Position);
-		pMesh->SetRotation(m_Transform->Rotation);
-		pMesh->SetScale(m_Transform->Scale);
+		pMesh->SetPosition(m_spTransform->Position);
+		pMesh->SetRotation(m_spTransform->Rotation);
+		pMesh->SetScale(m_spTransform->Scale);
 	}
 
 	// StaticMesh時の深度描画.

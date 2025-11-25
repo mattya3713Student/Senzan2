@@ -29,9 +29,9 @@ void CSpriteObject::Draw()
 	}
 
 	//描画直前で座標や回転情報などを更新.
-	m_pSprite->SetPosition(m_Transform->Position);
-	m_pSprite->SetRotation(m_Transform->Rotation);
-	m_pSprite->SetScale(m_Transform->Scale);
+	m_pSprite->SetPosition(m_spTransform->Position);
+	m_pSprite->SetRotation(m_spTransform->Rotation);
+	m_pSprite->SetScale(m_spTransform->Scale);
 
 	//レンダリング.
 	m_pSprite->Render();
