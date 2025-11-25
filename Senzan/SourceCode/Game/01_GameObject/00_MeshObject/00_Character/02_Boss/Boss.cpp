@@ -31,9 +31,9 @@ Boss::Boss()
 	DirectX::XMFLOAT3 pos = { 0.05f, 0.05f, 20.05f };
 	DirectX::XMFLOAT3 scale = { 0.05f, 0.05f, 0.05f };
 	DirectX::XMFLOAT3 Rotation = { 0.0f,0.0f,0.0f };
-	m_Transform->SetPosition(pos);
-	m_Transform->SetScale(scale);
-	m_Transform->SetRotationDegrees(Rotation);
+	m_spTransform->SetPosition(pos);
+	m_spTransform->SetScale(scale);
+	m_spTransform->SetRotationDegrees(Rotation);
 
 	// ステートマシンの初期ステートを、SlashChargeStateに設定
 	m_State->ChangeState(std::make_shared<BossChargeSlashState>(this));

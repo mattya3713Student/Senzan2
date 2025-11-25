@@ -26,7 +26,7 @@
 #include "State/Root/01_Action/02_Dodge/00_DodgeExecute/DodgeExecute.h"	
 #include "State/Root/01_Action/02_Dodge/01_JustDodge/JustDodge.h"	
 
-#include "Game/03_Collision/Capsule/CapsuleCollider.h"
+#include "Game/03_Collision/00_Core/01_Capsule/CapsuleCollider.h"
 
 #include "Game/04_Time/Time.h"
 
@@ -45,25 +45,26 @@ Player::Player()
     auto mesh = ResourceManager::GetSkinMesh("player_0");
     _ASSERT_EXPR(mesh != nullptr, "メッシュの取得に失敗");
     AttachMesh(mesh);
+
     //デバック確認のため.
     DirectX::XMFLOAT3 pos = { 0.f, 0.f, 0.f };
-    m_Transform->SetPosition(pos);
-
+    m_spTransform->SetPosition(pos);
 
     DirectX::XMFLOAT3 scale = { 0.05f, 0.05f, 0.05f };
-    m_Transform->SetScale(scale);
+    m_spTransform->SetScale(scale);
 
-    //m_pCollider = std::make_shared<CapsuleCollider>(m_Transform);
-    CollisionDetector::GetInstance().RegisterCollider(m_pPressCollider);
+    //CollisionDetector::GetInstance().RegisterCollider(m_pPressCollider);
 }
 
 Player::~Player()
 {
-    CollisionDetector::GetInstance().UnregisterCollider(m_pPressCollider);
+    //CollisionDetector::GetInstance().UnregisterCollider(m_pPressCollider);
 }
 
 void Player::Update()
 {
+    Character::Update();
+
 	if (!m_RootState) {
 		return;
 	}
@@ -72,6 +73,8 @@ void Player::Update()
 
 void Player::LateUpdate()
 {
+    Character::LateUpdate();
+ 
     if (!m_RootState) {
         return;
     }

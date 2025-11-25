@@ -63,7 +63,7 @@ public:
 	inline const DirectX::XMFLOAT3 GetPosition() const noexcept; 
 
 	// 自身の形状を取得する.
-	inline virtual const eShapeType GetShapeType() const noexcept = 0;
+	inline virtual const eShapeType GetShapeType() const noexcept { return eShapeType::_Max; }
 
 	// 座標のオフセット値を取得する.
 	inline const DirectX::XMFLOAT3 GetPositionOffset() const noexcept { return m_PositionOffset; }

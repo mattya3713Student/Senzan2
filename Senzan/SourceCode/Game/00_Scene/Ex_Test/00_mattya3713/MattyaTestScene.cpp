@@ -12,8 +12,8 @@
 #include "Game/01_GameObject/00_MeshObject/00_Character/00_Ground/Ground.h"	// 地面Static.
 #include "Game/01_GameObject/00_MeshObject/00_Character/01_Player/Player.h"	// プレイヤー.
 
-#include "Game/03_Collision/ColliderBase.h"	
-#include "Game/03_Collision/Capsule/CapsuleCollider.h"
+#include "Game/03_Collision/00_Core/ColliderBase.h"	
+#include "Game/03_Collision/00_Core/01_Capsule/CapsuleCollider.h"
 
 #include "System/Singleton/Debug/CollisionVisualizer/CollisionVisualizer.h"
 

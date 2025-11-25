@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "Game/01_GameObject/00_MeshObject/MeshObject.h"
-#include "Game/03_Collision/ColliderBase.h"
+class CompositeCollider;
 
 
 /**************************************************
@@ -23,5 +23,5 @@ protected:
 
 
 protected:
-	std::shared_ptr<ColliderBase>	m_pPressCollider;	// 衝突.
+	std::unique_ptr<CompositeCollider>	m_upColliders;	// 衝突.
 };

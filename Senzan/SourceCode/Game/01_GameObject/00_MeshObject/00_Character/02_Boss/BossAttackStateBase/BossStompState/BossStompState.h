@@ -1,7 +1,7 @@
 #pragma once
 
 #include "..//BossAttackStateBase.h"	//Šî’êƒNƒ‰ƒX.
-#include "Game\03_Collision\Capsule\CapsuleCollider.h"
+#include "Game\03_Collision\00_Core\01_Capsule\CapsuleCollider.h"
 
 class BossStompState final
 	: public BossAttackStateBase
