@@ -5,6 +5,7 @@
 template<typename FSM_Owner> class StateMachine;
 
 class PlayerStateBase;
+class CameraManager;
 
 // 前方宣言.
 namespace PlayerState {
@@ -79,6 +80,13 @@ private:
 	// マッピングを初期化.
 	void InitializeStateRefMap();
 
+	// 衝突_被ダメージ.
+	void HandleDamageDetection() override;
+	// 衝突_攻撃判定.
+	void HandleAttackDetection() override;
+	// 衝突_回避.
+	void HandleDodgeDetection() override;
+
 protected:
 	std::unique_ptr<PlayerState::Root> m_RootState;	// ステートマシーン.
 
@@ -88,8 +96,14 @@ protected:
 
 protected:
 
+	//---共有---.
+	DirectX::XMFLOAT3	m_MoveVec;			// 一時保存の移動ベクトル.
+
+	//---System関連---.
+	DirectX::XMFLOAT3	m_KnockBackVec;		// ノックバックのベクトル.
+	float				m_KnockBackPower;	// ノックバックの強さ(被ダメの量に比例する予定).
+
 	//---MoveMent関連---.
-	float m_RunMoveSpeed;		// 移動速度.
-	DirectX::XMFLOAT2 m_MoveVec;// 一時保存の移動ベクトル,yをz座標として使用.
+	float				m_RunMoveSpeed;		// 移動速度.
 
 };

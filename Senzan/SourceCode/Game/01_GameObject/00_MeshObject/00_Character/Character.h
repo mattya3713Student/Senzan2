@@ -18,8 +18,16 @@ public:
 	virtual void Draw() override;
 
 protected:
+
 	// 衝突応答処理.
 	void HandleCollisionResponse();
+
+	// 衝突_被ダメージ.
+	virtual void HandleDamageDetection() = 0;
+	// 衝突_攻撃判定.
+	virtual void HandleAttackDetection() = 0;
+	// 衝突_回避.
+	virtual void HandleDodgeDetection() = 0;
 
 
 protected:

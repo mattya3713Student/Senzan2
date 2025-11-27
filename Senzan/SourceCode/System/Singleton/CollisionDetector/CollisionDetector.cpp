@@ -37,7 +37,8 @@ void CollisionDetector::ExecuteCollisionDetection()
             CollisionInfo info_reverse = info;
 
             // 法線ベクトルを反転.
-            info_reverse.Normal = DirectX::XMVectorNegate(info.Normal);
+            DirectX::XMVECTOR v_normal_reverse = DirectX::XMLoadFloat3(&info.Normal);
+            DirectX::XMStoreFloat3(&info_reverse.Normal, v_normal_reverse);
 
             // ポインタを入れ替え.
             const ColliderBase* temp_collider = info.ColliderA;
@@ -75,4 +76,18 @@ void CollisionDetector::UnregisterCollider(ColliderBase* Collider)
 {
     auto it = std::remove(m_Colliders.begin(), m_Colliders.end(), static_cast<ColliderBase*>(Collider));
     m_Colliders.erase(it, m_Colliders.end());
+}
+
+// コライダーの解除.
+void CollisionDetector::UnregisterCollider(const CompositeCollider& Collider)
+{
+    const std::vector<std::unique_ptr<ColliderBase>>& internal_colliders = Collider.GetInternalColliders();
+
+    for (const std::unique_ptr<ColliderBase>& collider_ptr : internal_colliders)
+    {
+        if (collider_ptr)
+        {
+            UnregisterCollider(collider_ptr.get());
+        }
+    }
 }

@@ -27,16 +27,20 @@
 #include "State/Root/01_Action/02_Dodge/01_JustDodge/JustDodge.h"	
 
 #include "Game/03_Collision/00_Core/01_Capsule/CapsuleCollider.h"
+#include "Game/03_Collision/00_Core/Ex_CompositeCollider/CompositeCollider.h"
 
 #include "Game/04_Time/Time.h"
 
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
+#include "System/Singleton/CameraManager/CameraManager.h"
 
 Player::Player()    
 	: Character         ()
 	, m_RootState       (std::make_unique<PlayerState::Root>(this))
-    , m_RunMoveSpeed    (1.f)
-    , m_MoveVec         (0.0f, 0.0f)
+    , m_KnockBackVec    ( { 0.f,0.f,0.f } )
+    , m_KnockBackPower  ( 0.f )
+    , m_RunMoveSpeed    ( 0.5f )
+    , m_MoveVec         ( { 0.f,0.f,0.f } )
 {
     // ステートの初期化.
     InitializeStateRefMap();
@@ -47,21 +51,31 @@ Player::Player()
     AttachMesh(mesh);
 
     //デバック確認のため.
-    DirectX::XMFLOAT3 pos = { 0.f, 0.f, 0.f };
+    DirectX::XMFLOAT3 pos = { 0.f, 0.f, -3.f };
     m_spTransform->SetPosition(pos);
 
     DirectX::XMFLOAT3 scale = { 0.05f, 0.05f, 0.05f };
     m_spTransform->SetScale(scale);
 
-    //CollisionDetector::GetInstance().RegisterCollider(m_pPressCollider);
+    // 押し戻しの追加.
+    std::unique_ptr<CapsuleCollider> damage_collider = std::make_unique<CapsuleCollider>(m_spTransform);
+
+    damage_collider->SetColor(Color::eColor::Yellow);
+    damage_collider->SetHeight(1.0f);
+    damage_collider->SetRadius(1.0f);
+    damage_collider->SetPositionOffset(0.f, 1.5f, 0.f);
+    damage_collider->SetMyMask(eCollisionGroup::Player_Damage);
+    damage_collider->SetTargetMask(eCollisionGroup::Enemy_Attack);
+
+    m_upColliders->AddCollider(std::move(damage_collider));
+
+    CollisionDetector::GetInstance().RegisterCollider(*m_upColliders);
+
 }
 
 Player::~Player()
 {
-    CollisionDetector::GetInstance().RegisterCollider(*m_upColliders);
-
-
-    //CollisionDetector::GetInstance().UnregisterCollider(m_pPressCollider);
+    CollisionDetector::GetInstance().UnregisterCollider(*m_upColliders);
 }
 
 void Player::Update()
@@ -77,11 +91,20 @@ void Player::Update()
 void Player::LateUpdate()
 {
     Character::LateUpdate();
- 
+
     if (!m_RootState) {
         return;
     }
 
+    // 押し戻し.
+    HandleCollisionResponse();
+
+    // 衝突イベント処理を実行
+    HandleDamageDetection();
+    HandleAttackDetection();
+    HandleDodgeDetection();
+
+    // ステートマシーンの最終更新を実行.
     m_RootState->LateUpdate();
 }
 
@@ -163,4 +186,60 @@ void Player::InitializeStateRefMap()
     m_StateRefMap[PlayerState::eID::AttackCombo_1]  = [this] { return m_RootState->GetCombo1StateRef(); };
     m_StateRefMap[PlayerState::eID::AttackCombo_2]  = [this] { return m_RootState->GetCombo2StateRef(); };
     m_StateRefMap[PlayerState::eID::Parry]          = [this] { return m_RootState->GetParryStateRef(); };
+}
+
+// 衝突_被ダメージ.
+void Player::HandleDamageDetection()
+{
+    if (!m_upColliders) return;
+
+    const auto& internal_colliders = m_upColliders->GetInternalColliders();
+
+    for (const auto& collider_ptr : internal_colliders)
+    {
+        const ColliderBase* current_collider = collider_ptr.get();
+
+        if ((current_collider->GetGroup() & eCollisionGroup::Player_Damage) == eCollisionGroup::None) {
+            continue;
+        }
+
+        for (const CollisionInfo& info : current_collider->GetCollisionEvents())
+        {
+            if (!info.IsHit) continue;
+            const ColliderBase* otherCollider = info.ColliderB;
+            if (!otherCollider) { continue; }
+
+            eCollisionGroup other_group = otherCollider->GetGroup();
+
+            if ((other_group & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None)
+            {
+                // 4. 【Player固有のロジック】: ダメージ処理を実行！
+
+                // 既にスタン中や無敵時間であれば処理を中断
+                if (IsKnockBack() || IsDead()) { continue; }
+
+                // ダメージを適用 (例: HPを減らす)
+                // ApplyDamage(info.DamageAmount);
+
+                m_KnockBackVec = info.Normal;
+                m_KnockBackPower = 3.f;
+
+                // 状態をノックバックに遷移させる
+                ChangeState(PlayerState::eID::KnockBack);
+
+				CameraManager::GetInstance().ShakeCamera(0.5f, 4.5f); // カメラを少し揺らす.
+
+                // 1フレームに1回.
+                return;
+            }
+        }
+    }
+}
+
+void Player::HandleAttackDetection()
+{
+}
+
+void Player::HandleDodgeDetection()
+{
 }

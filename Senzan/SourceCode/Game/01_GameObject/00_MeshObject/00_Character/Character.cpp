@@ -21,9 +21,10 @@ Character::Character()
     pressCollider->SetHeight(1.0f);
     pressCollider->SetRadius(1.0f);
     pressCollider->SetPositionOffset(0.f, 1.5f, 0.f);
-    pressCollider->SetGroup(PRESS_GROUP);
+    pressCollider->SetMyMask(PRESS_GROUP);
+    pressCollider->SetTargetMask(eCollisionGroup::Press);
 
-    m_upColliders->AddCollider(std::move(pressCollider));
+    //m_upColliders->AddCollider(std::move(pressCollider));
 }
 
 Character::~Character()
@@ -37,6 +38,7 @@ void Character::Update()
 
 void Character::LateUpdate()
 {
+
     HandleCollisionResponse();
 }
 
@@ -79,12 +81,12 @@ void Character::HandleCollisionResponse()
 
             if (info.PenetrationDepth > 0.0f)
             {
-                DirectX::XMVECTOR v_correction = DirectX::XMVectorScale(info.Normal, info.PenetrationDepth);
+                DirectX::XMVECTOR v_normal = DirectX::XMLoadFloat3(&info.Normal);
+                DirectX::XMVECTOR v_correction = DirectX::XMVectorScale(v_normal, info.PenetrationDepth);
+                // このゲームにy座標の概念はないのでyは切り捨て.
+                v_correction = DirectX::XMVectorSetY(v_correction, 0.0f);
                 DirectX::XMFLOAT3 correction = {};
                 DirectX::XMStoreFloat3(&correction, v_correction);
-
-                // このゲームにy座標の概念はないのでyは切り捨て.
-                correction.y = 0.f;
 
                 AddPosition(correction);
             }

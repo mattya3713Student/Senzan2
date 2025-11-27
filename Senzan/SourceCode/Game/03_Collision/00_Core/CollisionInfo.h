@@ -8,13 +8,13 @@ struct CollisionInfo
 	bool IsHit = false;
 
 	// 衝突法線.
-	DirectX::XMVECTOR Normal = DirectX::XMVectorZero();
+	DirectX::XMFLOAT3 Normal = {};
 
 	// めり込みの深さ.
 	float PenetrationDepth = 0.0f;
 
 	// 接触点.
-	DirectX::XMVECTOR ContactPoint = DirectX::XMVectorZero();
+	DirectX::XMFLOAT3 ContactPoint = {};
 
 	// 衝突に関わったコライダーへのポインタ.
 	const ColliderBase* ColliderA = nullptr;

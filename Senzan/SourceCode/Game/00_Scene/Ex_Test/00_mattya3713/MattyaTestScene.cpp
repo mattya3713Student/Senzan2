@@ -15,6 +15,8 @@
 #include "Game/03_Collision/00_Core/ColliderBase.h"	
 #include "Game/03_Collision/00_Core/01_Capsule/CapsuleCollider.h"
 
+#include "Game/04_Time/Time.h"
+
 #include "System/Singleton/Debug/CollisionVisualizer/CollisionVisualizer.h"
 
 #include "System/Singleton/CameraManager/CameraManager.h"
@@ -26,6 +28,7 @@ MattyaTestScene::MattyaTestScene()
 	, m_pCamera()
 	, m_pLight(std::make_shared<DirectionLight>())
 	, m_TestPressCollision(std::make_unique<CapsuleCollider>())
+	, m_TestAttackCollision(std::make_unique<CapsuleCollider>())
 	, m_pPlayer(std::make_unique<Player>())
 	, m_pGround(std::make_unique<Ground>())
 {
@@ -51,12 +54,21 @@ void MattyaTestScene::Initialize()
 
 	m_pGround = std::make_unique<Ground>();
 
-	// テスト.
+	m_TestPressCollision->SetColor(Color::eColor::Cyan);
 	m_TestPressCollision->SetHeight(1.0f);
 	m_TestPressCollision->SetRadius(1.0f);
 	m_TestPressCollision->SetPositionOffset(0.f,1.5f,0.f);
-	m_TestPressCollision->SetMask(eCollisionGroup::Press);
+	m_TestPressCollision->SetMyMask(eCollisionGroup::Press);
+	m_TestPressCollision->SetTargetMask(eCollisionGroup::Press);
 	CollisionDetector::GetInstance().RegisterCollider(*m_TestPressCollision);
+
+	m_TestAttackCollision->SetColor(Color::eColor::Red);
+	m_TestAttackCollision->SetHeight(1.0f);
+	m_TestAttackCollision->SetRadius(1.0f);
+	m_TestAttackCollision->SetPositionOffset(0.f,1.5f,3.f);
+	m_TestAttackCollision->SetMyMask(eCollisionGroup::Enemy_Attack);
+	m_TestAttackCollision->SetTargetMask(eCollisionGroup::Player_Damage);
+	CollisionDetector::GetInstance().RegisterCollider(*m_TestAttackCollision);
 }
 
 void MattyaTestScene::Create()
@@ -75,6 +87,24 @@ void MattyaTestScene::LateUpdate()
 	m_pPlayer->LateUpdate();
 	CameraManager::GetInstance().LateUpdate();
 
+	static float s_TimeCounter = 0.0f;
+	float deltaTime = Time::GetDeltaTime();
+	s_TimeCounter += deltaTime;
+	const float PERIOD = 200.0f;		// 周期.
+	const float AMPLITUDE = 3.5f;	// 揺れ幅.
+	float sine_y = AMPLITUDE * sinf(DirectX::XM_2PI * (s_TimeCounter / PERIOD));
+	const float BASE_OFFSET_X = 0.0f;
+	const float BASE_OFFSET_Y = 1.5f;
+	const float BASE_OFFSET_Z = 3.0f;
+	float final_offset_y = BASE_OFFSET_Y + sine_y;
+
+	// オフセット位置を設定
+	m_TestAttackCollision->SetPositionOffset(
+		BASE_OFFSET_X,
+		final_offset_y,
+		BASE_OFFSET_Z
+	);
+
 	CollisionDetector::GetInstance().ExecuteCollisionDetection();
 }
 
@@ -88,6 +118,7 @@ void MattyaTestScene::Draw()
 	m_pPlayer->Draw();
 
 	m_TestPressCollision->SetDebugInfo();
+	m_TestAttackCollision->SetDebugInfo();
 
 	CollisionVisualizer::GetInstance().Draw();
 }

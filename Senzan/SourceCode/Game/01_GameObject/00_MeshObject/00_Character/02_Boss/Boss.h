@@ -78,6 +78,16 @@ public:
 	DirectX::XMFLOAT3 GetTargetPos() { return m_PlayerPos; }
 
 protected:
+
+	// 衝突_被ダメージ.
+	void HandleDamageDetection() override;
+	// 衝突_攻撃判定.
+	void HandleAttackDetection() override;
+	// 衝突_回避.
+	void HandleDodgeDetection() override;
+
+
+protected:
 	//ステートマシンのメンバ変数.
 	std::unique_ptr<StateMachine<Boss>> m_State;
 

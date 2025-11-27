@@ -79,3 +79,15 @@ void Boss::SetTargetPos(const DirectX::XMFLOAT3 Player_Pos)
 {
 	m_PlayerPos = Player_Pos;
 }
+
+void Boss::HandleDamageDetection()
+{
+}
+
+void Boss::HandleAttackDetection()
+{
+}
+
+void Boss::HandleDodgeDetection()
+{
+}

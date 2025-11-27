@@ -14,15 +14,18 @@ namespace {
 }
 
 CameraBase::CameraBase()
-	: m_spTransform()
-	, m_LookPos({ 0.f, 0.f, 0.f })
-	, m_Distance(5.f)
-	, m_View()
-	, m_Proj()
-	, m_MouseSensitivity(MOUSE_SENSITIVITY)
+	: m_spTransform			()
+	, m_LookPos				({ 0.f, 0.f, 0.f })
+	, m_ShakeOffset			({ 0.f, 0.f, 0.f })
+	, m_Distance			(5.f)
+	, m_ForwardVec			()
+	, m_RightVec			()
+	, m_View				()
+	, m_Proj				()
+	, m_MouseSensitivity	(MOUSE_SENSITIVITY)
 	, m_ControllerSensitivity(CONTROLLER_SENSITIVITY)
-	, m_Yaw()
-	, m_Pitch()
+	, m_Yaw					()
+	, m_Pitch				()
 {
 }
 
@@ -166,16 +169,28 @@ const float& CameraBase::GetPitch() const
 	return m_Pitch;
 }
 
+// シェイクオフセットの設定.
+void CameraBase::SetShakeOffset(const DirectX::XMFLOAT3& offset)
+{
+	m_ShakeOffset = offset;
+}
+
+
 //---------------------------------------------------------------------.
 
 void CameraBase::ViewUpdate()
 {
-	// DirectXMathの関数でビュー行列を更新
-	DirectX::XMVECTOR vPosition = DirectX::XMLoadFloat3(&m_spTransform.Position);
-	DirectX::XMVECTOR vLook = DirectX::XMLoadFloat3(&m_LookPos);
-	DirectX::XMVECTOR vUp = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f); // 定数Upベクトル
+	DirectX::XMVECTOR v_position = DirectX::XMLoadFloat3(&m_spTransform.Position);
+	DirectX::XMVECTOR v_look = DirectX::XMLoadFloat3(&m_LookPos);
+	DirectX::XMVECTOR v_up = Axis::UP_VECTOR;
+	DirectX::XMVECTOR v_shake_offset = DirectX::XMLoadFloat3(&m_ShakeOffset);
 
-	m_View = DirectX::XMMatrixLookAtLH(vPosition, vLook, vUp);
+	v_position = DirectX::XMVectorAdd(v_position, v_shake_offset);
+
+	m_View = DirectX::XMMatrixLookAtLH(v_position, v_look, v_up);
+
+	// シェイクオフセットをリセット.
+	m_ShakeOffset = { 0.0f, 0.0f, 0.0f };
 }
 
 //---------------------------------------------------------------------.
@@ -257,4 +272,8 @@ std::vector<DirectX::XMFLOAT4> CameraBase::CalcFrustum()
 	DirectX::XMStoreFloat4(&frustum[5], v_plane_far);
 
 	return frustum;
+}
+
+void CameraBase::ApplyCameraShake()
+{
 }

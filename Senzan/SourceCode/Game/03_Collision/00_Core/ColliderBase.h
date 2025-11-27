@@ -95,18 +95,18 @@ public:
 	inline void ClearCollisionEvents() noexcept { m_CollisionEvents.clear(); }
 	
 	// 自身のグループを設定.
-	inline void SetGroup(eCollisionGroup group) noexcept { m_MyGroup = group; }
+	inline void SetMyMask(eCollisionGroup MyMask) noexcept { m_MyMask = MyMask; }
 	// 衝突を許可するグループを設定.
-	inline void SetMask(eCollisionGroup mask) noexcept { m_CollisionMask = mask; }
+	inline void SetTargetMask(eCollisionGroup TargetMask) noexcept { m_TargetMask = TargetMask; }
 
-	inline eCollisionGroup GetGroup() const noexcept { return m_MyGroup; }
-	inline eCollisionGroup GetMask() const noexcept { return m_CollisionMask; }
+	inline eCollisionGroup GetGroup() const noexcept { return m_MyMask; }
+	inline eCollisionGroup GetMask() const noexcept { return m_TargetMask; }
 
 	// 相手と衝突すべきか.
 	inline bool ShouldCollide(const ColliderBase& other) const noexcept
 	{
-		bool A_collides_with_B = (m_CollisionMask & other.m_MyGroup) != eCollisionGroup::None;
-		bool B_collides_with_A = (other.m_CollisionMask & m_MyGroup) != eCollisionGroup::None;
+		bool A_collides_with_B = (m_TargetMask & other.m_MyMask) != eCollisionGroup::None;
+		bool B_collides_with_A = (other.m_TargetMask & m_MyMask) != eCollisionGroup::None;
 		return A_collides_with_B && B_collides_with_A;
 	}
 
@@ -126,8 +126,8 @@ protected:
 	DirectX::XMFLOAT3	m_PositionOffset;			// オフセット位置.
 
 	// コリジョンフィルター用.
-	eCollisionGroup m_MyGroup = eCollisionGroup::_Max;		// 自身が所属するグループ.
-	eCollisionGroup m_CollisionMask = eCollisionGroup::_Max;	// 衝突対象とするグループ.
+	eCollisionGroup m_MyMask = eCollisionGroup::_Max;		// 自身が所属するグループ.
+	eCollisionGroup m_TargetMask = eCollisionGroup::_Max;	// 衝突対象とするグループ.
 
 	// 検出された衝突情報のリスト.
 	std::vector<CollisionInfo> m_CollisionEvents;

@@ -20,8 +20,10 @@ public:
     // コライダーの登録.
     void RegisterCollider(ColliderBase& Collider);
     void RegisterCollider(const CompositeCollider& Colliders);
+
     // コライダーの解除.
     void UnregisterCollider(ColliderBase* Collider);
+    void UnregisterCollider(const CompositeCollider& Collider);
 
 private:
     CollisionDetector() = default;

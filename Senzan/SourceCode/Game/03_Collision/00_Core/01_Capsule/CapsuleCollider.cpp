@@ -46,7 +46,9 @@ CollisionInfo CapsuleCollider::CheckCollision(const ColliderBase& other) const
     if (info.IsHit)
     {
         // 法線の反転.
-        info.Normal = DirectX::XMVectorNegate(info.Normal);
+        DirectX::XMVECTOR v_normal = DirectX::XMLoadFloat3(&info.Normal);
+        v_normal = DirectX::XMVectorNegate(v_normal);
+        DirectX::XMStoreFloat3(&info.Normal, v_normal);
 
         // ポインタの入れ替え.
         const ColliderBase* temp_collider = info.ColliderA;
@@ -106,21 +108,21 @@ CollisionInfo CapsuleCollider::DispatchCollision(const SphereCollider& other) co
     {
         info.IsHit = true;
 
-        // 距離 (Vの長さ)
+        // 距離 (Vの長さ).
         float distance = sqrtf(distSq);
 
-        // 衝突法線 N = Normalize(V) 
-        // 💡 Normal は A(Capsule)をB(Sphere)から押し出す方向 (P->Q)
-        info.Normal = DirectX::XMVector3Normalize(v_shortest);
+        // 衝突法線 N = Normalize(V) .
+        DirectX::XMVECTOR v_normal = DirectX::XMVector3Normalize(v_shortest);
 
-        // めり込み深さ D = (R_capsule + R_sphere) - |V|
+        // めり込み深さ D = (R_capsule + R_sphere) - |V|.
         info.PenetrationDepth = requiredDistance - distance;
 
-        // 接触点: カプセル側の最短点Pを採用 (カプセル表面上の点ではないことに注意)
-        // より正確な接触点 ContactPoint = P + Normal * R_capsule
-        info.ContactPoint = DirectX::XMVectorAdd(closest_p, DirectX::XMVectorScale(info.Normal, GetRadius()));
+        // 接触点: カプセル表面上の点 (P + N * R_capsule).
+        DirectX::XMVECTOR v_contact_point = DirectX::XMVectorAdd(closest_p, DirectX::XMVectorScale(v_normal, GetRadius()));
+        DirectX::XMStoreFloat3(&info.Normal, v_normal);
+        DirectX::XMStoreFloat3(&info.ContactPoint, v_contact_point);
 
-        // 衝突に関わったコライダーへのポインタ設定
+        // 衝突に関わったコライダーへのポインタ設定.
         info.ColliderA = this;
         info.ColliderB = &other;
     }
@@ -205,13 +207,17 @@ CollisionInfo CapsuleCollider::DispatchCollision(const CapsuleCollider& other) c
         float distance = sqrtf(distSq);
 
         // 法線 N = Normalize(V) (自分カプセルから相手カプセルを押し出す方向 P -> Q).
-        info.Normal = DirectX::XMVector3Normalize(v_shortest);
+        DirectX::XMVECTOR v_normal = DirectX::XMVector3Normalize(v_shortest);
 
         // めり込み深さ D = (R1 + R2) - |V|.
         info.PenetrationDepth = requiredDistance - distance;
 
         // 接触点: ２つの最短点を結ぶ線分の中点.
-        info.ContactPoint = DirectX::XMVectorScale(DirectX::XMVectorAdd(closest_p, closest_q), 0.5f);
+        DirectX::XMVECTOR v_contact_point = DirectX::XMVectorScale(DirectX::XMVectorAdd(closest_p, closest_q), 0.5f);
+
+        // XMFLOAT3 にストア
+        DirectX::XMStoreFloat3(&info.Normal, v_normal);
+        DirectX::XMStoreFloat3(&info.ContactPoint, v_contact_point);
 
         // 衝突に関わったコライダーへのポインタ設定.
         info.ColliderA = this;
@@ -245,25 +251,24 @@ CollisionInfo CapsuleCollider::DispatchCollision(const BoxCollider& other) const
 // カプセルの中心線分の終点 P1 を「計算し」取得.
 DirectX::XMVECTOR CapsuleCollider::GetCulcCapsuleSegmentStart(const CapsuleCollider* capsule)
 {
+
     if (auto spTransform = capsule->m_wpTransform.lock())
     {
         const float radius = capsule->GetRadius();
         const float height = capsule->GetHeight();
-
-        // 親の変換行列を取得.
         DirectX::XMMATRIX mat_parent_world = spTransform->GetWorldMatrix();
 
-        // カプセルの中心位置(オフセットを含む).
-        const DirectX::XMFLOAT3 offset_pos = capsule->GetPosition();
-        DirectX::XMVECTOR v_pos = DirectX::XMLoadFloat3(&offset_pos);
+        DirectX::XMVECTOR scale, rotation, translation;
+        DirectX::XMMatrixDecompose(&scale, &rotation, &translation, mat_parent_world);
 
-        // オフセット行列を作成し、親の行列に乗算 (デバッグ描画と同じ処理).
+        DirectX::XMMATRIX mat_no_scale = DirectX::XMMatrixRotationQuaternion(rotation);
+        mat_no_scale = DirectX::XMMatrixMultiply(mat_no_scale, DirectX::XMMatrixTranslationFromVector(translation));
+
         DirectX::XMMATRIX mat_offset = DirectX::XMMatrixTranslation(
             capsule->m_PositionOffset.x, capsule->m_PositionOffset.y, capsule->m_PositionOffset.z
         );
-        DirectX::XMMATRIX mat_combined_world = DirectX::XMMatrixMultiply(mat_offset, mat_parent_world);
+        DirectX::XMMATRIX mat_combined_world = DirectX::XMMatrixMultiply(mat_offset, mat_no_scale);
 
-        // カプセルのローカルな半線分ベクトルを計算.
         const float half_segment_length = (height - 2.0f * radius) * 0.5f;
 
         // ローカル座標 (0, -half_segment_length, 0) にワールド変換を適用.
@@ -274,8 +279,9 @@ DirectX::XMVECTOR CapsuleCollider::GetCulcCapsuleSegmentStart(const CapsuleColli
 
         return v_world_start;
     }
-    // 親Transformがない場合、オフセットなしのローカル座標を返す
-    const DirectX::XMFLOAT3 pos = capsule->GetPosition();
+
+    // 親Transformがない場合、オフセットなしのローカル座標を返す.
+    const DirectX::XMFLOAT3 pos = capsule->GetPositionOffset();
     const float half_segment_length = (capsule->GetHeight() / 2.0f - capsule->GetRadius());
     return DirectX::XMVectorSet(pos.x, pos.y - half_segment_length, pos.z, 1.0f);
 }
@@ -288,16 +294,20 @@ DirectX::XMVECTOR CapsuleCollider::GetCulcCapsuleSegmentEnd(const CapsuleCollide
         const float radius = capsule->GetRadius();
         const float height = capsule->GetHeight();
 
-        // 親の変換行列を取得.
         DirectX::XMMATRIX mat_parent_world = spTransform->GetWorldMatrix();
 
-        // オフセット行列を作成し、親の行列に乗算 (デバッグ描画と同じ処理).
+        // 親のワールド行列からスケールを取り除き、回転と位置のみを取得.
+        DirectX::XMVECTOR scale, rotation, translation;
+        DirectX::XMMatrixDecompose(&scale, &rotation, &translation, mat_parent_world);
+
+        DirectX::XMMATRIX mat_no_scale = DirectX::XMMatrixRotationQuaternion(rotation);
+        mat_no_scale = DirectX::XMMatrixMultiply(mat_no_scale, DirectX::XMMatrixTranslationFromVector(translation));
+
         DirectX::XMMATRIX mat_offset = DirectX::XMMatrixTranslation(
             capsule->m_PositionOffset.x, capsule->m_PositionOffset.y, capsule->m_PositionOffset.z
         );
-        DirectX::XMMATRIX mat_combined_world = DirectX::XMMatrixMultiply(mat_offset, mat_parent_world);
+        DirectX::XMMATRIX mat_combined_world = DirectX::XMMatrixMultiply(mat_offset, mat_no_scale);
 
-        // カプセルのローカルな半線分ベクトルを計算.
         const float half_segment_length = (height - 2.0f * radius) * 0.5f;
 
         // ローカル座標 (0, +half_segment_length, 0) にワールド変換を適用.
@@ -309,7 +319,7 @@ DirectX::XMVECTOR CapsuleCollider::GetCulcCapsuleSegmentEnd(const CapsuleCollide
         return v_world_end;
     }
     // 親Transformがない場合、オフセットなしのローカル座標を返す.
-    const DirectX::XMFLOAT3 pos = capsule->GetPosition();
+    const DirectX::XMFLOAT3 pos = capsule->GetPositionOffset();
     const float half_segment_length = (capsule->GetHeight() / 2.0f - capsule->GetRadius());
     return DirectX::XMVectorSet(pos.x, pos.y + half_segment_length, pos.z, 1.0f);
 }
