@@ -1,5 +1,6 @@
 ﻿#include "CollisionDetector.h"
 #include "Game/03_Collision/00_Core/ColliderBase.h" 
+#include "Game/03_Collision/00_Core/Ex_CompositeCollider/CompositeCollider.h" 
 
 void CollisionDetector::ExecuteCollisionDetection()
 {
@@ -18,20 +19,17 @@ void CollisionDetector::ExecuteCollisionDetection()
     {
         for (size_t j = i + 1; j < m_Colliders.size(); ++j)
         {
-            ColliderBase* colliderA = m_Colliders[i].get();
-            ColliderBase* colliderB = m_Colliders[j].get();
-
+            ColliderBase* colliderA = m_Colliders[i];
+            ColliderBase* colliderB = m_Colliders[j];
             if (!colliderA || !colliderB) { continue; }
 
-            // フィルタの判断と接触の判断を行う.
+            // フィルタの判断と接触の判断.
             CollisionInfo info = colliderA->CheckCollision(*colliderB);
-
-			// 当たってたら情報を記録して伝達.
             if (!info.IsHit) { continue; }
 
             // Detector側の記録リストに追加.
             m_PendingResponses.push_back(info);
-            
+
             // Collider A への情報追加.
             colliderA->AddCollisionInfo(info);
 
@@ -53,17 +51,28 @@ void CollisionDetector::ExecuteCollisionDetection()
 }
 
 // コライダーの登録.
-void CollisionDetector::RegisterCollider(std::shared_ptr<ColliderBase> collider)
+void CollisionDetector::RegisterCollider(ColliderBase& Collider)
 {
-    if (collider)
+    m_Colliders.push_back(&Collider);
+}
+
+// コライダーの登録.
+void CollisionDetector::RegisterCollider(const CompositeCollider& Collider)
+{
+    const std::vector<std::unique_ptr<ColliderBase>>& internal_colliders = Collider.GetInternalColliders();
+
+    for (const std::unique_ptr<ColliderBase>& collider_ptr : internal_colliders)
     {
-        m_Colliders.push_back(collider);
+        if (collider_ptr)
+        {
+            m_Colliders.push_back(collider_ptr.get());
+        }
     }
 }
 
 // コライダーの解除.
-void CollisionDetector::UnregisterCollider(std::shared_ptr<ColliderBase> collider)
+void CollisionDetector::UnregisterCollider(ColliderBase* Collider)
 {
-    auto it = std::remove(m_Colliders.begin(), m_Colliders.end(), collider);
+    auto it = std::remove(m_Colliders.begin(), m_Colliders.end(), static_cast<ColliderBase*>(Collider));
     m_Colliders.erase(it, m_Colliders.end());
 }

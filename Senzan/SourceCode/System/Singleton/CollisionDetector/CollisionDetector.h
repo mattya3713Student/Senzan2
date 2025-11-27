@@ -2,6 +2,7 @@
 #include "System/Singleton/SingletonTemplate.h"
 
 class ColliderBase;
+class CompositeCollider;
 struct CollisionInfo;
 
 class CollisionDetector final
@@ -17,9 +18,10 @@ public:
     void ExecuteCollisionDetection();
 
     // コライダーの登録.
-    void RegisterCollider(std::shared_ptr<ColliderBase> collider);
+    void RegisterCollider(ColliderBase& Collider);
+    void RegisterCollider(const CompositeCollider& Colliders);
     // コライダーの解除.
-    void UnregisterCollider(std::shared_ptr<ColliderBase> collider);
+    void UnregisterCollider(ColliderBase* Collider);
 
 private:
     CollisionDetector() = default;
@@ -29,7 +31,7 @@ private:
 
 private:
     // 登録されたコライダーリスト.
-    std::vector<std::shared_ptr<ColliderBase>> m_Colliders;
+    std::vector<ColliderBase*> m_Colliders;
     
     // 毎フレーム検出された全ての衝突情報を保持するリスト.
     std::vector<CollisionInfo> m_PendingResponses;
