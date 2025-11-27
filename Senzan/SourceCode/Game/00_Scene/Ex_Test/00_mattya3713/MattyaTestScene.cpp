@@ -25,7 +25,7 @@ MattyaTestScene::MattyaTestScene()
 	: SceneBase()
 	, m_pCamera()
 	, m_pLight(std::make_shared<DirectionLight>())
-	, m_TestPressCollision(std::make_shared<CapsuleCollider>())
+	, m_TestPressCollision(std::make_unique<CapsuleCollider>())
 	, m_pPlayer(std::make_unique<Player>())
 	, m_pGround(std::make_unique<Ground>())
 {
@@ -56,8 +56,7 @@ void MattyaTestScene::Initialize()
 	m_TestPressCollision->SetRadius(1.0f);
 	m_TestPressCollision->SetPositionOffset(0.f,1.5f,0.f);
 	m_TestPressCollision->SetMask(eCollisionGroup::Press);
-	CollisionDetector::GetInstance().RegisterCollider(m_TestPressCollision);
-
+	CollisionDetector::GetInstance().RegisterCollider(*m_TestPressCollision);
 }
 
 void MattyaTestScene::Create()

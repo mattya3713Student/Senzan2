@@ -58,6 +58,9 @@ Player::Player()
 
 Player::~Player()
 {
+    CollisionDetector::GetInstance().RegisterCollider(*m_upColliders);
+
+
     //CollisionDetector::GetInstance().UnregisterCollider(m_pPressCollider);
 }
 

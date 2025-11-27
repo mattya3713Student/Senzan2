@@ -26,9 +26,10 @@ public:
         return m_Colliders;
     }
 
+    inline void SetDebugInfo() override { for (auto& collider : m_Colliders) { collider->SetDebugInfo(); } }
+
 protected:
 
-    void SetDebugInfo() { return; }
     CollisionInfo CheckCollision(const ColliderBase& other) const { return CollisionInfo(); };
     CollisionInfo DispatchCollision(const SphereCollider& other) const override { return CollisionInfo(); }
     CollisionInfo DispatchCollision(const CapsuleCollider& other) const override { return CollisionInfo(); }
