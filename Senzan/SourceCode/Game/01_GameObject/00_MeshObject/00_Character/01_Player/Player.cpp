@@ -222,7 +222,7 @@ void Player::HandleDamageDetection()
                 // ApplyDamage(info.DamageAmount);
 
                 m_KnockBackVec = info.Normal;
-                m_KnockBackPower = 3.f;
+                m_KnockBackPower = 10.f;
 
                 // 状態をノックバックに遷移させる
                 ChangeState(PlayerState::eID::KnockBack);
