@@ -1,6 +1,7 @@
 ﻿#include "UIObject.h"
 #include "Resource/Mesh/00_Sprite/UISprite/UISprite.h"
 
+
 UIObject::UIObject()
 	: GameObject		()
 	, m_pSprite			()

@@ -112,6 +112,16 @@ public: // Getter、Setter.
 	void SetResourceName(const std::string& name);
 
 
+	/******************************************************
+	* @brief SceneJsonでSpiteManagerから情報を取得.
+	* @param name	SceneJsonのパス.
+	* @param uis	std::vector<CUIObject*>.
+	******************************************************/
+	void LoadFromJson(
+		const std::string& scenepath,
+		std::vector<std::shared_ptr<UIObject>>& uis);
+
+
 protected:
 	std::weak_ptr<Sprite2D> m_pSprite;
 	DirectX::XMFLOAT2 m_Anchor;	// アンカー.
