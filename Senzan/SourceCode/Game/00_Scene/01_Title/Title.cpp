@@ -39,8 +39,11 @@ void Title::LateUpdate()
 
 void Title::Draw()
 {
-	DirectX11::GetInstance().SetDepth(false);
-	for (auto& ui : m_pUIs) { ui->Draw(); }
-	DirectX11::GetInstance().SetDepth(false);
+	for (auto& ui : m_pUIs) 
+	{ 
+		DirectX11::GetInstance().SetDepth(false);
+		ui->Draw();
+		DirectX11::GetInstance().SetDepth(false);
+	}
 }
 

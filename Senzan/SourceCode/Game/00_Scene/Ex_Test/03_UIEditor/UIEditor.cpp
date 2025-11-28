@@ -148,9 +148,12 @@ void UIEditor::KeyInput()
 void UIEditor::Draw()
 {
 	if (m_pUIs.empty()) { return; }
-	DirectX11::GetInstance().SetDepth(false);
-	for (size_t i = 0; i < m_pUIs.size(); ++i) { m_pUIs[i]->Draw(); }
-	DirectX11::GetInstance().SetDepth(true);
+	for (size_t i = 0; i < m_pUIs.size(); ++i) 
+	{
+		DirectX11::GetInstance().SetDepth(false);
+		m_pUIs[i]->Draw();
+		DirectX11::GetInstance().SetDepth(true);
+	}
 }
 
 
@@ -314,7 +317,7 @@ void UIEditor::SortBySpritePosZ(std::shared_ptr<UIObject> object)
 		else {
 			// 以前選択されていたUIがリストにない場合
 			object = nullptr;
-			m_SelectedUIIndex = 0; // または適切なデフォルト値
+			m_SelectedUIIndex = 0;
 		}
 	}
 
