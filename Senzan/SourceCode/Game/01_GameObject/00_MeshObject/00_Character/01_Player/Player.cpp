@@ -40,6 +40,8 @@ Player::Player()
     , m_KnockBackVec    ( { 0.f,0.f,0.f } )
     , m_KnockBackPower  ( 0.f )
     , m_RunMoveSpeed    ( 0.5f )
+    , m_NextStateID     ( PlayerState::eID::None )
+    , m_IsStateChangeRequest    ( false )
     , m_MoveVec         ( { 0.f,0.f,0.f } )
 {
     // ステートの初期化.
@@ -60,12 +62,12 @@ Player::Player()
     // 押し戻しの追加.
     std::unique_ptr<CapsuleCollider> damage_collider = std::make_unique<CapsuleCollider>(m_spTransform);
 
-    damage_collider->SetColor(Color::eColor::Yellow);
+    damage_collider->SetColor(Color::eColor::Cyan);
     damage_collider->SetHeight(1.0f);
     damage_collider->SetRadius(1.0f);
     damage_collider->SetPositionOffset(0.f, 1.5f, 0.f);
-    damage_collider->SetMyMask(eCollisionGroup::Player_Damage);
-    damage_collider->SetTargetMask(eCollisionGroup::Enemy_Attack);
+    damage_collider->SetMyMask(eCollisionGroup::Press);
+    damage_collider->SetTargetMask(eCollisionGroup::Press);
 
     m_upColliders->AddCollider(std::move(damage_collider));
 
@@ -82,6 +84,13 @@ void Player::Update()
 {
     Character::Update();
 
+
+    // ステート遷移のチェック.
+    if (m_NextStateID != PlayerState::eID::None)
+    {
+        m_RootState->ChangeState(m_NextStateID);
+        m_NextStateID = PlayerState::eID::None;
+    }
 	if (!m_RootState) {
 		return;
 	}
@@ -96,6 +105,9 @@ void Player::LateUpdate()
         return;
     }
 
+    // ステートマシーンの最終更新を実行.
+    m_RootState->LateUpdate();
+
     // 押し戻し.
     HandleCollisionResponse();
 
@@ -104,8 +116,6 @@ void Player::LateUpdate()
     HandleAttackDetection();
     HandleDodgeDetection();
 
-    // ステートマシーンの最終更新を実行.
-    m_RootState->LateUpdate();
 }
 
 void Player::Draw()

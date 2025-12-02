@@ -96,7 +96,11 @@ protected:
 
 protected:
 
+
 	//---共有---.
+	PlayerState::eID	m_NextStateID;		// 次遷移ステート.
+	bool m_IsStateChangeRequest;			// 次遷移ステートフラグ.
+
 	DirectX::XMFLOAT3	m_MoveVec;			// 一時保存の移動ベクトル.
 
 	//---System関連---.
