@@ -84,21 +84,26 @@ public:
 	const std::string& GetTag()const;
 	void SetTag(const std::string& tag);
 
-
 	// アクティブ状態を判定・設定.
 	const bool IsActive()const;
 	void SetIsActive(const bool isActive);
 
-
 	// 描画するか判定・設定.
 	const bool IsRenderActive()const;
 	void SetIsRenderActive(const bool isActive);
+	
+	// 世界の時間尺度を取得・設定.
+	const bool Set()const;
+	void SetIsRenderActive(const bool isActive);
+
+protected:
+	float GetDelta();
 
 protected:
 	std::shared_ptr<Transform> m_spTransform;
 	std::string			m_Tag;
 
-	// 時間の尺度(通常1f, 2fで二倍の尺度で動く).
+	// 時間の尺度(通常1f, 2fで二倍の尺度で動く, -1で世界の時間尺度を使用する).
 	float m_TimeScale;
 
 	bool m_IsActive;

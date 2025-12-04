@@ -52,6 +52,9 @@ struct Transform
 	// セッター.
 	void SetPosition(const DirectX::XMFLOAT3& newPosition);
 	void SetRotation(const DirectX::XMFLOAT3& eulerAngles); // ラジアンで設定.
+	void SetRotationX(float X); // ラジアンで設定.
+	void SetRotationY(float Y); // ラジアンで設定.
+	void SetRotationZ(float Z); // ラジアンで設定.
 	void SetRotationDegrees(const DirectX::XMFLOAT3& eulerAnglesInDegrees); // 角度で回転.
 	void SetQuaternion(const DirectX::XMFLOAT4& newQuaternion);
 	void SetScale(const DirectX::XMFLOAT3& newScale);

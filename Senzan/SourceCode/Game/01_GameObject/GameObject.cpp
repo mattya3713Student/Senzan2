@@ -1,13 +1,14 @@
 #include "GameObject.h"
 #include "System/Utility/Transform/Transform.h"
 #include "Utility\Math\Math.h"
+#include "Game/04_Time/Time.h"   
 
 GameObject::GameObject()
 	: m_spTransform		( std::make_shared<Transform>() )
 	, m_Tag				( "Untagged" )
 	, m_IsActive		( true )
 	, m_IsRenderActive	( true )
-	, m_TimeScale		( 1.0f )
+	, m_TimeScale		( -1.0f )
 {
 }
 
@@ -217,3 +218,21 @@ void GameObject::SetIsRenderActive(const bool isActive)
 {
 	m_IsRenderActive = isActive; 
 }
+
+// 最終的なDeltaTimeの取得.
+float GameObject::GetDelta()
+{
+    float delta_time = Time::GetDeltaTime();
+    float world_scale = Time::GetWorldTimeScale();
+
+    // m_TimeScale が -1f の場合 (ワールドタイムスケールを無視)
+    if (MyMath::IsNearlyEqual(m_TimeScale, -1.f))
+    {
+        return delta_time * world_scale;
+    }
+    else
+    {
+        return delta_time * m_TimeScale;
+    }
+}
+

@@ -7,6 +7,7 @@ Time::Time()
     : m_PreviousTime    ()
     , m_TargetFrameTime ()
     , m_DeltaTime       ()
+    , m_WorldTimeScale  ( 1.0f )
 {
     m_TargetFrameTime   = 1.0f / TAEGET_FPS; // 目標フレームを計算.
     m_PreviousTime      = std::chrono::high_resolution_clock::now();//初期を取得.
@@ -75,4 +76,9 @@ float Time::GetNowTime()
     float time_in_seconds = duration_cast<float_seconds>(duration_since_epoch).count();
 
     return time_in_seconds;
+}
+
+float Time::GetWorldTimeScale()
+{
+    return GetInstance().m_WorldTimeScale;
 }

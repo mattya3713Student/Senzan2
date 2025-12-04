@@ -18,13 +18,31 @@ void Transform::SetRotation(const DirectX::XMFLOAT3& eulerAngles)
 	UpdateQuaternionFromRotation();
 }
 
+void Transform::SetRotationX(float X)
+{
+	Rotation.x = X;
+	UpdateQuaternionFromRotation();
+}
+
+void Transform::SetRotationY(float Y)
+{
+	Rotation.y = Y;
+	UpdateQuaternionFromRotation();
+}
+
+void Transform::SetRotationZ(float Z)
+{
+	Rotation.z = Z;
+	UpdateQuaternionFromRotation();
+}
+
 // 角度（度）で回転を設定.
 void Transform::SetRotationDegrees(const DirectX::XMFLOAT3& eulerAnglesInDegrees)
 {
 	SetRotation(DirectX::XMFLOAT3(
-		DirectX::XMConvertToDegrees(eulerAnglesInDegrees.x),
-		DirectX::XMConvertToDegrees(eulerAnglesInDegrees.y),
-		DirectX::XMConvertToDegrees(eulerAnglesInDegrees.z)
+		DirectX::XMConvertToRadians(eulerAnglesInDegrees.x),
+		DirectX::XMConvertToRadians(eulerAnglesInDegrees.y),
+		DirectX::XMConvertToRadians(eulerAnglesInDegrees.z)
 	));
 }
 
