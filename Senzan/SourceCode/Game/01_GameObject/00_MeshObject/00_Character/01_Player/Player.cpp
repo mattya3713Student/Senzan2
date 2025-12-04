@@ -44,7 +44,7 @@ Player::Player()
     , m_IsKnockBack     ( false )
     , m_KnockBackVec    ( { 0.f,0.f,0.f } )
     , m_KnockBackPower  ( 0.f )
-    , m_RunMoveSpeed    ( 0.5f )
+    , m_RunMoveSpeed    ( 50.f )
 {
     // ステートの初期化.
     InitializeStateRefMap();
@@ -72,6 +72,18 @@ Player::Player()
     damage_collider->SetTarGetTargetMask(eCollisionGroup::Enemy_Attack);
 
     m_upColliders->AddCollider(std::move(damage_collider));
+
+    // ジャスト回避の追加.
+    std::unique_ptr<CapsuleCollider> justdodge_collider = std::make_unique<CapsuleCollider>(m_spTransform);
+
+    justdodge_collider->SetColor(Color::eColor::Gray);
+    justdodge_collider->SetHeight(1.0f);
+    justdodge_collider->SetRadius(30.0f);
+    justdodge_collider->SetPositionOffset(0.f, 1.5f, 0.f);
+    justdodge_collider->SetMyMask(eCollisionGroup::Player_JustDodge);
+    justdodge_collider->SetTarGetTargetMask(eCollisionGroup::Enemy_Attack);
+
+    m_upColliders->AddCollider(std::move(justdodge_collider));
 
     CollisionDetector::GetInstance().RegisterCollider(*m_upColliders);
 }
@@ -121,7 +133,12 @@ void Player::LateUpdate()
 
 void Player::Draw()
 {
+    // モデルの関係で前後反転.
+    m_spTransform->SetRotationY(GetRotation().y + D3DXToRadian(180.0f));
+
     Character::Draw();
+
+    m_spTransform->SetRotationY(GetRotation().y - D3DXToRadian(180.0f));
 }
 
 // ノック中か.
@@ -167,12 +184,6 @@ std::reference_wrapper<PlayerStateBase> Player::GetStateReference(PlayerState::e
         //Debug::Warning(message.c_str());
         throw;
     }
-}
-
-// Playerの最終的なDeltaTimeの取得.
-float Player::GetDelta()
-{
-    return Time::GetDeltaTime() * m_TimeScale;
 }
 
 // マッピングを初期化するヘルパー関数.
@@ -251,4 +262,45 @@ void Player::HandleAttackDetection()
 
 void Player::HandleDodgeDetection()
 {
+    if (!m_upColliders) return;
+
+    const auto& internal_colliders = m_upColliders->GetInternalColliders();
+
+    for (const auto& collider_ptr : internal_colliders)
+    {
+        const ColliderBase* current_collider = collider_ptr.get();
+
+        if ((current_collider->GetMyMask() & eCollisionGroup::Player_JustDodge) == eCollisionGroup::None) {
+            continue;
+        }
+
+        for (const CollisionInfo& info : current_collider->GetCollisionEvents())
+        {
+            if (!info.IsHit) continue;
+            const ColliderBase* otherCollider = info.ColliderB;
+            if (!otherCollider) { continue; }
+
+            eCollisionGroup other_group = otherCollider->GetMyMask();
+
+            if ((other_group & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None)
+            {
+                // 既にスタン中や無敵時間であれば処理を中断
+                if (IsKnockBack() || IsDead()) { continue; }
+
+                // ダメージを適用 
+                // ApplyDamage(info.DamageAmount);
+
+                m_KnockBackVec = info.Normal;
+                m_KnockBackPower = 10.f;
+
+                // 状態をノックバックに遷移させる
+                ChangeState(PlayerState::eID::KnockBack);
+
+                CameraManager::GetInstance().ShakeCamera(2.5f, 4.5f); // カメラを少し揺らす.
+
+                // 1フレームに1回.
+                return;
+            }
+        }
+    }
 }

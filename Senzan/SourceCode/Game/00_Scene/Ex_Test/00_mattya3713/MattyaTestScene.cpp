@@ -21,6 +21,7 @@
 
 #include "System/Singleton/CameraManager/CameraManager.h"
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
+#include "System/Singleton/ImGui/CImGuiManager.h"
 
 // コンストラクタ.
 MattyaTestScene::MattyaTestScene()

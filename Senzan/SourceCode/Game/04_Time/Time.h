@@ -23,6 +23,7 @@ public:
 	static const float GetDeltaTime();
 
 	static float GetNowTime();
+	static float GetWorldTimeScale();
 private:
 	Time();
 
@@ -35,4 +36,6 @@ private:
 
 	float m_TargetFrameTime;// 目標フレーム時間(秒).
 	float m_DeltaTime;		// フレーム間の時間差.
+
+	float m_WorldTimeScale;	// 時間の尺度(通常1f, 2fで二倍の尺度で動く).
 };

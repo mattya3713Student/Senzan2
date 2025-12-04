@@ -7,6 +7,7 @@
 #include "Game/03_Collision/00_Core/Ex_CompositeCollider/CompositeCollider.h"
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
 
+static constexpr double JUSTDODGE_ANIM_SPEED = 0.03;
 namespace PlayerState {
 JustDodge::JustDodge(Player* owner)
 	: Dodge(owner)
@@ -37,6 +38,11 @@ void JustDodge::Enter()
 {
     if (m_pDamageDetectionCollider != nullptr) 
 	    CollisionDetector::GetInstance().UnregisterCollider(m_pDamageDetectionCollider);
+
+
+    m_pOwner->SetIsLoop(false);
+    m_pOwner->SetAnimSpeed(JUSTDODGE_ANIM_SPEED);
+    m_pOwner->ChangeAnim(Player::eAnim::Run);
 }
 
 void JustDodge::Update()

@@ -103,7 +103,7 @@ private:
 protected:
 
 	// Playerの最終的なDeltaTimeの取得.
-	float GetDelta();
+	
 
 protected:
 	std::unique_ptr<PlayerState::Root> m_RootState;	// ステートマシーン.

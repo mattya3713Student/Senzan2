@@ -1,10 +1,12 @@
-#include "PlayerStateBase.h"
+Ôªø#include "PlayerStateBase.h"
 #include "../Player.h"    
 #include "Root/Root.h"    
 
 #include "Game/04_Time/Time.h"    
 
-static constexpr float DEFAULT_ROTATION_SPEED = 720.0f;
+#include "System/Singleton/Debug/Log/DebugLog.h"    
+
+static constexpr float DEFAULT_ROTATION_SPEED = 360.0f;
 
 PlayerStateBase::PlayerStateBase(Player* owner)
 	: StateBase <Player>(owner)
@@ -16,54 +18,56 @@ Player* PlayerStateBase::GetPlayer() const
     return m_pOwner;
 }
 
-// ê≥ñ Ç÷ÉâÅ[ÉvâÒì].
+// Ê≠£Èù¢„Å∏„É©„Éº„ÉóÂõûËª¢.
 void PlayerStateBase::RotetToFront()
 {
     DirectX::XMFLOAT3 move_vec = m_pOwner->m_MoveVec;
 
-    // à⁄ìÆÇµÇƒÇ¢Ç»Ç¢èÍçáÇÕÅAå¸Ç´ÇïœÇ¶Ç»Ç¢.
+    // ÁßªÂãï„Åó„Å¶„ÅÑ„Å™„ÅÑÂ†¥Âêà„ÅØ„ÄÅÂêë„Åç„ÇíÂ§â„Åà„Å™„ÅÑ.
     if (MyMath::IsVector3NearlyZero(move_vec, 0.0f)) {
         return;
     }
 
-    float target_angle_rad = std::atan2f(move_vec.x, move_vec.z);
+    float target_angle_rad = std::atan2f(move_vec.x, move_vec.y);
     float target_angle_deg = target_angle_rad * (180.0f / DirectX::XM_PI);
 
     RotetToTarget(target_angle_deg, DEFAULT_ROTATION_SPEED);
 }
 
 
-// ñ⁄ïWï˚å¸Ç÷ÉâÅ[ÉvâÒì].
+// ÁõÆÊ®ôÊñπÂêë„Å∏„É©„Éº„ÉóÂõûËª¢.
 void PlayerStateBase::RotetToTarget(float TargetRote, float RotetionSpeed)
 {
     DirectX::XMFLOAT3 current_rotation = m_pOwner->GetTransform()->GetRotationDegrees();
     float CurrentRote = current_rotation.y;
     float deltaTime = Time::GetInstance().GetDeltaTime();
 
-    // äpìxÇê≥ãKâª.
+    // Ê≠£Ë¶èÂåñ.
     TargetRote = MyMath::NormalizeAngleDegrees(TargetRote);
     CurrentRote = MyMath::NormalizeAngleDegrees(CurrentRote);
 
-    // âÒì]äpìxÇÃç∑ÇåvéZÇµÅAç≈íZâÒì]ó Ç…ê≥ãKâª.
-    float AngleDiff = TargetRote - CurrentRote;
-    AngleDiff = MyMath::NormalizeAngleDegrees(AngleDiff);
+    // Ê≠£Ë¶èÂåñ.
+    float angle_Diff = TargetRote - CurrentRote;
+    angle_Diff = MyMath::NormalizeAngleDegrees(angle_Diff);
     float max_rotate_amount = RotetionSpeed * deltaTime;
 
-    // ìKóp.
-    if (std::fabsf(AngleDiff) <= max_rotate_amount)
+    current_rotation.y = CurrentRote;
+
+    // ÈÅ©Áî®.
+    if (std::fabsf(angle_Diff) <= max_rotate_amount)
     {
-        // ç∑Ç™1ÉtÉåÅ[ÉÄÇÃà⁄ìÆó à»â∫Ç»ÇÁÅAíºê⁄ñ⁄ïWäpìxÇê›íË
+        // Â∑Æ„Åå1„Éï„É¨„Éº„É†„ÅÆÁßªÂãïÈáè‰ª•‰∏ã„Å™„Çâ„ÄÅÁõ¥Êé•ÁõÆÊ®ôËßíÂ∫¶„ÇíË®≠ÂÆö
         current_rotation.y = TargetRote;
     }
     else
     {
-        // ñ⁄ïWÇÃï˚å¸Ç…å¸Ç©Ç¡Çƒ max_rotate_amount ï™ÇæÇØâÒì]
-        current_rotation.y += (AngleDiff > 0)
+        // ÁõÆÊ®ô„ÅÆÊñπÂêë„Å´Âêë„Åã„Å£„Å¶ max_rotate_amount ÂàÜ„Å†„ÅëÂõûËª¢
+        current_rotation.y += (angle_Diff > 0)
             ? max_rotate_amount : -max_rotate_amount;
-
-        // çƒìxê≥ãKâªÇ∑ÇÈ.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
-        current_rotation.y = MyMath::NormalizeAngleDegrees(current_rotation.y);
     }
+
+    // Ê≠£Ë¶èÂåñ.
+    current_rotation.y = MyMath::NormalizeAngleDegrees(current_rotation.y);
 
     m_pOwner->GetTransform()->SetRotationDegrees(current_rotation);
 }

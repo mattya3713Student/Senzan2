@@ -109,7 +109,7 @@ namespace MyMath {
 	// 角度を -180.0f から 180.0f の範囲に正規化する.
 	float NormalizeAngleDegrees(float angle)
 	{
-		const float FULL_CIRCLE = 360.0f;
+		static constexpr float FULL_CIRCLE = 360.0f;
 
 		angle = std::fmod(angle, FULL_CIRCLE);
 

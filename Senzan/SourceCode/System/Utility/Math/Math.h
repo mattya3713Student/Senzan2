@@ -25,6 +25,8 @@ namespace MyMath {
 		return IsNearlyEqual(a.x, b) && IsNearlyEqual(a.y, b) && IsNearlyEqual(a.z, b);
 	}
 
+	inline float NormalizeAngleDegrees(float angle);
+
 	/*************************************************************
 	* @brief	’l‚ğŒ¸­(‘‰Á)‚³‚¹‚é.
 	* @return	’†‰›’l‚É‚È‚Á‚½‚©‚Ç‚¤‚©.	
