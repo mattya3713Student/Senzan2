@@ -225,7 +225,7 @@ float GameObject::GetDelta()
     float delta_time = Time::GetDeltaTime();
     float world_scale = Time::GetWorldTimeScale();
 
-    // m_TimeScale が -1f の場合 (ワールドタイムスケールを無視)
+    // m_TimeScale が -1f の場合 (ワールドタイムスケールを無視)　
     if (MyMath::IsNearlyEqual(m_TimeScale, -1.f))
     {
         return delta_time * world_scale;
