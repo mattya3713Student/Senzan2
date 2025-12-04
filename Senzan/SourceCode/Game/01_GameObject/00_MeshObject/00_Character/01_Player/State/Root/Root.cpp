@@ -27,6 +27,8 @@
 
 #include "System/Singleton/Debug/Log/DebugLog.h"
 
+
+
 namespace PlayerState {
 Root::Root(Player* owner)
     : PlayerStateBase(owner)
@@ -200,37 +202,4 @@ std::reference_wrapper<PlayerStateBase> Root::GetJustDodgeStateRef()
 
 #pragma endregion
 
-void Root::RotetToTarget(float TargetRote, float RotetionSpeed)
-{
-    DirectX::XMFLOAT3 current_rotation = m_pOwner->GetTransform()->GetRotationDegrees();
-    float CurrentRote = current_rotation.y;
-    float deltaTime = Time::GetInstance().GetDeltaTime();
-
-    // 角度を正規化.
-    TargetRote = MyMath::NormalizeAngleDegrees(TargetRote);
-    CurrentRote = MyMath::NormalizeAngleDegrees(CurrentRote);
-
-    // 回転角度の差を計算し、最短回転量に正規化.
-    float AngleDiff = TargetRote - CurrentRote;
-    AngleDiff = MyMath::NormalizeAngleDegrees(AngleDiff);
-    float max_rotate_amount = RotetionSpeed * deltaTime;
-
-    // 適用.
-    if (std::fabsf(AngleDiff) <= max_rotate_amount)
-    {
-        // 差が1フレームの移動量以下なら、直接目標角度を設定
-        current_rotation.y = TargetRote;
-    }
-    else
-    {
-        // 目標の方向に向かって max_rotate_amount 分だけ回転
-        current_rotation.y += (AngleDiff > 0)
-            ? max_rotate_amount : -max_rotate_amount;
-
-        // 再度正規化する.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
-        current_rotation.y = MyMath::NormalizeAngleDegrees(current_rotation.y);
-    }
-
-    m_pOwner->GetTransform()->SetRotationDegrees(current_rotation);
-}
 } // PlayerState.

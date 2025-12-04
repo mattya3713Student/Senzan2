@@ -57,8 +57,8 @@ void Run::Update()
 
 void Run::LateUpdate()
 {
-    Movement::LateUpdate();
-
+    Movement::LateUpdate(); 
+    
     m_pOwner->AddPosition(m_pOwner->m_MoveVec.x, 0.f, m_pOwner->m_MoveVec.y);
 
 }

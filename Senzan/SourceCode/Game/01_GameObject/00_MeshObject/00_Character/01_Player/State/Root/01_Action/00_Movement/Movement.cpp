@@ -39,6 +39,9 @@ void Movement::Update()
 void Movement::LateUpdate()
 {
 	Action::LateUpdate();
+
+	RotetToFront();
+
 }
 
 void Movement::Draw()

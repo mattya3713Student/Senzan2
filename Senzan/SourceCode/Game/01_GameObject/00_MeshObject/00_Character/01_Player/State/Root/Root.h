@@ -70,13 +70,6 @@ public:
 #pragma endregion
     
 private:
-
-    // 正面へラープ回転.
-    void RotetToFront();
-
-    // 目標の角度へラープ回転.
-    void RotetToTarget(float TargetRote, float RotetionSpeed);
-private:
     std::unique_ptr<Pause>          m_pPause;         // ポーズ状態.  
     std::unique_ptr<KnockBack>      m_pKnockBack;     // スタン状態.
     std::unique_ptr<Dead>           m_pDead;          // 死亡状態.

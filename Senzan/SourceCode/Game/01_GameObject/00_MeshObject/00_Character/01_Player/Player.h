@@ -36,6 +36,8 @@ class JustDodge;
 class Player
 	: public Character
 {
+	friend PlayerStateBase;
+	friend PlayerState::Root;
 	friend PlayerState::Pause;
 	friend PlayerState::KnockBack;
 	friend PlayerState::Dead;
