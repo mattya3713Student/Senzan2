@@ -36,19 +36,21 @@
 
 Player::Player()    
 	: Character         ()
-	, m_RootState       (std::make_unique<PlayerState::Root>(this))
-    , m_KnockBackVec    ( { 0.f,0.f,0.f } )
-    , m_KnockBackPower  ( 0.f )
-    , m_RunMoveSpeed    ( 0.5f )
+	, m_RootState       ( std::make_unique<PlayerState::Root>(this) )
+    , m_StateRefMap     ( )
     , m_NextStateID     ( PlayerState::eID::None )
     , m_IsStateChangeRequest    ( false )
     , m_MoveVec         ( { 0.f,0.f,0.f } )
+    , m_IsKnockBack     ( false )
+    , m_KnockBackVec    ( { 0.f,0.f,0.f } )
+    , m_KnockBackPower  ( 0.f )
+    , m_RunMoveSpeed    ( 0.5f )
 {
     // ステートの初期化.
     InitializeStateRefMap();
 
     // メッシュのアタッチ.
-    auto mesh = ResourceManager::GetSkinMesh("player_0");
+    auto mesh = ResourceManager::GetSkinMesh("player");
     _ASSERT_EXPR(mesh != nullptr, "メッシュの取得に失敗");
     AttachMesh(mesh);
 
@@ -56,7 +58,7 @@ Player::Player()
     DirectX::XMFLOAT3 pos = { 0.f, 0.f, -3.f };
     m_spTransform->SetPosition(pos);
 
-    DirectX::XMFLOAT3 scale = { 0.05f, 0.05f, 0.05f };
+    DirectX::XMFLOAT3 scale = { 3.f, 3.f, 3.f };
     m_spTransform->SetScale(scale);
 
     // 押し戻しの追加.
@@ -66,13 +68,12 @@ Player::Player()
     damage_collider->SetHeight(1.0f);
     damage_collider->SetRadius(1.0f);
     damage_collider->SetPositionOffset(0.f, 1.5f, 0.f);
-    damage_collider->SetMyMask(eCollisionGroup::Press);
-    damage_collider->SetTargetMask(eCollisionGroup::Press);
+    damage_collider->SetMyMask(eCollisionGroup::Player_Damage);
+    damage_collider->SetTarGetTargetMask(eCollisionGroup::Enemy_Attack);
 
     m_upColliders->AddCollider(std::move(damage_collider));
 
     CollisionDetector::GetInstance().RegisterCollider(*m_upColliders);
-
 }
 
 Player::~Player()
@@ -123,10 +124,10 @@ void Player::Draw()
     Character::Draw();
 }
 
-// スタン中か.
+// ノック中か.
 bool Player::IsKnockBack() const noexcept
 {
-    return false;
+    return m_IsKnockBack;
 }
 
 // 死亡中か.
@@ -209,7 +210,7 @@ void Player::HandleDamageDetection()
     {
         const ColliderBase* current_collider = collider_ptr.get();
 
-        if ((current_collider->GetGroup() & eCollisionGroup::Player_Damage) == eCollisionGroup::None) {
+        if ((current_collider->GetMyMask() & eCollisionGroup::Player_Damage) == eCollisionGroup::None) {
             continue;
         }
 
@@ -219,16 +220,14 @@ void Player::HandleDamageDetection()
             const ColliderBase* otherCollider = info.ColliderB;
             if (!otherCollider) { continue; }
 
-            eCollisionGroup other_group = otherCollider->GetGroup();
+            eCollisionGroup other_group = otherCollider->GetMyMask();
 
             if ((other_group & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None)
             {
-                // 4. 【Player固有のロジック】: ダメージ処理を実行！
-
                 // 既にスタン中や無敵時間であれば処理を中断
                 if (IsKnockBack() || IsDead()) { continue; }
 
-                // ダメージを適用 (例: HPを減らす)
+                // ダメージを適用 
                 // ApplyDamage(info.DamageAmount);
 
                 m_KnockBackVec = info.Normal;

@@ -22,6 +22,7 @@ void CollisionDetector::ExecuteCollisionDetection()
             ColliderBase* colliderA = m_Colliders[i];
             ColliderBase* colliderB = m_Colliders[j];
             if (!colliderA || !colliderB) { continue; }
+            if (!colliderA->GetActive() || !colliderB->GetActive()) { continue; }
 
             // フィルタの判断と接触の判断.
             CollisionInfo info = colliderA->CheckCollision(*colliderB);

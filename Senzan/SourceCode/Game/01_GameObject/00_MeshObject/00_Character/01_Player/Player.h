@@ -26,6 +26,7 @@ class DodgeExecute;
 class JustDodge;
 }
 
+
 /**********************************************************************************
 * @author    : 淵脇 未来.
 * @date      : 2025/10/5.
@@ -48,6 +49,19 @@ class Player
 	friend PlayerState::DodgeExecute;
 	friend PlayerState::JustDodge;
 
+	enum class eAnim : uint8_t
+	{
+		Idle = 0,
+		Run,
+		Attack_0,
+		Attack_1,
+		Attack_2,
+		SpecialAttack,
+		Parry,
+		Dodge,
+		KnockBack,
+		Dead,
+	};
 
 	// 定数.
 protected:
@@ -74,9 +88,6 @@ public:
 
 private:
 
-	// Playerの最終的なDeltaTimeの取得.
-	float GetDelta();
-
 	// マッピングを初期化.
 	void InitializeStateRefMap();
 
@@ -86,6 +97,11 @@ private:
 	void HandleAttackDetection() override;
 	// 衝突_回避.
 	void HandleDodgeDetection() override;
+
+protected:
+
+	// Playerの最終的なDeltaTimeの取得.
+	float GetDelta();
 
 protected:
 	std::unique_ptr<PlayerState::Root> m_RootState;	// ステートマシーン.
@@ -104,6 +120,7 @@ protected:
 	DirectX::XMFLOAT3	m_MoveVec;			// 一時保存の移動ベクトル.
 
 	//---System関連---.
+	bool				m_IsKnockBack;		// ノックバック中か否か.
 	DirectX::XMFLOAT3	m_KnockBackVec;		// ノックバックのベクトル.
 	float				m_KnockBackPower;	// ノックバックの強さ(被ダメの量に比例する予定).
 

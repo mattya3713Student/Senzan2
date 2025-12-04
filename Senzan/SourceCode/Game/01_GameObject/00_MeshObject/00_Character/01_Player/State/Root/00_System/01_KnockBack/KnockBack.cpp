@@ -2,10 +2,12 @@
 #include "Game/01_GameObject/00_MeshObject/00_Character/01_Player/Player.h"
 
 #include "Game/04_Time/Time.h"
+#include "System/Singleton/Debug/Log/DebugLog.h"
 
-// 減衰率.
-static constexpr float DAMPING_FACTOR = 0.999f;
-static constexpr float GRAVITY_ACCELERATION = -5.f;
+
+static constexpr float INITIAL_JUMP_SPEED   = 8.0f;    // 垂直速度. 
+static constexpr float GRAVITY_ACCELERATION = -1.f;     // 重力.
+static constexpr float DAMPING_FACTOR       = 0.99f;    // 減衰率.
 
 namespace PlayerState {
 KnockBack::KnockBack(Player* owner)
@@ -25,39 +27,35 @@ constexpr PlayerState::eID KnockBack::GetStateID() const
 
 void KnockBack::Enter()
 {
-    DirectX::XMVECTOR v_knockback_vec_xz = DirectX::XMLoadFloat3(&m_pOwner->m_KnockBackVec);
+    m_pOwner->m_IsKnockBack = true;
 
-    // Y成分を0にし、水平方向の初速を計算 (衝撃の強さ m_KnockBackPower を適用)
-    v_knockback_vec_xz = DirectX::XMVectorSetY(v_knockback_vec_xz, 0.0f);
-    v_knockback_vec_xz = DirectX::XMVectorScale(v_knockback_vec_xz, m_pOwner->m_KnockBackPower);
-    
-    // ジャンプ力. 
-    const float INITIAL_JUMP_SPEED = 8.0f;
+    DirectX::XMVECTOR v_initial_vector = DirectX::XMLoadFloat3(&m_pOwner->m_KnockBackVec);
 
-    // 水平速度と垂直速度を組み合わせる
-    DirectX::XMVECTOR v_final_velocity = DirectX::XMVectorSelect(v_knockback_vec_xz,
+    // Y成分を0にし、水平方向の初速を計算.
+    DirectX::XMVECTOR v_horizontal_vec = DirectX::XMVectorSetY(v_initial_vector, 0.0f);
+    v_horizontal_vec = DirectX::XMVector3Normalize(v_horizontal_vec);
+    v_horizontal_vec = DirectX::XMVectorScale(v_horizontal_vec, m_pOwner->m_KnockBackPower);
+
+
+    // 水平速度と垂直速度を組み合わせる.
+    DirectX::XMVECTOR v_final_velocity = DirectX::XMVectorSelect(v_horizontal_vec,
         DirectX::XMVectorSet(0.0f, INITIAL_JUMP_SPEED, 0.0f, 0.0f),
         DirectX::XMVectorSelectControl(0, 1, 0, 0));
 
-    // 初速を速度変数に格納
+    // 初速を速度変数に格納.
     DirectX::XMStoreFloat3(&m_pOwner->m_KnockBackVec, v_final_velocity);
-
-    //// 吹っ飛びベクトルを計算.
-    //DirectX::XMVECTOR v_knock_back_vec = DirectX::XMLoadFloat3(&m_pOwner->m_KnockBackVec);
-    //DirectX::XMVectorScale(v_knock_back_vec, m_pOwner->m_KnockBackPower);
-    //v_knock_back_vec = DirectX::XMVectorSetY(v_knock_back_vec, 3.f);
-    //DirectX::XMStoreFloat3(&m_pOwner->m_KnockBackVec, v_knock_back_vec);
 }
 
 void KnockBack::Update()
 { 
-    DirectX::XMVECTOR v_knock_back_speed = DirectX::XMLoadFloat3(&m_pOwner->m_KnockBackVec); 
-    float deltaTime = Time::GetDeltaTime();
+    DirectX::XMVECTOR v_knock_back_speed = DirectX::XMLoadFloat3(&m_pOwner->m_KnockBackVec);
+    float deltaTime = m_pOwner->GetDelta();
 
     // 重力.
     DirectX::XMVECTOR v_gravity = DirectX::XMVectorSet(0.0f, GRAVITY_ACCELERATION * deltaTime, 0.0f, 0.0f);
     v_knock_back_speed = DirectX::XMVectorAdd(v_knock_back_speed, v_gravity);
 
+    // 減速.
     v_knock_back_speed = DirectX::XMVectorScale(v_knock_back_speed, DAMPING_FACTOR);
     DirectX::XMVECTOR v_movement_distance = DirectX::XMVectorScale(v_knock_back_speed, deltaTime);
 
@@ -66,6 +64,7 @@ void KnockBack::Update()
 
     // 計算後の速度を設定.
     DirectX::XMStoreFloat3(&m_pOwner->m_KnockBackVec, v_knock_back_speed);
+    Log::GetInstance().Info("End", m_pOwner->m_KnockBackVec);
 
     // 着地判定.
     if (m_pOwner->GetPositionY() < 0.f)
@@ -90,8 +89,7 @@ void KnockBack::Draw()
 
 void KnockBack::Exit()
 {
-    int i = 0; 
-    ++i;
+    m_pOwner->m_IsKnockBack = false;
 }
 
 } // PlayerState.

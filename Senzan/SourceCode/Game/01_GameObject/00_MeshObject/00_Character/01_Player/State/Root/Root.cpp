@@ -1,4 +1,4 @@
-#include "Root.h"
+﻿#include "Root.h"
 
 #include "../../Player.h"
 
@@ -22,6 +22,8 @@
 #include "01_Action/02_Dodge/Dodge.h"	
 #include "01_Action/02_Dodge/00_DodgeExecute/DodgeExecute.h"	
 #include "01_Action/02_Dodge/01_JustDodge/JustDodge.h"
+
+#include "Game/04_Time/Time.h"
 
 #include "System/Singleton/Debug/Log/DebugLog.h"
 
@@ -50,7 +52,7 @@ Root::~Root()
 
 constexpr PlayerState::eID Root::GetStateID() const
 {
-    // ���ݗL���ȃX�e�[�g���擾.
+    // 現在有効なステートを取得.
     return m_CurrentActiveState.get().GetStateID();
 }
 
@@ -76,10 +78,10 @@ void Root::Exit()
 {
 }
 
-// �X�e�[�g�̕ύX.
+// ステートの変更.
 void Root::ChangeState(PlayerState::eID id)
 {
-    // �������荞�݃X�e�[�g.
+    // 強制割り込みステート.
     if (id == PlayerState::eID::KnockBack ||
         id == PlayerState::eID::Pause ||
         id == PlayerState::eID::Dead ||
@@ -87,7 +89,7 @@ void Root::ChangeState(PlayerState::eID id)
     {
         std::reference_wrapper<PlayerStateBase> newStateRef = GetPlayer()->GetStateReference(id);
 
-        // ���݂ƈႤ�X�e�[�g�Ȃ�ύX.
+        // 現在と違うステートなら変更.
         if (&m_CurrentActiveState.get() != &newStateRef.get())
         {
             m_CurrentActiveState.get().Exit();
@@ -101,7 +103,7 @@ void Root::ChangeState(PlayerState::eID id)
     try {
         std::reference_wrapper<PlayerStateBase> newStateRef = GetPlayer()->GetStateReference(id);
 
-        // ���݂ƈႤ�X�e�[�g�Ȃ�ύX.
+        // 現在と違うステートなら変更.
         if (&m_CurrentActiveState.get() != &newStateRef.get())
         {
             m_CurrentActiveState.get().Exit();
@@ -113,7 +115,7 @@ void Root::ChangeState(PlayerState::eID id)
     }
     catch (const std::exception& e) {
         std::string message = "Root::ChangeState failed (ID: " + std::to_string(static_cast<int>(id)) + "): " + e.what();
-        Log::GetInstance().Warning("Pllayer�X�e�[�g�̕ύX�G���[", message.c_str());
+        Log::GetInstance().Warning("Pllayerステートの変更エラー", message.c_str());
         throw;
     }
 }
@@ -121,79 +123,114 @@ void Root::ChangeState(PlayerState::eID id)
 #pragma region GetStateRef
 
 //----------System----------.
-// �|�[�Y�X�e�[�g�̎擾.
+// ポーズステートの取得.
 std::reference_wrapper<PlayerStateBase> Root::GetPauseStateRef()
 {
     return std::ref(*m_pPause.get());
 }
 
-// �X�^���X�e�[�g�̎擾.
+// スタンステートの取得.
 std::reference_wrapper<PlayerStateBase> Root::GetKnockBackStateRef()
 {
     return std::ref(*m_pKnockBack.get());
 }
 
-// ���S�X�e�[�g�̎擾.
+// 死亡ステートの取得.
 std::reference_wrapper<PlayerStateBase> Root::GetDeadStateRef()
 {
     return std::ref(*m_pDead.get());
 }
 
-// �K�E�Z�X�e�[�g�̎擾.
+// 必殺技ステートの取得.
 std::reference_wrapper<PlayerStateBase> Root::GetSpecialAttackStateRef()
 {
     return std::ref(*m_pSpecialAttack.get());
 }
 
 //----------Movement----------.
-// �ҋ@�X�e�[�g�̎擾.
+// 待機ステートの取得.
 std::reference_wrapper<PlayerStateBase> Root::GetIdleStateRef()
 {
     return std::ref(*m_pIdle.get());
 }
 
-// ����X�e�[�g�̎擾.
+// 走りステートの取得.
 std::reference_wrapper<PlayerStateBase> Root::GetRunStateRef()
 {
     return std::ref(*m_pRun.get());
 }
 
 //----------Combat----------.
-// �U��1�i�ڃX�e�[�g�̎擾.
+// 攻撃1段目ステートの取得.
 std::reference_wrapper<PlayerStateBase> Root::GetCombo0StateRef()
 {
     return std::ref(*m_pCombo_0.get());
 }
 
-// �U��2�i�ڃX�e�[�g�̎擾.
+// 攻撃2段目ステートの取得.
 std::reference_wrapper<PlayerStateBase> Root::GetCombo1StateRef()
 {
     return std::ref(*m_pCombo_1.get());
 }
 
-// �U��3�i�ڃX�e�[�g�̎擾.
+// 攻撃3段目ステートの取得.
 std::reference_wrapper<PlayerStateBase> Root::GetCombo2StateRef()
 {
     return std::ref(*m_pCombo_2.get());
 }
 
-// �p���B�X�e�[�g�̎擾.
+// パリィステートの取得.
 std::reference_wrapper<PlayerStateBase> Root::GetParryStateRef()
 {
     return std::ref(*m_pParry.get());
 }
 
 //----------Dodge----------.
-// ����X�e�[�g�̎擾.
+// 回避ステートの取得.
 std::reference_wrapper<PlayerStateBase> Root::GetDodgeExecuteStateRef()
 {
     return std::ref(*m_pDodgeExecute.get());
 }
 
-// �W���X�g����X�e�[�g�̎擾.
+// ジャスト回避ステートの取得.
 std::reference_wrapper<PlayerStateBase> Root::GetJustDodgeStateRef()
 {
     return std::ref(*m_pJustDodge.get());
+}
+
+void Root::RotetToFront(float TargetRote, float RotetionSpeed)
+{
+    DirectX::XMFLOAT3 current_rotation = m_pOwner->GetTransform()->GetRotationDegrees();
+    float CurrentRote = current_rotation.y;
+    float deltaTime = Time::GetInstance().GetDeltaTime();
+
+    // 角度を正規化.
+    TargetRote = MyMath::NormalizeAngleDegrees(TargetRote);
+    CurrentRote = MyMath::NormalizeAngleDegrees(CurrentRote);
+
+    // 回転角度の差を計算し、最短回転量に正規化.
+    float AngleDiff = TargetRote - CurrentRote;
+    AngleDiff = MyMath::NormalizeAngleDegrees(AngleDiff);
+    float max_rotate_amount = RotetionSpeed * deltaTime;
+
+    // 適用.
+    if (std::fabsf(AngleDiff) <= max_rotate_amount)
+    {
+        // 差が1フレームの移動量以下なら、直接目標角度を設定
+        current_rotation.y = TargetRote;
+    }
+    else
+    {
+        // 目標の方向に向かって max_rotate_amount 分だけ回転
+        current_rotation.y += (AngleDiff > 0)
+            ? max_rotate_amount : -max_rotate_amount;
+
+        // 再度正規化する.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+        current_rotation.y = MyMath::NormalizeAngleDegrees(current_rotation.y);
+    }
+
+    // 5. 💡 変更点C: 計算結果をオーナーに設定
+    m_pOwner->GetTransform()->SetRotationDegrees(current_rotation);
 }
 #pragma endregion
 

@@ -10,6 +10,7 @@
 
 #include "System/Singleton/CameraManager/CameraManager.h"
 #include "System/Singleton/Debug/Log/DebugLog.h"
+#include "System/Singleton/ImGui/CImGuiManager.h"
 
 namespace PlayerState {
 Run::Run(Player* owner)
@@ -30,29 +31,43 @@ constexpr PlayerState::eID Run::GetStateID() const
 void Run::Enter()
 {
     Movement::Enter();
+
+    m_pOwner->SetIsLoop(true);
+
+    //static float anim_speed = 0.001f;
+    //ImGui::Begin("Idle State");
+    //ImGui::SliderFloat("Anim Speed", &anim_speed, 0.001f, 0.005f);
+    //m_pOwner->SetAnimSpeed(anim_speed);
+    //ImGui::Text("Current Speed: %.4f", anim_speed);
+    //ImGui::End();
+
+    m_pOwner->ChangeAnim(Player::eAnim::Run);
 }
 
 void Run::Update()
 {
+    Movement::Update();
+
     // 移動ベクトルの算出.
     CalculateMoveVec();
-
-    Movement::Update();
 }
 
 void Run::LateUpdate()
 {
+    Movement::LateUpdate();
+
     m_pOwner->AddPosition(m_pOwner->m_MoveVec.x, 0.f, m_pOwner->m_MoveVec.y);
 
-    Movement::LateUpdate();
 }
 
 void Run::Draw()
 {
+    Movement::Draw();
 }
 
 void Run::Exit()
 {
+    Movement::Exit();
 }
 
 void Run::CalculateMoveVec()

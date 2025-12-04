@@ -151,37 +151,21 @@ void MeshObject::SetIsLight(const bool& isLight)
 	m_IsLight = isLight;
 }
 
-//------------------------------------------------------------------------------------.
-
 void MeshObject::SetIsShadow(const bool& isShadow)
 {
 	m_IsShadow = isShadow;
 }
 
-//------------------------------------------------------------------------------------.
-
-void MeshObject::SetAnimSpeed(const double& speed)
+// アニメーションの速度を設定.
+void MeshObject::SetAnimSpeed(const double speed)
 {
 	m_AnimSpeed = speed;
 }
 
-void MeshObject::SetIsLoop(const bool& isLoop)
+// アニメーションのループ設定.
+void MeshObject::SetIsLoop(const bool isLoop)
 {
 	m_Isloop = isLoop;
-}
-
-//------------------------------------------------------------------------------------.
-
-void MeshObject::ChangeAnim(const int& index)
-{
-	//もし、アニメーションナンバーが自分の設定した番号と一緒なら返す.
-	if (m_AnimNo == index) { return; }
-
-	m_AnimNo = index;
-	if (std::shared_ptr<SkinMesh> skinMesh = std::dynamic_pointer_cast<SkinMesh>(m_pMesh.lock()))
-	{
-		skinMesh->ChangeAnimSet(index, m_pAnimCtrl);
-	}
 }
 
 //------------------------------------------------------------------------------------.

@@ -22,6 +22,8 @@ void AttackCombo_0::Enter()
 }
 void AttackCombo_0::Update()
 {
+
+	m_pOwner->ChangeState(PlayerState::eID::Idle);
 }
 void AttackCombo_0::LateUpdate()
 {
