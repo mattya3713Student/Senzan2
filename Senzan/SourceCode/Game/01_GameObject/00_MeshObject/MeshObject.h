@@ -60,23 +60,26 @@ public: // Getter、Setter.
 	void SetIsShadow(const bool& isShadow);
 
 
-	/************************************************************************
-	* @brief アニメーション速度を設定.
-	************************************************************************/
-	void SetAnimSpeed(const double& speed);
+	// アニメーション速度を設定.
+	void SetAnimSpeed(double speed);
 
-
-	/************************************************************************
-	* @brief アニメーションを変更.
-	************************************************************************/
-	void SetIsLoop(const bool& isLoop);
-
+	// アニメーションループの設定.
+	void SetIsLoop(bool isLoop);
 	
-	/************************************************************************
-	* @brief アニメーションを変更.
-	************************************************************************/
-	void ChangeAnim(const int& index);
+	// アニメーションを変更.
+	template<typename T>
+	void ChangeAnim(T index_T)
+	{
+		int index = static_cast<int>(index_T);
+		//もし、アニメーションナンバーが自分の設定した番号と一緒なら返す.
+		if (m_AnimNo == index) { return; }
 
+		m_AnimNo = index;
+		if (std::shared_ptr<SkinMesh> skinMesh = std::dynamic_pointer_cast<SkinMesh>(m_pMesh.lock()))
+		{
+			skinMesh->ChangeAnimSet(index, m_pAnimCtrl);
+		}
+	}
 
 	/************************************************************************
 	* @brief アニメーション終了時間を取得.

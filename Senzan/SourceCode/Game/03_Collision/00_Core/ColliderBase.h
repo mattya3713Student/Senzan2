@@ -79,6 +79,10 @@ public:
 	virtual void SetRadius(float Radius) noexcept {}
 	virtual void SetHeight(float Height) noexcept {}
 	virtual void SetSize(DirectX::XMFLOAT3 Size) noexcept {}
+	
+	// 有効か否か.
+	void SetActive(bool isActive) noexcept { m_IsActive = isActive; }
+	bool GetActive() const noexcept { return m_IsActive; }
 
 	// 色の設定.
 	void SetColor(Color::eColor NewColor) noexcept { m_Color = Color::GetColorValue(NewColor); }
@@ -97,16 +101,16 @@ public:
 	// 自身のグループを設定.
 	inline void SetMyMask(eCollisionGroup MyMask) noexcept { m_MyMask = MyMask; }
 	// 衝突を許可するグループを設定.
-	inline void SetTargetMask(eCollisionGroup TargetMask) noexcept { m_TargetMask = TargetMask; }
+	inline void SetTarGetTargetMask(eCollisionGroup TarGetTargetMask) noexcept { m_TarGetTargetMask = TarGetTargetMask; }
 
-	inline eCollisionGroup GetGroup() const noexcept { return m_MyMask; }
-	inline eCollisionGroup GetMask() const noexcept { return m_TargetMask; }
+	inline eCollisionGroup GetMyMask() const noexcept { return m_MyMask; }
+	inline eCollisionGroup GetTargetMask() const noexcept { return m_TarGetTargetMask; }
 
 	// 相手と衝突すべきか.
 	inline bool ShouldCollide(const ColliderBase& other) const noexcept
 	{
-		bool A_collides_with_B = (m_TargetMask & other.m_MyMask) != eCollisionGroup::None;
-		bool B_collides_with_A = (other.m_TargetMask & m_MyMask) != eCollisionGroup::None;
+		bool A_collides_with_B = (m_TarGetTargetMask & other.m_MyMask) != eCollisionGroup::None;
+		bool B_collides_with_A = (other.m_TarGetTargetMask & m_MyMask) != eCollisionGroup::None;
 		return A_collides_with_B && B_collides_with_A;
 	}
 
@@ -124,10 +128,11 @@ protected:
 
 	std::weak_ptr<const Transform> m_wpTransform;	// 持ち主のトランスフォーム.
 	DirectX::XMFLOAT3	m_PositionOffset;			// オフセット位置.
+	bool				m_IsActive;					// アクティブか否か.
 
 	// コリジョンフィルター用.
 	eCollisionGroup m_MyMask = eCollisionGroup::_Max;		// 自身が所属するグループ.
-	eCollisionGroup m_TargetMask = eCollisionGroup::_Max;	// 衝突対象とするグループ.
+	eCollisionGroup m_TarGetTargetMask = eCollisionGroup::_Max;	// 衝突対象とするグループ.
 
 	// 検出された衝突情報のリスト.
 	std::vector<CollisionInfo> m_CollisionEvents;
@@ -141,7 +146,6 @@ public:
 
 protected:
 	DirectX::XMFLOAT4	m_Color;					// 表示色.
-
 #endif // _DEBUG.
 
 };

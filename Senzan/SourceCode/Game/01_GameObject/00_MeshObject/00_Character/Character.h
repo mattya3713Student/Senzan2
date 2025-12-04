@@ -33,3 +33,4 @@ protected:
 protected:
 	std::unique_ptr<CompositeCollider>	m_upColliders;	// 衝突.
 };
+//中二病激発させるエフェクト、Playerの手触りにこだわりました

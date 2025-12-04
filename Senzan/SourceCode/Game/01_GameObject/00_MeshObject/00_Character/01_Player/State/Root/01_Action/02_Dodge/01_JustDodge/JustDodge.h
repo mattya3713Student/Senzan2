@@ -2,6 +2,7 @@
 #include "../Dodge.h"    
 
 class Player;
+class ColliderBase;
 
 /**************************************************
 *	プレイヤーのジャスト回避のステート(派生).
@@ -9,21 +10,22 @@ class Player;
 **/
 
 namespace PlayerState {
-    class JustDodge final : public Dodge
-    {
-    public:
-        JustDodge(Player* owner);
-        ~JustDodge();
+class JustDodge final : public Dodge
+{
+public:
+    JustDodge(Player* owner);
+    ~JustDodge();
 
-        // IDの取得.
-        constexpr PlayerState::eID GetStateID() const override;
+    // IDの取得.
+    constexpr PlayerState::eID GetStateID() const override;
 
-        void Enter() override;
-        void Update() override;
-        void LateUpdate() override;
-        void Draw() override;
-        void Exit() override;
+    void Enter() override;
+    void Update() override;
+    void LateUpdate() override;
+    void Draw() override;
+    void Exit() override;
 
-    private:
-    };
+private:
+	ColliderBase* m_pDamageDetectionCollider = nullptr; // 回避時に消すためにポインタを保持しておく.
+};
 }

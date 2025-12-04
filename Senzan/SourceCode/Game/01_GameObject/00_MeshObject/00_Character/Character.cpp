@@ -22,9 +22,9 @@ Character::Character()
     pressCollider->SetRadius(1.0f);
     pressCollider->SetPositionOffset(0.f, 1.5f, 0.f);
     pressCollider->SetMyMask(PRESS_GROUP);
-    pressCollider->SetTargetMask(eCollisionGroup::Press);
+    pressCollider->SetTarGetTargetMask(eCollisionGroup::Press);
 
-    //m_upColliders->AddCollider(std::move(pressCollider));
+    m_upColliders->AddCollider(std::move(pressCollider));
 }
 
 Character::~Character()
@@ -62,7 +62,7 @@ void Character::HandleCollisionResponse()
         if (!current_collider) { continue; }
 
         // 自分がPress属性出ないならreturn.
-        if ((current_collider->GetGroup() & PRESS_GROUP) == eCollisionGroup::None) {
+        if ((current_collider->GetMyMask() & PRESS_GROUP) == eCollisionGroup::None) {
             continue;
         }
 
@@ -77,7 +77,7 @@ void Character::HandleCollisionResponse()
             if (!otherCollider) { continue; }
 
             // 相手のグループが Press であるか (このPressグループとの衝突のみを処理する).
-            if ((otherCollider->GetGroup() & PRESS_GROUP) == eCollisionGroup::None) { continue; }
+            if ((otherCollider->GetMyMask() & PRESS_GROUP) == eCollisionGroup::None) { continue; }
 
             if (info.PenetrationDepth > 0.0f)
             {

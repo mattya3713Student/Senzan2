@@ -59,7 +59,7 @@ void MattyaTestScene::Initialize()
 	m_TestPressCollision->SetRadius(1.0f);
 	m_TestPressCollision->SetPositionOffset(0.f,1.5f,0.f);
 	m_TestPressCollision->SetMyMask(eCollisionGroup::Press);
-	m_TestPressCollision->SetTargetMask(eCollisionGroup::Press);
+	m_TestPressCollision->SetTarGetTargetMask(eCollisionGroup::Press);
 	CollisionDetector::GetInstance().RegisterCollider(*m_TestPressCollision);
 
 	m_TestAttackCollision->SetColor(Color::eColor::Red);
@@ -67,7 +67,7 @@ void MattyaTestScene::Initialize()
 	m_TestAttackCollision->SetRadius(1.0f);
 	m_TestAttackCollision->SetPositionOffset(0.f,1.5f,3.f);
 	m_TestAttackCollision->SetMyMask(eCollisionGroup::Enemy_Attack);
-	m_TestAttackCollision->SetTargetMask(eCollisionGroup::Player_Damage);
+	m_TestAttackCollision->SetTarGetTargetMask(eCollisionGroup::Player_Damage);
 	CollisionDetector::GetInstance().RegisterCollider(*m_TestAttackCollision);
 }
 
