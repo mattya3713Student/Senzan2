@@ -198,7 +198,9 @@ std::reference_wrapper<PlayerStateBase> Root::GetJustDodgeStateRef()
     return std::ref(*m_pJustDodge.get());
 }
 
-void Root::RotetToFront(float TargetRote, float RotetionSpeed)
+#pragma endregion
+
+void Root::RotetToTarget(float TargetRote, float RotetionSpeed)
 {
     DirectX::XMFLOAT3 current_rotation = m_pOwner->GetTransform()->GetRotationDegrees();
     float CurrentRote = current_rotation.y;
@@ -229,9 +231,6 @@ void Root::RotetToFront(float TargetRote, float RotetionSpeed)
         current_rotation.y = MyMath::NormalizeAngleDegrees(current_rotation.y);
     }
 
-    // 5. 💡 変更点C: 計算結果をオーナーに設定
     m_pOwner->GetTransform()->SetRotationDegrees(current_rotation);
 }
-#pragma endregion
-
 } // PlayerState.

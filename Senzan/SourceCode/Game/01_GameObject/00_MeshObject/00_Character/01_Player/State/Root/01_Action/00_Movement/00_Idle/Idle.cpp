@@ -7,6 +7,8 @@
 
 #include "System/Singleton/ImGui/CImGuiManager.h"
 
+static constexpr double IDOL_ANIM_SPEED = 0.002;
+
 namespace PlayerState {
 Idle::Idle(Player* owner)
 	: Movement(owner)
@@ -27,7 +29,7 @@ void Idle::Enter()
 	Movement::Enter();
 
 	m_pOwner->SetIsLoop(true);
-	m_pOwner->SetAnimSpeed(0.0002);
+	m_pOwner->SetAnimSpeed(IDOL_ANIM_SPEED);
 	m_pOwner->ChangeAnim(Player::eAnim::Idle);
 }
 

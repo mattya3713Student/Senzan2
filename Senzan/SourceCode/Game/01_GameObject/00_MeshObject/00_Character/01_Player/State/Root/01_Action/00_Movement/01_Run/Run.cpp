@@ -12,6 +12,9 @@
 #include "System/Singleton/Debug/Log/DebugLog.h"
 #include "System/Singleton/ImGui/CImGuiManager.h"
 
+
+static constexpr double RUN_ANIM_SPEED = 0.002;
+
 namespace PlayerState {
 Run::Run(Player* owner)
 	: Movement  (owner)
@@ -37,7 +40,7 @@ void Run::Enter()
     //static float anim_speed = 0.001f;
     //ImGui::Begin("Idle State");
     //ImGui::SliderFloat("Anim Speed", &anim_speed, 0.001f, 0.005f);
-    //m_pOwner->SetAnimSpeed(anim_speed);
+    m_pOwner->SetAnimSpeed(RUN_ANIM_SPEED);
     //ImGui::Text("Current Speed: %.4f", anim_speed);
     //ImGui::End();
 
