@@ -32,9 +32,40 @@ public:
 	inline float GetHeight() const noexcept override { return m_Height; }
 
 	// ”¼Œa‚ðÝ’è‚·‚é.
-	inline void SetRadius(float Radius) noexcept override { m_Radius = Radius; }
+	inline void SetRadius(float Radius) noexcept override
+	{
+		float max_height = m_Height / 2.0f;
+
+		// Ý’è‚³‚ê‚½Radius (Radius) ‚ª‹–—e‚³‚ê‚éÅ‘åRadius‚ð’´‰ß‚·‚éê‡AÅ‘åRadius‚ÉC³.
+		if (Radius > max_height)
+		{
+			m_Radius = max_height;
+		}
+		else if (Radius < 0.0f)
+		{
+			// Radius‚ª•‰‚Ì’l‚É‚È‚ç‚È‚¢‚æ‚¤‚ÉƒK[ƒh.
+			m_Radius = 0.0f;
+		}
+		else
+		{
+			m_Radius = Radius;
+		}
+	}
 	// ‚‚³‚ðÝ’è‚·‚é.
-	inline void SetHeight(float Height) noexcept override { m_Height = Height; }
+	inline void SetHeight(float Height) noexcept override
+	{
+		float min_height = 2.0f * m_Radius;
+
+		// Ý’è‚³‚ê‚½‚‚³ (Height) ‚ªÅ’á‚‚³‚ð‰º‰ñ‚éê‡AÅ’á‚‚³‚ÉC³.
+		if (Height < min_height)
+		{
+			m_Height = min_height;
+		}
+		else
+		{
+			m_Height = Height;
+		}
+	}
 
 	// Õ“Ë”»’è.
 	CollisionInfo CheckCollision(const ColliderBase& other) const override;

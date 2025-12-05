@@ -23,7 +23,25 @@ void CollisionDetector::ExecuteCollisionDetection()
             ColliderBase* colliderB = m_Colliders[j];
             if (!colliderA || !colliderB) { continue; }
             if (!colliderA->GetActive() || !colliderB->GetActive()) { continue; }
+#if 0
 
+            eCollisionGroup group_a = colliderA->GetMyMask();
+            eCollisionGroup group_b = colliderB->GetMyMask();
+
+            bool is_pattern1 = (group_a & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None &&
+                (group_b & eCollisionGroup::Player_JustDodge) != eCollisionGroup::None;
+
+            bool is_pattern2 = (group_a & eCollisionGroup::Player_JustDodge) != eCollisionGroup::None &&
+                (group_b & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None;
+
+            // パターン1 または パターン2 の時に実行
+            if (is_pattern1 || is_pattern2)
+            {
+                // 衝突後の処理
+                int i = 0;
+                i++;
+            }
+#endif
             // フィルタの判断と接触の判断.
             CollisionInfo info = colliderA->CheckCollision(*colliderB);
             if (!info.IsHit) { continue; }

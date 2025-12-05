@@ -44,7 +44,7 @@ Player::Player()
     , m_IsKnockBack     ( false )
     , m_KnockBackVec    ( { 0.f,0.f,0.f } )
     , m_KnockBackPower  ( 0.f )
-    , m_RunMoveSpeed    ( 50.f )
+    , m_RunMoveSpeed    ( 1.f )
 {
     // ステートの初期化.
     InitializeStateRefMap();
@@ -55,7 +55,7 @@ Player::Player()
     AttachMesh(mesh);
 
     //デバック確認のため.
-    DirectX::XMFLOAT3 pos = { 0.f, 0.f, -3.f };
+    DirectX::XMFLOAT3 pos = { 0.f, 0.f, -20.f };
     m_spTransform->SetPosition(pos);
 
     DirectX::XMFLOAT3 scale = { 3.f, 3.f, 3.f };
@@ -65,8 +65,8 @@ Player::Player()
     std::unique_ptr<CapsuleCollider> damage_collider = std::make_unique<CapsuleCollider>(m_spTransform);
 
     damage_collider->SetColor(Color::eColor::Cyan);
-    damage_collider->SetHeight(1.0f);
-    damage_collider->SetRadius(1.0f);
+    damage_collider->SetHeight(2.0f);
+    damage_collider->SetRadius(0.5f);
     damage_collider->SetPositionOffset(0.f, 1.5f, 0.f);
     damage_collider->SetMyMask(eCollisionGroup::Player_Damage);
     damage_collider->SetTarGetTargetMask(eCollisionGroup::Enemy_Attack);
@@ -77,8 +77,8 @@ Player::Player()
     std::unique_ptr<CapsuleCollider> justdodge_collider = std::make_unique<CapsuleCollider>(m_spTransform);
 
     justdodge_collider->SetColor(Color::eColor::Gray);
-    justdodge_collider->SetHeight(1.0f);
-    justdodge_collider->SetRadius(30.0f);
+    justdodge_collider->SetHeight(45.0f);
+    justdodge_collider->SetRadius(45.0f);
     justdodge_collider->SetPositionOffset(0.f, 1.5f, 0.f);
     justdodge_collider->SetMyMask(eCollisionGroup::Player_JustDodge);
     justdodge_collider->SetTarGetTargetMask(eCollisionGroup::Enemy_Attack);
@@ -280,27 +280,9 @@ void Player::HandleDodgeDetection()
             const ColliderBase* otherCollider = info.ColliderB;
             if (!otherCollider) { continue; }
 
-            eCollisionGroup other_group = otherCollider->GetMyMask();
+            // MEMO : EnemyAttackに触れたとき.
 
-            if ((other_group & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None)
-            {
-                // 既にスタン中や無敵時間であれば処理を中断
-                if (IsKnockBack() || IsDead()) { continue; }
-
-                // ダメージを適用 
-                // ApplyDamage(info.DamageAmount);
-
-                m_KnockBackVec = info.Normal;
-                m_KnockBackPower = 10.f;
-
-                // 状態をノックバックに遷移させる
-                ChangeState(PlayerState::eID::KnockBack);
-
-                CameraManager::GetInstance().ShakeCamera(2.5f, 4.5f); // カメラを少し揺らす.
-
-                // 1フレームに1回.
-                return;
-            }
+            Time::GetInstance().SetWorldTimeScale(0.01f, 10.f);
         }
     }
 }

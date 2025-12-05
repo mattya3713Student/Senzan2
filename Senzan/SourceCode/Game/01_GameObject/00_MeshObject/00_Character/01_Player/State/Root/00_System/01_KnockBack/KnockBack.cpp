@@ -64,7 +64,6 @@ void KnockBack::Update()
 
     // 計算後の速度を設定.
     DirectX::XMStoreFloat3(&m_pOwner->m_KnockBackVec, v_knock_back_speed);
-    Log::GetInstance().Info("End", m_pOwner->m_KnockBackVec);
 
     // 着地判定.
     if (m_pOwner->GetPositionY() < 0.f)

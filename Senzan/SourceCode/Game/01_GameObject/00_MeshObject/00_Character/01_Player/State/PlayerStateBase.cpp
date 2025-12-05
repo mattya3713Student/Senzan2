@@ -40,7 +40,7 @@ void PlayerStateBase::RotetToTarget(float TargetRote, float RotetionSpeed)
 {
     DirectX::XMFLOAT3 current_rotation = m_pOwner->GetTransform()->GetRotationDegrees();
     float CurrentRote = current_rotation.y;
-    float deltaTime = Time::GetInstance().GetDeltaTime();
+    float deltaTime = m_pOwner->GetDelta();
 
     // 正規化.
     TargetRote = MyMath::NormalizeAngleDegrees(TargetRote);

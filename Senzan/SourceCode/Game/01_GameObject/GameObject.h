@@ -92,9 +92,8 @@ public:
 	const bool IsRenderActive()const;
 	void SetIsRenderActive(const bool isActive);
 	
-	// ¢ŠE‚ÌŠÔÚ“x‚ğæ“¾Eİ’è.
-	const bool Set()const;
-	void SetIsRenderActive(const bool isActive);
+	// ¢ŠE‚ÌŠÔÚ“x‚ğİ’è.
+	void SetTimeScale(const float NewTimeScale);
 
 protected:
 	float GetDelta();

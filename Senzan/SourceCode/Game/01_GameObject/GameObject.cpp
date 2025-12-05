@@ -216,14 +216,19 @@ const bool GameObject::IsRenderActive() const
 
 void GameObject::SetIsRenderActive(const bool isActive)
 {
-	m_IsRenderActive = isActive; 
+    m_IsRenderActive = isActive;
+}
+
+void GameObject::SetTimeScale(const float NewTimeScale)
+{
+	m_TimeScale = NewTimeScale;
 }
 
 // 最終的なDeltaTimeの取得.
 float GameObject::GetDelta()
 {
-    float delta_time = Time::GetDeltaTime();
-    float world_scale = Time::GetWorldTimeScale();
+    float delta_time = Time::GetInstance().GetDeltaTime();
+    float world_scale = Time::GetInstance().GetWorldTimeScale();
 
     // m_TimeScale が -1f の場合 (ワールドタイムスケールを無視)　
     if (MyMath::IsNearlyEqual(m_TimeScale, -1.f))
