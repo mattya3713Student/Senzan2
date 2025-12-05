@@ -82,8 +82,8 @@ void Main::Update()
     // ImGuiの新しいフレームを開始する (描画の前に)
     CImGuiManager::NewFrameSetting();
 
-    Time::Update();
-    Time::MaintainFPS();
+    Time::GetInstance().Update();
+    Time::GetInstance().MaintainFPS();
 
 	SceneManager::GetInstance().Update();
 
@@ -277,7 +277,7 @@ void Main::IsExitGame()
     constexpr int Esc = VK_ESCAPE;
     bool wasEscPressed = !Input::IsKeyPress(Esc);
 
-    float currentTime = Time::GetNowTime(); // 現在のゲーム内時刻を取得
+    float currentTime = Time::GetInstance().GetNowTime(); // 現在のゲーム内時刻を取得
 
     if (Input::IsKeyDown(Esc)) // Escキーが押された瞬間
     {

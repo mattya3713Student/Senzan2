@@ -56,19 +56,23 @@ void MattyaTestScene::Initialize()
 	m_pGround = std::make_unique<Ground>();
 
 	m_TestPressCollision->SetColor(Color::eColor::Cyan);
-	m_TestPressCollision->SetHeight(1.0f);
-	m_TestPressCollision->SetRadius(1.0f);
+	m_TestPressCollision->SetHeight(2.0f);
+	m_TestPressCollision->SetRadius(0.5f);
 	m_TestPressCollision->SetPositionOffset(0.f,1.5f,0.f);
 	m_TestPressCollision->SetMyMask(eCollisionGroup::Press);
 	m_TestPressCollision->SetTarGetTargetMask(eCollisionGroup::Press);
 	CollisionDetector::GetInstance().RegisterCollider(*m_TestPressCollision);
 
 	m_TestAttackCollision->SetColor(Color::eColor::Red);
-	m_TestAttackCollision->SetHeight(1.0f);
-	m_TestAttackCollision->SetRadius(1.0f);
+	m_TestAttackCollision->SetHeight(2.0f);
+	m_TestAttackCollision->SetRadius(0.5f);
 	m_TestAttackCollision->SetPositionOffset(0.f,1.5f,3.f);
 	m_TestAttackCollision->SetMyMask(eCollisionGroup::Enemy_Attack);
-	m_TestAttackCollision->SetTarGetTargetMask(eCollisionGroup::Player_Damage);
+
+	m_TestAttackCollision->SetTarGetTargetMask(eCollisionGroup::Player_Damage 
+		| eCollisionGroup::Player_Dodge
+		| eCollisionGroup::Player_JustDodge);
+
 	CollisionDetector::GetInstance().RegisterCollider(*m_TestAttackCollision);
 }
 
@@ -89,7 +93,7 @@ void MattyaTestScene::LateUpdate()
 	CameraManager::GetInstance().LateUpdate();
 
 	static float s_TimeCounter = 0.0f;
-	float deltaTime = Time::GetDeltaTime();
+	float deltaTime = Time::GetInstance().GetDeltaTime();
 	s_TimeCounter += deltaTime;
 	const float PERIOD = 200.0f;		// üŠú.
 	const float AMPLITUDE = 3.5f;	// —h‚ê•.

@@ -1,84 +1,119 @@
-#include "Time.h"
+ï»¿#include "Time.h"
 #include <thread>
+#include <chrono>
 
-constexpr float TAEGET_FPS = 60.0f;//–Ú•WƒtƒŒ[ƒ€.
+constexpr float TAEGET_FPS = 60.0f;//ç›®æ¨™ãƒ•ãƒ¬ãƒ¼ãƒ .
 
 Time::Time()
-    : m_PreviousTime    ()
-    , m_TargetFrameTime ()
-    , m_DeltaTime       ()
-    , m_WorldTimeScale  ( 1.0f )
+    : m_PreviousTime        ()
+    , m_TargetFrameTime     ()
+    , m_DeltaTime           ()
+    , m_WorldTimeScale      ( 1.0f )
+    , m_OriginalTimeScale   ( 1.0f )
+    , m_TimeScaleRestoreTime( 0.0f )
 {
-    m_TargetFrameTime   = 1.0f / TAEGET_FPS; // –Ú•WƒtƒŒ[ƒ€‚ğŒvZ.
-    m_PreviousTime      = std::chrono::high_resolution_clock::now();//‰Šú‚ğæ“¾.
+    m_TargetFrameTime   = 1.0f / TAEGET_FPS; 
+    m_PreviousTime      = std::chrono::high_resolution_clock::now();
 }
 
 Time::~Time()
 {
 }
 
-// ƒtƒŒ[ƒ€ŠÔ‚ÌŒo‰ßŠÔ‚ğXV.
+// ãƒ•ãƒ¬ãƒ¼ãƒ é–“ã®çµŒéæ™‚é–“ã‚’æ›´æ–°.
 void Time::Update()
 {
-    // ƒCƒ“ƒXƒ^ƒ“ƒX‚ğæ“¾.
-    Time& pI = GetInstance();
-
-    // Œ»İ‚ÌŠÔ‚ğæ“¾.
+    // ãƒ‡ãƒ«ã‚¿ã‚¿ã‚¤ãƒ è¨ˆç®—.
     auto currentTime = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<float> elapsed = currentTime - m_PreviousTime;
+    m_DeltaTime = elapsed.count();
+    m_PreviousTime = currentTime;
 
-    // ‘O‰ñ‚©‚ç‚ÌŒo‰ßŠÔ‚ğŒvZ.
-    std::chrono::duration<float> elapsed = currentTime - pI.m_PreviousTime;
+    // æ™‚é–“ã‚¹ã‚±ãƒ¼ãƒ«ã®å¾©å¸°.
+    if (m_TimeScaleRestoreTime > 0.0f)
+    {
+        float nowTime = GetNowTime();
 
-    // Œo‰ßŠÔ‚ğ•b’PˆÊ‚Å•Û.
-    pI.m_DeltaTime = elapsed.count();
+        if (nowTime >= m_TimeScaleRestoreTime)
+        {
+            m_WorldTimeScale = m_OriginalTimeScale;
+            m_TimeScaleRestoreTime = 0.0f;
+        }
 
-    // Ÿ‚ÌƒtƒŒ[ƒ€‚Ì‚½‚ß‚ÉXV.
-    pI.m_PreviousTime = currentTime;
+        Log::GetInstance().Info("ã‚", nowTime - m_TimeScaleRestoreTime);
+    }
+
+    // æ™‚é–“ã‚¹ã‚±ãƒ¼ãƒ«ã‚’é©ç”¨.
+    m_DeltaTime *= m_WorldTimeScale; 
 }
 
-// FPS‚ğˆÛ‚·‚é‚½‚ß‚Ìˆ—.
+// FPSã‚’ç¶­æŒã™ã‚‹ãŸã‚ã®å‡¦ç†.
 void Time::MaintainFPS()
 {
-    // ƒCƒ“ƒXƒ^ƒ“ƒX‚ğæ“¾.
-    Time& pI = GetInstance();
-
-    if (pI.m_DeltaTime < pI.m_TargetFrameTime) {
-        pI.m_DeltaTime = pI.m_TargetFrameTime;
+    if (m_DeltaTime < m_TargetFrameTime) {
+        m_DeltaTime = m_TargetFrameTime;
         std::this_thread::sleep_for(
-            std::chrono::duration<float>(pI.m_TargetFrameTime - pI.m_DeltaTime));
+            std::chrono::duration<float>(m_TargetFrameTime - m_DeltaTime));
     }
 }
 
-// ƒfƒ‹ƒ^ƒ^ƒCƒ€‚ğæ“¾.
-const float Time::GetDeltaTime()
+// ãƒ‡ãƒ«ã‚¿ã‚¿ã‚¤ãƒ ã‚’å–å¾—.
+const float Time::GetDeltaTime() const
 {
-    return GetInstance().m_DeltaTime;
+    return m_DeltaTime;
 }
 
+// ç¾åœ¨æ™‚åˆ»ã‚’å–å¾—.
 float Time::GetNowTime()
 {
     using namespace std::chrono;
 
-    // 1. Œ»İ‚Ì time_point ‚ğæ“¾
+    // ç¾åœ¨ã® time_point ã‚’å–å¾—.
     auto now_timepoint = high_resolution_clock::now();
 
-    // 2. time_point ‚ğ duration (ŠúŠÔ) ‚É•ÏŠ·
-    //    (ƒGƒ|ƒbƒN‚©‚çŒ»İ‚Ü‚Å‚ÌŠÔ)
+    // time_point ã‚’ duration (æœŸé–“) ã«å¤‰æ›.
     auto duration_since_epoch = now_timepoint.time_since_epoch();
 
-    // 3. duration ‚ğ floatŒ^‚Ì•b”‚É•ÏŠ·
-    // duration_cast ‚ğg—p‚µ‚Ä–Ú“I‚Ì¸“xi—á: •bj‚É•ÏŠ·‚µA•‚“®¬”“_Œ^‚ÉƒLƒƒƒXƒg
-
-    // high_resolution_clock::period ‚ğ float ‚É•ÏŠ·‚µ‚½•b”‚ÅŒvZ
+    // duration ã‚’ floatå‹ã®ç§’æ•°ã«å¤‰æ›.
     using float_seconds = duration<float>;
-
-    // duration_since_epoch ‚ğ float_seconds ’PˆÊ‚É•ÏŠ·
     float time_in_seconds = duration_cast<float_seconds>(duration_since_epoch).count();
 
     return time_in_seconds;
 }
 
-float Time::GetWorldTimeScale()
+// ãƒ¯ãƒ¼ãƒ«ãƒ‰ã®æ™‚é–“å°ºåº¦ã‚’å–å¾—.
+float Time::GetWorldTimeScale() const
 {
-    return GetInstance().m_WorldTimeScale;
+    return m_WorldTimeScale;
+}
+
+// ãƒ¯ãƒ¼ãƒ«ãƒ‰ã®æ™‚é–“ã®æµã‚Œã‚’æ°¸ç¶šçš„ã«å¤‰æ›´ã™ã‚‹.
+void Time::SetWorldTimeScale(float NewTimeScale)
+{
+    m_WorldTimeScale = NewTimeScale;
+    m_TimeScaleRestoreTime = 0.0f; 
+}
+
+// ãƒ¯ãƒ¼ãƒ«ãƒ‰ã®æ™‚é–“ã®æµã‚Œã‚’ä¸€æ™‚çš„ã«å¤‰æ›´ã™ã‚‹.
+void Time::SetWorldTimeScale(float NewTimeScale, float DurationSeconds)
+{
+    if (GetNowTime() >= m_TimeScaleRestoreTime)
+    {
+        // å…ƒã®æ™‚é–“ã‚¹ã‚±ãƒ¼ãƒ«ã‚’ä¿å­˜.
+        m_OriginalTimeScale = m_WorldTimeScale;
+    }
+
+    // æ–°ã—ã„æ™‚é–“ã‚¹ã‚±ãƒ¼ãƒ«ã‚’é©ç”¨.
+    m_WorldTimeScale = NewTimeScale;
+
+    // å¾©å¸°æ™‚åˆ»ã‚’è¨­å®š.
+    if (DurationSeconds > 0.0f)
+    {
+        m_TimeScaleRestoreTime = GetNowTime() + DurationSeconds;
+    }
+    else
+    {
+        // DurationSecondsãŒ0ä»¥ä¸‹ã®å ´åˆã¯æ°¸ç¶šçš„ãªè¨­å®šã¨ã—ã¦æ‰±ã„ã€ã‚¿ã‚¤ãƒãƒ¼ã‚’è§£é™¤.
+        m_TimeScaleRestoreTime = 0.0f;
+    }
 }

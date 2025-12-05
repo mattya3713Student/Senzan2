@@ -53,6 +53,8 @@
 #include <chrono>		// 時間計測.	
 #include<type_traits>
 
+#include "Game/04_Time/Time.h"	// Time.	
+
 #include "Utility/Assert/Assert.inl"	// HRESULTのtrycatchをする.
 #include "Utility/Math/Math.h"			// 算数系.	
 
@@ -60,7 +62,9 @@
 #include "Utility/CustomSTL/pair/Pair.h"// 添え字が使えるpair.	
 //#include "Utility/EnumFlags/EnumFlags.h"// Enumのビット演算子オーバーロード.
 #include "Utility/Transform/Transform.h"// Transform.	
-#include "System/Singleton/SingletonTemplate.h"	// Transform.	
+
+#include "System/Singleton/SingletonTemplate.h"	// シングルトンテンプレト.	
+#include "System/Singleton/Debug/Log/DebugLog.h"	// シングルトンテンプレト.	
 
 #if _DEBUG
 #include <dxgidebug.h>	// メモリリークの検出.

@@ -182,7 +182,7 @@ const double MeshObject::GetAnimPeriod(const int& index) const
 void MeshObject::IsLoopAnimTimeSet()
 {
 	// アニメーション経過時間を増加.
-	m_AnimTimer += m_AnimSpeed;
+	m_AnimTimer += m_AnimSpeed * GetDelta();
 
 	// もしループしないなら最終フレームに到達時点でアニメーション固定.
 	if (!m_Isloop) {

@@ -13,7 +13,7 @@
 #include "System/Singleton/ImGui/CImGuiManager.h"
 
 
-static constexpr double RUN_ANIM_SPEED = 0.03;
+static constexpr double RUN_ANIM_SPEED = 0.003;
 
 namespace PlayerState {
 Run::Run(Player* owner)

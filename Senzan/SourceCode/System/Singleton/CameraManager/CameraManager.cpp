@@ -38,7 +38,7 @@ void CameraManager::LateUpdate()
     if (m_ShakeDuration > 0.0f)
     {
 		// シェイク時間を減少.
-        m_ShakeDuration = std::max(0.0f, m_ShakeDuration - Time::GetDeltaTime());
+        m_ShakeDuration = std::max(0.0f, m_ShakeDuration - Time::GetInstance().GetDeltaTime());
 
         float currentMagnitude = m_ShakeMagnitude * (m_ShakeDuration / m_ShakeMagnitude);
        
