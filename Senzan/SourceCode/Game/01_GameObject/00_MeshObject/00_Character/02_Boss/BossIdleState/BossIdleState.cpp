@@ -3,6 +3,8 @@
 #include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/Boss.h"
 #include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossMoveState/BossMoveState.h"
 
+#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossStompState/TestStomp.h"
+
 BossIdleState::BossIdleState(Boss* owner)
 	: StateBase<Boss>(owner)
 //	, m_pColl(std::make_shared<CapsuleCollider>())
@@ -20,10 +22,18 @@ BossIdleState::~BossIdleState()
 
 void BossIdleState::Enter()
 {
+	m_pOwner->ChangeAnim(0);
 }
 
 void BossIdleState::Update()
 {
+
+	if (GetAsyncKeyState(VK_RETURN) & 0x8000) {
+
+		m_pOwner->GetStateMachine()->ChangeState(std::make_shared<TestStomp>(m_pOwner));
+		return;
+	}
+
 	//ここにプレイヤーとボスの距離を図る(三平方の定理を使用して作成していく)
 
 	//ボスのポジションを入手する.
@@ -69,13 +79,14 @@ void BossIdleState::Update()
 
 		//今ジョイントのためにここをコメント化している.
 		//このコードでBossのState系統を変更している.
-		auto MoveState = std::make_shared<BossMoveState>(m_pOwner);
-		MoveState->SetInitialAngle(initalAngle);
+		auto MoveState = std::make_shared<BossChargeState>(m_pOwner);
+		//MoveState->SetInitialAngle(initalAngle);
 
 		m_pOwner->GetStateMachine()->ChangeState(MoveState);
+		return;
 	}
 	//アニメーション切替
-	m_AnimNo = 0;		//登場アニメーション
+	//m_AnimNo = 0;		//登場アニメーション
 	m_AnimTimer = 0.0;	//アニメーション経過時間初期化
 
 	//アニメーション再生の無限ループ用.

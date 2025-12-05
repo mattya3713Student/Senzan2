@@ -17,6 +17,10 @@
 
 #include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossDeadState/BossDeadState.h"
 
+#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossChargeState/BossChargeState.h"
+
+#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossStompState/TestStomp.h"
+
 constexpr float HP_Max = 100.0f;
 
 Boss::Boss()
@@ -31,7 +35,7 @@ Boss::Boss()
 {
 	AttachMesh(MeshManager::GetInstance().GetSkinMesh("extinger"));
 
-	//bm_pChargeSlsh = std::make_unique<SlashCharge>();
+	//DirectX::XMFLOAT3 pos = { 0.05f, 10.0f, 20.05f };
 	DirectX::XMFLOAT3 pos = { 0.05f, 0.05f, 20.05f };
 	DirectX::XMFLOAT3 scale = { 0.05f, 0.05f, 0.05f };
 	DirectX::XMFLOAT3 Rotation = { 0.0f,0.0f,0.0f };
@@ -40,7 +44,7 @@ Boss::Boss()
 	m_Transform->SetRotationDegrees(Rotation);
 
 	// ステートマシンの初期ステートを、SlashChargeStateに設定
-	m_State->ChangeState(std::make_shared<BossChargeSlashState>(this));
+	m_State->ChangeState(std::make_shared<TestStomp>(this));
 	//m_State->ChangeState(std::make_shared<BossShoutState>());
 
 

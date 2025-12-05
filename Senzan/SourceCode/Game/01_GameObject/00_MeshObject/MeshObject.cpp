@@ -177,6 +177,7 @@ void MeshObject::ChangeAnim(const int& index)
 	//もし、アニメーションナンバーが自分の設定した番号と一緒なら返す.
 	if (m_AnimNo == index) { return; }
 
+	m_AnimTimer = 0.f;
 	m_AnimNo = index;
 	if (std::shared_ptr<SkinMesh> skinMesh = std::dynamic_pointer_cast<SkinMesh>(m_pMesh.lock()))
 	{
@@ -207,7 +208,7 @@ void MeshObject::IsLoopAnimTimeSet()
 			if (std::shared_ptr<SkinMesh> skinMesh = std::dynamic_pointer_cast<SkinMesh>(m_pMesh.lock()))
 			{
 				skinMesh->ChangeAnimSet_StartPos(m_AnimNo, EndTime - m_AnimSpeed, m_pAnimCtrl);
-			m_AnimSpeed = 0.0;
+				m_AnimSpeed = 0.0;
 			}
 		}
 	}

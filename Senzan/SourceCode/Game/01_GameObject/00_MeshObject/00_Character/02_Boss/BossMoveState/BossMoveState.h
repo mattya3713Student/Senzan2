@@ -6,6 +6,11 @@
 #include "Game\03_Collision\Capsule\CapsuleCollider.h"
 #include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossSpecialState/BossSpecialState.h"
 
+#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossChargeSlashState/BossChargeSlashState.h"
+#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossSlashState/BossSlashState.h"
+
+#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossChargeState/BossChargeState.h"
+
 //ëOï˚êÈåæ.
 class Time;
 
@@ -54,4 +59,7 @@ private:
 	float timer = 0.0f;
 
 	std::shared_ptr<BossSpecialState> m_pAttack;
+	std::shared_ptr<BossChargeSlashState> m_pChage;
+	std::shared_ptr<BossSlashState> m_pSlash;
+	std::shared_ptr<BossChargeState> m_pCharge;
 };
