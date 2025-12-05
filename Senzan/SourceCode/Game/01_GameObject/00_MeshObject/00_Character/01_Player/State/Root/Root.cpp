@@ -32,18 +32,18 @@
 namespace PlayerState {
 Root::Root(Player* owner)
     : PlayerStateBase(owner)
-    , m_pPause          (std::make_unique<Pause>(owner))
-    , m_pKnockBack      (std::make_unique<KnockBack>(owner))
-    , m_pDead           (std::make_unique<Dead>(owner))
-    , m_pSpecialAttack  (std::make_unique<SpecialAttack>(owner))
-    , m_pIdle           (std::make_unique<Idle>(owner))
-    , m_pRun            (std::make_unique<Run>(owner))
-    , m_pCombo_0        (std::make_unique<AttackCombo_0>(owner))
-    , m_pCombo_1        (std::make_unique<AttackCombo_1>(owner))
-    , m_pCombo_2        (std::make_unique<AttackCombo_2>(owner))
-    , m_pParry          (std::make_unique<Parry>(owner))
-    , m_pDodgeExecute   (std::make_unique<DodgeExecute>(owner))
-    , m_pJustDodge      (std::make_unique<JustDodge>(owner))
+    , m_pPause          ( nullptr )
+    , m_pKnockBack      ( nullptr )
+    , m_pDead           ( nullptr )
+    , m_pSpecialAttack  ( nullptr )
+    , m_pIdle           ( nullptr )
+    , m_pRun            ( nullptr )
+    , m_pCombo_0        ( nullptr )
+    , m_pCombo_1        ( nullptr )
+    , m_pCombo_2        ( nullptr )
+    , m_pParry          ( nullptr )
+    , m_pDodgeExecute   ( nullptr )
+    , m_pJustDodge      ( nullptr )
 	, m_CurrentActiveState(std::ref(*m_pRun.get())) 
 {
 }
@@ -60,6 +60,19 @@ constexpr PlayerState::eID Root::GetStateID() const
 
 void Root::Enter()
 {
+    m_pPause = std::make_unique<Pause>(m_pOwner);
+    m_pKnockBack = std::make_unique<KnockBack>(m_pOwner);
+    m_pDead = std::make_unique<Dead>(m_pOwner);
+    m_pSpecialAttack = std::make_unique<SpecialAttack>(m_pOwner);
+    m_pIdle = std::make_unique<Idle>(m_pOwner);
+    m_pRun = std::make_unique<Run>(m_pOwner);
+    m_pCombo_0 = std::make_unique<AttackCombo_0>(m_pOwner);
+    m_pCombo_1 = std::make_unique<AttackCombo_1>(m_pOwner);
+    m_pCombo_2 = std::make_unique<AttackCombo_2>(m_pOwner);
+    m_pParry = std::make_unique<Parry>(m_pOwner);
+    m_pDodgeExecute = std::make_unique<DodgeExecute>(m_pOwner);
+    m_pJustDodge = std::make_unique<JustDodge>(m_pOwner);
+    m_CurrentActiveState = std::ref(*m_pRun.get());
 }
 
 void Root::Update()

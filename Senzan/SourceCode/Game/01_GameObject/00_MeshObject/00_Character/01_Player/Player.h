@@ -16,12 +16,14 @@ class Pause;
 class KnockBack;
 class Dead;
 class SpecialAttack;
+class Action;
 class Idle;
 class Run;
 class AttackCombo_0;
 class AttackCombo_1;
 class AttackCombo_2;
 class Parry;
+class Dodge;
 class DodgeExecute;
 class JustDodge;
 }
@@ -42,12 +44,14 @@ class Player
 	friend PlayerState::KnockBack;
 	friend PlayerState::Dead;
 	friend PlayerState::SpecialAttack;
+	friend PlayerState::Action;
 	friend PlayerState::Idle;
 	friend PlayerState::Run;
 	friend PlayerState::AttackCombo_0;
 	friend PlayerState::AttackCombo_1;
 	friend PlayerState::AttackCombo_2;
 	friend PlayerState::Parry;
+	friend PlayerState::Dodge;
 	friend PlayerState::DodgeExecute;
 	friend PlayerState::JustDodge;
 
@@ -58,7 +62,9 @@ class Player
 		Attack_0,
 		Attack_1,
 		Attack_2,
-		SpecialAttack,
+		SpecialAttack_2,
+		SpecialAttack_1,
+		SpecialAttack_0,
 		Parry,
 		Dodge,
 		KnockBack,
@@ -84,7 +90,7 @@ public:
 	bool IsPaused() const noexcept;		// ポーズ中か.
 
 	// ステートの変更.
-	void ChangeState(PlayerState::eID id) const;
+	void ChangeState(PlayerState::eID id);
 
 	std::reference_wrapper<PlayerStateBase> GetStateReference(PlayerState::eID id);
 
@@ -128,5 +134,8 @@ protected:
 
 	//---MoveMent関連---.
 	float				m_RunMoveSpeed;		// 移動速度.
+
+	//---Dodge関連---.
+	bool				m_IsJustDodgeTiming;// ジャスト回避のタイミング.
 
 };

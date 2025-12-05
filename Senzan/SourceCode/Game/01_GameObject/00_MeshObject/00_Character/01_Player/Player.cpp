@@ -45,6 +45,7 @@ Player::Player()
     , m_KnockBackVec    ( { 0.f,0.f,0.f } )
     , m_KnockBackPower  ( 0.f )
     , m_RunMoveSpeed    ( 1.f )
+    , m_IsJustDodgeTiming( false )
 {
     // ステートの初期化.
     InitializeStateRefMap();
@@ -61,10 +62,10 @@ Player::Player()
     DirectX::XMFLOAT3 scale = { 3.f, 3.f, 3.f };
     m_spTransform->SetScale(scale);
 
-    // 押し戻しの追加.
+    // 被ダメの追加.
     std::unique_ptr<CapsuleCollider> damage_collider = std::make_unique<CapsuleCollider>(m_spTransform);
 
-    damage_collider->SetColor(Color::eColor::Cyan);
+    damage_collider->SetColor(Color::eColor::Yellow);
     damage_collider->SetHeight(2.0f);
     damage_collider->SetRadius(0.5f);
     damage_collider->SetPositionOffset(0.f, 1.5f, 0.f);
@@ -86,6 +87,9 @@ Player::Player()
     m_upColliders->AddCollider(std::move(justdodge_collider));
 
     CollisionDetector::GetInstance().RegisterCollider(*m_upColliders);
+
+    // 各ステートの初期化.
+    m_RootState.get()->Enter();
 }
 
 Player::~Player()
@@ -97,7 +101,6 @@ void Player::Update()
 {
     Character::Update();
 
-
     // ステート遷移のチェック.
     if (m_NextStateID != PlayerState::eID::None)
     {
@@ -108,6 +111,8 @@ void Player::Update()
 		return;
 	}
 	m_RootState->Update();
+
+    m_IsJustDodgeTiming = false;
 }
 
 void Player::LateUpdate()
@@ -160,9 +165,10 @@ bool Player::IsPaused() const noexcept
 }
 
 // ステートの変更.
-void Player::ChangeState(PlayerState::eID id) const
+void Player::ChangeState(PlayerState::eID id)
 {
-    m_RootState.get()->ChangeState(id);
+    m_NextStateID = id;
+    //m_RootState.get()->ChangeState(id);
 }
 
 std::reference_wrapper<PlayerStateBase> Player::GetStateReference(PlayerState::eID id)
@@ -281,8 +287,7 @@ void Player::HandleDodgeDetection()
             if (!otherCollider) { continue; }
 
             // MEMO : EnemyAttackに触れたとき.
-
-            Time::GetInstance().SetWorldTimeScale(0.01f, 10.f);
+            m_IsJustDodgeTiming = true;
         }
     }
 }

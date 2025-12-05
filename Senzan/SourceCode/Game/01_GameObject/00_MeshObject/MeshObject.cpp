@@ -61,7 +61,7 @@ void MeshObject::Draw()
 	// SkinMesh‚Ì•`‰æ.
 	else if (std::shared_ptr<SkinMesh> skinMesh = std::dynamic_pointer_cast<SkinMesh>(m_pMesh.lock()))
 	{
-		skinMesh->SetAnimSpeed(m_AnimSpeed);
+		skinMesh->SetAnimSpeed(m_AnimSpeed * GetTimeScale());
 		IsLoopAnimTimeSet();
 		skinMesh->Render(m_pAnimCtrl);
 	}
@@ -92,7 +92,6 @@ void MeshObject::DrawDepth()
 	// SkinMesh‚Ì[“x•`‰æ.
 	else if (std::shared_ptr<SkinMesh> skinMesh = std::dynamic_pointer_cast<SkinMesh>(m_pMesh.lock()))
 	{
-		skinMesh->SetAnimSpeed(m_AnimSpeed);
 		skinMesh->RenderDepth(m_pAnimCtrl);
 	}
 

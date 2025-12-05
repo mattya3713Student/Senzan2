@@ -94,6 +94,7 @@ public:
 	
 	// ¢ŠE‚ÌŠÔÚ“x‚ğİ’è.
 	void SetTimeScale(const float NewTimeScale);
+	float GetTimeScale();
 
 protected:
 	float GetDelta();

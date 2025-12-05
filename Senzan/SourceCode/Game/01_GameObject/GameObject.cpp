@@ -224,6 +224,18 @@ void GameObject::SetTimeScale(const float NewTimeScale)
 	m_TimeScale = NewTimeScale;
 }
 
+float GameObject::GetTimeScale()
+{
+    if (MyMath::IsNearlyEqual(m_TimeScale, -1.f))
+    {
+        return Time::GetInstance().GetWorldTimeScale();
+    }
+    else
+    {
+        return m_TimeScale;
+    }
+}
+
 // ç≈èIìIÇ»DeltaTimeÇÃéÊìæ.
 float GameObject::GetDelta()
 {

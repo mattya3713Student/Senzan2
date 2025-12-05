@@ -2,7 +2,6 @@
 #include "../Dodge.h"    
 
 class Player;
-class ColliderBase;
 
 /**************************************************
 *	プレイヤーのジャスト回避のステート(派生).
@@ -25,7 +24,6 @@ public:
     void Draw() override;
     void Exit() override;
 
-private:
-	ColliderBase* m_pDamageDetectionCollider = nullptr; // 回避時に消すためにポインタを保持しておく.
+protected:
 };
 }

@@ -9,21 +9,21 @@ class Player;
 **/
 
 namespace PlayerState {
-    class AttackCombo_2 final : public Combat
-    {
-    public:
-        AttackCombo_2(Player* owner);
-        ~AttackCombo_2();
+class AttackCombo_2 final : public Combat
+{
+public:
+    AttackCombo_2(Player* owner);
+    ~AttackCombo_2();
 
-        // ID�̎擾.
-        constexpr PlayerState::eID GetStateID() const override;
+    // ID�̎擾.
+    constexpr PlayerState::eID GetStateID() const override;
 
-        void Enter() override;
-        void Update() override;
-        void LateUpdate() override;
-        void Draw() override;
-        void Exit() override;
+    void Enter() override;
+    void Update() override;
+    void LateUpdate() override;
+    void Draw() override;
+    void Exit() override;
 
-    private:
-    };
+private:
+};
 }

@@ -3,26 +3,12 @@
 #include "00_MeshObject/00_Character/01_Player/Player.h"
 #include "../Dodge.h"
 
-#include "Game/03_Collision/00_Core/ColliderBase.h"
-#include "Game/03_Collision/00_Core/Ex_CompositeCollider/CompositeCollider.h"
-#include "System/Singleton/CollisionDetector/CollisionDetector.h"
 
 static constexpr double JUSTDODGE_ANIM_SPEED = 0.03;
 namespace PlayerState {
 JustDodge::JustDodge(Player* owner)
 	: Dodge(owner)
 {
-
-    // 被ダメコライダーのポインタを保持.
-    const auto& internal_colliders = m_pOwner->m_upColliders->GetInternalColliders();
-    for (const std::unique_ptr<ColliderBase>& collider_ptr : internal_colliders)
-    {
-        if (collider_ptr && collider_ptr->GetMyMask() == eCollisionGroup::Player_Damage) // GetID()は仮の関数
-        {
-            m_pDamageDetectionCollider = collider_ptr.get();
-            break;
-        }
-    }
 }
 JustDodge::~JustDodge()
 {
@@ -36,31 +22,62 @@ constexpr PlayerState::eID JustDodge::GetStateID() const
 
 void JustDodge::Enter()
 {
-    if (m_pDamageDetectionCollider != nullptr) 
-	    CollisionDetector::GetInstance().UnregisterCollider(m_pDamageDetectionCollider);
+    Dodge::Enter();
 
+	m_Distance = 250.f;
+	m_MaxTime = 10.8f;
+
+    Time::GetInstance().SetWorldTimeScale(0.01f, 2.5f);
 
     m_pOwner->SetIsLoop(false);
     m_pOwner->SetAnimSpeed(JUSTDODGE_ANIM_SPEED);
-    m_pOwner->ChangeAnim(Player::eAnim::Run);
+    m_pOwner->ChangeAnim(Player::eAnim::Dodge);
 }
 
 void JustDodge::Update()
 {
+    Dodge::Update();
+
+	float deltaTime = m_pOwner->GetDelta();
+	float speed = m_Distance / m_MaxTime;
+	float moveAmount = speed * deltaTime;
+
+	Log::GetInstance().Info("a", deltaTime);
+
+	// 経過時間を加算.
+	m_currentTime += deltaTime;
+
+	// 移動方向.
+	DirectX::XMFLOAT3 moveDirection = { m_InputVec.x, 0.0f, m_InputVec.y };
+
+	// 移動量加算.
+	DirectX::XMFLOAT3 movement = {};
+	movement.x = moveDirection.x * moveAmount;
+	movement.y = 0.f;
+	movement.z = moveDirection.z * moveAmount;
+
+	m_pOwner->AddPosition(movement);
+
+	// 回避完了.
+	if (m_currentTime >= m_MaxTime)
+	{
+		m_pOwner->ChangeState(PlayerState::eID::Idle);
+	}
 }
 
 void JustDodge::LateUpdate()
 {
+    Dodge::LateUpdate();
 }
 
 void JustDodge::Draw()
 {
+    Dodge::Draw();
 }
 
 void JustDodge::Exit()
 {
-	if (m_pDamageDetectionCollider != nullptr) 
-	    CollisionDetector::GetInstance().RegisterCollider(*m_pDamageDetectionCollider);
+	Dodge::Exit();
 }
 
 } // PlayerState.
