@@ -9,6 +9,9 @@ BossMoveState::BossMoveState(Boss* owner)
 	, m_rotationDirection(1.0f)
 
 	, m_pAttack	(std::make_shared<BossSpecialState>(owner))
+	, m_pChage(std::make_shared<BossChargeSlashState>(owner))
+	, m_pSlash(std::make_shared<BossSlashState>(owner))
+	, m_pCharge(std::make_shared<BossChargeState>(owner))
 
 	//	, m_pColl(std::make_shared<CapsuleCollider>())
 {
@@ -118,7 +121,7 @@ void BossMoveState::Update()
 
 	if (timer >= 15.0f)
 	{
-		m_pOwner->GetStateMachine()->ChangeState(std::make_unique<BossSpecialState>(m_pOwner));
+		m_pOwner->GetStateMachine()->ChangeState(std::make_unique<BossChargeState>(m_pOwner));
 	}
 
 

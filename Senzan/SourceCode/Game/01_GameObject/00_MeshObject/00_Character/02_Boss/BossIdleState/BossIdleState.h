@@ -4,9 +4,12 @@
 #include "System//Utility//StateMachine//StateBase.h"
 #include "Game\03_Collision\Capsule\CapsuleCollider.h"
 
+#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossChargeSlashState/BossChargeSlashState.h"
+
 //前方宣言.
 class Boss;
 class BossMoveState;
+class TestStomp;
 
 /******************************************************************************
 *	ボスの待機状態クラス.
@@ -37,7 +40,7 @@ private:
 //	std::shared_ptr<CapsuleCollider> m_pColl;
 
 	int							m_AnimNo;	//アニメーション番号.
-	double						m_AnimSpeed = 0.0001;// アニメーション速度.
+	double						m_AnimSpeed = 0.00001;// アニメーション速度.
 	double						m_AnimTimer;// アニメ―ション経過時間.
 	DirectX::XMFLOAT3			m_BonePos;	// ボーン座標.
 

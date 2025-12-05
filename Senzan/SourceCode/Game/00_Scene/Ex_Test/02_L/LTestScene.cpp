@@ -1,7 +1,6 @@
 #include "LTestScene.h"
 
 #include "Game/05_InputDevice/Input.h"
-// ★ VirtualPad の設定に必要
 #include "Game/05_InputDevice/VirtualPad.h" 
 
 #include "System/Singleton/CameraManager/CameraManager.h"
@@ -25,6 +24,8 @@
 
 #include "System/Singleton/SceneManager/SceneManager.h"
 
+#include "00_MeshObject/03_SnowBall/SnowBall.h"
+
 
 
 #include <algorithm> // std::min のために必要
@@ -37,10 +38,12 @@ LTestScene::LTestScene()
 	, m_pLight(std::make_shared<DirectionLight>())
 	, m_pPlayer(std::make_unique<Player>())
 	, m_ptransform(std::make_shared<Transform>())
-	// ★ 変更点 1: m_pKeyboardConfig の初期化を追加
+	
 	, m_pKeyboardConfig(std::make_unique<TestKeyBoud>())
 	, m_pCConfig(std::make_unique<XInputConfig>())
 
+
+	, m_pSnowBall(std::make_shared<SnowBall>())
 {
 	Initialize();
 }
@@ -87,11 +90,6 @@ void LTestScene::Update()
 	m_pCamera->SetLook(m_pPlayer->GetPosition());
 	m_pCamera->Update();
 	m_pBoss->Update();
-
-	if (GetAsyncKeyState(VK_RETURN) & 0x8000)
-	{
-		SceneManager::GetInstance().LoadScene(eList::Setting);
-	}
 }
 
 void LTestScene::LateUpdate()
@@ -110,6 +108,7 @@ void LTestScene::Draw()
 	m_pGround->Draw();
 
 	m_pBoss->Draw();
+	m_pSnowBall->Draw();
 
 	m_pPlayer->Draw();
 }

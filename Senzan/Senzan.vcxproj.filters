@@ -32,7 +32,6 @@
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossSpecialState\BossSpecialState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossStompState\BossStompState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossIdleState\BossIdleState.cpp" />
-    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossIdleState\test.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossMoveState\BossMoveState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossMoveState\test1.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\Character.cpp" />
@@ -126,6 +125,10 @@
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\01_Key\Key.cpp" />
     <ClCompile Include="SourceCode\Game\05_InputDevice\TestKeyBoud\TestKeyBoud.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossDeadState\BossDeadState.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossThrowingState\BossThrowingState.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\03_SnowBall\SnowBall.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossChargeState\BossChargeState.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossStompState\TestStomp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SourceCode\Constant.h" />
@@ -167,7 +170,6 @@
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossSpecialState\BossSpecialState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossStompState\BossStompState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossIdleState\BossIdleState.h" />
-    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossIdleState\test.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossMoveState\BossMoveState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossMoveState\test1.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\Character.h" />
@@ -266,6 +268,10 @@
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\01_Key\Key.h" />
     <ClInclude Include="SourceCode\Game\05_InputDevice\TestKeyBoud\TestKeyBoud.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossDeadState\BossDeadState.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossThrowingState\BossThrowingState.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\03_SnowBall\SnowBall.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossChargeState\BossChargeState.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossStompState\TestStomp.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Shader\PMX\Header.hlsli" />

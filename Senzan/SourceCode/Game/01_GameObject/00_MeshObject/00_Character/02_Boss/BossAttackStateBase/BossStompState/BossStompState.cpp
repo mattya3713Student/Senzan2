@@ -8,14 +8,14 @@
 BossStompState::BossStompState(Boss* owner)
 	: BossAttackStateBase(owner)
 	, m_StopmDuration(10.0f)
-	, m_JumpHeigt(30.0f)
+	, m_JumpHeigt(10.0f)
 	, m_StopmRadius(50.0f)
 	, m_InitBossPos()
 	, m_HasHitGround(false)
 
 	, m_IdolDuration(50.0f)      // 1.5秒予兆
-	, m_AttackDuration(100.0f)      // 1.0秒かけて薙ぎ払う
-	, m_CoolDownDuration(50.0f)      // 1.5秒硬直
+	, m_AttackDuration(50.0f)      // 1.0秒かけて薙ぎ払う
+	, m_CoolDownDuration(100.0f)      // 1.5秒硬直
 
 	, m_CurrentPhase(Phase::Idol)
 	, m_PhaseTime(0.0f)
@@ -109,14 +109,14 @@ void BossStompState::Update()
 		break;
 	}
 
-	//アニメーション切替
-	m_AnimNo = 0;		//登場アニメーション
-	m_AnimTimer = 0.0;	//アニメーション経過時間初期化
-	m_pOwner->SetAnimSpeed(m_AnimSpeed);
+	////アニメーション切替
+	//m_AnimNo = 0;		//登場アニメーション
+	//m_AnimTimer = 0.0;	//アニメーション経過時間初期化
+	m_pOwner->SetAnimSpeed(0);
 
 	//アニメーション再生の無限ループ用.
 	//m_pOwner->SetIsLoop(true);
-	m_pOwner->ChangeAnim(m_AnimNo);
+	m_pOwner->ChangeAnim(0);
 }
 
 void BossStompState::LateUpdate()

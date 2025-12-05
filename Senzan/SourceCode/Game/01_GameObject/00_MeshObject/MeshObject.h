@@ -82,6 +82,9 @@ public: // Getter、Setter.
 	* @brief アニメーション終了時間を取得.
 	************************************************************************/
 	const double GetAnimPeriod(const int& index) const;
+	
+	// 現在のアニメーション番号を取得.
+	int GetAnimNo()noexcept { return m_AnimNo; }
 
 
 private:
