@@ -60,9 +60,8 @@ void AttackCombo_0::Enter()
 	// 入力を取得.
 	DirectX::XMFLOAT2 input_vec = VirtualPad::GetInstance().GetAxisInput(VirtualPad::eGameAxisAction::Move);
 
-
-	m_pOwner->GetTransform()->RotateToDirection(diff_vec);
 	// 入力があれば敵へダッシュ！.
+	m_pOwner->GetTransform()->RotateToDirection(diff_vec);
 	if (MyMath::IsVector2NearlyZero(input_vec, 0.f)) {
 
 	}
