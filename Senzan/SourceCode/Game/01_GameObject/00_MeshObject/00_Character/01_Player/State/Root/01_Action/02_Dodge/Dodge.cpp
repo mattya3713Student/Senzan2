@@ -40,8 +40,7 @@ void Dodge::Enter()
 
     if (m_pDamageDetectionCollider != nullptr)
         CollisionDetector::GetInstance().UnregisterCollider(m_pDamageDetectionCollider);
-
-
+	
 	m_currentTime = 0.f;
 
 	DirectX::XMFLOAT2 input_vec = VirtualPad::GetInstance().GetAxisInput(VirtualPad::eGameAxisAction::Move);
@@ -99,6 +98,7 @@ void Dodge::Update()
 void Dodge::LateUpdate()
 {
     Action::LateUpdate();
+
 }
 
 void Dodge::Draw()

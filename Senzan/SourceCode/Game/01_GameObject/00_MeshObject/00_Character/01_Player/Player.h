@@ -85,6 +85,8 @@ public:
 	virtual void LateUpdate() override;
 	virtual void Draw() override;
 
+	void SetTargetPos(const DirectX::XMFLOAT3& NewTargetPos) noexcept { m_TargetPos = NewTargetPos; };
+
 	bool IsKnockBack() const noexcept;	// スタン中か.
 	bool IsDead() const noexcept;		// 死亡中か.
 	bool IsPaused() const noexcept;		// ポーズ中か.
@@ -135,6 +137,9 @@ protected:
 	//---MoveMent関連---.
 	float				m_RunMoveSpeed;		// 移動速度.
 
+	//---Combat関連---.
+	DirectX::XMFLOAT3	m_TargetPos;		// 敵の座標.
+	
 	//---Dodge関連---.
 	bool				m_IsJustDodgeTiming;// ジャスト回避のタイミング.
 

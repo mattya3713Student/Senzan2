@@ -7,12 +7,17 @@
 #include "System/Singleton/CameraManager/CameraManager.h"
 #include "System/Singleton/ImGui/CImGuiManager.h"
 
-static constexpr double DODGE_ANIM_SPEED_0 = 0.0035;
-static constexpr double DODGE_ANIM_SPEED_1 = 0.0005;
+#include "System/Utility/SingleTrigger/SingleTrigger.h"
+
+// “¥‚Ýž‚Ý‚Ü‚Å‚Ì‘¬“x.
+static constexpr double DODGE_ANIM_SPEED_0 = 0.10;
+// ‰ñ”ð’†‚Ì‘¬“x.
+static constexpr double DODGE_ANIM_SPEED_1 = 0.0;
 
 namespace PlayerState {
 DodgeExecute::DodgeExecute(Player* owner)
 	: Dodge(owner)
+	, m_IsAnimEnd(false)
 {
 }
 
@@ -31,11 +36,11 @@ void DodgeExecute::Enter()
 	Dodge::Enter();
 
 	m_Distance = 250.f;
-	m_MaxTime = 10.8f;
+	m_MaxTime = 3.8f;
 
 	m_pOwner->SetIsLoop(false);
 	m_pOwner->SetAnimSpeed(DODGE_ANIM_SPEED_0);
-	m_pOwner->ChangeAnim(Player::eAnim::SpecialAttack_0);
+	m_pOwner->ChangeAnim(Player::eAnim::Attack_0);
 }
 
 void DodgeExecute::Update()
@@ -47,18 +52,20 @@ void DodgeExecute::LateUpdate()
 {
 	Dodge::LateUpdate();
 
-	if (m_currentTime > 3.8f)
-	{
-		m_pOwner->SetAnimSpeed(DODGE_ANIM_SPEED_1);
-	}
-	Log::GetInstance().Info("", m_pOwner->m_AnimSpeed);
-
-	float deltaTime = m_pOwner->GetDelta();
+	// Œo‰ßŽžŠÔ‚ð‰ÁŽZ.
+	float value = MyMath::IsNearlyEqual(m_pOwner->m_AnimSpeed, 0.0) ? 1.0 : m_pOwner->m_AnimSpeed;
+	float deltaTime = value * m_pOwner->GetDelta();
 	float speed = m_Distance / m_MaxTime;
 	float moveAmount = speed * deltaTime;
 
-	// Œo‰ßŽžŠÔ‚ð‰ÁŽZ.
 	m_currentTime += deltaTime;
+
+	if(m_currentTime > 0.86f)
+		m_AnimSpeedChangedTrigger->CheckAndTrigger(
+			[this]() { return  m_pOwner->SetAnimSpeed(DODGE_ANIM_SPEED_1); },
+			[&]() {
+				return m_IsAnimEnd;	m_IsAnimEnd = false;
+			});
 
 	// ˆÚ“®•ûŒü.
 	DirectX::XMFLOAT3 moveDirection = { m_InputVec.x, 0.0f, m_InputVec.y };
@@ -74,6 +81,7 @@ void DodgeExecute::LateUpdate()
 	// ‰ñ”ðŠ®—¹.
 	if (m_currentTime >= m_MaxTime)
 	{
+		m_IsAnimEnd = true;
 		m_pOwner->ChangeState(PlayerState::eID::Idle);
 	}
 }

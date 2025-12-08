@@ -4,7 +4,8 @@
 #include "../Dodge.h"
 
 
-static constexpr double JUSTDODGE_ANIM_SPEED = 0.03;
+static constexpr double JUSTDODGE_ANIM_SPEED = 0.02;
+
 namespace PlayerState {
 JustDodge::JustDodge(Player* owner)
 	: Dodge(owner)
@@ -43,9 +44,6 @@ void JustDodge::Update()
 	float moveAmount = speed * deltaTime;
 
 	Log::GetInstance().Info("a", deltaTime);
-
-	// Œo‰ßŽžŠÔ‚ð‰ÁŽZ.
-	m_currentTime += deltaTime;
 
 	// ˆÚ“®•ûŒü.
 	DirectX::XMFLOAT3 moveDirection = { m_InputVec.x, 0.0f, m_InputVec.y };

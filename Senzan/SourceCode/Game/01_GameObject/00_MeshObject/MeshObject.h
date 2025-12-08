@@ -78,13 +78,22 @@ public: // Getter、Setter.
 		if (std::shared_ptr<SkinMesh> skinMesh = std::dynamic_pointer_cast<SkinMesh>(m_pMesh.lock()))
 		{
 			skinMesh->ChangeAnimSet(index, m_pAnimCtrl);
+			m_AnimTimer = 0.0;
 		}
 	}
 
-	/************************************************************************
-	* @brief アニメーション終了時間を取得.
-	************************************************************************/
-	const double GetAnimPeriod(const int& index) const;
+	// アニメーション終了時間を取得.
+	double GetAnimPeriod(int index) const;
+	
+	// アニメーションが終了しているかを取得.
+	template<typename T>
+	inline bool IsAnimEnd(T Index_T) noexcept
+	{
+		int index = static_cast<int>(Index_T);
+
+		double EndTime = GetAnimPeriod(index);
+		return (m_AnimTimer + static_cast<double>(GetDelta())) >= EndTime;
+	};
 
 
 private:

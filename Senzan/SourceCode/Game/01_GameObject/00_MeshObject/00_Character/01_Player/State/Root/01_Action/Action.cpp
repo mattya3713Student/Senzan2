@@ -4,9 +4,12 @@
 
 #include "Game/05_InputDevice/VirtualPad.h"
 
+#include "System/Utility/SingleTrigger/SingleTrigger.h"
+
 namespace PlayerState {
 Action::Action(Player* owner)
 	: PlayerStateBase(owner)
+	, m_AnimSpeedChangedTrigger(std::make_unique<SingleTrigger>())
 {
 }
 
@@ -33,6 +36,13 @@ void Action::Update()
 		{
 			m_pOwner->ChangeState(PlayerState::eID::DodgeExecute);
 		}
+		return;
+	}
+
+	// UŒ‚ƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚½‚ç.
+	if (VirtualPad::GetInstance().IsActionDown(VirtualPad::eGameAction::Attack))
+	{
+		m_pOwner->ChangeState(PlayerState::eID::AttackCombo_0);
 		return;
 	}
 }

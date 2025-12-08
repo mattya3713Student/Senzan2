@@ -165,5 +165,5 @@ inline const DirectX::XMFLOAT3 ColliderBase::GetPosition() const noexcept
 		DirectX::XMStoreFloat3(&result_pos, v_result_pos);
 		return result_pos;
 	}
-	return DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+	return m_PositionOffset;
 }

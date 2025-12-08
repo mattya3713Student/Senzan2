@@ -41,10 +41,9 @@ struct Transform
 	// ワールド行列を生成.
 	inline DirectX::XMMATRIX GetWorldMatrix() const
 	{
-		using namespace DirectX;
-		XMMATRIX scaleMatrix = XMMatrixScalingFromVector(XMLoadFloat3(&Scale));
-		XMMATRIX rotationMatrix = XMMatrixRotationQuaternion(XMLoadFloat4(&Quaternion));
-		XMMATRIX translationMatrix = XMMatrixTranslationFromVector(XMLoadFloat3(&Position));
+		DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScalingFromVector(DirectX::XMLoadFloat3(&Scale));
+		DirectX::XMMATRIX rotationMatrix = DirectX::XMMatrixRotationQuaternion(DirectX::XMLoadFloat4(&Quaternion));
+		DirectX::XMMATRIX translationMatrix = DirectX::XMMatrixTranslationFromVector(DirectX::XMLoadFloat3(&Position));
 
 		return scaleMatrix * rotationMatrix * translationMatrix;
 	}
@@ -64,6 +63,7 @@ struct Transform
 	void Rotate(const DirectX::XMFLOAT3& eulerAngles); // ラジアンで回転を適用.
 	void RotateDegrees(const DirectX::XMFLOAT3& eulerAnglesInDegrees); // 角度で回転を適用.
 	void Rotate(const DirectX::XMFLOAT4& quaternion); // クォータニオンで回転を適用.
+	void RotateToDirection(const DirectX::XMFLOAT3& NormVecDirection);
 
 	// オイラー角とクォータニオンの同期.
 	void UpdateRotationFromQuaternion();
@@ -75,197 +75,188 @@ struct Transform
 	inline Transform operator+(const Transform& other) const
 	{
 		using namespace DirectX;
-		XMVECTOR pos1 = XMLoadFloat3(&Position);
-		XMVECTOR rot1 = XMLoadFloat3(&Rotation);
-		XMVECTOR quat1 = XMLoadFloat4(&Quaternion);
-		XMVECTOR scale1 = XMLoadFloat3(&Scale);
+		DirectX::XMVECTOR pos1 = DirectX::XMLoadFloat3(&Position);
+		DirectX::XMVECTOR rot1 = DirectX::XMLoadFloat3(&Rotation);
+		DirectX::XMVECTOR quat1 = DirectX::XMLoadFloat4(&Quaternion);
+		DirectX::XMVECTOR scale1 = DirectX::XMLoadFloat3(&Scale);
 
-		XMVECTOR pos2 = XMLoadFloat3(&other.Position);
-		XMVECTOR rot2 = XMLoadFloat3(&other.Rotation);
-		XMVECTOR quat2 = XMLoadFloat4(&other.Quaternion);
-		XMVECTOR scale2 = XMLoadFloat3(&other.Scale);
+		DirectX::XMVECTOR pos2 = DirectX::XMLoadFloat3(&other.Position);
+		DirectX::XMVECTOR rot2 = DirectX::XMLoadFloat3(&other.Rotation);
+		DirectX::XMVECTOR quat2 = DirectX::XMLoadFloat4(&other.Quaternion);
+		DirectX::XMVECTOR scale2 = DirectX::XMLoadFloat3(&other.Scale);
 
 		XMFLOAT3 newPos, newRot, newScale;
 		XMFLOAT4 newQuat;
 
-		XMStoreFloat3(&newPos, XMVectorAdd(pos1, pos2)); // 位置は加算
-		XMStoreFloat3(&newRot, XMVectorAdd(rot1, rot2)); // オイラー角は加算 (非推奨だが実装を維持)
-		XMStoreFloat4(&newQuat, XMQuaternionMultiply(quat1, quat2)); // クォータニオンは乗算で結合
-		XMStoreFloat3(&newScale, XMVectorAdd(scale1, quat2)); // スケールは加算
+		DirectX::XMStoreFloat3(&newPos, DirectX::XMVectorAdd(pos1, pos2)); // 位置は加算
+		DirectX::XMStoreFloat3(&newRot, DirectX::XMVectorAdd(rot1, rot2)); // オイラー角は加算 (非推奨だが実装を維持)
+		DirectX::XMStoreFloat4(&newQuat, DirectX::XMQuaternionMultiply(quat1, quat2)); // クォータニオンは乗算で結合
+		DirectX::XMStoreFloat3(&newScale, DirectX::XMVectorAdd(scale1, quat2)); // スケールは加算
 
 		return Transform{ newPos, newRot, newQuat, newScale };
 	}
 
 	inline Transform operator-(const Transform& other) const
 	{
-		using namespace DirectX;
-		XMVECTOR pos1 = XMLoadFloat3(&Position);
-		XMVECTOR rot1 = XMLoadFloat3(&Rotation);
-		XMVECTOR quat1 = XMLoadFloat4(&Quaternion);
-		XMVECTOR scale1 = XMLoadFloat3(&Scale);
+		DirectX::XMVECTOR pos1 = DirectX::XMLoadFloat3(&Position);
+		DirectX::XMVECTOR rot1 = DirectX::XMLoadFloat3(&Rotation);
+		DirectX::XMVECTOR quat1 = DirectX::XMLoadFloat4(&Quaternion);
+		DirectX::XMVECTOR scale1 = DirectX::XMLoadFloat3(&Scale);
 
-		XMVECTOR pos2 = XMLoadFloat3(&other.Position);
-		XMVECTOR rot2 = XMLoadFloat3(&other.Rotation);
-		XMVECTOR quat2 = XMLoadFloat4(&other.Quaternion);
-		XMVECTOR scale2 = XMLoadFloat3(&other.Scale);
+		DirectX::XMVECTOR pos2 = DirectX::XMLoadFloat3(&other.Position);
+		DirectX::XMVECTOR rot2 = DirectX::XMLoadFloat3(&other.Rotation);
+		DirectX::XMVECTOR quat2 = DirectX::XMLoadFloat4(&other.Quaternion);
+		DirectX::XMVECTOR scale2 = DirectX::XMLoadFloat3(&other.Scale);
 
-		XMFLOAT3 newPos, newRot, newScale;
-		XMFLOAT4 newQuat;
+		DirectX::XMFLOAT3 newPos, newRot, newScale;
+		DirectX::XMFLOAT4 newQuat;
 
-		XMStoreFloat3(&newPos, XMVectorSubtract(pos1, pos2));
-		XMStoreFloat3(&newRot, XMVectorSubtract(rot1, rot2));
+		DirectX::XMStoreFloat3(&newPos, DirectX::XMVectorSubtract(pos1, pos2));
+		DirectX::XMStoreFloat3(&newRot, DirectX::XMVectorSubtract(rot1, rot2));
 		// クォータニオンの減算は無意味なため、ここでは単純に成分減算を維持 (ただし非推奨)
-		XMStoreFloat4(&newQuat, XMVectorSubtract(quat1, quat2));
-		XMStoreFloat3(&newScale, XMVectorSubtract(scale1, scale2));
+		DirectX::XMStoreFloat4(&newQuat, DirectX::XMVectorSubtract(quat1, quat2));
+		DirectX::XMStoreFloat3(&newScale, DirectX::XMVectorSubtract(scale1, scale2));
 
 		return Transform{ newPos, newRot, newQuat, newScale };
 	}
 
 	inline Transform operator*(const Transform& other) const
 	{
-		using namespace DirectX;
-		XMVECTOR pos1 = XMLoadFloat3(&Position);
-		XMVECTOR rot1 = XMLoadFloat3(&Rotation);
-		XMVECTOR quat1 = XMLoadFloat4(&Quaternion);
-		XMVECTOR scale1 = XMLoadFloat3(&Scale);
+		DirectX::XMVECTOR pos1 = DirectX::XMLoadFloat3(&Position);
+		DirectX::XMVECTOR rot1 = DirectX::XMLoadFloat3(&Rotation);
+		DirectX::XMVECTOR quat1 = DirectX::XMLoadFloat4(&Quaternion);
+		DirectX::XMVECTOR scale1 = DirectX::XMLoadFloat3(&Scale);
 
-		XMVECTOR pos2 = XMLoadFloat3(&other.Position);
-		XMVECTOR rot2 = XMLoadFloat3(&other.Rotation);
-		XMVECTOR quat2 = XMLoadFloat4(&other.Quaternion);
-		XMVECTOR scale2 = XMLoadFloat3(&other.Scale);
+		DirectX::XMVECTOR pos2 = DirectX::XMLoadFloat3(&other.Position);
+		DirectX::XMVECTOR rot2 = DirectX::XMLoadFloat3(&other.Rotation);
+		DirectX::XMVECTOR quat2 = DirectX::XMLoadFloat4(&other.Quaternion);
+		DirectX::XMVECTOR scale2 = DirectX::XMLoadFloat3(&other.Scale);
 
-		XMFLOAT3 newPos, newRot, newScale;
-		XMFLOAT4 newQuat;
+		DirectX::XMFLOAT3 newPos, newRot, newScale;
+		DirectX::XMFLOAT4 newQuat;
 
 		// 位置とスケールは乗算で結合 (これはベクトル成分の乗算として解釈)
-		XMStoreFloat3(&newPos, XMVectorMultiply(pos1, pos2));
-		XMStoreFloat3(&newRot, XMVectorMultiply(rot1, rot2));
-		XMStoreFloat3(&newScale, XMVectorMultiply(scale1, scale2));
+		DirectX::XMStoreFloat3(&newPos, DirectX::XMVectorMultiply(pos1, pos2));
+		DirectX::XMStoreFloat3(&newRot, DirectX::XMVectorMultiply(rot1, rot2));
+		DirectX::XMStoreFloat3(&newScale, DirectX::XMVectorMultiply(scale1, scale2));
 
 		// クォータニオンは乗算で回転を結合 (これは正しい)
-		XMStoreFloat4(&newQuat, XMQuaternionMultiply(quat1, quat2));
+		DirectX::XMStoreFloat4(&newQuat, DirectX::XMQuaternionMultiply(quat1, quat2));
 
 		return Transform{ newPos, newRot, newQuat, newScale };
 	}
 
 	inline Transform operator*(const float scalar) const
 	{
-		using namespace DirectX;
-		XMVECTOR pos = XMLoadFloat3(&Position);
-		XMVECTOR rot = XMLoadFloat3(&Rotation);
-		XMVECTOR quat = XMLoadFloat4(&Quaternion);
-		XMVECTOR scale = XMLoadFloat3(&Scale);
-		XMVECTOR scalarVec = XMVectorReplicate(scalar);
+		DirectX::XMVECTOR pos = DirectX::XMLoadFloat3(&Position);
+		DirectX::XMVECTOR rot = DirectX::XMLoadFloat3(&Rotation);
+		DirectX::XMVECTOR quat = DirectX::XMLoadFloat4(&Quaternion);
+		DirectX::XMVECTOR scale = DirectX::XMLoadFloat3(&Scale);
+		DirectX::XMVECTOR scalarVec = DirectX::XMVectorReplicate(scalar);
 
-		XMFLOAT3 newPos, newRot, newScale;
-		XMFLOAT4 newQuat;
+		DirectX::XMFLOAT3 newPos, newRot, newScale;
+		DirectX::XMFLOAT4 newQuat;
 
-		XMStoreFloat3(&newPos, XMVectorMultiply(pos, scalarVec));
-		XMStoreFloat3(&newRot, XMVectorMultiply(rot, scalarVec));
-		XMStoreFloat4(&newQuat, XMVectorMultiply(quat, scalarVec));
-		XMStoreFloat3(&newScale, XMVectorMultiply(scale, scalarVec));
+		DirectX::XMStoreFloat3(&newPos, DirectX::XMVectorMultiply(pos, scalarVec));
+		DirectX::XMStoreFloat3(&newRot, DirectX::XMVectorMultiply(rot, scalarVec));
+		DirectX::XMStoreFloat4(&newQuat, DirectX::XMVectorMultiply(quat, scalarVec));
+		DirectX::XMStoreFloat3(&newScale, DirectX::XMVectorMultiply(scale, scalarVec));
 
 		return Transform{ newPos, newRot, newQuat, newScale };
 	}
 
 	inline Transform operator/(const float scalar) const
 	{
-		using namespace DirectX;
-		XMVECTOR pos = XMLoadFloat3(&Position);
-		XMVECTOR rot = XMLoadFloat3(&Rotation);
-		XMVECTOR quat = XMLoadFloat4(&Quaternion);
-		XMVECTOR scale = XMLoadFloat3(&Scale);
-		XMVECTOR scalarVec = XMVectorReplicate(scalar);
+		DirectX::XMVECTOR pos = DirectX::XMLoadFloat3(&Position);
+		DirectX::XMVECTOR rot = DirectX::XMLoadFloat3(&Rotation);
+		DirectX::XMVECTOR quat = DirectX::XMLoadFloat4(&Quaternion);
+		DirectX::XMVECTOR scale = DirectX::XMLoadFloat3(&Scale);
+		DirectX::XMVECTOR scalarVec = DirectX::XMVectorReplicate(scalar);
 
-		XMFLOAT3 newPos, newRot, newScale;
-		XMFLOAT4 newQuat;
+		DirectX::XMFLOAT3 newPos, newRot, newScale;
+		DirectX::XMFLOAT4 newQuat;
 
-		XMStoreFloat3(&newPos, XMVectorDivide(pos, scalarVec));
-		XMStoreFloat3(&newRot, XMVectorDivide(rot, scalarVec));
-		XMStoreFloat4(&newQuat, XMVectorDivide(quat, scalarVec));
-		XMStoreFloat3(&newScale, XMVectorDivide(scale, scalarVec));
+		DirectX::XMStoreFloat3(&newPos, DirectX::XMVectorDivide(pos, scalarVec));
+		DirectX::XMStoreFloat3(&newRot, DirectX::XMVectorDivide(rot, scalarVec));
+		DirectX::XMStoreFloat4(&newQuat, DirectX::XMVectorDivide(quat, scalarVec));
+		DirectX::XMStoreFloat3(&newScale, DirectX::XMVectorDivide(scale, scalarVec));
 
 		return Transform{ newPos, newRot, newQuat, newScale };
 	}
 
 	inline Transform& operator+=(const Transform& other)
 	{
-		using namespace DirectX;
-		XMVECTOR pos1 = XMLoadFloat3(&Position);
-		XMVECTOR rot1 = XMLoadFloat3(&Rotation);
-		XMVECTOR quat1 = XMLoadFloat4(&Quaternion);
-		XMVECTOR scale1 = XMLoadFloat3(&Scale);
+		DirectX::XMVECTOR pos1 = DirectX::XMLoadFloat3(&Position);
+		DirectX::XMVECTOR rot1 = DirectX::XMLoadFloat3(&Rotation);
+		DirectX::XMVECTOR quat1 = DirectX::XMLoadFloat4(&Quaternion);
+		DirectX::XMVECTOR scale1 = DirectX::XMLoadFloat3(&Scale);
 
-		XMVECTOR pos2 = XMLoadFloat3(&other.Position);
-		XMVECTOR rot2 = XMLoadFloat3(&other.Rotation);
-		XMVECTOR quat2 = XMLoadFloat4(&other.Quaternion);
-		XMVECTOR scale2 = XMLoadFloat3(&other.Scale);
+		DirectX::XMVECTOR pos2 = DirectX::XMLoadFloat3(&other.Position);
+		DirectX::XMVECTOR rot2 = DirectX::XMLoadFloat3(&other.Rotation);
+		DirectX::XMVECTOR quat2 = DirectX::XMLoadFloat4(&other.Quaternion);
+		DirectX::XMVECTOR scale2 = DirectX::XMLoadFloat3(&other.Scale);
 
 		// 位置、回転(オイラー角)、スケールは加算
-		XMStoreFloat3(&Position, XMVectorAdd(pos1, pos2));
-		XMStoreFloat3(&Rotation, XMVectorAdd(rot1, rot2));
-		XMStoreFloat3(&Scale, XMVectorAdd(scale1, scale2));
+		DirectX::XMStoreFloat3(&Position, DirectX::XMVectorAdd(pos1, pos2));
+		DirectX::XMStoreFloat3(&Rotation, DirectX::XMVectorAdd(rot1, rot2));
+		DirectX::XMStoreFloat3(&Scale, DirectX::XMVectorAdd(scale1, scale2));
 
 		// クォータニオンは乗算 (回転の結合)
-		XMStoreFloat4(&Quaternion, XMQuaternionMultiply(quat1, quat2));
+		DirectX::XMStoreFloat4(&Quaternion, DirectX::XMQuaternionMultiply(quat1, quat2));
 
-		// オイラー角をクォータニオンから再同期する（オプションだが推奨）
-		// UpdateRotationFromQuaternion();
+		UpdateRotationFromQuaternion();
 
 		return *this;
 	}
 
 	inline Transform& operator-=(const Transform& other)
 	{
-		using namespace DirectX;
-		XMVECTOR pos1 = XMLoadFloat3(&Position);
-		XMVECTOR rot1 = XMLoadFloat3(&Rotation);
-		XMVECTOR quat1 = XMLoadFloat4(&Quaternion);
-		XMVECTOR scale1 = XMLoadFloat3(&Scale);
+		DirectX::XMVECTOR pos1 = DirectX::XMLoadFloat3(&Position);
+		DirectX::XMVECTOR rot1 = DirectX::XMLoadFloat3(&Rotation);
+		DirectX::XMVECTOR quat1 = DirectX::XMLoadFloat4(&Quaternion);
+		DirectX::XMVECTOR scale1 = DirectX::XMLoadFloat3(&Scale);
 
-		XMVECTOR pos2 = XMLoadFloat3(&other.Position);
-		XMVECTOR rot2 = XMLoadFloat3(&other.Rotation);
-		XMVECTOR quat2 = XMLoadFloat4(&other.Quaternion);
-		XMVECTOR scale2 = XMLoadFloat3(&other.Scale);
+		DirectX::XMVECTOR pos2 = DirectX::XMLoadFloat3(&other.Position);
+		DirectX::XMVECTOR rot2 = DirectX::XMLoadFloat3(&other.Rotation);
+		DirectX::XMVECTOR quat2 = DirectX::XMLoadFloat4(&other.Quaternion);
+		DirectX::XMVECTOR scale2 = DirectX::XMLoadFloat3(&other.Scale);
 
-		XMStoreFloat3(&Position, XMVectorSubtract(pos1, pos2));
-		XMStoreFloat3(&Rotation, XMVectorSubtract(rot1, rot2));
-		XMStoreFloat4(&Quaternion, XMVectorSubtract(quat1, quat2)); // (非推奨だが実装を維持)
-		XMStoreFloat3(&Scale, XMVectorSubtract(scale1, scale2));
+		DirectX::XMStoreFloat3(&Position, DirectX::XMVectorSubtract(pos1, pos2));
+		DirectX::XMStoreFloat3(&Rotation, DirectX::XMVectorSubtract(rot1, rot2));
+		DirectX::XMStoreFloat4(&Quaternion, DirectX::XMVectorSubtract(quat1, quat2)); // (非推奨だが実装を維持)
+		DirectX::XMStoreFloat3(&Scale, DirectX::XMVectorSubtract(scale1, scale2));
 
 		return *this;
 	}
 
 	inline Transform& operator*=(const float scalar)
 	{
-		using namespace DirectX;
-		XMVECTOR pos = XMLoadFloat3(&Position);
-		XMVECTOR rot = XMLoadFloat3(&Rotation);
-		XMVECTOR quat = XMLoadFloat4(&Quaternion);
-		XMVECTOR scale = XMLoadFloat3(&Scale);
-		XMVECTOR scalarVec = XMVectorReplicate(scalar);
+		DirectX::XMVECTOR pos = DirectX::XMLoadFloat3(&Position);
+		DirectX::XMVECTOR rot = DirectX::XMLoadFloat3(&Rotation);
+		DirectX::XMVECTOR quat = DirectX::XMLoadFloat4(&Quaternion);
+		DirectX::XMVECTOR scale = DirectX::XMLoadFloat3(&Scale);
+		DirectX::XMVECTOR scalarVec = DirectX::XMVectorReplicate(scalar);
 
-		XMStoreFloat3(&Position, XMVectorMultiply(pos, scalarVec));
-		XMStoreFloat3(&Rotation, XMVectorMultiply(rot, scalarVec));
-		XMStoreFloat4(&Quaternion, XMVectorMultiply(quat, scalarVec));
-		XMStoreFloat3(&Scale, XMVectorMultiply(scale, scalarVec));
+		DirectX::XMStoreFloat3(&Position, DirectX::XMVectorMultiply(pos, scalarVec));
+		DirectX::XMStoreFloat3(&Rotation, DirectX::XMVectorMultiply(rot, scalarVec));
+		DirectX::XMStoreFloat4(&Quaternion, DirectX::XMVectorMultiply(quat, scalarVec));
+		DirectX::XMStoreFloat3(&Scale, DirectX::XMVectorMultiply(scale, scalarVec));
 
 		return *this;
 	}
 
 	inline Transform& operator/=(const float scalar)
 	{
-		using namespace DirectX;
-		XMVECTOR pos = XMLoadFloat3(&Position);
-		XMVECTOR rot = XMLoadFloat3(&Rotation);
-		XMVECTOR quat = XMLoadFloat4(&Quaternion);
-		XMVECTOR scale = XMLoadFloat3(&Scale);
-		XMVECTOR scalarVec = XMVectorReplicate(scalar);
+		DirectX::XMVECTOR pos = DirectX::XMLoadFloat3(&Position);
+		DirectX::XMVECTOR rot = DirectX::XMLoadFloat3(&Rotation);
+		DirectX::XMVECTOR quat = DirectX::XMLoadFloat4(&Quaternion);
+		DirectX::XMVECTOR scale = DirectX::XMLoadFloat3(&Scale);
+		DirectX::XMVECTOR scalarVec = DirectX::XMVectorReplicate(scalar);
 
-		XMStoreFloat3(&Position, XMVectorDivide(pos, scalarVec));
-		XMStoreFloat3(&Rotation, XMVectorDivide(rot, scalarVec));
-		XMStoreFloat4(&Quaternion, XMVectorDivide(quat, scalarVec));
-		XMStoreFloat3(&Scale, XMVectorDivide(scale, scalarVec));
+		DirectX::XMStoreFloat3(&Position, DirectX::XMVectorDivide(pos, scalarVec));
+		DirectX::XMStoreFloat3(&Rotation, DirectX::XMVectorDivide(rot, scalarVec));
+		DirectX::XMStoreFloat4(&Quaternion, DirectX::XMVectorDivide(quat, scalarVec));
+		DirectX::XMStoreFloat3(&Scale, DirectX::XMVectorDivide(scale, scalarVec));
 
 		return *this;
 	}
@@ -277,10 +268,10 @@ struct Transform
 	inline bool operator==(const Transform& other) const
 	{
 		using namespace DirectX;
-		return XMVector3Equal(XMLoadFloat3(&Position), XMLoadFloat3(&other.Position)) &&
-			XMVector3Equal(XMLoadFloat3(&Rotation), XMLoadFloat3(&other.Rotation)) &&
-			XMVector4Equal(XMLoadFloat4(&Quaternion), XMLoadFloat4(&other.Quaternion)) &&
-			XMVector3Equal(XMLoadFloat3(&Scale), XMLoadFloat3(&other.Scale));
+		return DirectX::XMVector3Equal(XMLoadFloat3(&Position), DirectX::XMLoadFloat3(&other.Position)) &&
+			DirectX::XMVector3Equal(DirectX::XMLoadFloat3(&Rotation), DirectX::XMLoadFloat3(&other.Rotation)) &&
+			DirectX::XMVector4Equal(DirectX::XMLoadFloat4(&Quaternion), DirectX::XMLoadFloat4(&other.Quaternion)) &&
+			DirectX::XMVector3Equal(DirectX::XMLoadFloat3(&Scale), DirectX::XMLoadFloat3(&other.Scale));
 	}
 
 	inline bool operator!=(const Transform& other) const

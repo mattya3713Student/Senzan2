@@ -4,7 +4,9 @@
 
 namespace PlayerState {
 Combat::Combat(Player* owner)
-	: Action	(owner)
+	: Action		(owner)
+	, m_MaxTime		()
+	, m_currentTime	()
 {
 }
 
@@ -13,6 +15,7 @@ Combat::~Combat()
 }
 void Combat::Enter()
 {
+	m_currentTime = 0.f;
 }
 void Combat::Update()
 {
