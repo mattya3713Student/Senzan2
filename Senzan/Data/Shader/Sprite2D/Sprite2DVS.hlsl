@@ -13,7 +13,9 @@ VSOutput main(
  
 	//スクリーン座標に合わせる計算.
     output.position.x = (output.position.x / cb_ViewPortW) * 2.0f - 1.0f;
-    output.position.y = 1.0f - (output.position.y / cb_ViewPortH) * 2.0f;
+	output.position.y = 1.0f - (output.position.y / cb_ViewPortH) * 2.0f;
+	output.position.z = 0.5;
+	output.position.w = 1;
 	
 	output.uv = uv;
 	
