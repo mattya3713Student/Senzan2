@@ -66,6 +66,9 @@ public: // Getter、Setter.
 	// アニメーションループの設定.
 	void SetIsLoop(bool isLoop);
 	
+	// アニメーションループの設定.
+	void SetAnimTime(double StartTime);
+	
 	// アニメーションを変更.
 	template<typename T>
 	void ChangeAnim(T index_T)

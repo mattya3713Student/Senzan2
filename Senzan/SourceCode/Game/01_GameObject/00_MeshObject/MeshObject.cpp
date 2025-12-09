@@ -168,6 +168,12 @@ void MeshObject::SetIsLoop(const bool isLoop)
 	m_Isloop = isLoop;
 }
 
+// アニメーションループの設定.
+void MeshObject::SetAnimTime(double StartTime)
+{
+	m_AnimTimer = StartTime;
+}
+
 double MeshObject::GetAnimPeriod(int index) const
 {
 	if (std::shared_ptr<SkinMesh> skinMesh = std::dynamic_pointer_cast<SkinMesh>(m_pMesh.lock()))

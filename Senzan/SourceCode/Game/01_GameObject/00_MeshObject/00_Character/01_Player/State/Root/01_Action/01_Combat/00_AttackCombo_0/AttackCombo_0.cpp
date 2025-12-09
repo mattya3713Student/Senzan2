@@ -37,6 +37,7 @@ void AttackCombo_0::Enter()
 
 	// アニメーション設定.
 	m_pOwner->SetIsLoop(false);
+	m_pOwner->SetAnimTime(0.0);
 	m_pOwner->SetAnimSpeed(AttackCombo_0_ANIM_SPEED_0);
 	m_pOwner->ChangeAnim(Player::eAnim::Attack_0);
 
@@ -57,19 +58,28 @@ void AttackCombo_0::Enter()
 	v_diff_vec = DirectX::XMVector3Normalize(v_diff_vec);
 	DirectX::XMStoreFloat3(&diff_vec, v_diff_vec);
 
+	// 敵の方向を向く.
+	m_pOwner->GetTransform()->RotateToDirection(diff_vec);
+
 	// 入力を取得.
 	DirectX::XMFLOAT2 input_vec = VirtualPad::GetInstance().GetAxisInput(VirtualPad::eGameAxisAction::Move);
-
+ 
 	// 入力があれば敵へダッシュ！.
-	m_pOwner->GetTransform()->RotateToDirection(diff_vec);
-	if (MyMath::IsVector2NearlyZero(input_vec, 0.f)) {
-
+	if (!MyMath::IsVector2NearlyZero(input_vec, 0.f)) {
+		m_MoveVec = diff_vec;
 	}
 }
 
 void AttackCombo_0::Update()
 {
 	Combat::Update();
+
+	// 何も入力がなくアニメーションが終わった時,Idleステートに変える.
+	if (m_pOwner->IsAnimEnd(Player::eAnim::Attack_0))
+	{
+		m_pOwner->ChangeState(PlayerState::eID::Idle);
+	}
+
 }
 
 void AttackCombo_0::LateUpdate()
@@ -93,23 +103,15 @@ void AttackCombo_0::LateUpdate()
 	float move_amount = movement_speed * delta_time;
 
 	// 移動方向.
-	DirectX::XMFLOAT3 moveDirection = { m_pOwner->m_TargetPos.x, 0.0f, m_pOwner->m_TargetPos.y };
+	DirectX::XMFLOAT3 moveDirection = { m_MoveVec.x, 0.0f, m_MoveVec.z };
 
 	// 移動量加算.
 	DirectX::XMFLOAT3 movement = {};
-	movement.x = moveDirection.x * movement_speed;
+	movement.x = moveDirection.x * move_amount;
 	movement.y = 0.f;
-	movement.z = moveDirection.z * movement_speed;
+	movement.z = moveDirection.z * move_amount;
 
-	//m_pOwner->AddPosition(movement);
-
-	Log::GetInstance().Info("", m_pOwner->GetPosition());
-
-	// 攻撃_1完了.
-	if (m_pOwner->IsAnimEnd(Player::eAnim::Attack_0))
-	{
-		m_pOwner->ChangeState(PlayerState::eID::Idle);
-	}
+	m_pOwner->AddPosition(movement);
 }
 
 void AttackCombo_0::Draw()
@@ -120,6 +122,7 @@ void AttackCombo_0::Draw()
 void AttackCombo_0::Exit()
 {
 	Combat::Exit();
+	m_MoveVec = {};
 }
 
 } // PlayerState.

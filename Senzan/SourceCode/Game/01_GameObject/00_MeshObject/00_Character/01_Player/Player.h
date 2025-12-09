@@ -17,6 +17,7 @@ class KnockBack;
 class Dead;
 class SpecialAttack;
 class Action;
+class Movement;
 class Idle;
 class Run;
 class AttackCombo_0;
@@ -44,16 +45,17 @@ class Player
 	friend PlayerState::KnockBack;
 	friend PlayerState::Dead;
 	friend PlayerState::SpecialAttack;
-	friend PlayerState::Action;
 	friend PlayerState::Idle;
 	friend PlayerState::Run;
+	friend PlayerState::Movement;
 	friend PlayerState::AttackCombo_0;
 	friend PlayerState::AttackCombo_1;
 	friend PlayerState::AttackCombo_2;
 	friend PlayerState::Parry;
-	friend PlayerState::Dodge;
 	friend PlayerState::DodgeExecute;
 	friend PlayerState::JustDodge;
+	friend PlayerState::Dodge;
+	friend PlayerState::Action;
 
 	enum class eAnim : uint8_t
 	{

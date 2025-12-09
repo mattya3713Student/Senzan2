@@ -13,21 +13,31 @@ Combat::Combat(Player* owner)
 Combat::~Combat()
 {
 }
+
 void Combat::Enter()
 {
+	Action::Enter();
 	m_currentTime = 0.f;
 }
+
 void Combat::Update()
 {
+	Action::Update();
 }
+
 void Combat::LateUpdate()
 {
+	Action::LateUpdate();
 }
+
 void Combat::Draw()
 {
+	Action::Draw();
 }
+
 void Combat::Exit()
 {
+	Action::Exit();
 }
 
 } // PlayerState.

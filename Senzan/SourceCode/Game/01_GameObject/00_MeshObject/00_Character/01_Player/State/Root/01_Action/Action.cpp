@@ -23,21 +23,6 @@ void Action::Enter()
 
 void Action::Update()
 {
-	// 回避ボタンが押されたら.
-	if (VirtualPad::GetInstance().IsActionDown(VirtualPad::eGameAction::Dodge))
-	{
-		// ジャスト回避に派生.
-		if (m_pOwner->m_IsJustDodgeTiming)
-		{
-			m_pOwner->ChangeState(PlayerState::eID::JustDodge);
-		}
-		// 回避に派生.	
-		else
-		{
-			m_pOwner->ChangeState(PlayerState::eID::DodgeExecute);
-		}
-		return;
-	}
 
 	// 攻撃ボタンが押されたら.
 	if (VirtualPad::GetInstance().IsActionDown(VirtualPad::eGameAction::Attack))

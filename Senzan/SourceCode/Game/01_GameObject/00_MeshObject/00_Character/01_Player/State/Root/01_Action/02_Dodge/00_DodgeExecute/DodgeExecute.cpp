@@ -39,6 +39,7 @@ void DodgeExecute::Enter()
 	m_MaxTime = 3.8f;
 
 	m_pOwner->SetIsLoop(false);
+	m_pOwner->SetAnimTime(0.0);
 	m_pOwner->SetAnimSpeed(DODGE_ANIM_SPEED_0);
 	m_pOwner->ChangeAnim(Player::eAnim::Attack_0);
 }
