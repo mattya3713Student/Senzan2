@@ -642,7 +642,7 @@ void UIEditor::ImGuiEtcInfoEdit(std::shared_ptr<UIObject> object)
 		ImGui::Text(IMGUI_JP("‰ñ“]²"));
 		bool Pivotdrag = ImGui::DragFloat3("##PivotDrag", &pivot.x, m_DragValue);
 		ImGui::Text(IMGUI_JP("‰ñ“]"));
-		bool rotdrag = ImGui::DragFloat3("##RotDrag", &rot.x, m_DragValue);
+		bool rotdrag = ImGui::DragFloat2("##RotDrag", &rot.x, m_DragValue);
 
 		// •ÏX‚ª‚ ‚Á‚½ê‡•Û‘¶‚·‚é
 		if (scaledrag
