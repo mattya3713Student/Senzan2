@@ -6,10 +6,11 @@
 
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossChargeSlashState/BossChargeSlashState.h"
 
+#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossSpecialState/TestSpecial.h"
+
 //前方宣言.
 class Boss;
 class BossMoveState;
-class TestStomp;
 
 /******************************************************************************
 *	ボスの待機状態クラス.

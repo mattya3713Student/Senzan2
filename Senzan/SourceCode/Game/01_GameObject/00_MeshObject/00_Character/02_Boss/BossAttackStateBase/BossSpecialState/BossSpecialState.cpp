@@ -132,6 +132,7 @@ void BossSpecialState::Enter()
     //原点？.
     m_pOwner->SetPosition(m_StartPos);
 }
+
 void BossSpecialState::Update()
 {
     //----------------------------------------

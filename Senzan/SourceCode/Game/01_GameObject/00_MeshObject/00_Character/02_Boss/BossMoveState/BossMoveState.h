@@ -56,7 +56,8 @@ private:
 	DirectX::XMFLOAT3 m_InitBossPos;
 //	std::shared_ptr<CapsuleCollider> m_pColl;
 
-	float timer = 0.0f;
+	float m_Timer = 0.0f;
+	float m_SecondTimer = 120.0f;
 
 	std::shared_ptr<BossSpecialState> m_pAttack;
 	std::shared_ptr<BossChargeSlashState> m_pChage;

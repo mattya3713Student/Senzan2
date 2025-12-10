@@ -19,7 +19,7 @@
 
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossChargeState/BossChargeState.h"
 
-#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossStompState/TestStomp.h"
+#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossSpecialState/TestSpecial.h"
 
 constexpr float HP_Max = 100.0f;
 
@@ -44,7 +44,7 @@ Boss::Boss()
 	m_Transform->SetRotationDegrees(Rotation);
 
 	// ステートマシンの初期ステートを、SlashChargeStateに設定
-	m_State->ChangeState(std::make_shared<TestStomp>(this));
+	m_State->ChangeState(std::make_shared<TestSpecial>(this));
 	//m_State->ChangeState(std::make_shared<BossShoutState>());
 
 

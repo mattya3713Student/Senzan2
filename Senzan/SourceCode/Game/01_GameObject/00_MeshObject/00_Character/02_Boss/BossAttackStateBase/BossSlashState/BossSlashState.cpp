@@ -84,6 +84,3 @@ void BossSlashState::Exit()
 void BossSlashState::BossAttack()
 {
 }
-
-
-

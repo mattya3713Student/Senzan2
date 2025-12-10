@@ -33,7 +33,7 @@ class BossShoutState;		//ã©Ç—çUåÇ.
 class BossSpecialState;
 class BossLaserState;
 class BossDeadState;
-class TestStomp;
+class TestSpecial;
 
 class BossChargeState;
 
@@ -56,7 +56,7 @@ class Boss
 	friend BossDeadState;
 	friend BossChargeState;
 
-	friend TestStomp;
+	friend TestSpecial;
 public:
 	Boss();
 	~Boss() override;

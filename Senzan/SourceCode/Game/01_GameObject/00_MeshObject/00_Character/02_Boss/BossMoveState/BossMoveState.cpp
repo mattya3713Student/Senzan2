@@ -38,7 +38,7 @@ void BossMoveState::Update()
 	float deltaTime = Time::GetInstance().GetDeltaTime();
 	float deltaAngle = m_RotationSpeed * deltaTime * m_rotationDirection;
 
-	timer += deltaTime;
+	m_Timer += deltaTime;
 
 	//回転角度のメンバー変数を更新.
 	m_RotationAngle += deltaAngle;
@@ -119,7 +119,7 @@ void BossMoveState::Update()
 
 	m_pOwner->AddPosition(test);
 
-	if (timer >= 15.0f)
+	if (m_Timer > m_SecondTimer)
 	{
 		m_pOwner->GetStateMachine()->ChangeState(std::make_unique<BossChargeState>(m_pOwner));
 	}
