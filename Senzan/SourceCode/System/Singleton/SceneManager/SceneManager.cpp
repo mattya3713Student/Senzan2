@@ -21,7 +21,6 @@
 
 SceneManager::SceneManager()
 	: m_pScene	( std::make_unique<GameMain>() )
-	, m_hWnd	()
 	, m_pBuffer	( nullptr )
 
 #if _DEBUG
@@ -34,13 +33,6 @@ SceneManager::SceneManager()
 SceneManager::~SceneManager()
 {
 }
-
-void SceneManager::Create(HWND hWnd)
-{
-	m_hWnd = hWnd;
-	LoadData();
-}
-
 
 void SceneManager::LoadData()
 {
@@ -108,11 +100,6 @@ void SceneManager::LoadScene(eList Scene)
 	//シーン作成.
 	pI.MakeScene(Scene);
 	pI.m_pScene->Create();
-}
-
-HWND SceneManager::GetHWND() const
-{
-	return m_hWnd;
 }
 
 //シーン作成.
