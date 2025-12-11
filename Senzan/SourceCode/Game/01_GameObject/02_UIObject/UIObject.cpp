@@ -40,6 +40,7 @@ void UIObject::Draw()
 	if (auto sprite = m_pSprite.lock())
 	{		
 		const auto& rectTransform = sprite->GetRectTransform();
+		m_UIName = sprite->GetResourceName();
 
 		Transform newTransform = *m_Transform;
 		rectTransform->SetTransform(newTransform);
@@ -182,7 +183,14 @@ const std::string UIObject::GetResourceName() const
 
 //----------------------------------------------------------------.
 
-void UIObject::SetResourceName(const std::string& name)
+const std::string& UIObject::GetUIName() const
 {
-	m_pSprite.lock()->SetResourceName(name);
+	return m_UIName;
+}
+
+//----------------------------------------------------------------.
+
+void UIObject::SetUIName(const std::string& name)
+{
+	m_UIName = name;
 }
