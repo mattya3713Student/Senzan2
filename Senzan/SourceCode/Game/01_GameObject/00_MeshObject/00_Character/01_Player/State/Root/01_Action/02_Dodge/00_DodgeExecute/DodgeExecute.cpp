@@ -10,7 +10,7 @@
 #include "System/Utility/SingleTrigger/SingleTrigger.h"
 
 // ‰ñ”ð’†‚Ì‘¬“x.
-static constexpr double DODGE_ANIM_SPEED_1 = 0.0000001;
+static constexpr double DODGE_ANIM_SPEED_1 = 0.00001;
 
 namespace PlayerState {
 DodgeExecute::DodgeExecute(Player* owner)
@@ -38,7 +38,7 @@ void DodgeExecute::Enter()
 
 	m_pOwner->SetIsLoop(false);
 	m_pOwner->SetAnimSpeed(DODGE_ANIM_SPEED_1);
-	m_pOwner->SetAnimTime(0.5);
+	m_pOwner->SetAnimTime(1.5);
 	m_pOwner->ChangeAnim(Player::eAnim::Attack_0);
 }
 
