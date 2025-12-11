@@ -44,13 +44,14 @@ void Dodge::Enter()
 	m_currentTime = 0.f;
 
 	DirectX::XMFLOAT2 input_vec = VirtualPad::GetInstance().GetAxisInput(VirtualPad::eGameAxisAction::Move);
+	DirectX::XMFLOAT3 final_move_3d = {};
 
 	// 入力がなければプレイヤーの向いている方向へ.
 	if (MyMath::IsVector2NearlyZero(input_vec, 0.f))
 	{
-		DirectX::XMFLOAT3 player_forward = m_pOwner->GetTransform()->GetForward();
-		player_forward.y = 0;
-		m_InputVec = MyMath::NormalizeVector3To2D(player_forward);
+		final_move_3d = m_pOwner->GetTransform()->GetForward();
+		final_move_3d.y = 0;
+		m_InputVec = MyMath::NormalizeVector3To2D(final_move_3d);
 	}
 	// 入力があれば保存.
 	else
@@ -81,13 +82,14 @@ void Dodge::Enter()
 		// 正規化し.
 		DirectX::XMVECTOR v_normalized_move = DirectX::XMVector3Normalize(v_final_move);
 
-		DirectX::XMFLOAT3 final_move_3d = {};
 		DirectX::XMStoreFloat3(&final_move_3d, v_normalized_move);
 
 		// 最終的な回避方向をm_InputVecに設定 (XZ平面の正規化ベクトル)
 		m_InputVec = { final_move_3d.x, final_move_3d.z };
 	}
 
+	// 移動方向を向く.
+	m_pOwner->GetTransform()->RotateToDirection(final_move_3d);
 }
 
 void Dodge::Update()

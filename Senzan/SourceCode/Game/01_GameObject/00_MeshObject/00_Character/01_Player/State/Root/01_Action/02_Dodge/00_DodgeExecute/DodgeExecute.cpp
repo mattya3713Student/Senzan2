@@ -9,10 +9,8 @@
 
 #include "System/Utility/SingleTrigger/SingleTrigger.h"
 
-// “¥‚Ýž‚Ý‚Ü‚Å‚Ì‘¬“x.
-static constexpr double DODGE_ANIM_SPEED_0 = 0.10;
 // ‰ñ”ð’†‚Ì‘¬“x.
-static constexpr double DODGE_ANIM_SPEED_1 = 0.0;
+static constexpr double DODGE_ANIM_SPEED_1 = 0.0000001;
 
 namespace PlayerState {
 DodgeExecute::DodgeExecute(Player* owner)
@@ -39,8 +37,8 @@ void DodgeExecute::Enter()
 	m_MaxTime = 3.8f;
 
 	m_pOwner->SetIsLoop(false);
-	m_pOwner->SetAnimTime(0.0);
-	m_pOwner->SetAnimSpeed(DODGE_ANIM_SPEED_0);
+	m_pOwner->SetAnimSpeed(DODGE_ANIM_SPEED_1);
+	m_pOwner->SetAnimTime(0.5);
 	m_pOwner->ChangeAnim(Player::eAnim::Attack_0);
 }
 
@@ -54,19 +52,12 @@ void DodgeExecute::LateUpdate()
 	Dodge::LateUpdate();
 
 	// Œo‰ßŽžŠÔ‚ð‰ÁŽZ.
-	float value = MyMath::IsNearlyEqual(m_pOwner->m_AnimSpeed, 0.0) ? 1.0 : m_pOwner->m_AnimSpeed;
+	double value = MyMath::IsNearlyEqual(m_pOwner->m_AnimSpeed, 0.0) ? 1.0 : m_pOwner->m_AnimSpeed;
 	float deltaTime = value * m_pOwner->GetDelta();
 	float speed = m_Distance / m_MaxTime;
 	float moveAmount = speed * deltaTime;
 
 	m_currentTime += deltaTime;
-
-	if(m_currentTime > 0.86f)
-		m_AnimSpeedChangedTrigger->CheckAndTrigger(
-			[this]() { return  m_pOwner->SetAnimSpeed(DODGE_ANIM_SPEED_1); },
-			[&]() {
-				return m_IsAnimEnd;	m_IsAnimEnd = false;
-			});
 
 	// ˆÚ“®•ûŒü.
 	DirectX::XMFLOAT3 moveDirection = { m_InputVec.x, 0.0f, m_InputVec.y };
