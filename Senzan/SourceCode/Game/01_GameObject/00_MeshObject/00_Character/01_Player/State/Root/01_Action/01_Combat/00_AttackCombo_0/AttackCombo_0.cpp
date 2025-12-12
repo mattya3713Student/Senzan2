@@ -64,7 +64,7 @@ void AttackCombo_0::Enter()
 	// 入力を取得.
 	DirectX::XMFLOAT2 input_vec = VirtualPad::GetInstance().GetAxisInput(VirtualPad::eGameAxisAction::Move);
  
-	// 入力があれば敵へダッシュ！.
+	// 入力があれば敵へダッシュ!.
 	if (!MyMath::IsVector2NearlyZero(input_vec, 0.f)) {
 		m_MoveVec = diff_vec;
 	}
