@@ -288,8 +288,7 @@
     <ClCompile Include="SourceCode\Game\03_Collision\ColliderBase.cpp" />
     <ClCompile Include="SourceCode\Game\03_Collision\Sprite\SpriteCollider.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\CollisionDetector\CollisionDetector.cpp" />
-    <ClCompile Include="SourceCode\Game\03_Collision\Sphere\SphereCollider.cpp" />
-    <ClCompile Include="SourceCode\Game\05_InputDevice\TestKeyBoud\TestKeyBoud.cpp" />
+    <ClCompile Include="SourceCode\Game\03_Collision\00_Core\02_Sphere\SphereCollider.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\CameraManager\CameraManager.cpp" />
     <ClCompile Include="SourceCode\Game\02_Camera\ThirdPersonCamera\ThirdPersonCamera.cpp" />
     <ClCompile Include="SourceCode\Game\04_Time\Time.cpp" />
@@ -357,6 +356,7 @@
     <ClInclude Include="Data\ImGui\Library\imstb_textedit.h" />
     <ClInclude Include="Data\ImGui\Library\imstb_truetype.h" />
     <ClInclude Include="SourceCode\Constant.h" />
+    <ClInclude Include="SourceCode\Game\03_Collision\00_Core\Ex_CompositeCollider\CompositeCollider.h" />
     <ClInclude Include="SourceCode\System\Utility\EnumFlags\EnumFlags.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\00_Base\SceneBase.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\01_Title\Title.h" />
@@ -418,10 +418,8 @@
     <ClInclude Include="SourceCode\Game\03_Collision\Capsule\CapsuleCollider.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\ColliderBase.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\CollisionInfo.h" />
-    <ClInclude Include="SourceCode\Game\03_Collision\Sprite\SpriteCollider.h" />
     <ClInclude Include="SourceCode\System\Singleton\CollisionDetector\CollisionDetector.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\Sphere\SphereCollider.h" />
-    <ClInclude Include="SourceCode\Game\05_InputDevice\TestKeyBoud\TestKeyBoud.h" />
     <ClInclude Include="SourceCode\System\Singleton\CameraManager\CameraManager.h" />
     <ClInclude Include="SourceCode\Game\02_Camera\ThirdPersonCamera\PlayerThirdPersonCamera.h" />
     <ClInclude Include="SourceCode\Game\02_Camera\ThirdPersonCamera\ThirdPersonCamera.h" />

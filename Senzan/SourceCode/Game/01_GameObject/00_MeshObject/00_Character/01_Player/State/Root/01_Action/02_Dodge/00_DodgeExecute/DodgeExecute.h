@@ -25,5 +25,6 @@ namespace PlayerState {
         void Exit() override;
 
     private:
+        bool m_IsAnimEnd = false;
     };
 }

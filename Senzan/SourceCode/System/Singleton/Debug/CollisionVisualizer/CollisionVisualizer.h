@@ -10,7 +10,7 @@
 #include <D3DX11async.h> // D3DX11CompileFromFile のため
 #include <cassert>
 
-#include "Game/03_Collision/ColliderBase.h"
+#include "Game/03_Collision/00_Core/ColliderBase.h"
 
 class DirectX11;
 class CameraManager;
@@ -53,12 +53,12 @@ public:
     friend Singleton<CollisionVisualizer>;
 private:
 
-    // 形状ごとのメッシュデータをまとめる構造体
+    // 形状ごとのメッシュデータをまとめる構造体.
     struct ShapeData
     {
         Microsoft::WRL::ComPtr<ID3D11Buffer> VertexBuffer;
         Microsoft::WRL::ComPtr<ID3D11Buffer> IndexBuffer;
-        std::vector<WORD> Indices; // DrawIndexedInstanced のサイズ決定用
+        std::vector<WORD> Indices;
     };
 
 public:
@@ -66,31 +66,31 @@ public:
     CollisionVisualizer();
     ~CollisionVisualizer();
 
+    // 描画する当たり判定の登録(毎フレーム実行).
     void RegisterCollider(const DebugColliderInfo& info);
     void Draw();
 private:
-    struct SimpleVertex { DirectX::XMFLOAT3 Position; }; // 頂点構造体
+    struct SimpleVertex { DirectX::XMFLOAT3 Position; };    // 頂点.
+    struct CBuffer {DirectX::XMMATRIX ViewProj; };          // コンスタントバッファ.
 
-    // CBuffer構造体 (HLSLの ViewProjCBuffer に合わせ、ViewProj行列のみ)
-    struct CBuffer
-    {
-        DirectX::XMMATRIX ViewProj; // 64 bytes
-    };
-
+    // コンスタントバッファの作成.
     void CreateConstantBuffer();
+    // シェーダーの作成.
     void CreateShader();
+    // バッファの作成.
     void CreateD3D11Buffer(
-        const std::vector<SimpleVertex>& vertices,
-        const std::vector<WORD>& indices,
-        Microsoft::WRL::ComPtr<ID3D11Buffer>& vb_out,
-        Microsoft::WRL::ComPtr<ID3D11Buffer>& ib_out);
+        const std::vector<SimpleVertex>& Vertices,
+        const std::vector<WORD>& Indices,
+        Microsoft::WRL::ComPtr<ID3D11Buffer>& oVertexBuffer,
+        Microsoft::WRL::ComPtr<ID3D11Buffer>& oIndexBuffer);
 
-    // 形状ごとのリソース作成関数
+    // 形状ごとの単位形状リソース作成関数.
     void CreateBoxResources(ShapeData& out_data);
-    void CreateSphereResources(ShapeData& out_data, int segments = 16);
-    void CreateCapsuleResources(ShapeData& out_data, float halfHeight = 0.5f, int segments = 16);
+    void CreateSphereResources(ShapeData& out_data, int Segments = 16);
+    void CreateCapsuleResources(ShapeData& out_data, float HalfHeight = 0.5f, int Segments = 16);
 
 private:
+    // このフレームで描画するリスト.
     std::vector<DebugColliderInfo> m_DebugInfoQueue;
 
     // 形状タイプ（eShapeType）をキーにして、リソースを保持するマップ

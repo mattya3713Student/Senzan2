@@ -1,8 +1,8 @@
 ﻿#pragma once
 
 #include "..//BossAttackStateBase.h"
-#include "Game\01_GameObject\00_MeshObject\MeshObject.h"
-#include "Game\03_Collision\Capsule\CapsuleCollider.h"
+#include "Game/01_GameObject/00_MeshObject/MeshObject.h"
+#include "Game/03_Collision/00_Core/01_Capsule/CapsuleCollider.h"
 
 /*************************************************************
 *	ボスの攻撃: 斬る攻撃.

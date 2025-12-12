@@ -17,7 +17,7 @@
 #include "Game//01_GameObject//00_MeshObject//00_Character//02_Boss//Boss.h"
 #include "Game//01_GameObject//00_MeshObject//00_Character//01_Player//Player.h"
 
-#include "Game/03_Collision/Capsule/CapsuleCollider.h"
+#include "Game/03_Collision/00_Core/01_Capsule/CapsuleCollider.h"
 #include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossSlashState/BossSlashState.h"
 
 #include "System/Singleton/ImGui/CImGuiManager.h"

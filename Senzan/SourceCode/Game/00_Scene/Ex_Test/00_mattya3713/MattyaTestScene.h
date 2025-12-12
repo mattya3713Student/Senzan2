@@ -35,7 +35,8 @@ private:
 	std::shared_ptr<CameraBase>			m_pCamera;			// ƒJƒƒ‰.
 	std::shared_ptr<DirectionLight>		m_pLight;			// ƒ‰ƒCƒg
 
-	std::shared_ptr<CapsuleCollider>		m_TestPressCollision;
+	std::unique_ptr<CapsuleCollider>		m_TestPressCollision;
+	std::unique_ptr<CapsuleCollider>		m_TestAttackCollision;
 
 	std::unique_ptr<Ground>		m_pGround;
 	std::unique_ptr<Player>		m_pPlayer;

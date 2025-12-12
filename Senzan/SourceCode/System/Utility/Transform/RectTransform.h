@@ -49,7 +49,7 @@ public: // Getter、Setter.
 	void SetPivot(const DirectX::XMFLOAT2& pivot);
 
 private:
-	Transform	m_Transform;
+	Transform	m_spTransform;
 	DirectX::XMFLOAT2	m_Size;		// 幅高さ.
 	DirectX::XMFLOAT2 m_Anchor;	// アンカー.
 	DirectX::XMFLOAT2 m_Pivot;	// ピボット

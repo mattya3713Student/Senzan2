@@ -1,8 +1,7 @@
 #include "Transform.h"
 #include "System/Utility/Math/Math.h"	
 
-using namespace DirectX;
-
+#include <DirectXMath.h>
 //---------------------------------------------------------------------------------
 // ヘルパーメソッドの実装
 //---------------------------------------------------------------------------------
@@ -18,13 +17,31 @@ void Transform::SetRotation(const DirectX::XMFLOAT3& eulerAngles)
 	UpdateQuaternionFromRotation();
 }
 
+void Transform::SetRotationX(float X)
+{
+	Rotation.x = X;
+	UpdateQuaternionFromRotation();
+}
+
+void Transform::SetRotationY(float Y)
+{
+	Rotation.y = Y;
+	UpdateQuaternionFromRotation();
+}
+
+void Transform::SetRotationZ(float Z)
+{
+	Rotation.z = Z;
+	UpdateQuaternionFromRotation();
+}
+
 // 角度（度）で回転を設定.
 void Transform::SetRotationDegrees(const DirectX::XMFLOAT3& eulerAnglesInDegrees)
 {
 	SetRotation(DirectX::XMFLOAT3(
-		DirectX::XMConvertToDegrees(eulerAnglesInDegrees.x),
-		DirectX::XMConvertToDegrees(eulerAnglesInDegrees.y),
-		DirectX::XMConvertToDegrees(eulerAnglesInDegrees.z)
+		DirectX::XMConvertToRadians(eulerAnglesInDegrees.x),
+		DirectX::XMConvertToRadians(eulerAnglesInDegrees.y),
+		DirectX::XMConvertToRadians(eulerAnglesInDegrees.z)
 	));
 }
 
@@ -41,16 +58,16 @@ void Transform::SetScale(const DirectX::XMFLOAT3& newScale)
 
 void Transform::Translate(const DirectX::XMFLOAT3& translation)
 {
-	XMVECTOR pos = XMLoadFloat3(&Position);
-	XMVECTOR trans = XMLoadFloat3(&translation);
-	XMStoreFloat3(&Position, XMVectorAdd(pos, trans));
+	DirectX::XMVECTOR pos = DirectX::XMLoadFloat3(&Position);
+	DirectX::XMVECTOR trans = DirectX::XMLoadFloat3(&translation);
+	XMStoreFloat3(&Position, DirectX::XMVectorAdd(pos, trans));
 }
 
 void Transform::Rotate(const DirectX::XMFLOAT3& eulerAngles)
 {
-	XMVECTOR currentRot = XMLoadFloat3(&Rotation);
-	XMVECTOR newRot = XMLoadFloat3(&eulerAngles);
-	XMStoreFloat3(&Rotation, XMVectorAdd(currentRot, newRot));
+	DirectX::XMVECTOR currentRot = DirectX::XMLoadFloat3(&Rotation);
+	DirectX::XMVECTOR newRot = DirectX::XMLoadFloat3(&eulerAngles);
+	XMStoreFloat3(&Rotation, DirectX::XMVectorAdd(currentRot, newRot));
 	UpdateQuaternionFromRotation();
 }
 
@@ -65,9 +82,74 @@ void Transform::RotateDegrees(const DirectX::XMFLOAT3& eulerAnglesInDegrees)
 
 void Transform::Rotate(const DirectX::XMFLOAT4& quaternion)
 {
-	XMVECTOR currentQuat = XMLoadFloat4(&Quaternion);
-	XMVECTOR newQuat = XMLoadFloat4(&quaternion);
-	XMStoreFloat4(&Quaternion, XMQuaternionMultiply(currentQuat, newQuat));
+	DirectX::XMVECTOR currentQuat = DirectX::XMLoadFloat4(&Quaternion);
+	DirectX::XMVECTOR newQuat = DirectX::XMLoadFloat4(&quaternion);
+	DirectX::XMStoreFloat4(&Quaternion, DirectX::XMQuaternionMultiply(currentQuat, newQuat));
+	UpdateRotationFromQuaternion();
+}
+
+void Transform::RotateToDirection(const DirectX::XMFLOAT3& NormVecDirection)
+{
+	// 目標の方向ベクトルの取得.
+	DirectX::XMVECTOR v_target_direction = DirectX::XMLoadFloat3(&NormVecDirection);
+	v_target_direction = DirectX::XMVectorSetY(v_target_direction, 0.0f);
+
+	// 正規化.
+	if (DirectX::XMVector3NearEqual(
+		v_target_direction,
+		DirectX::XMVectorZero(),
+		DirectX::XMVectorReplicate(1e-6f))) { return; }
+	v_target_direction = DirectX::XMVector3Normalize(v_target_direction);
+
+	// 現在の前方ベクトルを取得.
+	DirectX::XMFLOAT3 curret_forward = Transform::GetForward();
+	DirectX::XMVECTOR v_current_forward = DirectX::XMLoadFloat3(&curret_forward);
+	v_current_forward = DirectX::XMVectorSetY(v_current_forward, 0.0f);
+	v_current_forward = DirectX::XMVector3Normalize(v_current_forward);
+
+	// 内積の取得.
+	DirectX::XMVECTOR dot_product_vec = DirectX::XMVector3Dot(v_current_forward, v_target_direction);
+	float dot;
+	DirectX::XMStoreFloat(&dot, dot_product_vec);
+
+	// 回転軸の取得.
+	DirectX::XMVECTOR axis = DirectX::XMVector3Cross(v_current_forward, v_target_direction);
+
+	DirectX::XMVECTOR rotation_quat;
+
+	// 角度判定とクォータニオン生成.
+	if (dot > 0.9999f)
+	{
+		// 回転角が0 (ベクトルがほぼ同じ).
+		rotation_quat = DirectX::XMQuaternionIdentity();
+	}
+	else if (dot < -0.9999f)
+	{
+		// 回転角が180度 (ベクトルが反対).
+		// Y軸周りの180度回転の軸として、現在の右ベクトル（Y軸と前方ベクトルの外積）を使用.
+		DirectX::XMVECTOR v_up = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+		DirectX::XMVECTOR v_right = DirectX::XMVector3Cross(v_current_forward, v_up);
+
+		// 回転軸と180度回転のクォータニオンを生成.
+		rotation_quat = DirectX::XMQuaternionRotationAxis(v_right, DirectX::XM_PI);
+	}
+	else
+	{
+		// 通常の回転: 角度 = arccos(内積).
+		DirectX::XMVECTOR v_angle_rad = DirectX::XMVectorACos(dot_product_vec);
+		float angle_rad = {};
+		DirectX::XMStoreFloat(&angle_rad, v_angle_rad);
+		// 軸と角度を使用してクォータニオンを生成.
+		rotation_quat = DirectX::XMQuaternionRotationAxis(axis, angle_rad);
+	}
+
+	// 現在のクォータニオンに乗算して回転を適用.
+	DirectX::XMVECTOR v_current_quat = DirectX::XMLoadFloat4(&Quaternion);
+	v_current_quat = DirectX::XMQuaternionMultiply(rotation_quat, v_current_quat);
+
+	// 同期.
+	v_current_quat = DirectX::XMQuaternionNormalize(v_current_quat);
+	DirectX::XMStoreFloat4(&Quaternion, v_current_quat);
 	UpdateRotationFromQuaternion();
 }
 
@@ -75,10 +157,10 @@ void Transform::Rotate(const DirectX::XMFLOAT4& quaternion)
 DirectX::XMFLOAT3 Transform::GetForward() const
 {
 	// ローカル前方ベクトル(0, 0, 1)をクォータニオンで回転.
-	XMVECTOR localForward = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
-	XMVECTOR rotatedVector = XMVector3Rotate(localForward, XMLoadFloat4(&Quaternion));
-	XMFLOAT3 forward;
-	XMStoreFloat3(&forward, rotatedVector);
+	DirectX::XMVECTOR localForward = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+	DirectX::XMVECTOR rotatedVector = DirectX::XMVector3Rotate(localForward, DirectX::XMLoadFloat4(&Quaternion));
+	DirectX::XMFLOAT3 forward;
+	DirectX::XMStoreFloat3(&forward, rotatedVector);
 	return forward;
 }
 
@@ -86,10 +168,10 @@ DirectX::XMFLOAT3 Transform::GetForward() const
 DirectX::XMFLOAT3 Transform::GetUp() const
 {
 	// ローカル上方ベクトル(0, 1, 0)をクォータニオンで回転.
-	XMVECTOR localUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-	XMVECTOR rotatedVector = XMVector3Rotate(localUp, XMLoadFloat4(&Quaternion));
-	XMFLOAT3 up;
-	XMStoreFloat3(&up, rotatedVector);
+	DirectX::XMVECTOR localUp = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	DirectX::XMVECTOR rotatedVector = DirectX::XMVector3Rotate(localUp, DirectX::XMLoadFloat4(&Quaternion));
+	DirectX::XMFLOAT3 up;
+	DirectX::XMStoreFloat3(&up, rotatedVector);
 	return up;
 }
 
@@ -97,10 +179,10 @@ DirectX::XMFLOAT3 Transform::GetUp() const
 DirectX::XMFLOAT3 Transform::GetRight() const
 {
 	// ローカル右方ベクトル(1, 0, 0)をクォータニオンで回転.
-	XMVECTOR localRight = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
-	XMVECTOR rotatedVector = XMVector3Rotate(localRight, XMLoadFloat4(&Quaternion));
-	XMFLOAT3 right;
-	XMStoreFloat3(&right, rotatedVector);
+	DirectX::XMVECTOR localRight = DirectX::XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
+	DirectX::XMVECTOR rotatedVector = DirectX::XMVector3Rotate(localRight, DirectX::XMLoadFloat4(&Quaternion));
+	DirectX::XMFLOAT3 right;
+	DirectX::XMStoreFloat3(&right, rotatedVector);
 	return right;
 }
 
@@ -126,14 +208,14 @@ DirectX::XMFLOAT3 Transform::GetRotationDegrees() const
 // クォータニオンからオイラー角へ変換(ジンバルロックに注意).
 void Transform::UpdateRotationFromQuaternion()
 {
-	XMVECTOR quat = XMLoadFloat4(&Quaternion);
+	DirectX::XMVECTOR quat = XMLoadFloat4(&Quaternion);
 
 	// 正規化されていないクォータニオンの場合、0除算を防ぐ.
 	// 浮動小数点誤差を防ぐためにクォータニオンを正規化.
-	quat = XMQuaternionNormalize(quat);
+	quat = DirectX::XMQuaternionNormalize(quat);
 
-	XMFLOAT4 qf;
-	XMStoreFloat4(&qf, quat);
+	DirectX::XMFLOAT4 qf;
+	DirectX::XMStoreFloat4(&qf, quat);
 
 	float roll, pitch, yaw;
 	// 2* (qy*qz + qw*qx)
@@ -142,13 +224,13 @@ void Transform::UpdateRotationFromQuaternion()
 	if (test > 0.499f) // 北極での特異点 (y=90°)
 	{
 		roll = 2.0f * atan2f(qf.y, qf.w); // roll (z) の計算
-		pitch = XM_PIDIV2; // pitch (x) は π/2
+		pitch = DirectX::XM_PIDIV2; // pitch (x) は π/2
 		yaw = 0.0f; // yaw (y) は 0
 	}
 	else if (test < -0.499f) // 南極での特異点 (y=-90°)
 	{
 		roll = -2.0f * atan2f(qf.y, qf.w); // roll (z) の計算
-		pitch = -XM_PIDIV2; // pitch (x) は -π/2
+		pitch = -DirectX::XM_PIDIV2; // pitch (x) は -π/2
 		yaw = 0.0f; // yaw (y) は 0
 	}
 	else
@@ -166,14 +248,14 @@ void Transform::UpdateRotationFromQuaternion()
 	}
 
 	// 注意: オイラー角の順序が PITCH(X) -> YAW(Y) -> ROLL(Z) の順であると仮定しています。
-	Rotation = XMFLOAT3(pitch, yaw, roll);
+	Rotation = DirectX::XMFLOAT3(pitch, yaw, roll);
 }
 
 // オイラー角からクォータニオンへ変換.
 void Transform::UpdateQuaternionFromRotation()
 {
-	XMVECTOR rot = XMLoadFloat3(&Rotation);
-	XMStoreFloat4(&Quaternion, XMQuaternionRotationRollPitchYawFromVector(rot));
+	DirectX::XMVECTOR rot = DirectX::XMLoadFloat3(&Rotation);
+	DirectX::XMStoreFloat4(&Quaternion, DirectX::XMQuaternionRotationRollPitchYawFromVector(rot));
 }
 
 // デバッグ用 ToString

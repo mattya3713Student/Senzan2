@@ -1,7 +1,7 @@
 ﻿#include "RectTransform.h"
 
 RectTransform::RectTransform()
-    : m_Transform   ()
+    : m_spTransform   ()
     , m_Size        ()
     , m_Anchor      ( {0.5f, 0.5f} )
     , m_Pivot       ( {0.5f, 0.5f} )
@@ -24,9 +24,9 @@ const DirectX::XMFLOAT3 RectTransform::CalcAnchoredPosition()
     float offsetPivotX = m_Size.x * (m_Pivot.x - 0.5f );
     float offsetPivotY = m_Size.y * (m_Pivot.y - 0.5f );
 
-    float x = m_Transform.Position.x + offsetX + offsetPivotX;
-    float y = m_Transform.Position.y + offsetY + offsetPivotY;
-    float z = m_Transform.Position.z;
+    float x = m_spTransform.Position.x + offsetX + offsetPivotX;
+    float y = m_spTransform.Position.y + offsetY + offsetPivotY;
+    float z = m_spTransform.Position.z;
 
     // 新しい位置を計算
     return DirectX::XMFLOAT3(x, y, z);
@@ -36,14 +36,14 @@ const DirectX::XMFLOAT3 RectTransform::CalcAnchoredPosition()
 
 const Transform& RectTransform::GetTransform() const
 {
-    return m_Transform;
+    return m_spTransform;
 }
 
 //-----------------------------------------------------------------------.
 
 void RectTransform::SetTransform(const Transform& transform)
 {
-    m_Transform = transform;
+    m_spTransform = transform;
 }
 
 //-----------------------------------------------------------------------.

@@ -25,5 +25,6 @@ namespace PlayerState {
         void Exit() override;
 
     private:
+        DirectX::XMFLOAT3 m_AppliedMovement = {};
     };
 }

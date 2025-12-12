@@ -105,4 +105,22 @@ namespace MyMath {
 		vec_outQuaternion = XMQuaternionSlerp(vec_outQuaternion, targetQuaternion, speed);
 		XMStoreFloat4(&outQuaternion, vec_outQuaternion);
 	}
+
+	// 角度を -180.0f から 180.0f の範囲に正規化する.
+	float NormalizeAngleDegrees(float angle)
+	{
+		static constexpr float FULL_CIRCLE = 360.0f;
+
+		angle = std::fmod(angle, FULL_CIRCLE);
+
+		if (angle > 180.0f)
+		{
+			angle -= FULL_CIRCLE;
+		}
+		else if (angle <= -180.0f)
+		{
+			angle += FULL_CIRCLE;
+		}
+		return angle;
+	}
 }

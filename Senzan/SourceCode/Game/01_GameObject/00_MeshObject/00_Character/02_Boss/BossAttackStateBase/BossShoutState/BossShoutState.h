@@ -1,6 +1,6 @@
 #pragma once
 #include "..//BossAttackStateBase.h"
-#include "Game\03_Collision\Capsule\CapsuleCollider.h"
+#include "Game\03_Collision\00_Core\01_Capsule\CapsuleCollider.h"
 
 /************************************************************************************
 *	叫び攻撃：叫びの攻撃は当たり判定でノックバックさせるのでここでは時間でのIdolの遷移を書く.

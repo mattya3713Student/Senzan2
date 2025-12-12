@@ -39,9 +39,9 @@ Boss::Boss()
 	DirectX::XMFLOAT3 pos = { 0.05f, 0.05f, 20.05f };
 	DirectX::XMFLOAT3 scale = { 10.0f, 10.0f, 10.0f };
 	DirectX::XMFLOAT3 Rotation = { 0.0f,0.0f,0.0f };
-	m_Transform->SetPosition(pos);
-	m_Transform->SetScale(scale);
-	m_Transform->SetRotationDegrees(Rotation);
+	m_spTransform->SetPosition(pos);
+	m_spTransform->SetScale(scale);
+	m_spTransform->SetRotationDegrees(Rotation);
 
 	// ステートマシンの初期ステートを、SlashChargeStateに設定
 	m_State->ChangeState(std::make_shared<BossIdolState>(this));
@@ -117,4 +117,16 @@ void Boss::Hit()
 void Boss::SetTargetPos(const DirectX::XMFLOAT3 Player_Pos)
 {
 	m_PlayerPos = Player_Pos;
+}
+
+void Boss::HandleDamageDetection()
+{
+}
+
+void Boss::HandleAttackDetection()
+{
+}
+
+void Boss::HandleDodgeDetection()
+{
 }
