@@ -6,7 +6,7 @@
 #include "..//..//BossMoveState//BossMoveState.h"
 
 
-#include "00_MeshObject/00_Character/02_Boss/BossIdleState/BossIdleState.h"
+#include "00_MeshObject/00_Character/02_Boss/BossIdolState/BossIdolState.h"
 
 
 BossLaserState::BossLaserState(Boss* owner)
@@ -33,7 +33,7 @@ void BossLaserState::Update()
 
     if (m_Timer > m_TransitionTimer)
     {
-        m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdleState>(m_pOwner));
+        m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
     }
 }
 

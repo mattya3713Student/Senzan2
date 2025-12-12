@@ -23,7 +23,7 @@ class Shout;			//叫びクラス.
 class ShoutState;		//叫び攻撃ステートクラス.
 
 //ボスの行動関係を書く.
-class BossIdleState;		//待機状態.
+class BossIdolState;		//待機状態.
 class BossMoveState;		//左右移動動状態.
 class BossAttackStateBase;	//攻撃ベースクラス.
 class BossStompState;		//踏みつけ攻撃
@@ -33,7 +33,8 @@ class BossShoutState;		//叫び攻撃.
 class BossSpecialState;
 class BossLaserState;
 class BossDeadState;
-class TestSpecial;
+
+class BossThrowingState;
 
 class BossChargeState;
 
@@ -45,7 +46,7 @@ class SkinMesh;
 class Boss
 	: public Character
 {
-	friend BossIdleState;
+	friend BossIdolState;
 	friend BossMoveState;
 	friend BossStompState;
 	friend BossSlashState;
@@ -55,8 +56,8 @@ class Boss
 	friend BossLaserState;
 	friend BossDeadState;
 	friend BossChargeState;
+	friend BossThrowingState;
 
-	friend TestSpecial;
 public:
 	Boss();
 	~Boss() override;
@@ -92,6 +93,7 @@ protected:
 	std::unique_ptr<StateMachine<Boss>> m_State;
 
 	DirectX::XMFLOAT3					m_PlayerPos;
+	DirectX::XMFLOAT3					m_PlayerVelocity;
 
 	float m_MoveSpped = 0.0f;
 

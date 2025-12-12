@@ -1,7 +1,7 @@
 #pragma once
 #include "..//BossAttackStateBase.h"
 
-#include "00_MeshObject/00_Character/02_Boss/BossIdleState/BossIdleState.h"
+#include "00_MeshObject/00_Character/02_Boss/BossIdolState/BossIdolState.h"
 
 
 /**********************************************************

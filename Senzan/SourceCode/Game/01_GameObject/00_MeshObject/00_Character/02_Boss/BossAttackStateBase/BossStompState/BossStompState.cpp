@@ -1,6 +1,6 @@
 ﻿#include "BossStompState.h"
 
-#include "00_MeshObject/00_Character/02_Boss/BossIdleState/BossIdleState.h"
+#include "00_MeshObject/00_Character/02_Boss/BossIdolState/BossIdolState.h"
 #include "00_MeshObject/00_Character/02_Boss/Boss.h"
 
 #include "Game/04_Time/Time.h"
@@ -74,7 +74,7 @@ void BossStompState::Update()
 		{
 			m_List = enAttack::None;
 		}
-		m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdleState>(m_pOwner));
+		m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
 		break;
 	default:
 		break;

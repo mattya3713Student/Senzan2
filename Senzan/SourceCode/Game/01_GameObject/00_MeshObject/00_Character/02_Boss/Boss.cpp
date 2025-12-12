@@ -1,6 +1,6 @@
 ﻿#include "Boss.h"
 
-#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossIdleState/BossIdleState.h"
+#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossIdolState/BossIdolState.h"
 #include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossMoveState/BossMoveState.h"
 #include "BossAttackStateBase/BossAttackStateBase.h"
 #include "BossAttackStateBase/BossStompState/BossStompState.h"
@@ -19,32 +19,32 @@
 
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossChargeState/BossChargeState.h"
 
-#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossSpecialState/TestSpecial.h"
+#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossThrowingState/BossThrowingState.h"
 
 constexpr float HP_Max = 100.0f;
 
 Boss::Boss()
 	: Character()
-	, m_State					(std::make_unique<StateMachine<Boss>>(this))
-	, m_PlayerPos				{}
-	, m_TurnSpeed				(0.1f)
-	, m_MoveSpeed				(0.3f)
-	, m_vCurrentMoveVelocity	(0.f, 0.f, 0.f)
-	, deleta_time				(0.f)
-	, m_HitPoint				(0.0f)
+	, m_State(std::make_unique<StateMachine<Boss>>(this))
+	, m_PlayerPos{}
+	, m_TurnSpeed(0.1f)
+	, m_MoveSpeed(0.3f)
+	, m_vCurrentMoveVelocity(0.f, 0.f, 0.f)
+	, deleta_time(0.f)
+	, m_HitPoint(0.0f)
 {
-	AttachMesh(MeshManager::GetInstance().GetSkinMesh("extinger"));
+	AttachMesh(MeshManager::GetInstance().GetSkinMesh("boss_attack"));
 
 	//DirectX::XMFLOAT3 pos = { 0.05f, 10.0f, 20.05f };
 	DirectX::XMFLOAT3 pos = { 0.05f, 0.05f, 20.05f };
-	DirectX::XMFLOAT3 scale = { 0.05f, 0.05f, 0.05f };
+	DirectX::XMFLOAT3 scale = { 10.0f, 10.0f, 10.0f };
 	DirectX::XMFLOAT3 Rotation = { 0.0f,0.0f,0.0f };
 	m_Transform->SetPosition(pos);
 	m_Transform->SetScale(scale);
 	m_Transform->SetRotationDegrees(Rotation);
 
 	// ステートマシンの初期ステートを、SlashChargeStateに設定
-	m_State->ChangeState(std::make_shared<TestSpecial>(this));
+	m_State->ChangeState(std::make_shared<BossIdolState>(this));
 	//m_State->ChangeState(std::make_shared<BossShoutState>());
 
 
@@ -89,7 +89,7 @@ LPD3DXANIMATIONCONTROLLER Boss::GetAnimCtrl() const
 void Boss::Hit()
 {
 	//ボスの体力の最小値.
-	constexpr float zero = 0.0f; 
+	constexpr float zero = 0.0f;
 	//ボスがPlayerからの攻撃を受けるダメージ変数.
 	//このダメージは今は仮でおいているだけです
 	//通常攻撃.
@@ -100,7 +100,7 @@ void Boss::Hit()
 	constexpr float Five = 5.0f;
 	//パリィの時の与えるダメージ.
 	constexpr float Fifteen = 15.0f;
-	
+
 	//Bossの体力でのステートにいれる.
 	constexpr float Dead_HP = zero;
 	//いったんこの10ダメだけにしておく.
