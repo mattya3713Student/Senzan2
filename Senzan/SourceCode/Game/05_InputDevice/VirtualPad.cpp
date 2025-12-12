@@ -2,11 +2,7 @@
 #include <iostream>
 #include <cmath>
 
-#include "Game/05_InputDevice/TestKeyBoud/TestKeyBoud.h"
 #include "Game/05_InputDevice/Input.h" // Input::GetInstance() のために必要
-#include "Game//05_InputDevice//XInputConfig//XInputConfig.h"
-
-using namespace DirectX; // XMFLOAT2のために必要
 
 namespace
 {
@@ -26,36 +22,10 @@ namespace
 // --------------------------------------------------------------------------------
 
 VirtualPad::VirtualPad()
-	: m_pKeyConfig(nullptr) // m_pKeyConfig を nullptr で明示的に初期化
-	, m_pControllerConfig(nullptr) // m_pKeyConfig を nullptr で明示的に初期化
+	: m_CoyoteTimeTimer(0.0f)
 {
-	// SetKeyConfig が呼ばれるまでキーバインド構築を遅延させるため、SetupDefaultBindings は呼ばない
-	SetupDefaultBindings();
 }
 
-// --------------------------------------------------------------------------------
-// SetKeyConfig の実装
-// --------------------------------------------------------------------------------
-void VirtualPad::SetKeyConfig(TestKeyBoud* config)
-{
-	m_pKeyConfig = config;
-	// 設定を受け取った直後にキーマップを再構築する
-	SetupDefaultBindings();
-}
-
-void VirtualPad::SetControllerConfig(XInputConfig* Config)
-{
-	m_pControllerConfig = Config;
-	//再構築する.
-	SetupDefaultBindings();
-}
-
-
-// --------------------------------------------------------------------------------
-// プライベート テンプレートヘルパーの実装 (checkActionState)
-// --------------------------------------------------------------------------------
-
-// テンプレート関数はヘッダーにインライン展開するのが理想ですが、ここでは.cppに記述
 template <typename KeyCheckFunc, typename ButtonCheckFunc>
 bool VirtualPad::checkActionState(eGameAction action,
 	KeyCheckFunc&& keyCheck,
@@ -282,184 +252,4 @@ DirectX::XMFLOAT2 VirtualPad::GetAxisInput(eGameAxisAction axisType) const
 	}
 
 	return result;
-}
-
-// キーバインドの初期化/再構築 (設定ファイルの内容を反映)
-void VirtualPad::SetupDefaultBindings()
-{
-	using EKey = XInput::Key;
-	using EStickState = XInput::StickState;
-	using ESource = InputSource::eSourceType;
-	using ETarget = InputSource::eStickTarget;
-	using Action = eGameAction;
-
-	// キーコードを TestKeyBoud から取得するヘルパーラムダ
-	auto getKeyCode = [&](const std::string& actionName, int defaultKey) -> int {
-		if (m_pKeyConfig) {
-			int key = m_pKeyConfig->GetKeyCode(actionName);
-			// GetKeyCode が設定が見つからない場合に -1 を返す場合を考慮
-			return (key != -1) ? key : defaultKey;
-		}
-		return defaultKey;
-	};
-
-	//コントローラーコードをXInputConfigから取得するヘルパーラムダ.
-	auto GetController = [&](const std::string& ActionName, int DefaultController) -> int
-	{
-		if (m_pControllerConfig)
-		{
-			int Controller = m_pControllerConfig->GetController(ActionName);
-			return Controller;
-		}
-		return DefaultController;
-	};
-
-	// マップをクリアして再構築
-	m_KeyMap.clear();
-
-	// MoveForward: 'W' または 左スティック上 (スティック方向).
-	m_KeyMap[Action::MoveForward] = {
-		eActionType::Button,
-		{
-			{ ESource::KeyBorad, getKeyCode("MoveUp", DEFAULT_KEY_W) }, // 設定を反映
-			{ ESource::ControllerStickDir, 0, EKey::None, EStickState::Up, ETarget::Left }
-		}
-	};
-
-	// MoveBackward: 'S' または 左スティック下.
-	m_KeyMap[Action::MoveBackward] = {
-		eActionType::Button,
-		{
-			{ ESource::KeyBorad, getKeyCode("MoveDown", DEFAULT_KEY_S) }, // 設定を反映
-			{ ESource::ControllerStickDir, 0, EKey::None, EStickState::Down, ETarget::Left }
-		}
-	};
-
-	// MoveRight: 'D' または 右矢印キー または 左スティック右.
-	m_KeyMap[Action::MoveRight] = {
-		eActionType::Button,
-		{
-			{ ESource::KeyBorad, getKeyCode("MoveRight", DEFAULT_KEY_D) }, // 設定を反映
-			// { ESource::KeyBorad, VK_RIGHT }, // デフォルトバインディングから削除（設定ファイルに任せる）
-			{ ESource::ControllerStickDir, 0, EKey::None, EStickState::Right, ETarget::Left }
-		}
-	};
-
-	// MoveLeft: 'A' または 左矢印キー または 左スティック左 (追加).
-	m_KeyMap[Action::MoveLeft] = {
-		eActionType::Button,
-		{
-			{ ESource::KeyBorad, getKeyCode("MoveLeft", DEFAULT_KEY_A) }, // 設定を反映
-			// { ESource::KeyBorad, VK_LEFT }, // デフォルトバインディングから削除（設定ファイルに任せる）
-			{ ESource::ControllerStickDir, 0, EKey::None, EStickState::Left, ETarget::Left }
-		}
-	};
-
-
-	// Jump: スペース または Aボタン.
-	m_KeyMap[Action::Jump] = {
-		eActionType::Button,
-		{
-			{ ESource::KeyBorad, getKeyCode("Jump", DEFAULT_KEY_SPACE) }, // 設定を反映
-			{ ESource::ControllerButton, 0, EKey::A }
-		}
-	};
-
-	// Attack: マウス左ボタン または 右トリガー.
-	m_KeyMap[Action::Attack] = {
-		eActionType::Button,
-		{
-			{ ESource::MouseButton, getKeyCode("Attack", VK_LBUTTON) }, // 設定を反映
-			// ControllerTriggerAxis の処理は checkActionState の特殊ケースで処理されます.
-			{ ESource::ControllerTriggerAxis, 0, EKey::None, EStickState::None, ETarget::RightTrigger, 1.0f }
-		}
-	};
-
-	// Parry.
-	m_KeyMap[Action::Parry] = {
-		eActionType::Button,
-		{
-			{ ESource::MouseButton, getKeyCode("Parry", VK_RBUTTON) }, // 設定を反映
-			{ ESource::ControllerButton, 0, EKey::B }
-		}
-	};
-
-	// Dodge.
-	m_KeyMap[Action::Dodge] = {
-		eActionType::Button,
-		{
-			{ ESource::KeyBorad, getKeyCode("Dodge", DEFAULT_KEY_LSHIFT) }, // 設定を反映
-			{ ESource::ControllerButton, 0, EKey::LB }
-		}
-	};
-
-	// SpecialAttack.
-	m_KeyMap[Action::SpecialAttack] = {
-		eActionType::Button,
-		{
-			{ ESource::KeyBorad, getKeyCode("SpecialAttack", DEFAULT_KEY_Q) }, // 設定を反映
-			{ ESource::ControllerButton, 0, EKey::RB }
-		}
-	};
-
-
-	// Pause.
-	m_KeyMap[Action::Pause] = {
-		eActionType::Button,
-		{
-			{ ESource::KeyBorad, getKeyCode("Pause", DEFAULT_KEY_ESC) }, // 設定を反映
-			{ ESource::ControllerButton, 0, EKey::Start }
-		}
-	};
-
-	// ----- [ Axis Actions: 軸入力の内部コンポーネント ] -----
-
-	// 【Move Axis X】: 左スティックX軸の生の値とキーボードA/Dを合成.
-	m_KeyMap[Action::Move_Axis_X] = {
-		eActionType::Axis,
-		{
-			// 左スティックX軸
-			// 修正前: EStickState::Right -> 修正後: EStickState::None
-			{ ESource::ControllerStickAxis, 0, EKey::None, EStickState::None, ETarget::Left, 1.0f },
-			// キーボード 'D' (正方向)
-			{ ESource::KeyBorad, getKeyCode("MoveRight", DEFAULT_KEY_D), EKey::None, EStickState::None, ETarget::None, 1.0f }, // 設定を反映
-			// キーボード 'A' (負方向)
-			{ ESource::KeyBorad, getKeyCode("MoveLeft", DEFAULT_KEY_A), EKey::None, EStickState::None, ETarget::None, -1.0f },// 設定を反映
-		}
-	};
-
-	// 【Move Axis Y】: 左スティックY軸の生の値とキーボードW/Sを合成.
-	m_KeyMap[Action::Move_Axis_Y] = {
-		eActionType::Axis,
-		{
-			{ ESource::ControllerStickAxis, 0, EKey::None, EStickState::None, ETarget::Left, 1.0f },
-			// キーボード 'W' (正方向)
-			{ ESource::KeyBorad, getKeyCode("MoveUp", DEFAULT_KEY_W), EKey::None, EStickState::None, ETarget::None, 1.0f },// 設定を反映
-			// キーボード 'S' (負方向)
-			{ ESource::KeyBorad, getKeyCode("MoveDown", DEFAULT_KEY_S), EKey::None, EStickState::None, ETarget::None, -1.0f }, // 設定を反映
-		}
-	};
-
-	// 【Camera Axis X】: 右スティックX軸とマウス移動X軸を合成.
-	m_KeyMap[Action::Camera_X] = {
-		eActionType::Axis,
-		{
-			// 修正前: EStickState::Right -> 修正後: EStickState::None
-			{ ESource::ControllerStickAxis, 0, EKey::None, EStickState::None, ETarget::Right, 1.0f },
-			// マウス移動X軸 (感度調整のためのスケール)
-			{ ESource::MouseMove, 0, EKey::None, EStickState::None, ETarget::None, 0.5f }
-		}
-	};
-
-	// 【Camera Axis Y】: 右スティックY軸とマウス移動Y軸を合成 (Y軸は反転).
-	m_KeyMap[Action::Camera_Y] = {
-		eActionType::Axis,
-		{
-			// 右スティックY軸 (カメラでは通常反転)
-			// 修正前: EStickState::Up -> 修正後: EStickState::None
-			{ ESource::ControllerStickAxis, 0, EKey::None, EStickState::None, ETarget::Right, -1.0f },
-			// マウス移動Y軸 (反転させてスケールを設定)
-			{ ESource::MouseMove, 0, EKey::None, EStickState::None, ETarget::None, -0.5f }
-		}
-	};
 }

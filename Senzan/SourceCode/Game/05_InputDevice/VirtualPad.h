@@ -14,7 +14,6 @@ class VirtualPad final
 private:
     friend class Singleton<VirtualPad>;
     VirtualPad();
-
 public:
 
     // このゲームの離散アクション.
@@ -87,7 +86,7 @@ public:
         float Scale = 1.0f;
     };
 
-    // アクションごとのバインディング定義
+    // アクションごとのバインディング定義.
     struct ActionBinding
     {
         eActionType Type = eActionType::Button;
@@ -95,18 +94,12 @@ public:
     };
 
 public:
-    // ゲーム内のアクションと実際の入力を関連付けるマップ
-    // eGameAction は離散アクションと軸コンポーネントの両方のキーとして使用されます。
+    // ゲーム内のアクションと実際の入力を関連付けるマップ.
     std::map<eGameAction, ActionBinding> m_KeyMap;
 
 public:
     ~VirtualPad() override = default;
-
-    // ★ 変更点 1: TestKeyBoud 設定オブジェクトを受け取る Setter を追加
-    void SetKeyConfig(TestKeyBoud* config);
-
-    void SetControllerConfig(XInputConfig* Config);
-
+    
     // 押され続けているか.
     bool IsActionPress(eGameAction action) const;
 
@@ -119,16 +112,7 @@ public:
     //  複合軸取得.
     DirectX::XMFLOAT2 GetAxisInput(eGameAxisAction axisType) const;
 
-    // キーバインドの初期化.
-    // ★ 変更点 2: デフォルト設定のセットアップは設定ファイルからの構築を担う
-    void SetupDefaultBindings();
-
 private:
-    // ★ 変更点 3: TestKeyBoud へのポインタを保持
-    TestKeyBoud* m_pKeyConfig = nullptr;
-
-    XInputConfig* m_pControllerConfig = nullptr;
-
     // 状態チェックの抽象化ヘルパー.
     template <typename KeyCheckFunc, typename ButtonCheckFunc>
     bool checkActionState(eGameAction action,

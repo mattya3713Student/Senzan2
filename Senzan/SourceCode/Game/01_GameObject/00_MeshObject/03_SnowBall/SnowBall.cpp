@@ -16,8 +16,8 @@ SnowBall::SnowBall()
 	//最初の生成位置.
 	DirectX::XMFLOAT3 pos = { 1000.0f, -1000.0f, 1000.0f };
 	DirectX::XMFLOAT3 scale = { 0.05f, 0.05f, 0.05f };
-	m_Transform->SetPosition(pos);
-	m_Transform->SetScale(scale);
+	m_spTransform->SetPosition(pos);
+	m_spTransform->SetScale(scale);
 
 	IsVisible = false;
 }
@@ -74,7 +74,7 @@ void SnowBall::Update()
 	XMStoreFloat3(&NewPosition_F, NewPosition_Vec);
 
 	// 計算結果をTransformに反映（XMFLOAT3を渡す）
-	m_Transform->SetPosition(NewPosition_F);
+	m_spTransform->SetPosition(NewPosition_F);
 
 
 	if (t >= 1.0f)
@@ -112,7 +112,7 @@ void SnowBall::Fire(
 void SnowBall::ResetPosition()
 {
 	//雪玉を元の位置に戻す
-	m_Transform->SetPosition(Init_Pos);
+	m_spTransform->SetPosition(Init_Pos);
 
 	//非表示にする
 	IsVisible = false;
@@ -145,7 +145,7 @@ void SnowBall::Launch()
 	DirectX::XMStoreFloat3(&Current_Pos, P1_Vec);
 
 	// 4. 初期位置を P0 に設定
-	m_Transform->SetPosition(Boss_Pos);
+	m_spTransform->SetPosition(Boss_Pos);
 
 	// 5. 時間をリセットし、移動を有効化
 	ThrowingTime = 0.0f;

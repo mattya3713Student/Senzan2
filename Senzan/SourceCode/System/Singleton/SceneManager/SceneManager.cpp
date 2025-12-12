@@ -8,7 +8,6 @@
 #include "Game/00_Scene/02_GameMain/GameMain.h"
 #include "Game/00_Scene/03_GameOver/GameOver.h"
 #include "Game/00_Scene/04_Ending/Ending.h"
-#include "Game/00_Scene/03_Setting/Setting.h"
 
 #include "Game/00_Scene/Ex_Test/00_mattya3713/MattyaTestScene.h"
 #include "Game/00_Scene/Ex_Test/01_memeu1101/MemeuTestScene.h"
@@ -129,9 +128,6 @@ void SceneManager::MakeScene(eList Scene)
 			break;
 		case eList::GameOver:
 			m_pScene = std::make_unique<GameOver>();
-			break;
-		case eList::Setting:
-			m_pScene = std::make_unique<Setting>();
 			break;
 		case eList::Ending:
 			m_pScene = std::make_unique<Ending>();

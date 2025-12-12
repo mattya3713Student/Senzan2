@@ -67,7 +67,7 @@ void BossSlashState::Update()
 
 	m_currentTimer += m_currentAnimSpeed;
 
-	if (m_currentTimer > m_pOwner->GetAnimPeriod(m_pOwner->GetAnimNo()))
+	if (m_currentTimer > m_pOwner->GetAnimPeriod(m_pOwner->m_AnimNo))
 	{
 		m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
 	}

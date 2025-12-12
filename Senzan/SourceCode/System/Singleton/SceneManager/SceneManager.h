@@ -18,7 +18,6 @@ enum class eList
 	Title,		// タイトル.
 	GameMain,	// メイン.
 	GameOver,	// ゲームオーバー.
-	Setting,
 	Ending, 	// エンディング.
 
 	// テスト用シーン.

@@ -38,10 +38,6 @@ LTestScene::LTestScene()
 	, m_pLight(std::make_shared<DirectionLight>())
 	, m_pPlayer(std::make_unique<Player>())
 	, m_ptransform(std::make_shared<Transform>())
-	
-	, m_pKeyboardConfig(std::make_unique<TestKeyBoud>())
-	, m_pCConfig(std::make_unique<XInputConfig>())
-
 
 	, m_pSnowBall(std::make_shared<SnowBall>())
 {
@@ -55,13 +51,6 @@ LTestScene::~LTestScene()
 
 void LTestScene::Initialize()
 {
-	// ★ 変更点 2: 設定ファイルのロード
-	m_pKeyboardConfig->LoadData();
-	m_pCConfig->LoadData();
-
-	VirtualPad::GetInstance().SetKeyConfig(m_pKeyboardConfig.get());
-	VirtualPad::GetInstance().SetControllerConfig(m_pCConfig.get());
-
 	// カメラ設定.
 	m_pCamera = std::make_shared<PlayerThirdPersonCamera>(*m_pPlayer.get());
 	m_pCamera->SetPosition(DirectX::XMFLOAT3(0.0f, 5.0f, -30.0f));

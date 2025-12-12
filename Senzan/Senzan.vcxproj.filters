@@ -118,11 +118,6 @@
     <ClCompile Include="Data\ImGui\Library\imgui_tables.cpp" />
     <ClCompile Include="Data\ImGui\Library\imgui_widgets.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\ImGui\CImGuiManager.cpp" />
-    <ClCompile Include="SourceCode\Game\05_InputDevice\XInputConfig\XInputConfig.cpp" />
-    <ClCompile Include="SourceCode\Game\02_Camera\CameraManager.cpp" />
-    <ClCompile Include="SourceCode\Game\00_Scene\03_Setting\Setting.cpp" />
-    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\01_Key\Key.cpp" />
-    <ClCompile Include="SourceCode\Game\05_InputDevice\TestKeyBoud\TestKeyBoud.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossDeadState\BossDeadState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossThrowingState\BossThrowingState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\03_SnowBall\SnowBall.cpp" />
@@ -262,11 +257,6 @@
     <ClInclude Include="Data\ImGui\Library\imstb_textedit.h" />
     <ClInclude Include="Data\ImGui\Library\imstb_truetype.h" />
     <ClInclude Include="SourceCode\System\Singleton\ImGui\CImGuiManager.h" />
-    <ClInclude Include="SourceCode\Game\05_InputDevice\XInputConfig\XInputConfig.h" />
-    <ClInclude Include="SourceCode\Game\02_Camera\CameraManager.h" />
-    <ClInclude Include="SourceCode\Game\00_Scene\03_Setting\Setting.h" />
-    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\01_Key\Key.h" />
-    <ClInclude Include="SourceCode\Game\05_InputDevice\TestKeyBoud\TestKeyBoud.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossDeadState\BossDeadState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossThrowingState\BossThrowingState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\03_SnowBall\SnowBall.h" />
@@ -274,6 +264,9 @@
     <ClInclude Include="SourceCode\Game\03_Collision\CollisionInfo.h" />
     <ClInclude Include="SourceCode\System\Singleton\CollisionDetector\CollisionDetector.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\Ex_Test\03_UIEditor\UIEditor.h" />
+    <ClInclude Include="SourceCode\Game\03_Collision\00_Core\CollisionInfo.h" />
+    <ClInclude Include="SourceCode\Game\03_Collision\00_Core\Ex_CompositeCollider\CompositeCollider.h" />
+    <ClInclude Include="SourceCode\System\Utility\EnumFlags\EnumFlags.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\Sprite\SpriteCollider.h" />
   </ItemGroup>
   <ItemGroup>

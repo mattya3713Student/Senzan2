@@ -232,7 +232,6 @@
     <ClCompile Include="SourceCode\Game\00_Scene\01_Title\Title.cpp" />
     <ClCompile Include="SourceCode\Game\00_Scene\02_GameMain\GameMain.cpp" />
     <ClCompile Include="SourceCode\Game\00_Scene\03_GameOver\GameOver.cpp" />
-    <ClCompile Include="SourceCode\Game\00_Scene\03_Setting\Setting.cpp" />
     <ClCompile Include="SourceCode\Game\00_Scene\04_Ending\Ending.cpp" />
     <ClCompile Include="SourceCode\Game\00_Scene\Ex_Test\00_mattya3713\MattyaTestScene.cpp" />
     <ClCompile Include="SourceCode\Game\00_Scene\Ex_Test\01_memeu1101\MemeuTestScene.cpp" />
@@ -274,7 +273,6 @@
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossMoveState\BossMoveState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\03_SnowBall\SnowBall.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\Character.cpp" />
-    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\01_Key\Key.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\MeshObject.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\01_SpriteObject\CSpriteObject.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\Fade\Fade.cpp" />
@@ -283,9 +281,9 @@
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UIObjectManager.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\GameObject.cpp" />
     <ClCompile Include="SourceCode\Game\02_Camera\CameraBase.cpp" />
-    <ClCompile Include="SourceCode\Game\03_Collision\Box\BoxCollider.cpp" />
-    <ClCompile Include="SourceCode\Game\03_Collision\Capsule\CapsuleCollider.cpp" />
-    <ClCompile Include="SourceCode\Game\03_Collision\ColliderBase.cpp" />
+    <ClCompile Include="SourceCode\Game\03_Collision\00_Core\00_Box\BoxCollider.cpp" />
+    <ClCompile Include="SourceCode\Game\03_Collision\00_Core\01_Capsule\CapsuleCollider.cpp" />
+    <ClCompile Include="SourceCode\Game\03_Collision\00_Core\ColliderBase.cpp" />
     <ClCompile Include="SourceCode\Game\03_Collision\Sprite\SpriteCollider.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\CollisionDetector\CollisionDetector.cpp" />
     <ClCompile Include="SourceCode\Game\03_Collision\00_Core\02_Sphere\SphereCollider.cpp" />
@@ -296,7 +294,6 @@
     <ClCompile Include="SourceCode\Game\05_InputDevice\KeyInput\KeyInput.cpp" />
     <ClCompile Include="SourceCode\Game\05_InputDevice\Mouse\Mouse.cpp" />
     <ClCompile Include="SourceCode\Game\05_InputDevice\VirtualPad.cpp" />
-    <ClCompile Include="SourceCode\Game\05_InputDevice\XInputConfig\XInputConfig.cpp" />
     <ClCompile Include="SourceCode\Game\05_InputDevice\XInput\XInput.cpp" />
     <ClCompile Include="SourceCode\Graphic\DepthStencilView\DepthStencilView.cpp" />
     <ClCompile Include="SourceCode\Graphic\DirectX\DirectX11\DirectX11.cpp" />
@@ -356,13 +353,18 @@
     <ClInclude Include="Data\ImGui\Library\imstb_textedit.h" />
     <ClInclude Include="Data\ImGui\Library\imstb_truetype.h" />
     <ClInclude Include="SourceCode\Constant.h" />
+    <ClInclude Include="SourceCode\Game\03_Collision\00_Core\00_Box\BoxCollider.h" />
+    <ClInclude Include="SourceCode\Game\03_Collision\00_Core\01_Capsule\CapsuleCollider.h" />
+    <ClInclude Include="SourceCode\Game\03_Collision\00_Core\02_Sphere\SphereCollider.h" />
+    <ClInclude Include="SourceCode\Game\03_Collision\00_Core\ColliderBase.h" />
+    <ClInclude Include="SourceCode\Game\03_Collision\00_Core\CollisionInfo.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\00_Core\Ex_CompositeCollider\CompositeCollider.h" />
+    <ClInclude Include="SourceCode\Game\03_Collision\Sprite\SpriteCollider.h" />
     <ClInclude Include="SourceCode\System\Utility\EnumFlags\EnumFlags.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\00_Base\SceneBase.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\01_Title\Title.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\02_GameMain\GameMain.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\03_GameOver\GameOver.h" />
-    <ClInclude Include="SourceCode\Game\00_Scene\03_Setting\Setting.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\04_Ending\Ending.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\Ex_Test\00_mattya3713\MattyaTestScene.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\Ex_Test\01_memeu1101\MemeuTestScene.h" />
@@ -405,7 +407,6 @@
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossMoveState\BossMoveState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\03_SnowBall\SnowBall.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\Character.h" />
-    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\01_Key\Key.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\MeshObject.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\01_SpriteObject\CSpriteObject.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\Fade\Fade.h" />
@@ -414,12 +415,8 @@
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\UIObjectManager.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\GameObject.h" />
     <ClInclude Include="SourceCode\Game\02_Camera\CameraBase.h" />
-    <ClInclude Include="SourceCode\Game\03_Collision\Box\BoxCollider.h" />
-    <ClInclude Include="SourceCode\Game\03_Collision\Capsule\CapsuleCollider.h" />
-    <ClInclude Include="SourceCode\Game\03_Collision\ColliderBase.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\CollisionInfo.h" />
     <ClInclude Include="SourceCode\System\Singleton\CollisionDetector\CollisionDetector.h" />
-    <ClInclude Include="SourceCode\Game\03_Collision\Sphere\SphereCollider.h" />
     <ClInclude Include="SourceCode\System\Singleton\CameraManager\CameraManager.h" />
     <ClInclude Include="SourceCode\Game\02_Camera\ThirdPersonCamera\PlayerThirdPersonCamera.h" />
     <ClInclude Include="SourceCode\Game\02_Camera\ThirdPersonCamera\ThirdPersonCamera.h" />
@@ -428,7 +425,6 @@
     <ClInclude Include="SourceCode\Game\05_InputDevice\KeyInput\KeyInput.h" />
     <ClInclude Include="SourceCode\Game\05_InputDevice\Mouse\Mouse.h" />
     <ClInclude Include="SourceCode\Game\05_InputDevice\VirtualPad.h" />
-    <ClInclude Include="SourceCode\Game\05_InputDevice\XInputConfig\XInputConfig.h" />
     <ClInclude Include="SourceCode\Game\05_InputDevice\XInput\XInput.h" />
     <ClInclude Include="SourceCode\Global.h" />
     <ClInclude Include="SourceCode\Graphic\DepthStencilView\DepthStencilView.h" />
