@@ -9,7 +9,7 @@ Fade::Fade()
     , m_IsFadeCompleted ( false )
 {
     // フェード画像を接続.
-    AttachSprite(SpriteManager::GetSprite2D("FadeImg"));
+    AttachSprite(SpriteManager::GetSprite2D("White"));
 }
 
 //-------------------------------------------------------------------------.
