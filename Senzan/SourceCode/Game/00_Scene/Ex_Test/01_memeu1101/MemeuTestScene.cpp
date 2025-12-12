@@ -3,6 +3,7 @@
 #include "System/Singleton/CameraManager/CameraManager.h"
 #include "Game/02_Camera/CameraBase.h"
 #include "Game/02_Camera/ThirdPersonCamera/ThirdPersonCamera.h"
+#include "ResourceManager/SpriteManager/SpriteManager.h"
 
 #include "Graphic/Shadow/Shadow.h"
 #include "Graphic/Light/DirectionLight/DirectionLight.h"
@@ -17,6 +18,7 @@ MemeuTestScene::MemeuTestScene()
 	: SceneBase()
 	, m_pCamera(std::make_shared<ThirdPersonCamera>())
 	, m_pLight(std::make_shared<DirectionLight>())
+	, m_TestSprite(std::make_shared<UIObject>())
 {
 	Initialize();
 }
@@ -31,13 +33,15 @@ void MemeuTestScene::Initialize()
 	// ƒJƒƒ‰Ý’è.
 	m_pCamera->SetPosition(DirectX::XMFLOAT3(0.0f, 5.0f, -5.0f));
 	m_pCamera->SetLook(DirectX::XMFLOAT3(0.0f, 2.0f, 5.0f));
-	CameraManager::AttachCamera(m_pCamera);
+	CameraManager::GetInstance().SetCamera(m_pCamera);
 
 	// ƒ‰ƒCƒgÝ’è.
 	m_pLight->SetDirection(DirectX::XMFLOAT3(1.5f, 1.f, -1.f));
 	LightManager::AttachDirectionLight(m_pLight);
 
 	m_pGround = std::make_unique<Ground>();
+
+	SpriteManager::LoadSprites();
 }
 
 void MemeuTestScene::Create()
@@ -47,23 +51,22 @@ void MemeuTestScene::Create()
 void MemeuTestScene::Update()
 {
 	m_pGround->Update();
+
 }
 
 void MemeuTestScene::LateUpdate()
 {
+	CameraManager::GetInstance().LateUpdate();
+
 }
 
 
 void MemeuTestScene::Draw()
 {
-	CameraManager::ViewAndProjectionUpdate();
-
 	Shadow::Begin();
 	m_pGround->DrawDepth();
 	Shadow::End();
 	m_pGround->Draw();
-
-
 }
 
 HRESULT MemeuTestScene::LoadData()

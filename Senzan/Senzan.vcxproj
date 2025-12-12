@@ -113,6 +113,7 @@
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>L_PC</PreprocessorDefinitions>
+      <PreprocessorDefinitions>MEMEU_PC</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp23</LanguageStandard>
       <AdditionalIncludeDirectories>SourceCode;SourceCode\Ggraphic;SourceCode\Resource;SourceCode\System;SourceCode\System\GameLoop;SourceCode\System\Singleton;SourceCode\System\Utility;SourceCode\Game\Scene;SourceCode\Game\01_GameObject;Data;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -236,6 +237,7 @@
     <ClCompile Include="SourceCode\Game\00_Scene\Ex_Test\00_mattya3713\MattyaTestScene.cpp" />
     <ClCompile Include="SourceCode\Game\00_Scene\Ex_Test\01_memeu1101\MemeuTestScene.cpp" />
     <ClCompile Include="SourceCode\Game\00_Scene\Ex_Test\02_L\LTestScene.cpp" />
+    <ClCompile Include="SourceCode\Game\00_Scene\Ex_Test\03_UIEditor\UIEditor.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\00_Ground\Ground.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\01_Player\State\Root\00_System\00_Pause\Pause.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\01_Player\State\Root\00_System\01_KnockBack\KnockBack.cpp" />
@@ -281,10 +283,11 @@
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UIObjectManager.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\GameObject.cpp" />
     <ClCompile Include="SourceCode\Game\02_Camera\CameraBase.cpp" />
-    <ClCompile Include="SourceCode\Game\02_Camera\CameraManager.cpp" />
     <ClCompile Include="SourceCode\Game\03_Collision\Box\BoxCollider.cpp" />
     <ClCompile Include="SourceCode\Game\03_Collision\Capsule\CapsuleCollider.cpp" />
     <ClCompile Include="SourceCode\Game\03_Collision\ColliderBase.cpp" />
+    <ClCompile Include="SourceCode\Game\03_Collision\Sprite\SpriteCollider.cpp" />
+    <ClCompile Include="SourceCode\System\Singleton\CollisionDetector\CollisionDetector.cpp" />
     <ClCompile Include="SourceCode\Game\03_Collision\Sphere\SphereCollider.cpp" />
     <ClCompile Include="SourceCode\Game\05_InputDevice\TestKeyBoud\TestKeyBoud.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\CameraManager\CameraManager.cpp" />
@@ -354,6 +357,7 @@
     <ClInclude Include="Data\ImGui\Library\imstb_textedit.h" />
     <ClInclude Include="Data\ImGui\Library\imstb_truetype.h" />
     <ClInclude Include="SourceCode\Constant.h" />
+    <ClInclude Include="SourceCode\System\Utility\EnumFlags\EnumFlags.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\00_Base\SceneBase.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\01_Title\Title.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\02_GameMain\GameMain.h" />
@@ -363,6 +367,7 @@
     <ClInclude Include="SourceCode\Game\00_Scene\Ex_Test\00_mattya3713\MattyaTestScene.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\Ex_Test\01_memeu1101\MemeuTestScene.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\Ex_Test\02_L\LTestScene.h" />
+    <ClInclude Include="SourceCode\Game\00_Scene\Ex_Test\03_UIEditor\UIEditor.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\00_Ground\Ground.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\01_Player\State\PlayerStateID.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\01_Player\State\Root\00_System\00_Pause\Pause.h" />
@@ -409,10 +414,12 @@
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\UIObjectManager.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\GameObject.h" />
     <ClInclude Include="SourceCode\Game\02_Camera\CameraBase.h" />
-    <ClInclude Include="SourceCode\Game\02_Camera\CameraManager.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\Box\BoxCollider.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\Capsule\CapsuleCollider.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\ColliderBase.h" />
+    <ClInclude Include="SourceCode\Game\03_Collision\CollisionInfo.h" />
+    <ClInclude Include="SourceCode\Game\03_Collision\Sprite\SpriteCollider.h" />
+    <ClInclude Include="SourceCode\System\Singleton\CollisionDetector\CollisionDetector.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\Sphere\SphereCollider.h" />
     <ClInclude Include="SourceCode\Game\05_InputDevice\TestKeyBoud\TestKeyBoud.h" />
     <ClInclude Include="SourceCode\System\Singleton\CameraManager\CameraManager.h" />

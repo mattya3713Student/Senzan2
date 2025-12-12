@@ -14,6 +14,7 @@ SphereCollider::SphereCollider()
 	, m_Radius		( 0.5f )
 {
 }
+
 SphereCollider::SphereCollider(std::weak_ptr<const Transform> parentTransform)
 	: ColliderBase	(parentTransform)
 	, m_Radius		( 0.5f )
@@ -29,6 +30,32 @@ void SphereCollider::Update()
   
 }
 
+CollisionInfo SphereCollider::CheckCollision(const ColliderBase& other) const
+{	
+    // フィルター判断.
+    if (!ShouldCollide(other)) {
+        return {};
+    }
+
+	// 形状ごとの衝突判定へディスパッチ.
+    return other.DispatchCollision(*this);
+}
+
+CollisionInfo SphereCollider::DispatchCollision(const SphereCollider& other) const
+{
+    return {};
+}
+
+CollisionInfo SphereCollider::DispatchCollision(const CapsuleCollider& other) const
+{
+    return {};
+}
+
+CollisionInfo SphereCollider::DispatchCollision(const BoxCollider& other) const
+{
+    return {};
+}
+
 // デバッグ描画用設定.
 void SphereCollider::SetDebugInfo()
 {
@@ -37,12 +64,11 @@ void SphereCollider::SetDebugInfo()
 
 
     auto spParentTransform = m_wpTransform.lock();
-    if (!spParentTransform) { return; }
-    const Transform& p_parent_transform = *spParentTransform;
+    // 親の単位行列を作成.
+    DirectX::XMMATRIX mat_parent_world = spParentTransform
+        ? spParentTransform->GetWorldMatrix()
+        : DirectX::XMMatrixIdentity();
 
-
-    // 親のワールド行列.
-    DirectX::XMMATRIX mat_parent_world = p_parent_transform.GetWorldMatrix();
 
     // オフセット行列.
     DirectX::XMMATRIX mat_offset = DirectX::XMMatrixTranslation(

@@ -24,6 +24,31 @@ void BoxCollider::Update()
 
 }
 
+CollisionInfo BoxCollider::CheckCollision(const ColliderBase& other) const
+{
+    // フィルター判断.
+    if (!ShouldCollide(other)) {
+        return {};
+    }
+
+    return other.DispatchCollision(*this);
+}
+
+CollisionInfo BoxCollider::DispatchCollision(const SphereCollider& other) const
+{
+    return {};
+}
+
+CollisionInfo BoxCollider::DispatchCollision(const CapsuleCollider& other) const
+{
+    return {};
+}
+
+CollisionInfo BoxCollider::DispatchCollision(const BoxCollider& other) const
+{
+    return {};
+}
+
 // デバッグ描画用設定.
 void BoxCollider::SetDebugInfo()
 {
@@ -33,11 +58,11 @@ void BoxCollider::SetDebugInfo()
     DebugColliderInfo info = {};
 
     auto spParentTransform = m_wpTransform.lock();
-    if (!spParentTransform) { return; }
-    const Transform& p_parent_transform = *spParentTransform;
+    // 親の単位行列を作成.
+    DirectX::XMMATRIX mat_parent_world = spParentTransform
+        ? spParentTransform->GetWorldMatrix()
+        : DirectX::XMMatrixIdentity();
 
-    // 親のワールド行列.
-    DirectX::XMMATRIX mat_parent_world = p_parent_transform.GetWorldMatrix();
 
     // オフセット行列.
     DirectX::XMMATRIX mat_offset = DirectX::XMMatrixTranslation(

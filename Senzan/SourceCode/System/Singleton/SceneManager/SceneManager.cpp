@@ -13,11 +13,21 @@
 #include "Game/00_Scene/Ex_Test/00_mattya3713/MattyaTestScene.h"
 #include "Game/00_Scene/Ex_Test/01_memeu1101/MemeuTestScene.h"
 #include "Game/00_Scene/Ex_Test/02_L/LTestScene.h"
+#include "Game/00_Scene/Ex_Test/03_UIEditor/UIEditor.h"
+
+#if _DEBUG
+#include "ImGui/CImGuiManager.h"
+#endif // _DEBUG
+
 
 SceneManager::SceneManager()
 	: m_pScene	( std::make_unique<GameMain>() )
 	, m_hWnd	()
 	, m_pBuffer	( nullptr )
+
+#if _DEBUG
+	, m_DebugFirstScene()
+#endif // _DEBUG
 {
 
 }
@@ -65,6 +75,24 @@ void SceneManager::Update()
 	SceneManager& pI = GetInstance();
 	pI.m_pScene->Update();
 	pI.m_pScene->LateUpdate();
+
+#if _DEBUG
+	ImGui::Begin("Scene");
+	if (ImGui::Button("Title")) { LoadScene(eList::Title); }
+	if (ImGui::Button("GameMain")) { LoadScene(eList::GameMain); }
+	if (ImGui::Button("Ending")) { LoadScene(eList::Ending); }
+	if (ImGui::Button("GameOver")) { LoadScene(eList::GameOver); }
+
+	ImGui::Separator();
+	if (ImGui::Button("Mattya")) { LoadScene(eList::Mattya); }
+	if (ImGui::Button("Memeu")) { LoadScene(eList::Memeu); }
+	if (ImGui::Button("L")) { LoadScene(eList::L); }
+
+	ImGui::Separator();
+	if (ImGui::Button("UIEditor")) { LoadScene(eList::UIEditor); }
+
+	ImGui::End();
+#endif // _DEBUG
 }
 
 void SceneManager::Draw()
@@ -100,13 +128,13 @@ void SceneManager::MakeScene(eList Scene)
 			m_pScene = std::make_unique<GameMain>();
 			break;
 		case eList::GameOver:
-			m_pScene = std::make_unique<GameMain>();
+			m_pScene = std::make_unique<GameOver>();
 			break;
 		case eList::Setting:
 			m_pScene = std::make_unique<Setting>();
 			break;
 		case eList::Ending:
-			m_pScene = std::make_unique<GameMain>();
+			m_pScene = std::make_unique<Ending>();
 			break;
 
 			
@@ -116,10 +144,13 @@ void SceneManager::MakeScene(eList Scene)
 			m_pScene = std::make_unique<MattyaTestScene>();
 			break;
 		case eList::Memeu:
-			break;
 			m_pScene = std::make_unique<MemeuTestScene>();
+			break;
 		case eList::L:
 			m_pScene = std::make_unique<LTestScene>();
+			break;
+		case eList::UIEditor:
+			m_pScene = std::make_unique<UIEditor>();
 			break;
 #endif // _DEBUG
 		case eList::MAX:

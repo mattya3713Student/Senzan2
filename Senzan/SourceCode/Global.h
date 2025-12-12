@@ -51,12 +51,14 @@
 #include <string>       // 文字列.
 #include <fstream>		// ファイル入出力.	
 #include <chrono>		// 時間計測.	
+#include<type_traits>
 
 #include "Utility/Assert/Assert.inl"	// HRESULTのtrycatchをする.
 #include "Utility/Math/Math.h"			// 算数系.	
 
 #include "Utility/ComPtr/ComPtr.h"		// Microsoft::WRL::ComPtrのようなもの.	
 #include "Utility/CustomSTL/pair/Pair.h"// 添え字が使えるpair.	
+//#include "Utility/EnumFlags/EnumFlags.h"// Enumのビット演算子オーバーロード.
 #include "Utility/Transform/Transform.h"// Transform.	
 #include "System/Singleton/SingletonTemplate.h"	// Transform.	
 
