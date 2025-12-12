@@ -6,12 +6,16 @@
 #include "..//..//BossMoveState//BossMoveState.h" // 攻撃後の遷移先
 #include "Resource\\Mesh\\02_Skin\\SkinMesh.h"
 
+#include "00_MeshObject/00_Character/02_Boss/BossIdolState/BossIdolState.h"
+
 constexpr float MY_PI = 3.1415926535f;
 
 
 
 BossSlashState::BossSlashState(Boss* owner)
 	: BossAttackStateBase(owner)
+
+	, m_pIdol()
 
 	, m_pTransform(std::make_shared<Transform>())
 {
@@ -26,7 +30,7 @@ BossSlashState::~BossSlashState()
 void BossSlashState::Enter()
 {
 	m_currentTimer = 0.0f;
-	m_Attacktime	= 0.0f;
+	m_Attacktime = 0.0f;
 
 	//ボスの向きを設定.
 	const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
@@ -53,7 +57,7 @@ void BossSlashState::Enter()
 
 	//アニメーション再生の無限ループ用.
 	//m_pOwner->SetIsLoop(true);
-	m_pOwner->ChangeAnim(5);
+	//m_pOwner->ChangeAnim(5);
 
 }
 
@@ -65,7 +69,7 @@ void BossSlashState::Update()
 
 	if (m_currentTimer > m_pOwner->GetAnimPeriod(m_pOwner->GetAnimNo()))
 	{
-		m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdleState>(m_pOwner));
+		m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
 	}
 }
 

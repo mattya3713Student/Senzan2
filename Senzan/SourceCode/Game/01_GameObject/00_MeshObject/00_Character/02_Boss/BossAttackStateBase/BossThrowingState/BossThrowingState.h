@@ -5,11 +5,24 @@
 *	投擲攻撃：雪だるまを投げる攻撃.
 **/
 
+class Boss;
 class BossIdolState;
+class Time;
+class SnowBall;
 
 class BossThrowingState final
 	: public BossAttackStateBase
 {
+public:
+	enum class enThrowing : byte
+	{
+		None,		//何もしない
+		Anim,		//投擲アニメションを再生.
+		Attack,		//投擲攻撃.
+		CoolDown,	//クールダウン.
+		Trans		//次のステートに遷移.
+	};
+
 public:
 	BossThrowingState(Boss* owner);
 	~BossThrowingState() override;
@@ -19,9 +32,10 @@ public:
 	void LateUpdate() override;
 	void Draw() override;
 	void Exit() override;
-private:
-	std::shared_ptr<BossIdolState> m_pBossIdol;
 
+private:
+	void BossAttack() override;
+private:
 	//================================================
 	// 投擲のメンバ変数を作成.
 	//================================================
@@ -29,4 +43,10 @@ private:
 	float m_Timer;
 	//遷移の時間のタイム変数.
 	float m_TransitionTimer;
+
+	enThrowing m_List;
+
+	std::unique_ptr<SnowBall> m_pBall;
+
+	bool m_IsLaunched = false;
 };

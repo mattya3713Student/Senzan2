@@ -5,7 +5,7 @@
 #include "Game//01_GameObject//00_MeshObject//00_Character//01_Player//Player.h"
 #include "..//..//BossMoveState//BossMoveState.h"
 
-#include "00_MeshObject/00_Character/02_Boss/BossIdleState/BossIdleState.h"
+#include "00_MeshObject/00_Character/02_Boss/BossIdolState/BossIdolState.h"
 
 BossShoutState::BossShoutState(Boss* owner)
 	: BossAttackStateBase (owner)
@@ -31,7 +31,7 @@ void BossShoutState::Update()
     //ŽžŠÔŒo‰ß‚ÅIdol‚É‘JˆÚ‚·‚é.
     if (m_Timer > m_TransitionTimer)
     {
-        m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdleState>(m_pOwner));
+        m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
     }
 }
 

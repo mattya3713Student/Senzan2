@@ -2,138 +2,194 @@
 
 #include "Game/04_Time/Time.h"
 
+
+#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossSpecialState/BossSpecialState.h"
+#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossChargeSlashState/BossChargeSlashState.h"
+#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossSlashState/BossSlashState.h"
+#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossChargeState/BossChargeState.h"
+#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossLaserState/BossLaserState.h"
+#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossShoutState/BossShoutState.h"
+#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossStompState/BossStompState.h"
+#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossThrowingState/BossThrowingState.h"
+
+
+#include "System/Singleton/ImGui/CImGuiManager.h"
+
+
+#include <algorithm>
+
+// コンストラクタ（変更なし）
 BossMoveState::BossMoveState(Boss* owner)
 	: StateBase<Boss>(owner)
 	, m_RotationAngle(0.0f)
-	, m_RotationSpeed(0.005f)
+	, m_RotationSpeed(0.015f) // 回転速度
 	, m_rotationDirection(1.0f)
 
-	, m_pAttack	(std::make_shared<BossSpecialState>(owner))
-	, m_pChage(std::make_shared<BossChargeSlashState>(owner))
-	, m_pSlash(std::make_shared<BossSlashState>(owner))
-	, m_pCharge(std::make_shared<BossChargeState>(owner))
-
-	//	, m_pColl(std::make_shared<CapsuleCollider>())
+	, m_pAttack(std::make_unique<BossSpecialState>(owner))
+	, m_pSlash(std::make_unique<BossSlashState>(owner))
+	, m_pCharge(std::make_unique<BossChargeState>(owner))
+	, m_pLaser(std::make_unique<BossLaserState>(owner))
+	, m_pShout(std::make_unique<BossShoutState>(owner))
+	, m_pStomp(std::make_unique<BossStompState>(owner))
+	, m_pThrowing(std::make_unique<BossThrowingState>(owner))
 {
-	//m_pColl->Create();
-	//m_pColl->SetHeight(100.0f);
-	//m_pColl->SetRadius(35.0f);
-
 }
 
+// デストラクタ（変更なし）
 BossMoveState::~BossMoveState()
 {
 }
 
+// Enter（変更なし）
 void BossMoveState::Enter()
 {
+	m_Timer = 0.0f;
+	// 周回中心の初期位置としてボスの現在位置を保存
+	m_InitBossPos = m_pOwner->GetPosition();
 }
+
 
 void BossMoveState::Update()
 {
-	const DirectX::XMFLOAT3& BossPos = m_pOwner->GetPosition();
-	const DirectX::XMFLOAT3& PlayerPos = m_pOwner->m_PlayerPos;
+	using namespace DirectX;
 
-	//デルタタイムを使用して回転角度を更新させる.
-	float deltaTime = Time::GetInstance().GetDeltaTime();
-	float deltaAngle = m_RotationSpeed * deltaTime * m_rotationDirection;
+	float delta = Time::GetInstance().GetDeltaTime();
+	m_Timer += delta;
 
-	m_Timer += deltaTime;
+	//----------------------------------------
+	//周回軌道中心をプレイヤーに向けて移動させる
+	//----------------------------------------
 
-	//回転角度のメンバー変数を更新.
-	m_RotationAngle += deltaAngle;
+	// プレイヤーの位置を目標点としてロード
+	XMFLOAT3 playerPosF = m_pOwner->GetTargetPos();
+	XMVECTOR vTarget = XMLoadFloat3(&playerPosF);
 
-	//角度が半径の範囲を超えたら回転方向を反転させる.
-	const float SPECIFIED_RANGE_ANGLE = DirectX::XM_PIDIV4;
-	if (abs(m_RotationAngle) >= SPECIFIED_RANGE_ANGLE)
+	// 現在の周回中心の位置をロード (m_InitBossPosを使用)
+	XMVECTOR vCurrentCenter = XMLoadFloat3(&m_InitBossPos);
+
+	// 目標 (vTarget) への方向ベクトルを計算
+	XMVECTOR vDirToTarget = XMVectorSubtract(vTarget, vCurrentCenter);
+
+	// Y軸方向の移動は無視し、X-Z平面の移動のみとする
+	vDirToTarget = XMVectorSetY(vDirToTarget, 0.0f);
+
+	// 目標との距離をチェック
+	float distance_center = XMVectorGetX(XMVector3Length(vDirToTarget));
+
+	// 周回中心の移動速度を定義 (調整用)
+	constexpr float CENTER_MOVE_SPEED = 0.15f;
+	float moveStep = CENTER_MOVE_SPEED * delta;
+
+	// 距離が移動ステップ量より大きい、または近づいている場合のみ移動
+	if (distance_center > 0.001f)
 	{
-		//方向の反転.
+		// 移動ステップ量を正規化して適用
+		XMVECTOR vMove = XMVector3Normalize(vDirToTarget);
+		// 目標を通り過ぎないように、移動量を制限する
+		vMove = XMVectorScale(vMove, std::min(moveStep, distance_center));
+
+		// 周回中心の位置を更新 (ゆっくりプレイヤーに近づく)
+		vCurrentCenter = XMVectorAdd(vCurrentCenter, vMove);
+		XMStoreFloat3(&m_InitBossPos, vCurrentCenter); // メンバ変数に保存
+	}
+
+	//----------------------------------------
+	// 1. 円運動（更新された中心 vCurrentCenter を周回する）
+	//----------------------------------------
+
+	XMVECTOR vCenter = vCurrentCenter; // 更新された周回中心を使用
+
+	// 回転角度を更新
+	m_RotationAngle += m_RotationSpeed * delta * m_rotationDirection;
+
+	// 角度が制限を超えたら方向を反転（左右往復）
+	const float MAX_ANGLE = XM_PIDIV4; // π/4 ラジアン (45度)
+	if (fabsf(m_RotationAngle) > MAX_ANGLE)
 		m_rotationDirection *= -1.0f;
-	}
 
-	// Y軸周りの回転行列で変換.
-	DirectX::XMMATRIX rotatedMatrix = DirectX::XMMatrixRotationY(m_RotationAngle);
+	// ボスが中心から離れる距離（円の半径）を定義
+	constexpr float fixedDistance = 10.0f;
 
-	// ベクトルを回転行列で変換.
-	// 基準のベクトルを変換.
-	DirectX::XMVECTOR initialVec = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
-	DirectX::XMVECTOR rotatedVec = DirectX::XMVector3Transform(initialVec, rotatedMatrix);
+	// オフセット基準ベクトル (Z軸方向にfixedDistance離れた点)
+	XMVECTOR initialOffset = XMVectorSet(0.0f, 0.0f, fixedDistance, 0.0f);
 
-	// 正規化.
-	rotatedVec = DirectX::XMVector3Normalize(rotatedVec);
+	// Y軸回転行列を作成し、オフセットベクトルに適用
+	XMMATRIX rot = XMMatrixRotationY(m_RotationAngle);
+	XMVECTOR vOffset = XMVector3Transform(initialOffset, rot);
 
-	constexpr float BOSS_RADIUS = 10.0f;
+	// 中心位置にオフセットを加算し、新しいボスの位置を決定
+	XMVECTOR vNew = XMVectorAdd(vCenter, vOffset);
 
+	XMFLOAT3 newPos;
+	XMStoreFloat3(&newPos, vNew);
+	m_pOwner->SetPosition(newPos); // ボスの位置を直接設定
 
-	//ボスのポジションを入手する.
-	// 修正: GetPosition() が XMFLOAT3 を返す前提でロード
-	const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
-	DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&BossPosF);
+	//----------------------------------------
+	// 2. プレイヤー方向を向く
+	//----------------------------------------
 
-	//正しくメンバ変数に保存する.
-	//第一引数が、自分で命名した変数な度を書く(DirectX::XMFLOAT3型)を書かないとエラーになる.
-	//第二引数には、BossPosやPlayerPosを書かないといけない(DirectX::XMVECTOR3型).
-	DirectX::XMStoreFloat3(&m_InitBossPos, BossPosXM);
+	// プレイヤーへの方向ベクトルを計算 (プレイヤー位置 - ボス位置)
+	XMVECTOR vLookDir = XMVectorSubtract(vTarget, vNew); // vTarget (プレイヤー位置) を使用
 
-	//プレイヤーのポジションを入手する.
-	const DirectX::XMFLOAT3 PlayerPosF = m_pOwner->m_PlayerPos;
-	DirectX::XMVECTOR PlayerPosXM = DirectX::XMLoadFloat3(&PlayerPosF);
+	float dx = XMVectorGetX(vLookDir);
+	float dz = XMVectorGetZ(vLookDir);
 
-	//ボスをプレイヤーの方向に向かせる.
-	//今はStaticMeshだから正面かは分からないが、
-	//方向ベクトルを計算.
-	DirectX::XMVECTOR Direction = DirectX::XMVectorSubtract(PlayerPosXM, BossPosXM);
+	// atan2fでY軸回転角度を計算
+	float angle = atan2f(dx, dz);
+	m_pOwner->SetRotationY(angle); // ボスをプレイヤーの方向に向かせる
 
-	//X,Z平面での向きを取得.
-	float dx = DirectX::XMVectorGetX(Direction);
-	float dz = DirectX::XMVectorGetZ(Direction);
-
-	//atan2fでY軸回転角度を計算.
-	float angle_radian = std::atan2f(dx, dz);
-
-	m_pOwner->SetRotationY(angle_radian);
-
-
-
-	DirectX::XMVECTOR offsetVec = DirectX::XMVectorScale(rotatedVec, BOSS_RADIUS);
-
-	//問題としてはここが原因の可能性があります.
-	//ここ原因
-	DirectX::XMVECTOR newBossPosXM = DirectX::XMVectorAdd(PlayerPosXM, offsetVec);
-	DirectX::XMFLOAT3 NewBossPos;
-	DirectX::XMStoreFloat3(&NewBossPos, newBossPosXM);
-
-	//ベクトル
-	DirectX::XMVECTOR v_test = DirectX::XMVectorSubtract(newBossPosXM, BossPosXM);
-	DirectX::XMFLOAT3 test = {};
-
-	std::shared_ptr<Transform> transform = std::make_shared<Transform>();
-	transform->SetPosition(NewBossPos);
-	DirectX::XMFLOAT3 tessss = { 0.05f,0.05f,0.05f };
-	transform->SetScale(tessss);
-
-	// 正規化.
-	v_test = DirectX::XMVector3Normalize(v_test);
-	v_test = DirectX::XMVectorScale(v_test, 0.005f);
-	DirectX::XMStoreFloat3(&test, v_test);
-
-	m_pOwner->AddPosition(test);
-
-	if (m_Timer > m_SecondTimer)
+	// -----------------------
+	// 3. 一定時間経過後に攻撃判定
+	// -----------------------
+	constexpr float AttackDelay = 270.0f; // 2秒後に攻撃可能 (この値はフレーム数か秒か要確認)
+	if (m_Timer >= AttackDelay)
 	{
-		m_pOwner->GetStateMachine()->ChangeState(std::make_unique<BossChargeState>(m_pOwner));
+		// プレイヤーとボスの距離を再計算
+		float distance_to_player = XMVectorGetX(XMVector3Length(vLookDir));
+
+		std::vector<std::function<std::unique_ptr<StateBase<Boss>>()>> candidates;
+
+		// 距離に応じた攻撃候補の選択ロジック
+		if (distance_to_player < 8.0f)
+		{
+			candidates = {
+				[this]() { return std::make_unique<BossSlashState>(m_pOwner); },
+				[this]() { return std::make_unique<BossChargeState>(m_pOwner); },
+				[this]() { return std::make_unique<BossStompState>(m_pOwner); }
+			};
+		}
+		else if (distance_to_player < 30.0f)
+		{
+			candidates = {
+				[this]() { return std::make_unique<BossThrowingState>(m_pOwner); },
+				[this]() { return std::make_unique<BossShoutState>(m_pOwner); }
+			};
+		}
+		else
+		{
+			candidates = {
+				[this]() { return std::make_unique<BossSpecialState>(m_pOwner); },
+				[this]() { return std::make_unique<BossLaserState>(m_pOwner); }
+			};
+		}
+
+		if (!candidates.empty())
+		{
+			static std::random_device rd;
+			static std::mt19937 gen(rd());
+			std::uniform_int_distribution<> dis(0, static_cast<int>(candidates.size()) - 1);
+
+			auto nextAttack = candidates[dis(gen)]();
+			m_pOwner->GetStateMachine()->ChangeState(std::move(nextAttack));
+			return;
+		}
 	}
 
-
-	//アニメーション切替
-	m_AnimNo = 0;		//登場アニメーション
-	m_AnimTimer = 0.0;	//アニメーション経過時間初期化
-	//m_pOwner->SetAnimSpeed(m_AnimSpeed);
-
-	//アニメーション再生の無限ループ用.
-	//m_pOwner->SetIsLoop(true);
-	//m_pOwner->ChangeAnim(m_AnimNo);
+	// アニメーション設定（Move用）
+	m_AnimNo = 0;
+	m_AnimTimer = 0.0;
 }
+
 
 void BossMoveState::LateUpdate()
 {
@@ -141,50 +197,11 @@ void BossMoveState::LateUpdate()
 
 void BossMoveState::Draw()
 {
-	//DrawBone();
 }
 
 void BossMoveState::Exit()
 {
 }
-
-//void BossMoveState::DrawBone()
-//{
-//	const Transform& ownerTransform = m_pOwner->GetTransform();
-//
-//	std::shared_ptr<Transform> transform = std::make_shared<Transform>(ownerTransform);
-//
-//	if (m_pOwner->GetAttachMesh().expired()) return;
-//
-//	std::shared_ptr<SkinMesh> staticMesh = std::dynamic_pointer_cast<SkinMesh>(m_pOwner->GetAttachMesh().lock());
-//	if (!staticMesh) return;
-//
-//	const std::string TargetBoneName = "Bone002";
-//
-//	DirectX::XMFLOAT3 BonePos{};
-//	if (staticMesh->GetPosFromBone(TargetBoneName.c_str(), &BonePos))
-//	{
-//		// 向きを取得.
-//		DirectX::XMFLOAT3 ForWard = ownerTransform.GetForward();
-//
-//		float OffSetDist = 0.0f;
-//
-//		DirectX::XMVECTOR FwdVec = DirectX::XMVector3Normalize(DirectX::XMLoadFloat3(&ForWard));
-//
-//		DirectX::XMVECTOR BoneVec = DirectX::XMLoadFloat3(&BonePos);
-//		DirectX::XMVECTOR OffSetPos = DirectX::XMVectorAdd(BoneVec, DirectX::XMVectorScale(FwdVec, OffSetDist));
-//
-//		DirectX::XMStoreFloat3(&BonePos, OffSetPos);
-//		BonePos.y = 2.5f;
-//
-//		transform->SetPosition(BonePos);
-//	}
-//	else return;
-//
-//	//m_pColl->Draw(transform);
-//
-//}
-
 
 void BossMoveState::SetInitialAngle(float angle)
 {

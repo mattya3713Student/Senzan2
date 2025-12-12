@@ -9,6 +9,7 @@
 **/
 
 class SkinMesh;
+class BossIdolState;
 
 class BossSlashState final
 	: public BossAttackStateBase
@@ -29,6 +30,7 @@ private:
 	//攻撃開始位置.
 	DirectX::XMFLOAT3 m_StartPos;
 
+	std::shared_ptr<BossIdolState>		m_pIdol;
 	std::shared_ptr<SkinMesh>		m_Skin;			// スキンメッシュ設定用.
 	std::shared_ptr<MeshObject>		m_Mesh;
 

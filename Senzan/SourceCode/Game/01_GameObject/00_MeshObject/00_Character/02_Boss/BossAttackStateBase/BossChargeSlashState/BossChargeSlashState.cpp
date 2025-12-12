@@ -58,9 +58,10 @@ void BossChargeSlashState::Update()
 {
 	m_currentTimer += m_currentAnimSpeed;
 
+	//ここはいったんこのままにしておくアニメーションの結合が完了しだい書く.
 	if (m_currentTimer > m_pOwner->GetAnimPeriod(m_pOwner->GetAnimNo()))
 	{
-		m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdleState>(m_pOwner));
+		m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
 	}
 }
 

@@ -6,7 +6,7 @@
 
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossChargeSlashState/BossChargeSlashState.h"
 
-#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossSpecialState/TestSpecial.h"
+#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossSpecialState/BossSpecialState.h"
 
 //前方宣言.
 class Boss;
@@ -16,13 +16,13 @@ class BossMoveState;
 *	ボスの待機状態クラス.
 **/
 
-class BossIdleState final
+class BossIdolState final
 	//ボスクラスを使用できるようになる.
 	: public StateBase<Boss>
 {
 public:
-	BossIdleState(Boss* owner);
-	~BossIdleState();
+	BossIdolState(Boss* owner);
+	~BossIdolState();
 
 	//最初に入る.
 	void Enter() override;
@@ -38,7 +38,7 @@ public:
 	void DrawBone();
 
 private:
-//	std::shared_ptr<CapsuleCollider> m_pColl;
+	//	std::shared_ptr<CapsuleCollider> m_pColl;
 
 	int							m_AnimNo;	//アニメーション番号.
 	double						m_AnimSpeed = 0.00001;// アニメーション速度.
