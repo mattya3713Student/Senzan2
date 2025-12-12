@@ -1,6 +1,6 @@
 ﻿#include "VirtualPad.h"
-#include <iostream> 
-#include <cmath> // std::sqrt, std::min, std::max に必要
+#include <iostream>
+#include <cmath>
 
 #include "Game/05_InputDevice/TestKeyBoud/TestKeyBoud.h"
 #include "Game/05_InputDevice/Input.h" // Input::GetInstance() のために必要

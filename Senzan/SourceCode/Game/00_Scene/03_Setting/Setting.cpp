@@ -35,7 +35,7 @@ Setting::Setting()
     // カメラ設定
     m_pCamera->SetPosition(DirectX::XMFLOAT3(0.0f, 5.0f, -5.0f));
     m_pCamera->SetLook(DirectX::XMFLOAT3(0.0f, 2.0f, 5.0f));
-    CameraManager::AttachCamera(m_pCamera);
+    CameraManager::GetInstance().SetCamera(m_pCamera);
 
     // ライト設定
     m_pLight->SetDirection(DirectX::XMFLOAT3(1.5f, 1.f, -1.f));
