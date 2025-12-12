@@ -8,9 +8,9 @@ Key::Key()
 	DirectX::XMFLOAT3 scale = { 1.5f, 1.5f, 1.5f };
 
 
-	m_Transform.SetPosition(pos);
+	m_Transform->SetPosition(pos);
 
-	m_Transform.SetScale(scale);
+	m_Transform->SetScale(scale);
 
 }
 

@@ -1,6 +1,7 @@
 #include "LTestScene.h"
 
 #include "Game/05_InputDevice/Input.h"
+#include "Game/05_InputDevice/VirtualPad.h" 
 
 #include "System/Singleton/CameraManager/CameraManager.h"
 #include "Game/02_Camera/CameraBase.h"
@@ -21,9 +22,14 @@
 
 #include "System/Singleton/ImGui/CImGuiManager.h"
 
+#include "System/Singleton/SceneManager/SceneManager.h"
+
+#include "00_MeshObject/03_SnowBall/SnowBall.h"
+
 
 
 #include <algorithm> // std::min のために必要
+
 
 // コンストラクタ.
 LTestScene::LTestScene()
@@ -32,7 +38,12 @@ LTestScene::LTestScene()
 	, m_pLight(std::make_shared<DirectionLight>())
 	, m_pPlayer(std::make_unique<Player>())
 	, m_ptransform(std::make_shared<Transform>())
+	
+	, m_pKeyboardConfig(std::make_unique<TestKeyBoud>())
+	, m_pCConfig(std::make_unique<XInputConfig>())
 
+
+	, m_pSnowBall(std::make_shared<SnowBall>())
 {
 	Initialize();
 }
@@ -44,6 +55,13 @@ LTestScene::~LTestScene()
 
 void LTestScene::Initialize()
 {
+	// ★ 変更点 2: 設定ファイルのロード
+	m_pKeyboardConfig->LoadData();
+	m_pCConfig->LoadData();
+
+	VirtualPad::GetInstance().SetKeyConfig(m_pKeyboardConfig.get());
+	VirtualPad::GetInstance().SetControllerConfig(m_pCConfig.get());
+
 	// カメラ設定.
 	m_pCamera = std::make_shared<PlayerThirdPersonCamera>(*m_pPlayer.get());
 	m_pCamera->SetPosition(DirectX::XMFLOAT3(0.0f, 5.0f, -30.0f));
@@ -90,12 +108,13 @@ void LTestScene::Draw()
 	m_pGround->Draw();
 
 	m_pBoss->Draw();
+	m_pSnowBall->Draw();
 
 	m_pPlayer->Draw();
 }
+
 HRESULT LTestScene::LoadData()
 {
-	// ここで実際のロード処理を行うか、Create()に集約されているのであればE_NOTIMPLのままでもよい
-	// 現在のGameMainではCreate()でほとんどのInit/Load処理が行われているようです
-	return S_OK; // 成功を返す
+	// このメソッドは今回は使いませんが、SceneBaseの規定通りS_OKを返します。
+	return S_OK;
 }

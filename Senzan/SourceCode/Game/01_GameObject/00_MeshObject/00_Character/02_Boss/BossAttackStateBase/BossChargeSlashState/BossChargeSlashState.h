@@ -1,6 +1,8 @@
 #pragma once
 #include "..//BossAttackStateBase.h"
 
+#include "00_MeshObject/00_Character/02_Boss/BossIdolState/BossIdolState.h"
+
 
 /**********************************************************
 *	ボス攻撃溜め攻撃.
@@ -23,6 +25,12 @@ public:
 
 private:
 	void BossAttack() override;
+
+	//初期角度を設定する関数.
+	void SetInitialAngle(float angle)
+	{
+		m_RotationAngle = angle;
+	};
 private:
 	//フェーズの管理に使う.
 	enum class Phase
@@ -32,27 +40,11 @@ private:
 		Cooldown	//硬直.
 	};
 private:
-	//攻撃パラメータ.
-	//溜めの時間.
-	const float m_ChargeDuration;
-	//斬りの攻撃時間.
-	const float m_SlashDuration;
-	//硬直時間.
-	const float m_CooldownDuration;
-
-	//斬り攻撃のパラメータ.
-	//攻撃範囲の最大.
-	const float m_SlashRange;
-	//扇形の攻撃角度.
-	const float m_SlashAngle;
-
-	//現在のフェーズ.
-	Phase m_CurrentPhase;
-	//フェーズ開始からの時間.
-	float m_PhaseTime;
-
 	//攻撃開始時の位置.
 	DirectX::XMFLOAT3 m_StartPos;
-	//判定を一度だけ行うためのフラグ.
-	bool m_HasHit;
+	float m_RotationAngle;
+
+	//加算していくタイマー変数.
+	float m_Timer = 0.0f;
+	float m_Timers = 60.0f;
 };

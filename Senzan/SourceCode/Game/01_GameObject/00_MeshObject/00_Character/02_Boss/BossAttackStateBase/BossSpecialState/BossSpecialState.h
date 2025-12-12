@@ -1,13 +1,27 @@
 #pragma once
-#include "00_MeshObject//00_Character//02_Boss//BossAttackStateBase//BossAttackStateBase.h"
+#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossAttackStateBase.h"
 
-/*******************************************************************
-*	ボスの特殊攻撃.
+/********************************************************************************
+*	ボスの特殊攻撃クラス.
+*	:このクラスではPlayerとBossの位置を取得して放物運動をさせて実装する.
 **/
 
-class BossSpecialState final
+class Boss;
+class BossIdolState;
+
+class BossSpecialState
 	: public BossAttackStateBase
 {
+public:
+	enum class enSpecial : byte
+	{
+		None,		//何もしない.
+		Charge,		//ため時間.
+		Jump,		//飛んでいるとき
+		Attack,		//Playerに向かっての攻撃.
+		CoolTime,	//クールタイム.
+		Trans		//Idolに遷移.
+	};
 public:
 	BossSpecialState(Boss* owner);
 	~BossSpecialState() override;
@@ -18,35 +32,51 @@ public:
 	void Draw() override;
 	void Exit() override;
 
+
 private:
+	//============================================================
+	// 特殊攻撃のCharge/Jump/Attackの時の関数
+	//============================================================
+	//ため時間関数.
+	void ChargeTime();
+	//ジャンプ時関数.
+	void JumpTime();
+	//アタック時関数.
 	void BossAttack() override;
 private:
-	enum class Phase
-	{
-		Charge,		//ため.
-		Jump,		//飛んでプレイヤーの方へ行く.
-		Attack,		//突進ぎり.
-		Cooldown	//硬直.
-	};
+	//============================================================
+	// 特殊攻撃に必要になるメンバ変数.
+	//============================================================
+	enSpecial m_List;
 
-	Phase m_CurrentPhase;
-	float m_PhaseTime;
-	float m_AttackTime;
-	bool m_HasHit;
+	DirectX::XMFLOAT3 m_Velocity;
 
-	//攻撃パラメーター.
-	const float m_ChargeDuration;
-	const float m_JumpDuration;
-	const float m_AttackDuration;
-	const float m_CoolDownDuration;
+	//山なりの時の初速.
+	float m_SpecialPower;
+	//重力加速度.
+	float m_Gravity;
+	//特殊攻撃中のフラグ.
+	bool m_SpecialFrag;
+	//着地フラグ.
+	bool m_GroundedFrag;
 
-	const float m_JumpHeght;
+	//時間のメンバ変数.
+	//時間加算に使用する.
+	float m_Timer;
+	//遷移するときに使用する.
+	float m_TransitionTimer;
+	//攻撃開始用のタイム変数.
+	float m_AttackTimer;
 
-	const float m_AttackSpeed;
-	const float m_SlashRange;
+	//上がる速度の設定.
+	float m_UpSpeed;
 
-	DirectX::XMFLOAT3 m_StartPos;       // 攻撃開始時の位置（Jumpの始点）
-	DirectX::XMFLOAT3 m_JumpTargetPos;  // Jumpフェーズの目標地点（突進の始点）
-	DirectX::XMFLOAT3 m_AttackDir;  // 突進方向（Attackフェーズの開始時に決定）
-	
+	//============================================================
+	// 突進攻撃に必要なメンバ変数.
+	//============================================================
+	DirectX::XMFLOAT3 m_TargetDirection; // 突進開始時に確定した目標方向
+	float m_MaxTrackingAngle;			 // 追尾の限界角度 (度数法)
+	float m_AttackMoveSpeed;			 // 突進速度
+	float m_AttackDistance;				 // 突進する最大距離
+	float m_DistanceTraveled;
 };

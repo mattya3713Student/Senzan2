@@ -2,6 +2,13 @@
 #include "..//BossAttackStateBase.h"
 #include "Game\03_Collision\Capsule\CapsuleCollider.h"
 
+/************************************************************************************
+*	叫び攻撃：叫びの攻撃は当たり判定でノックバックさせるのでここでは時間でのIdolの遷移を書く.
+**/
+
+
+class BossIdolState;
+
 class BossShoutState
 	: public BossAttackStateBase
 {
@@ -20,26 +27,11 @@ public:
 private:
 	void BossAttack() override;
 private:
-	//フェーズ管理用列挙体.
-	enum class Phase
-	{
-		Charge,		//予兆(溜め時間).
-		Attack,		//叫び(ノックバック).
-		CoolDown	//硬直.
-	};
+	std::shared_ptr<BossIdolState> m_pBossIdol;
 
-	//攻撃パラメータ.
-	const float m_ChargeDuration;	//予兆の時間.
-	const float m_AttackDuration;	//攻撃判定の時間.
-	const float m_CoolDownDuration;	//硬直時間.
+	//遷移のタイミング取得用のタイム変数.
+	float m_Timer = 0.0f;
 
-	const float m_ShoutRadius;		//叫び攻撃の範囲.
-	const float m_KnockBackForce;	//プレイヤーを飛ばす水平方向の強さ.
-	const float m_KnockBackUpForce;	//プレイヤーを飛ばす垂直方向の強さ.
-
-	Phase m_CurrentPhase;			//現在のフェーズ.
-	float m_PhaseTime;				//フェーズ開始からの時間.
-	bool m_HasHit;					//判定を一度だけ行うためのフラグ.
-
-	//std::shared_ptr<CapsuleCollider> m_pColl;
+	//遷移の時間のタイム変数.
+	float m_TransitionTimer = 60.0f;
 };

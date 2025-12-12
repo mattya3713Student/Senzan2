@@ -8,6 +8,21 @@
 //前方宣言.
 class Time;
 
+//---------------------
+//ボスの攻撃の前方宣言.
+//---------------------
+class BossSlashState;
+class BossChargeState;
+class BossChargeSlashState;
+class BossLaserState;
+class BossShoutState;
+class BossSlashState;
+class BossSpecialState;
+class BossStompState;
+class BossThrowingState;
+
+#include <random>
+
 /******************************************************************************
 *	ボスの動作(左右移動・プレイヤーを囲むように半円を描く).
 **/
@@ -15,6 +30,14 @@ class Time;
 class BossMoveState final
 	: public StateBase<Boss>
 {
+public:
+	enum class DistanceAttack : byte
+	{
+		Melee,	//近距離.
+		Mid,	//中距離.
+		Long,	//遠距離.
+		None,	//何もしない.
+	};
 public:
 	BossMoveState(Boss* owner);
 	~BossMoveState();
@@ -30,12 +53,11 @@ public:
 	//終わるときに一回だけ入る.
 	void Exit() override;
 
-	void DrawBone();
+	//void DrawBone();
 
 public:
 	//初期角度を設定する関数.
 	void SetInitialAngle(float angle);
-
 private:
 	//現在のボスの回転度を確認する.
 	float m_RotationAngle;
@@ -47,5 +69,17 @@ private:
 	double						m_AnimTimer;// アニメ―ション経過時間.
 	DirectX::XMFLOAT3			m_BonePos;	// ボーン座標.
 
-//	std::shared_ptr<CapsuleCollider> m_pColl;
+	DirectX::XMFLOAT3 m_InitBossPos;
+
+	float m_Timer = 0.0f;
+	float m_SecondTimer = 120.0f;
+
+	std::unique_ptr<BossSpecialState>		m_pAttack;
+	std::unique_ptr<BossSlashState>			m_pSlash;
+	std::unique_ptr<BossChargeState>		m_pCharge;
+	std::unique_ptr<BossLaserState>			m_pLaser;
+	std::unique_ptr<BossStompState>			m_pStomp;
+	std::unique_ptr<BossThrowingState>		m_pThrowing;
+	std::unique_ptr<BossShoutState>			m_pShout;
+
 };

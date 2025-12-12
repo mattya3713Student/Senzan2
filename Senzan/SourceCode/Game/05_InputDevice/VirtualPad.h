@@ -1,8 +1,14 @@
-#pragma once
+ï»¿#pragma once
 #include "Game/05_InputDevice/Input.h"
 #include "System/Singleton/SingletonTemplate.h"
+#include <map>
+#include <vector>
+#include <DirectXMath.h> // XMFLOAT2ã®ãŸã‚ã«å¿…è¦
 
-class VirtualPad final 
+class TestKeyBoud;
+class XInputConfig;
+
+class VirtualPad final
     : public Singleton<VirtualPad>
 {
 private:
@@ -11,7 +17,7 @@ private:
 
 public:
 
-    // ‚±‚ÌƒQ[ƒ€‚Ì—£UƒAƒNƒVƒ‡ƒ“.
+    // ã“ã®ã‚²ãƒ¼ãƒ ã®é›¢æ•£ã‚¢ã‚¯ã‚·ãƒ§ãƒ³.
     enum class eGameAction
     {
         None,
@@ -32,7 +38,7 @@ public:
         Camera_Y,
     };
 
-    // ‚±‚ÌƒQ[ƒ€‚Ì•¡‡²ƒAƒNƒVƒ‡ƒ“.
+    // ã“ã®ã‚²ãƒ¼ãƒ ã®è¤‡åˆè»¸ã‚¢ã‚¯ã‚·ãƒ§ãƒ³.
     enum class eGameAxisAction
     {
         None,
@@ -40,14 +46,14 @@ public:
         Move,
     };
 
-    // “ü—Íƒ^ƒCƒv.
+    // å…¥åŠ›ã‚¿ã‚¤ãƒ—.
     enum class eActionType
     {
         Button,
         Axis
     };
 
-    // “ü—Íƒ\[ƒX‚ğ’è‹`.
+    // å…¥åŠ›ã‚½ãƒ¼ã‚¹ã‚’å®šç¾©.
     struct InputSource
     {
         enum class eSourceType
@@ -77,11 +83,11 @@ public:
         };
 
         eStickTarget StickTarget = eStickTarget::None;
-        
+
         float Scale = 1.0f;
     };
 
-    // ƒAƒNƒVƒ‡ƒ“‚²‚Æ‚ÌƒoƒCƒ“ƒfƒBƒ“ƒO’è‹`
+    // ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã”ã¨ã®ãƒã‚¤ãƒ³ãƒ‡ã‚£ãƒ³ã‚°å®šç¾©
     struct ActionBinding
     {
         eActionType Type = eActionType::Button;
@@ -89,39 +95,50 @@ public:
     };
 
 public:
-    // ƒQ[ƒ€“à‚ÌƒAƒNƒVƒ‡ƒ“‚ÆÀÛ‚Ì“ü—Í‚ğŠÖ˜A•t‚¯‚éƒ}ƒbƒv
-    // eGameAction ‚Í—£UƒAƒNƒVƒ‡ƒ“‚Æ²ƒRƒ“ƒ|[ƒlƒ“ƒg‚Ì—¼•û‚ÌƒL[‚Æ‚µ‚Äg—p‚³‚ê‚Ü‚·B
+    // ã‚²ãƒ¼ãƒ å†…ã®ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã¨å®Ÿéš›ã®å…¥åŠ›ã‚’é–¢é€£ä»˜ã‘ã‚‹ãƒãƒƒãƒ—
+    // eGameAction ã¯é›¢æ•£ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã¨è»¸ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã®ä¸¡æ–¹ã®ã‚­ãƒ¼ã¨ã—ã¦ä½¿ç”¨ã•ã‚Œã¾ã™ã€‚
     std::map<eGameAction, ActionBinding> m_KeyMap;
 
 public:
     ~VirtualPad() override = default;
 
-    // ‰Ÿ‚³‚ê‘±‚¯‚Ä‚¢‚é‚©.
+    // â˜… å¤‰æ›´ç‚¹ 1: TestKeyBoud è¨­å®šã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’å—ã‘å–ã‚‹ Setter ã‚’è¿½åŠ 
+    void SetKeyConfig(TestKeyBoud* config);
+
+    void SetControllerConfig(XInputConfig* Config);
+
+    // æŠ¼ã•ã‚Œç¶šã‘ã¦ã„ã‚‹ã‹.
     bool IsActionPress(eGameAction action) const;
 
-    // ‰Ÿ‚³‚ê‚½uŠÔ‚©.
+    // æŠ¼ã•ã‚ŒãŸç¬é–“ã‹.
     bool IsActionDown(eGameAction action, float inputBufferTime = 0.0f) const;
 
-    // —£‚³‚ê‚½uŠÔ‚©. 
+    // é›¢ã•ã‚ŒãŸç¬é–“ã‹.Â 
     bool IsActionUp(eGameAction action) const;
 
-    //  •¡‡²æ“¾.
+    //Â  è¤‡åˆè»¸å–å¾—.
     DirectX::XMFLOAT2 GetAxisInput(eGameAxisAction axisType) const;
 
-    // ƒL[ƒoƒCƒ“ƒh‚Ì‰Šú‰».
+    // ã‚­ãƒ¼ãƒã‚¤ãƒ³ãƒ‰ã®åˆæœŸåŒ–.
+    // â˜… å¤‰æ›´ç‚¹ 2: ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆè¨­å®šã®ã‚»ãƒƒãƒˆã‚¢ãƒƒãƒ—ã¯è¨­å®šãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‰ã®æ§‹ç¯‰ã‚’æ‹…ã†
     void SetupDefaultBindings();
 
 private:
-    // ó‘Ôƒ`ƒFƒbƒN‚Ì’ŠÛ‰»ƒwƒ‹ƒp[.
+    // â˜… å¤‰æ›´ç‚¹ 3: TestKeyBoud ã¸ã®ãƒã‚¤ãƒ³ã‚¿ã‚’ä¿æŒ
+    TestKeyBoud* m_pKeyConfig = nullptr;
+
+    XInputConfig* m_pControllerConfig = nullptr;
+
+    // çŠ¶æ…‹ãƒã‚§ãƒƒã‚¯ã®æŠ½è±¡åŒ–ãƒ˜ãƒ«ãƒ‘ãƒ¼.
     template <typename KeyCheckFunc, typename ButtonCheckFunc>
     bool checkActionState(eGameAction action,
         KeyCheckFunc&& keyCheck,
         ButtonCheckFunc&& buttonCheck) const;
 
-    // ²ƒAƒNƒVƒ‡ƒ“‚Ì‡Œv’l‚ğæ“¾.
+    // è»¸ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã®åˆè¨ˆå€¤ã‚’å–å¾—.
     float GetSingleAxisValue(eGameAction componentAction) const;
 
 private:
-    // TODO: ƒoƒbƒtƒ@‹@”\–¢À‘•
+    // TODO: ãƒãƒƒãƒ•ã‚¡æ©Ÿèƒ½æœªå®Ÿè£…
     float m_CoyoteTimeTimer = 0.0f;
 };
