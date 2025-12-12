@@ -1,22 +1,17 @@
-ï»¿#pragma once
+#pragma once
 #include "Game/05_InputDevice/Input.h"
 #include "System/Singleton/SingletonTemplate.h"
-#include <map>
-#include <vector>
-#include <DirectXMath.h> // XMFLOAT2ã®ãŸã‚ã«å¿…è¦
 
-class TestKeyBoud;
-class XInputConfig;
-
-class VirtualPad final
+class VirtualPad final 
     : public Singleton<VirtualPad>
 {
 private:
     friend class Singleton<VirtualPad>;
     VirtualPad();
+
 public:
 
-    // ã“ã®ã‚²ãƒ¼ãƒ ã®é›¢æ•£ã‚¢ã‚¯ã‚·ãƒ§ãƒ³.
+    // ‚±‚ÌƒQ[ƒ€‚Ì—£UƒAƒNƒVƒ‡ƒ“.
     enum class eGameAction
     {
         None,
@@ -37,7 +32,7 @@ public:
         Camera_Y,
     };
 
-    // ã“ã®ã‚²ãƒ¼ãƒ ã®è¤‡åˆè»¸ã‚¢ã‚¯ã‚·ãƒ§ãƒ³.
+    // ‚±‚ÌƒQ[ƒ€‚Ì•¡‡²ƒAƒNƒVƒ‡ƒ“.
     enum class eGameAxisAction
     {
         None,
@@ -45,14 +40,14 @@ public:
         Move,
     };
 
-    // å…¥åŠ›ã‚¿ã‚¤ãƒ—.
+    // “ü—Íƒ^ƒCƒv.
     enum class eActionType
     {
         Button,
         Axis
     };
 
-    // å…¥åŠ›ã‚½ãƒ¼ã‚¹ã‚’å®šç¾©.
+    // “ü—Íƒ\[ƒX‚ğ’è‹`.
     struct InputSource
     {
         enum class eSourceType
@@ -82,11 +77,11 @@ public:
         };
 
         eStickTarget StickTarget = eStickTarget::None;
-
+        
         float Scale = 1.0f;
     };
 
-    // ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã”ã¨ã®ãƒã‚¤ãƒ³ãƒ‡ã‚£ãƒ³ã‚°å®šç¾©.
+    // ƒAƒNƒVƒ‡ƒ“‚²‚Æ‚ÌƒoƒCƒ“ƒfƒBƒ“ƒO’è‹`
     struct ActionBinding
     {
         eActionType Type = eActionType::Button;
@@ -94,35 +89,39 @@ public:
     };
 
 public:
-    // ã‚²ãƒ¼ãƒ å†…ã®ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã¨å®Ÿéš›ã®å…¥åŠ›ã‚’é–¢é€£ä»˜ã‘ã‚‹ãƒãƒƒãƒ—.
+    // ƒQ[ƒ€“à‚ÌƒAƒNƒVƒ‡ƒ“‚ÆÀÛ‚Ì“ü—Í‚ğŠÖ˜A•t‚¯‚éƒ}ƒbƒv
+    // eGameAction ‚Í—£UƒAƒNƒVƒ‡ƒ“‚Æ²ƒRƒ“ƒ|[ƒlƒ“ƒg‚Ì—¼•û‚ÌƒL[‚Æ‚µ‚Äg—p‚³‚ê‚Ü‚·B
     std::map<eGameAction, ActionBinding> m_KeyMap;
 
 public:
     ~VirtualPad() override = default;
-    
-    // æŠ¼ã•ã‚Œç¶šã‘ã¦ã„ã‚‹ã‹.
+
+    // ‰Ÿ‚³‚ê‘±‚¯‚Ä‚¢‚é‚©.
     bool IsActionPress(eGameAction action) const;
 
-    // æŠ¼ã•ã‚ŒãŸç¬é–“ã‹.
+    // ‰Ÿ‚³‚ê‚½uŠÔ‚©.
     bool IsActionDown(eGameAction action, float inputBufferTime = 0.0f) const;
 
-    // é›¢ã•ã‚ŒãŸç¬é–“ã‹.Â 
+    // —£‚³‚ê‚½uŠÔ‚©. 
     bool IsActionUp(eGameAction action) const;
 
-    //Â  è¤‡åˆè»¸å–å¾—.
+    //  •¡‡²æ“¾.
     DirectX::XMFLOAT2 GetAxisInput(eGameAxisAction axisType) const;
 
+    // ƒL[ƒoƒCƒ“ƒh‚Ì‰Šú‰».
+    void SetupDefaultBindings();
+
 private:
-    // çŠ¶æ…‹ãƒã‚§ãƒƒã‚¯ã®æŠ½è±¡åŒ–ãƒ˜ãƒ«ãƒ‘ãƒ¼.
+    // ó‘Ôƒ`ƒFƒbƒN‚Ì’ŠÛ‰»ƒwƒ‹ƒp[.
     template <typename KeyCheckFunc, typename ButtonCheckFunc>
     bool checkActionState(eGameAction action,
         KeyCheckFunc&& keyCheck,
         ButtonCheckFunc&& buttonCheck) const;
 
-    // è»¸ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã®åˆè¨ˆå€¤ã‚’å–å¾—.
+    // ²ƒAƒNƒVƒ‡ƒ“‚Ì‡Œv’l‚ğæ“¾.
     float GetSingleAxisValue(eGameAction componentAction) const;
 
 private:
-    // TODO: ãƒãƒƒãƒ•ã‚¡æ©Ÿèƒ½æœªå®Ÿè£…
+    // TODO: ƒoƒbƒtƒ@‹@”\–¢À‘•
     float m_CoyoteTimeTimer = 0.0f;
 };

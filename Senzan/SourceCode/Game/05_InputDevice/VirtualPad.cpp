@@ -1,255 +1,400 @@
-ï»¿#include "VirtualPad.h"
-#include <iostream>
-#include <cmath>
-
-#include "Game/05_InputDevice/Input.h" // Input::GetInstance() ã®ãŸã‚ã«å¿…è¦
-
-namespace
-{
-	// ã‚­ãƒ¼ã‚³ãƒ¼ãƒ‰ãŒè¨­å®šãƒ•ã‚¡ã‚¤ãƒ«ã§è¦‹ã¤ã‹ã‚‰ãªã„å ´åˆã®ãƒ•ã‚©ãƒ¼ãƒ«ãƒãƒƒã‚¯å€¤
-	const int DEFAULT_KEY_W = 'W';
-	const int DEFAULT_KEY_A = 'A';
-	const int DEFAULT_KEY_S = 'S';
-	const int DEFAULT_KEY_D = 'D';
-	const int DEFAULT_KEY_SPACE = VK_SPACE;
-	const int DEFAULT_KEY_Q = 'Q';
-	const int DEFAULT_KEY_LSHIFT = VK_LSHIFT;
-	const int DEFAULT_KEY_ESC = VK_ESCAPE;
-}
+#include "VirtualPad.h"
+#include <iostream> 
+#include <cmath> // std::sqrt, std::min, std::max ‚É•K—v
 
 // --------------------------------------------------------------------------------
-// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
 // --------------------------------------------------------------------------------
 
 VirtualPad::VirtualPad()
-	: m_CoyoteTimeTimer(0.0f)
 {
+    // ƒRƒ“ƒXƒgƒ‰ƒNƒ^‚ÅƒL[ƒoƒCƒ“ƒh‚ğ‰Šú‰»
+    SetupDefaultBindings();
 }
 
+// --------------------------------------------------------------------------------
+// ƒvƒ‰ƒCƒx[ƒg ƒeƒ“ƒvƒŒ[ƒgƒwƒ‹ƒp[‚ÌÀ‘• (checkActionState)
+// --------------------------------------------------------------------------------
+
+// ƒeƒ“ƒvƒŒ[ƒgŠÖ”‚Íƒwƒbƒ_[‚ÉƒCƒ“ƒ‰ƒCƒ““WŠJ‚·‚é‚Ì‚ª—‘z‚Å‚·‚ªA‚±‚±‚Å‚Í.cpp‚É‹Lq
 template <typename KeyCheckFunc, typename ButtonCheckFunc>
 bool VirtualPad::checkActionState(eGameAction action,
-	KeyCheckFunc&& keyCheck,
-	ButtonCheckFunc&& buttonCheck) const
+    KeyCheckFunc&& keyCheck,
+    ButtonCheckFunc&& buttonCheck) const
 {
-	// ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã®ãƒã‚¤ãƒ³ãƒ‡ã‚£ãƒ³ã‚°ã‚’å–å¾—.
-	auto it = m_KeyMap.find(action);
-	if (it == m_KeyMap.end() || it->second.Type != eActionType::Button)
-	{
-		// è»¸ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ãŒé–“é•ã£ã¦æ¸¡ã•ã‚ŒãŸå ´åˆã®ãƒ­ã‚° (Debug::Warning ãŒå®šç¾©ã•ã‚Œã¦ã„ã‚‹å‰æ)
-		// if (it != m_KeyMap.end() && it->second.type == eActionType::Axis) { Debug::Warning("Button check called for Axis action."); }
-		return false;
-	}
+    // ƒAƒNƒVƒ‡ƒ“‚ÌƒoƒCƒ“ƒfƒBƒ“ƒO‚ğæ“¾.
+    auto it = m_KeyMap.find(action);
+    if (it == m_KeyMap.end() || it->second.Type != eActionType::Button)
+    {
+        // ²ƒAƒNƒVƒ‡ƒ“‚ªŠÔˆá‚Á‚Ä“n‚³‚ê‚½ê‡‚ÌƒƒO (Debug::Warning ‚ª’è‹`‚³‚ê‚Ä‚¢‚é‘O’ñ)
+        // if (it != m_KeyMap.end() && it->second.type == eActionType::Axis) { Debug::Warning("Button check called for Axis action."); }
+        return false;
+    }
 
-	const ActionBinding& binding = it->second;
+    const ActionBinding& binding = it->second;
 
-	for (const auto& source : binding.Sources)
-	{
-		switch (source.Type)
-		{
-		case InputSource::eSourceType::KeyBorad:
-		case InputSource::eSourceType::MouseButton:
-			if (keyCheck(source.KeyCode))
-			{
-				return true;
-			}
-			break;
+    for (const auto& source : binding.Sources)
+    {
+        switch (source.Type)
+        {
+            case InputSource::eSourceType::KeyBorad:
+            case InputSource::eSourceType::MouseButton:
+                if (keyCheck(source.KeyCode))
+                {
+                    return true;
+                }
+                break;
 
-		case InputSource::eSourceType::ControllerButton:
-			if (buttonCheck(source.ControllerKey, source.KeyCode))
-			{
-				return true;
-			}
-			break;
+            case InputSource::eSourceType::ControllerButton:
+                if (buttonCheck(source.ControllerKey, source.KeyCode))
+                {
+                    return true;
+                }
+                break;
 
-			// ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼ãƒˆãƒªã‚¬ãƒ¼è»¸ã‚’ãƒœã‚¿ãƒ³ã¨ã—ã¦æ‰±ã†å ´åˆã®ç‰¹æ®Šãªã‚±ãƒ¼ã‚¹.
-		case InputSource::eSourceType::ControllerTriggerAxis:
-		{
-			Input& input = Input::GetInstance();
-			float triggerValue = 0.0f;
-			if (source.StickTarget == InputSource::eStickTarget::LeftTrigger) {
-				triggerValue = input.GetLTrigger();
-			}
-			else if (source.StickTarget == InputSource::eStickTarget::RightTrigger) {
-				triggerValue = input.GetRTrigger();
-			}
+                // ƒRƒ“ƒgƒ[ƒ‰[ƒgƒŠƒK[²‚ğƒ{ƒ^ƒ“‚Æ‚µ‚Äˆµ‚¤ê‡‚Ì“Áê‚ÈƒP[ƒX.
+            case InputSource::eSourceType::ControllerTriggerAxis:
+            {
+                Input& input = Input::GetInstance();
+                float triggerValue = 0.0f;
+                if (source.StickTarget == InputSource::eStickTarget::LeftTrigger) {
+                    triggerValue = input.GetLTrigger();
+                }
+                else if (source.StickTarget == InputSource::eStickTarget::RightTrigger) {
+                    triggerValue = input.GetRTrigger();
+                }
 
-			// ãƒˆãƒªã‚¬ãƒ¼ãŒé–¾å€¤ (0.1f) ä»¥ä¸Šã§ã‚ã‚Œã°æŠ¼ã•ã‚Œã¦ã„ã‚‹ã¨åˆ¤å®š.
-			if (triggerValue >= 0.1f) return true;
-			break;
-		}
+                // ƒgƒŠƒK[‚ªè‡’l (0.1f) ˆÈã‚Å‚ ‚ê‚Î‰Ÿ‚³‚ê‚Ä‚¢‚é‚Æ”»’è.
+                if (triggerValue >= 0.1f) return true;
+                break;
+            }
 
-		default:
-			break;
-		}
-	}
+            default:
+                break;
+        }
+    }
 
-	return false;
+    return false;
 }
 
-// æŠ¼ã•ã‚Œç¶šã‘ã¦ã„ã‚‹ã‹.
+// ‰Ÿ‚³‚ê‘±‚¯‚Ä‚¢‚é‚©.
 bool VirtualPad::IsActionPress(eGameAction action) const
 {
-	Input& input = Input::GetInstance();
+    Input& input = Input::GetInstance();
 
-	// KeyBorad/MouseButton.
-	auto keyCheck = [&input](const int& code) {
-		return input.IsKeyRepeat(code);
-	};
+    // KeyBorad/MouseButton.
+    auto keyCheck = [&input](const int& code) {
+        return input.IsKeyRepeat(code);
+        };
 
-	// ControllerButton.
-	auto buttonCheck = [&input](XInput::Key key, const int code) {
-		return input.IsButtonRepeat(key);
-	};
+    // ControllerButton.
+    auto buttonCheck = [&input](XInput::Key key, const int code) {
+        return input.IsButtonRepeat(key);
+        };
 
-	return checkActionState(action, keyCheck, buttonCheck);
+    return checkActionState(action, keyCheck, buttonCheck);
 }
 
-// æŠ¼ã•ã‚ŒãŸç¬é–“ã‹.
+// ‰Ÿ‚³‚ê‚½uŠÔ‚©.
 bool VirtualPad::IsActionDown(eGameAction action, float inputBufferTime) const
 {
-	Input& input = Input::GetInstance();
+    Input& input = Input::GetInstance();
 
-	// KeyBorad/MouseButton.
-	auto keyCheck = [&input](const int& code) {
-		// TODO : inputBufferTime å…¥ã‚Œã‚‹ãªã‚‰ã“ã“ã«è¿½åŠ .
-		return input.IsKeyDown(code);
-	};
+    // KeyBorad/MouseButton.
+    auto keyCheck = [&input](const int& code) {
+        // TODO : inputBufferTime “ü‚ê‚é‚È‚ç‚±‚±‚É’Ç‰Á.
+        return input.IsKeyDown(code);
+        };
 
-	// ControllerButton.
-	auto buttonCheck = [&input](XInput::Key key, const int code) {
-		return input.IsButtonDown(key);
-	};
+    // ControllerButton.
+    auto buttonCheck = [&input](XInput::Key key, const int code) {
+        return input.IsButtonDown(key);
+        };
 
-	return checkActionState(action, keyCheck, buttonCheck);
+    return checkActionState(action, keyCheck, buttonCheck);
 }
 
-// é›¢ã•ã‚ŒãŸç¬é–“ã‹.
+// —£‚³‚ê‚½uŠÔ‚©.
 bool VirtualPad::IsActionUp(eGameAction action) const
 {
-	Input& input = Input::GetInstance();
+    Input& input = Input::GetInstance();
 
-	// KeyBorad/MouseButton.
-	auto keyCheck = [&input](const int& code) {
-		return input.IsKeyUp(code);
-	};
+    // KeyBorad/MouseButton.
+    auto keyCheck = [&input](const int& code) {
+        return input.IsKeyUp(code);
+        };
 
-	// ControllerButton.
-	auto buttonCheck = [&input](XInput::Key key, const int code) {
-		return input.IsButtonUp(key);
-	};
+    // ControllerButton.
+    auto buttonCheck = [&input](XInput::Key key, const int code) {
+        return input.IsButtonUp(key);
+        };
 
-	return checkActionState(action, keyCheck, buttonCheck);
+    return checkActionState(action, keyCheck, buttonCheck);
 }
 
-// è»¸ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã®åˆè¨ˆå€¤ã‚’å–å¾—.
+// ²ƒAƒNƒVƒ‡ƒ“‚Ì‡Œv’l‚ğæ“¾.
 float VirtualPad::GetSingleAxisValue(eGameAction componentAction) const
 {
-	auto it = m_KeyMap.find(componentAction);
-	if (it == m_KeyMap.end() || it->second.Type != eActionType::Axis)
-	{
-		return 0.0f;
-	}
+    auto it = m_KeyMap.find(componentAction);
+    if (it == m_KeyMap.end() || it->second.Type != eActionType::Axis)
+    {
+        return 0.0f;
+    }
 
-	const ActionBinding& binding = it->second;
-	Input& input = Input::GetInstance();
-	float total_value = 0.0f;
+    const ActionBinding& binding = it->second;
+    Input& input = Input::GetInstance();
+    float total_value = 0.0f;
 
-	for (const auto& source : binding.Sources)
-	{
-		float value = 0.0f;
+    for (const auto& source : binding.Sources)
+    {
+        float value = 0.0f;
 
-		switch (source.Type)
-		{
-		case InputSource::eSourceType::KeyBorad:
-			// ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰å…¥åŠ›: æŠ¼ã•ã‚Œã¦ã„ã‚Œã°1.0fãã†ã§ãªã‘ã‚Œã°1.0fã‚’å€¤ã¨ã™ã‚‹
-			if (input.IsKeyRepeat(source.KeyCode))
-			{
-				value = 1.0f;
-			}
-			break;
+        switch (source.Type)
+        {
+            case InputSource::eSourceType::KeyBorad:
+                // ƒL[ƒ{[ƒh“ü—Í: ‰Ÿ‚³‚ê‚Ä‚¢‚ê‚Î1.0f‚»‚¤‚Å‚È‚¯‚ê‚Î1.0f‚ğ’l‚Æ‚·‚é
+                if (input.IsKeyRepeat(source.KeyCode))
+                {
+                    value = 1.0f;
+                }
+                break;
 
-		case InputSource::eSourceType::ControllerStickAxis:
-		case InputSource::eSourceType::ControllerTriggerAxis:
-			// ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼ã‚¹ãƒ†ã‚£ãƒƒã‚¯/ãƒˆãƒªã‚¬ãƒ¼ã®è»¸å…¥åŠ›.
-			if (source.StickTarget == InputSource::eStickTarget::Left)
-			{
-				// Move_Axis_X/Camera_X ã®å ´åˆ x, Move_Axis_Y/Camera_Y ã®å ´åˆ y ã‚’å–å¾—
-				value = (componentAction == eGameAction::Move_Axis_X || componentAction == eGameAction::Camera_X) ?
-					input.GetLStickDirection().x : input.GetLStickDirection().y;
-			}
-			else if (source.StickTarget == InputSource::eStickTarget::Right)
-			{
-				value = (componentAction == eGameAction::Move_Axis_X || componentAction == eGameAction::Camera_X) ?
-					input.GetRStickDirection().x : input.GetRStickDirection().y;
-			}
-			else if (source.StickTarget == InputSource::eStickTarget::LeftTrigger)
-			{
-				value = input.GetLTrigger();
-			}
-			else if (source.StickTarget == InputSource::eStickTarget::RightTrigger)
-			{
-				value = input.GetRTrigger();
-			}
-			break;
+            case InputSource::eSourceType::ControllerStickAxis:
+            case InputSource::eSourceType::ControllerTriggerAxis:
+                // ƒRƒ“ƒgƒ[ƒ‰[ƒXƒeƒBƒbƒN/ƒgƒŠƒK[‚Ì²“ü—Í.
+                if (source.StickTarget == InputSource::eStickTarget::Left)
+                {
+                    // Move_Axis_X/Camera_X ‚Ìê‡ x, Move_Axis_Y/Camera_Y ‚Ìê‡ y ‚ğæ“¾
+                    value = (componentAction == eGameAction::Move_Axis_X || componentAction == eGameAction::Camera_X) ?
+                        input.GetLStickDirection().x : input.GetLStickDirection().y;
+                }
+                else if (source.StickTarget == InputSource::eStickTarget::Right)
+                {
+                    value = (componentAction == eGameAction::Move_Axis_X || componentAction == eGameAction::Camera_X) ?
+                        input.GetRStickDirection().x : input.GetRStickDirection().y;
+                }
+                else if (source.StickTarget == InputSource::eStickTarget::LeftTrigger)
+                {
+                    value = input.GetLTrigger();
+                }
+                else if (source.StickTarget == InputSource::eStickTarget::RightTrigger)
+                {
+                    value = input.GetRTrigger();
+                }
+                break;
 
-		case InputSource::eSourceType::MouseMove:
+            case InputSource::eSourceType::MouseMove:
 
-			DirectX::XMFLOAT2 currentMousePos = Input::GetClientCursorPosition();
-			DirectX::XMVECTOR mousePosXM = XMLoadFloat2(&currentMousePos);
-			DirectX::XMFLOAT2 oldMousePos = Input::GetPastClientCursorPosition();
+                DirectX::XMFLOAT2 currentMousePos = Input::GetClientCursorPosition();
+                DirectX::XMVECTOR mousePosXM = XMLoadFloat2(&currentMousePos);
+                DirectX::XMFLOAT2 oldMousePos = Input::GetPastClientCursorPosition();
 
-			// ãƒã‚¦ã‚¹ç§»å‹•é‡.
-			if (componentAction == eGameAction::Camera_X)
-			{
-				value = input.GetClientCursorDelta().x;
-			}
-			else if (componentAction == eGameAction::Camera_Y)
-			{
-				value = input.GetClientCursorDelta().y;
-			}
-			break;
-		default:
-			continue;
-		}
+                // ƒ}ƒEƒXˆÚ“®—Ê.
+                if (componentAction == eGameAction::Camera_X)
+                {
+                    value = input.GetClientCursorDelta().x;
+                }
+                else if (componentAction == eGameAction::Camera_Y)
+                {
+                    value = input.GetClientCursorDelta().y;
+                }
+                break;
+            default:
+                continue;
+        }
 
-		// å…¥åŠ›å€¤ã«å€ç‡ã‚’ã‹ã‘ã¦åˆè¨ˆã«åŠ ãˆã‚‹.
-		total_value += value * source.Scale;
-	}
+        // “ü—Í’l‚É”{—¦‚ğ‚©‚¯‚Ä‡Œv‚É‰Á‚¦‚é.
+        total_value += value * source.Scale;
+    }
 
-	// è»¸ã®å€¤ã®æœ€å¤§å€¤ã‚’ 1.0f ã«åˆ¶é™ (ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰å…¥åŠ›ã®åˆæˆãªã©ã§ç™ºç”Ÿã™ã‚‹å¯èƒ½æ€§ãŒã‚ã‚‹ãŸã‚)
-	return std::min(1.0f, std::max(-1.0f, total_value));
+    // ²‚Ì’l‚ÌÅ‘å’l‚ğ 1.0f ‚É§ŒÀ (ƒL[ƒ{[ƒh“ü—Í‚Ì‡¬‚È‚Ç‚Å”­¶‚·‚é‰Â”\«‚ª‚ ‚é‚½‚ß)
+    return std::min(1.0f, std::max(-1.0f, total_value));
 }
 
-//Â  è¤‡åˆè»¸å–å¾—.
+//  •¡‡²æ“¾.
 DirectX::XMFLOAT2 VirtualPad::GetAxisInput(eGameAxisAction axisType) const
 {
-	DirectX::XMFLOAT2 result = { 0.0f, 0.0f };
+    DirectX::XMFLOAT2 result = { 0.0f, 0.0f };
 
-	// ãã‚Œãã‚Œã®Axisã‚’å–å¾—.
-	if (axisType == eGameAxisAction::Move)
-	{
-		result.x = GetSingleAxisValue(eGameAction::Move_Axis_X);
-		result.y = GetSingleAxisValue(eGameAction::Move_Axis_Y);
-	}
-	else if (axisType == eGameAxisAction::CameraMove)
-	{
-		result.x = GetSingleAxisValue(eGameAction::Camera_X);
-		result.y = GetSingleAxisValue(eGameAction::Camera_Y);
-	}
-	else
-	{
-		return { 0.0f, 0.0f };
-	}
+    // ‚»‚ê‚¼‚ê‚ÌAxis‚ğæ“¾.
+    if (axisType == eGameAxisAction::Move)
+    {
+        result.x = GetSingleAxisValue(eGameAction::Move_Axis_X);
+        result.y = GetSingleAxisValue(eGameAction::Move_Axis_Y);
+    }
+    else if (axisType == eGameAxisAction::CameraMove)
+    {
+        result.x = GetSingleAxisValue(eGameAction::Camera_X);
+        result.y = GetSingleAxisValue(eGameAction::Camera_Y);
+    }
+    else
+    {
+        return { 0.0f, 0.0f };
+    }
 
-	// æ­£è¦åŒ–.
-	float lengthSq = result.x * result.x + result.y * result.y;
+    // ³‹K‰».
+    float lengthSq = result.x * result.x + result.y * result.y;
 
-	if (lengthSq > 1.0f)
-	{
-		float length = std::sqrt(lengthSq);
-		result.x /= length;
-		result.y /= length;
-	}
+    if (lengthSq > 1.0f)
+    {
+        float length = std::sqrt(lengthSq);
+        result.x /= length;
+        result.y /= length;
+    }
 
-	return result;
+    return result;
+}
+
+// ƒfƒtƒHƒ‹ƒgƒoƒCƒ“ƒfƒBƒ“ƒO.
+void VirtualPad::SetupDefaultBindings()
+{
+    using EKey = XInput::Key;
+    using EStickState = XInput::StickState;
+    using ESource = InputSource::eSourceType;
+    using ETarget = InputSource::eStickTarget;
+    using Action = eGameAction;
+
+    // MoveForward: 'W' ‚Ü‚½‚Í ¶ƒXƒeƒBƒbƒNã (ƒXƒeƒBƒbƒN•ûŒü).
+    m_KeyMap[Action::MoveForward] = {
+        eActionType::Button,
+        {
+            { ESource::KeyBorad, 'W' },
+            { ESource::ControllerStickDir, 0, EKey::None, EStickState::Up, ETarget::Left }
+        }
+    };
+
+    // MoveBackward: 'S' ‚Ü‚½‚Í ¶ƒXƒeƒBƒbƒN‰º.
+    m_KeyMap[Action::MoveBackward] = {
+        eActionType::Button,
+        {
+            { ESource::KeyBorad, 'S' },
+            { ESource::ControllerStickDir, 0, EKey::None, EStickState::Down, ETarget::Left }
+        }
+    };
+
+    // MoveRight: 'D' ‚Ü‚½‚Í ‰E–îˆóƒL[ ‚Ü‚½‚Í ¶ƒXƒeƒBƒbƒN‰E.
+    m_KeyMap[Action::MoveRight] = {
+        eActionType::Button,
+        {
+            { ESource::KeyBorad, 'D' },
+            { ESource::KeyBorad, VK_RIGHT },
+            { ESource::ControllerStickDir, 0, EKey::None, EStickState::Right, ETarget::Left }
+        }
+    };
+
+    // MoveLeft: 'A' ‚Ü‚½‚Í ¶–îˆóƒL[ ‚Ü‚½‚Í ¶ƒXƒeƒBƒbƒN¶ (’Ç‰Á).
+    m_KeyMap[Action::MoveLeft] = {
+        eActionType::Button,
+        {
+            { ESource::KeyBorad, 'A' },
+            { ESource::KeyBorad, VK_LEFT },
+            { ESource::ControllerStickDir, 0, EKey::None, EStickState::Left, ETarget::Left }
+        }
+    };
+
+
+    // Jump: ƒXƒy[ƒX ‚Ü‚½‚Í Aƒ{ƒ^ƒ“.
+    m_KeyMap[Action::Jump] = {
+        eActionType::Button,
+        {
+            { ESource::KeyBorad, VK_SPACE },
+            { ESource::ControllerButton, 0, EKey::A }
+        }
+    };
+
+    // Attack: ƒ}ƒEƒX¶ƒ{ƒ^ƒ“ ‚Ü‚½‚Í ‰EƒgƒŠƒK[ (²“ü—Í‚¾‚ª‚±‚±‚Å‚Í˜_—“ü—Í‚Æ‚µ‚Äˆµ‚¤).
+    m_KeyMap[Action::Attack] = {
+        eActionType::Button,
+        {
+            { ESource::MouseButton, VK_LBUTTON },
+            // ControllerTriggerAxis ‚Ìˆ—‚Í checkActionState ‚Ì“ÁêƒP[ƒX‚Åˆ—‚³‚ê‚Ü‚·.
+            { ESource::ControllerTriggerAxis, 0, EKey::None, EStickState::None, ETarget::RightTrigger, 1.0f }
+        }
+    };
+
+    // Parry.
+    m_KeyMap[Action::Parry] = {
+        eActionType::Button,
+        {
+            { ESource::MouseButton, VK_RBUTTON },
+            { ESource::ControllerButton, 0, EKey::B }
+        }
+    };
+
+    // Dodge.
+    m_KeyMap[Action::Dodge] = {
+        eActionType::Button,
+        {
+            { ESource::KeyBorad, VK_LSHIFT },
+            { ESource::ControllerButton, 0, EKey::LB }
+        }
+    };
+
+    // SpecialAttack.
+    m_KeyMap[Action::SpecialAttack] = {
+        eActionType::Button,
+        {
+            { ESource::KeyBorad, 'Q' },
+            { ESource::ControllerButton, 0, EKey::RB }
+        }
+    };
+
+
+    // Pause.
+    m_KeyMap[Action::Pause] = {
+        eActionType::Button,
+        {
+            { ESource::KeyBorad, VK_ESCAPE },
+            { ESource::ControllerButton, 0, EKey::Start }
+        }
+    };
+
+    // ----- [ Axis Actions: ²“ü—Í‚Ì“à•”ƒRƒ“ƒ|[ƒlƒ“ƒg ] -----
+
+    // yMove Axis Xz: ¶ƒXƒeƒBƒbƒNX²‚Ì¶‚Ì’l‚ÆƒL[ƒ{[ƒhA/D‚ğ‡¬.
+    m_KeyMap[Action::Move_Axis_X] = {
+        eActionType::Axis,
+        {
+            // ¶ƒXƒeƒBƒbƒNX²
+            { ESource::ControllerStickAxis, 0, EKey::None, EStickState::Right, ETarget::Left, 1.0f },
+            // ƒL[ƒ{[ƒh 'D' (³•ûŒü)
+            { ESource::KeyBorad, 'D', EKey::None, EStickState::None, ETarget::None, 1.0f },
+            // ƒL[ƒ{[ƒh 'A' (•‰•ûŒü)
+            { ESource::KeyBorad, 'A', EKey::None, EStickState::None, ETarget::None, -1.0f },
+        }
+    };
+
+    // yMove Axis Yz: ¶ƒXƒeƒBƒbƒNY²‚Ì¶‚Ì’l‚ÆƒL[ƒ{[ƒhW/S‚ğ‡¬.
+    m_KeyMap[Action::Move_Axis_Y] = {
+        eActionType::Axis,
+        {
+            // ¶ƒXƒeƒBƒbƒNY² (‘O•û/Œã•û)
+            { ESource::ControllerStickAxis, 0, EKey::None, EStickState::Up, ETarget::Left, 1.0f },
+            // ƒL[ƒ{[ƒh 'W' (³•ûŒü)
+            { ESource::KeyBorad, 'W', EKey::None, EStickState::None, ETarget::None, 1.0f },
+            // ƒL[ƒ{[ƒh 'S' (•‰•ûŒü)
+            { ESource::KeyBorad, 'S', EKey::None, EStickState::None, ETarget::None, -1.0f },
+        }
+    };
+    
+    // yCamera Axis Xz: ‰EƒXƒeƒBƒbƒNX²‚Æƒ}ƒEƒXˆÚ“®X²‚ğ‡¬.
+    m_KeyMap[Action::Camera_X] = {
+        eActionType::Axis,
+        {
+            { ESource::ControllerStickAxis, 0, EKey::None, EStickState::Right, ETarget::Right, 1.0f },
+            // ƒ}ƒEƒXˆÚ“®X² (Š´“x’²®‚Ì‚½‚ß‚ÌƒXƒP[ƒ‹)
+            { ESource::MouseMove, 0, EKey::None, EStickState::None, ETarget::None, 0.5f }
+        }
+    };
+
+    // yCamera Axis Yz: ‰EƒXƒeƒBƒbƒNY²‚Æƒ}ƒEƒXˆÚ“®Y²‚ğ‡¬ (Y²‚Í”½“]).
+    m_KeyMap[Action::Camera_Y] = {
+        eActionType::Axis,
+        {
+            // ‰EƒXƒeƒBƒbƒNY² (ƒJƒƒ‰‚Å‚Í’Êí”½“])
+            { ESource::ControllerStickAxis, 0, EKey::None, EStickState::Up, ETarget::Right, -1.0f },
+            // ƒ}ƒEƒXˆÚ“®Y² (”½“]‚³‚¹‚ÄƒXƒP[ƒ‹‚ğİ’è)
+            { ESource::MouseMove, 0, EKey::None, EStickState::None, ETarget::None, -0.5f }
+        }
+    };
 }
