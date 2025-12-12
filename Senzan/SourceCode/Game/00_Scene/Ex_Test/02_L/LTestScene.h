@@ -13,6 +13,9 @@ class CapsuleCollider;
 
 #include <vector>
 
+#include "Game/05_InputDevice/TestKeyBoud/TestKeyBoud.h"
+#include "Game/05_InputDevice/XInputConfig/XInputConfig.h"
+#include "00_MeshObject//03_SnowBall//SnowBall.h"
 
 /*********************************************
 *	ゲームメイン画像クラス.
@@ -49,5 +52,9 @@ private:
 	float m_Radius; // 半径.
 	float m_Height;	// 高さ.
 
+	std::unique_ptr<TestKeyBoud>		m_pKeyboardConfig;
+	std::unique_ptr<XInputConfig>		m_pCConfig;
 
+	//雪玉表示用のクラス.
+	std::shared_ptr<SnowBall> m_pSnowBall;
 };

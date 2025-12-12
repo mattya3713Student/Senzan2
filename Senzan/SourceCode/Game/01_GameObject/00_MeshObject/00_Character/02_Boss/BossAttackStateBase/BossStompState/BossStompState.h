@@ -1,11 +1,22 @@
 #pragma once
 
 #include "..//BossAttackStateBase.h"	//基底クラス.
-#include "Game\03_Collision\Capsule\CapsuleCollider.h"
+
+class BossIdolState;
+class Boss;
 
 class BossStompState final
 	: public BossAttackStateBase
 {
+public:
+	enum class enAttack : byte
+	{
+		None,		//何もしない.
+		Stomp,		//踏みつけ攻撃をする.
+		CoolTime,	//クールタイム.
+		Trans		//Idolに状態遷移.
+	};
+
 public:
 	BossStompState(Boss* owner);
 	~BossStompState() override;
@@ -16,41 +27,34 @@ public:
 	void Draw() override;
 	void Exit() override;
 
-	//当たり判定表示用関数.
-	void BoneDraw();
-
-private:
-	//攻撃関数.
 	void BossAttack() override;
 private:
 
-	enum class Phase
-	{
-		Idol,
-		Attack,
-		CoolDown
-	};
+	enAttack m_List;
 
-	const float m_IdolDuration;
-	const float m_AttackDuration;
-	const float m_CoolDownDuration;
+	std::shared_ptr<BossIdolState> m_pIdol;
+	//====================================================
+	// 踏みつけに必要になるメンバ変数を書く.
+	//====================================================
+	DirectX::XMFLOAT3 m_Velocity;
 
-	Phase m_CurrentPhase;
-	float m_PhaseTime;
+	//ジャンプの初速度.
+	float m_JumpPower;
+	//重力加速度.
+	float m_Gravity;
+	//ジャンプ中のフラグ.
+	bool m_JumpFrag;
+	//着地フラグ.
+	//この時に時間を取得して3秒後にIdolに遷移等を書く.
+	bool m_GroundedFrag;
+	//===================================================
+	// タイマー変数.
+	//===================================================
+	//タイマーの初期化変数.
+	float m_Timer;
+	//遷移させるタイミングの変数.
+	float TransitionTimer;
 
-
-	//攻撃モーションの長さ(秒).
-	//これはTimeで入手する感じ.
-	const float m_StopmDuration;
-	//ジャンプの最大の高さ.
-	const float m_JumpHeigt;
-	//攻撃判定の半径.
-	const float m_StopmRadius;
-
-	//ボスの攻撃開始位置.
-	//確認のため書いています
-	//いらなくなったら違う方法で作成しなおします.
-	DirectX::XMFLOAT3 m_InitBossPos;
-	bool m_HasHitGround;
-
+	//上がる速度のスピード設定用.
+	float m_UpSpeed;
 };

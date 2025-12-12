@@ -1,11 +1,11 @@
-﻿#include "BossIdleState.h"
+﻿#include "BossIdolState.h"
 
 #include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/Boss.h"
 #include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossMoveState/BossMoveState.h"
 
-BossIdleState::BossIdleState(Boss* owner)
+BossIdolState::BossIdolState(Boss* owner)
 	: StateBase<Boss>(owner)
-//	, m_pColl(std::make_shared<CapsuleCollider>())
+	//	, m_pColl(std::make_shared<CapsuleCollider>())
 {
 	//m_pColl->Create();
 	//m_pColl->SetHeight(100.0f);
@@ -14,15 +14,16 @@ BossIdleState::BossIdleState(Boss* owner)
 
 }
 
-BossIdleState::~BossIdleState()
+BossIdolState::~BossIdolState()
 {
 }
 
-void BossIdleState::Enter()
+void BossIdolState::Enter()
 {
+	//m_pOwner->ChangeAnim(0);
 }
 
-void BossIdleState::Update()
+void BossIdolState::Update()
 {
 	//ここにプレイヤーとボスの距離を図る(三平方の定理を使用して作成していく)
 
@@ -45,7 +46,7 @@ void BossIdleState::Update()
 	float DistanceSq = DirectX::XMVectorGetX(DirectX::XMVector3LengthSq(DistancePosXM));
 
 	//ローカル変数.
-	constexpr float Ten = 5.0f;
+	constexpr float Ten = 25.0f;
 
 	//距離でアイドルから動作へ変更させたい.
 	//今は10.0fに入ったら次の動作に入る.
@@ -68,37 +69,37 @@ void BossIdleState::Update()
 		float initalAngle = atan2f(dx, dz); // DirectXMathでは atan2f を使用
 
 		//今ジョイントのためにここをコメント化している.
-		//同期の原因はここかな？(予想)
+		//このコードでBossのState系統を変更している.
+		//auto MoveState = std::make_shared<BossMoveState>(m_pOwner);
 		auto MoveState = std::make_shared<BossMoveState>(m_pOwner);
-		MoveState->SetInitialAngle(initalAngle);
+		//MoveState->SetInitialAngle(initalAngle);
 
 		m_pOwner->GetStateMachine()->ChangeState(MoveState);
+		return;
 	}
 	//アニメーション切替
-	m_AnimNo = 0;		//登場アニメーション
+	//m_AnimNo = 0;		//登場アニメーション
 	m_AnimTimer = 0.0;	//アニメーション経過時間初期化
-	m_pOwner->SetAnimSpeed(m_AnimSpeed);
 
 	//アニメーション再生の無限ループ用.
 	//m_pOwner->SetIsLoop(true);
-	m_pOwner->ChangeAnim(m_AnimNo);
 
 }
 
-void BossIdleState::LateUpdate()
+void BossIdolState::LateUpdate()
 {
 }
 
-void BossIdleState::Draw()
+void BossIdolState::Draw()
 {
 	DrawBone();
 }
 
-void BossIdleState::Exit()
+void BossIdolState::Exit()
 {
 }
 
-void BossIdleState::DrawBone()
+void BossIdolState::DrawBone()
 {
 	// メッシュとボーンのチェック.
 	if (m_pOwner->GetAttachMesh().expired()) return;
