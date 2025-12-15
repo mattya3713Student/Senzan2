@@ -113,7 +113,7 @@
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>L_PC</PreprocessorDefinitions>
-      <PreprocessorDefinitions>MEMEU_PC</PreprocessorDefinitions>
+      <PreprocessorDefinitions>L_PC</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp23</LanguageStandard>
       <AdditionalIncludeDirectories>SourceCode;SourceCode\Ggraphic;SourceCode\Resource;SourceCode\System;SourceCode\System\GameLoop;SourceCode\System\Singleton;SourceCode\System\Utility;SourceCode\Game\Scene;SourceCode\Game\01_GameObject;Data;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

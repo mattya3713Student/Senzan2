@@ -47,4 +47,6 @@ private:
 	//加算していくタイマー変数.
 	float m_Timer = 0.0f;
 	float m_Timers = 60.0f;
+
+	float AnimChange;
 };

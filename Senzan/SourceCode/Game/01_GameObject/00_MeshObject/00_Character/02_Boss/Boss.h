@@ -58,6 +58,44 @@ class Boss
 	friend BossChargeState;
 	friend BossThrowingState;
 
+	//ボスのアニメーションの列挙.
+	enum class enBossAnim : byte
+	{
+		Idol = 0,		//待機.
+
+		RunToIdol,		//走りから待機.
+		Run,			//走り中.
+		IdolToRun,		//待機から走り.
+
+		Hit,			//被弾.
+
+		ChargeToIdol,	//ため攻撃から待機.
+		ChargeAttack,	//ため攻撃中.
+		Charge,			//ためている.
+
+		RightMove,		//右に進.
+		LeftMove,		//左に進.
+
+		SpecialToIdol,	//特殊攻撃と踏みつけ終了時に待機.
+		Special_1,		//特殊攻撃と踏みつけ中.
+		Special_0,		//飛ぶ.
+
+		FlinchToIdol,	//怯みから待機.
+		Flinch,			//怯み中.
+		FlinchParis,	//怯み(パリィ).
+
+		Dead,			//死亡.
+
+		LaserEnd,		//レーザーから待機.
+		Laser,			//レーザー中.
+		LaserCharge,	//レーザーのため.
+
+		SlashToIdol,	//斬る攻撃から待機.
+		Slash,			//斬る攻撃.
+
+		none,			//何もしない.
+	};
+
 public:
 	Boss();
 	~Boss() override;

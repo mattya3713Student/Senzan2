@@ -11,6 +11,9 @@
 constexpr float MY_PI = 3.1415926535f;
 
 
+constexpr static float AnimSlashTime		= 3000.0f;
+constexpr static float AnimSlashToIdolTime	= 30.0f;
+
 
 BossSlashState::BossSlashState(Boss* owner)
 	: BossAttackStateBase(owner)
@@ -18,6 +21,10 @@ BossSlashState::BossSlashState(Boss* owner)
 	, m_pIdol()
 
 	, m_pTransform(std::make_shared<Transform>())
+
+	, m_List	(enList::none)
+
+	, AnimChange(false)
 {
 	//m_pColl->SetHeight(50.0f);
 	//m_pColl->SetRadius(5.0f);
@@ -53,23 +60,45 @@ void BossSlashState::Enter()
 	DirectX::XMStoreFloat3(&m_StartPos, BossPosXM);
 
 
-	m_pOwner->SetAnimSpeed(m_currentAnimSpeed);
+	//m_pOwner->SetAnimSpeed(m_currentAnimSpeed);
 
 	//アニメーション再生の無限ループ用.
 	//m_pOwner->SetIsLoop(true);
 	//m_pOwner->ChangeAnim(5);
 
+	//アニメーションの速度.
+	m_pOwner->SetAnimSpeed(0.03);
+	//斬るアニメーションの再生.
+	m_pOwner->ChangeAnim(Boss::enBossAnim::Slash);
+
+	AnimChange = false;
 }
 
 void BossSlashState::Update()
 {
-	float deltaTime = Time::GetInstance().GetDeltaTime();
+	//斬る攻撃の
 
-	m_currentTimer += m_currentAnimSpeed;
-
-	if (m_currentTimer > m_pOwner->GetAnimPeriod(m_pOwner->m_AnimNo))
+	//----------------------------------------------------------------------
+	// AnimChangeがfalseの時
+	// Slashアニメーションが終了した際にSlashToIdolをアニメーション再生させる
+	// AnimChangeをtrueにします
+	// SlashToIdolが終了した際に待機状態に移動する.
+	//----------------------------------------------------------------------
+	if (AnimChange == false)
 	{
-		m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
+		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Slash))
+		{
+			//m_pOwner->ChangeAnim(Boss::enBossAnim::Slash);
+			m_pOwner->ChangeAnim(Boss::enBossAnim::SlashToIdol);
+			AnimChange = true;
+		}
+	}
+	if (AnimChange == true)
+	{
+		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::SlashToIdol))
+		{
+			m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
+		}
 	}
 }
 

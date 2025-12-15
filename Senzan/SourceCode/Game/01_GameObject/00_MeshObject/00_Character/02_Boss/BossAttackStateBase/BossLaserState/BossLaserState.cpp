@@ -12,6 +12,8 @@
 BossLaserState::BossLaserState(Boss* owner)
 	: BossAttackStateBase   (owner)
     , m_pBossIdol           ()
+
+    , m_AnimChange            (enAnimChange::none)
 {
 }
 
@@ -21,19 +23,39 @@ BossLaserState::~BossLaserState()
 
 void BossLaserState::Enter()
 {
-    //DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
+    m_pOwner->SetAnimSpeed(0.01);
+    m_pOwner->ChangeAnim(Boss::enBossAnim::LaserCharge);
+    m_AnimChange = enAnimChange::Charge;
 }
 
 void BossLaserState::Update()
 {
-    const float deltaTime = Time::GetInstance().GetDeltaTime();
-
-    //ŽžŠÔ‚Ì‰ÁŽZ.
-    m_Timer += deltaTime;
-
-    if (m_Timer > m_TransitionTimer)
+    switch (m_AnimChange)
     {
-        m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
+    case BossLaserState::enAnimChange::Charge:
+        if (m_pOwner->IsAnimEnd(Boss::enBossAnim::LaserCharge))
+        {
+            m_pOwner->ChangeAnim(Boss::enBossAnim::Laser);
+            m_AnimChange = enAnimChange::Attack;
+        }
+        break;
+    case BossLaserState::enAnimChange::Attack:
+        if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Laser))
+        {
+            m_pOwner->ChangeAnim(Boss::enBossAnim::LaserEnd);
+            m_AnimChange = enAnimChange::ChargeEnd;
+        }
+        break;
+    case BossLaserState::enAnimChange::ChargeEnd:
+        if (m_pOwner->IsAnimEnd(Boss::enBossAnim::LaserEnd))
+        {
+            m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
+        }
+        break;
+    case BossLaserState::enAnimChange::none:
+        break;
+    default:
+        break;
     }
 }
 

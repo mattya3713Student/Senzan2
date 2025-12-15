@@ -16,7 +16,6 @@ public:
 	enum class enSpecial : byte
 	{
 		None,		//何もしない.
-		Charge,		//ため時間.
 		Jump,		//飛んでいるとき
 		Attack,		//Playerに向かっての攻撃.
 		CoolTime,	//クールタイム.
@@ -37,8 +36,6 @@ private:
 	//============================================================
 	// 特殊攻撃のCharge/Jump/Attackの時の関数
 	//============================================================
-	//ため時間関数.
-	void ChargeTime();
 	//ジャンプ時関数.
 	void JumpTime();
 	//アタック時関数.
