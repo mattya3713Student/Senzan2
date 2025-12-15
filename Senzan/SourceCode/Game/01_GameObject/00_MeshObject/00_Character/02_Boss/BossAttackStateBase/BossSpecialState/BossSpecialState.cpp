@@ -45,8 +45,12 @@ void BossSpecialState::Enter()
 	m_Timer = 0.0f;
 	m_Velocity = {};
 	m_DistanceTraveled = 0.0f;
-	m_List = enSpecial::None;
 	m_GroundedFrag = true;
+
+	//アニメーション速度.
+	m_pOwner->SetAnimSpeed(0.03);
+	m_pOwner->ChangeAnim(Boss::enBossAnim::Special_0);
+	m_List = enSpecial::None;
 }
 
 void BossSpecialState::Update()
@@ -57,12 +61,15 @@ void BossSpecialState::Update()
 	switch (m_List)
 	{
 	case BossSpecialState::enSpecial::None:
-		// 垂直初速をセットし、Chargeへ移行
-		m_Velocity = {};
-		m_Velocity.y = m_SpecialPower; // 垂直初速をセット (ジャンプ力)
+		m_List = enSpecial::Jump;
 		break;
 	case BossSpecialState::enSpecial::Jump:
-		JumpTime();
+		//JumpTime();
+		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Special_0))
+		{
+			m_pOwner->ChangeAnim(Boss::enBossAnim::Special_1);
+			m_List = enSpecial::Attack;
+		}
 		break;
 	case BossSpecialState::enSpecial::Attack:
 		BossAttack();
@@ -82,7 +89,7 @@ void BossSpecialState::Update()
 		{
 			m_List = enSpecial::None;
 		}
-		m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
+		//m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
 		break;
 
 	default:
@@ -96,6 +103,7 @@ void BossSpecialState::LateUpdate()
 
 void BossSpecialState::Draw()
 {
+	//Sleep(20);
 }
 
 void BossSpecialState::Exit()
@@ -215,46 +223,4 @@ void BossSpecialState::BossAttack()
 	m_pOwner->SetPosition(newBossPos);
 
 	m_DistanceTraveled += m_AttackMoveSpeed * deltaTime;
-}
-
-void BossSpecialState::JumpTime()
-{
-	//deltaTime取得.
-	float deltaTime = Time::GetInstance().GetDeltaTime();
-
-	//速度の更新 (Y成分のみに重力を適用)
-	float gravityAcc = m_Gravity * deltaTime;
-	m_Velocity.y -= gravityAcc;
-
-	//位置の更新.
-	XMVECTOR BossPos = XMLoadFloat3(&m_pOwner->GetPosition());
-	XMVECTOR velocity = XMLoadFloat3(&m_Velocity);
-
-	//水平成分 (X, Z) はそのまま残し、斜めに移動させる
-	XMVECTOR moveVector = XMVectorScale(velocity, deltaTime);
-	BossPos = XMVectorAdd(BossPos, moveVector);
-
-	XMFLOAT3 newBossPos;
-	XMStoreFloat3(&newBossPos, BossPos);
-	m_pOwner->SetPosition(newBossPos);
-
-	//遷移条件: 垂直速度がゼロ以下になったら (最高到達点到達)
-	if (m_Velocity.y <= 0.0f)
-	{
-		//速度の慣性をリセット (空中静止状態へ)
-		m_Velocity = {};
-
-		//突進開始へ移行
-		m_DistanceTraveled = 0.0f;
-
-		//突進の目標方向を計算し、m_TargetDirectionにセット
-		XMFLOAT3 PlayerPos = m_pOwner->GetTargetPos();
-		XMVECTOR pPos = XMLoadFloat3(&PlayerPos);
-		XMVECTOR bPos_now = XMLoadFloat3(&newBossPos);
-		XMVECTOR targetVec = XMVectorSubtract(pPos, bPos_now);
-		targetVec = XMVector3Normalize(targetVec);
-		XMStoreFloat3(&m_TargetDirection, targetVec);
-
-		m_List = enSpecial::Attack;
-	}
 }
