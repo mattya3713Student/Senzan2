@@ -17,6 +17,8 @@ constexpr float MY_PI = 3.1415926535f;
 
 BossChargeSlashState::BossChargeSlashState(Boss* owner)
 	: BossAttackStateBase(owner)
+
+	, AnimChange(false)
 {
 	Enter();
 }
@@ -49,19 +51,31 @@ void BossChargeSlashState::Enter()
 
 	//初期位置を保存.
 	DirectX::XMStoreFloat3(&m_StartPos, BossPosXM);
-	m_pOwner->SetAnimSpeed(m_currentAnimSpeed);
-	m_pOwner->ChangeAnim(6);
 
+	//アニメーション速度.
+	m_pOwner->SetAnimSpeed(0.03);
+	//ため斬りアニメーションの再生.
+	m_pOwner->ChangeAnim(Boss::enBossAnim::ChargeAttack);
+	
+	AnimChange = true;
 }
 
 void BossChargeSlashState::Update()
 {
-	m_currentTimer += m_currentAnimSpeed;
-
-	//ここはいったんこのままにしておくアニメーションの結合が完了しだい書く.
-	if (m_currentTimer > m_pOwner->GetAnimPeriod(m_pOwner->m_AnimNo))
+	if (AnimChange == false)
 	{
-		m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
+		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::ChargeAttack))
+		{
+			m_pOwner->ChangeAnim(Boss::enBossAnim::ChargeToIdol);
+			AnimChange = true;
+		}
+	}
+	if (AnimChange == true)
+	{
+		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::ChargeToIdol))
+		{
+			m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
+		}
 	}
 }
 

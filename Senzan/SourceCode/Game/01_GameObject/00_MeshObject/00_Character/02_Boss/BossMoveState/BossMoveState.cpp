@@ -18,11 +18,13 @@
 
 #include <algorithm>
 
+static constexpr double Move_Run_AnimSpeed = 0.07;
+
 // コンストラクタ（変更なし）
 BossMoveState::BossMoveState(Boss* owner)
 	: StateBase<Boss>(owner)
 	, m_RotationAngle(0.0f)
-	, m_RotationSpeed(0.015f) // 回転速度
+	, m_RotationSpeed(0.0015f) // 回転速度
 	, m_rotationDirection(1.0f)
 
 	, m_pAttack(std::make_unique<BossSpecialState>(owner))
@@ -46,6 +48,7 @@ void BossMoveState::Enter()
 	m_Timer = 0.0f;
 	// 周回中心の初期位置としてボスの現在位置を保存
 	m_InitBossPos = m_pOwner->GetPosition();
+	//左右移動のアニメションを再生(Updateで書いたほうがいいかも).
 }
 
 
@@ -135,7 +138,7 @@ void BossMoveState::Update()
 	float dz = XMVectorGetZ(vLookDir);
 
 	// atan2fでY軸回転角度を計算
-	float angle = atan2f(dx, dz);
+	float angle = atan2f(dx, dz) + D3DX_PI;
 	m_pOwner->SetRotationY(angle); // ボスをプレイヤーの方向に向かせる
 
 	// -----------------------
@@ -185,9 +188,17 @@ void BossMoveState::Update()
 		}
 	}
 
-	// アニメーション設定（Move用）
-	m_AnimNo = 0;
-	m_AnimTimer = 0.0;
+	if (m_rotationDirection > 0)
+	{
+		//右移動のアニメションを再生.
+		m_pOwner->SetAnimSpeed(Move_Run_AnimSpeed);
+		m_pOwner->ChangeAnim(Boss::enBossAnim::LeftMove);
+	}
+	else
+	{
+		m_pOwner->SetAnimSpeed(Move_Run_AnimSpeed);
+		m_pOwner->ChangeAnim(Boss::enBossAnim::RightMove);
+	}
 }
 
 

@@ -60,11 +60,6 @@ void BossSpecialState::Update()
 		// 垂直初速をセットし、Chargeへ移行
 		m_Velocity = {};
 		m_Velocity.y = m_SpecialPower; // 垂直初速をセット (ジャンプ力)
-		m_List = enSpecial::Charge;
-		break;
-
-	case BossSpecialState::enSpecial::Charge:
-		ChargeTime();
 		break;
 	case BossSpecialState::enSpecial::Jump:
 		JumpTime();
@@ -220,46 +215,6 @@ void BossSpecialState::BossAttack()
 	m_pOwner->SetPosition(newBossPos);
 
 	m_DistanceTraveled += m_AttackMoveSpeed * deltaTime;
-}
-
-void BossSpecialState::ChargeTime()
-{
-	//deltaTime取得.
-	float deltaTime = Time::GetInstance().GetDeltaTime();
-
-	//ため時間.
-	m_Timer += deltaTime;
-	if (m_Timer > m_AttackTimer)
-	{
-		m_Timer = 0.0f;
-
-		//斜めジャンプの初速を設定
-		XMFLOAT3 CurrentPos = m_pOwner->GetPosition();
-		XMFLOAT3 PlayerPos = m_pOwner->GetTargetPos();
-
-		XMVECTOR BossPosVec = XMLoadFloat3(&CurrentPos);
-		XMVECTOR PlayerPosVec = XMLoadFloat3(&PlayerPos);
-
-		// 目標方向ベクトル (Y成分をゼロにして水平方向ベクトルを抽出)
-		XMVECTOR HorizontalDir = XMVectorSubtract(PlayerPosVec, BossPosVec);
-		HorizontalDir = XMVectorSetY(HorizontalDir, 0.0f);
-		HorizontalDir = XMVector3Normalize(HorizontalDir);
-
-		// 水平速度を設定 (垂直初速の半分程度を水平初速とする)
-		float horizontalSpeed = m_SpecialPower * 0.5f;
-		XMVECTOR initialVelocityXZ = XMVectorScale(HorizontalDir, horizontalSpeed);
-
-		//m_VelocityのX, Z成分に水平初速をセット
-		//Y成分は上書きしないように注意
-		XMFLOAT3 currentVelocity = m_Velocity;
-		XMStoreFloat3(&currentVelocity, initialVelocityXZ);
-
-		m_Velocity.x = currentVelocity.x;
-		m_Velocity.z = currentVelocity.z;
-		m_Velocity.y = m_SpecialPower; //垂直初速をセット
-
-		m_List = enSpecial::Jump;
-	}
 }
 
 void BossSpecialState::JumpTime()

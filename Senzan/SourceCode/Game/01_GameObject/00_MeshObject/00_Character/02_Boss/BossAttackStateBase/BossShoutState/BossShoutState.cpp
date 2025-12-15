@@ -19,17 +19,14 @@ BossShoutState::~BossShoutState()
 
 void BossShoutState::Enter()
 {
+    //アニメーション速度.
+    m_pOwner->SetAnimSpeed(0.01);
+    m_pOwner->ChangeAnim(Boss::enBossAnim::LaserCharge);
 }
 
 void BossShoutState::Update()
 {
-    float deltaTime = Time::GetInstance().GetDeltaTime();
-
-    //時間の加算.
-    m_Timer += deltaTime;
-
-    //時間経過でIdolに遷移する.
-    if (m_Timer > m_TransitionTimer)
+    if (m_pOwner->IsAnimEnd(Boss::enBossAnim::LaserCharge))
     {
         m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
     }
