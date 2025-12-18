@@ -29,7 +29,6 @@ void Title::Update()
 
 	m_pUI->Update();
 
-
 	if (Input::IsKeyDown(VK_SPACE)
 	||	Input::IsKeyDown('C')
 	||	Input::IsButtonDown(XInput::Key::B))

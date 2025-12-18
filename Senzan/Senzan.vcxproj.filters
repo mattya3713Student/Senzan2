@@ -126,6 +126,7 @@
     <ClCompile Include="SourceCode\Game\03_Collision\Sprite\SpriteCollider.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UILoader\UILoader.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UITitle\UITitle.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UIGameOver\UIGameOver.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SourceCode\Constant.h" />
@@ -269,6 +270,7 @@
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\UILoader\UILoader.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\UITitle\UITitle.h" />
     <ClInclude Include="SourceCode\System\Utility\Color\Color.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\UIGameOver\UIGameOver.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Shader\PMX\Header.hlsli" />
