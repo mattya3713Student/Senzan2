@@ -3,6 +3,7 @@
 #include "00_MeshObject/00_Character/02_Boss/Boss.h"
 #include "00_MeshObject/00_Character/02_Boss/BossIdolState/BossIdolState.h"
 #include <DirectXMath.h>
+#include <algorithm>
 
 using namespace DirectX;
 
@@ -10,7 +11,6 @@ BossSpecialState::BossSpecialState(Boss* owner)
 	: BossAttackStateBase(owner)
 	, m_List(enSpecial::None)
 	, m_Flinch(enFlinch::none)
-
 	, m_Velocity(0.0f, 0.0f, 0.0f)
 	, m_SpecialPower(1.5f)
 	, m_Gravity(0.089f)
@@ -39,6 +39,8 @@ void BossSpecialState::Enter()
 	m_DistanceTraveled = 0.0f;
 	m_GroundedFrag = true;
 	m_pOwner->SetAnimSpeed(0.01);
+	// 最初の待機モーションへ（必要に応じて追加）
+	m_pOwner->ChangeAnim(Boss::enBossAnim::Idol);
 }
 
 void BossSpecialState::Update()
@@ -66,6 +68,7 @@ void BossSpecialState::Update()
 
 	case BossSpecialState::enSpecial::CoolTime:
 		m_Timer += deltaTime;
+		// SpecialToIdolアニメーションが終了したら遷移
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::SpecialToIdol))
 		{
 			m_List = enSpecial::Trans;
@@ -81,14 +84,38 @@ void BossSpecialState::Update()
 	}
 }
 
-void BossSpecialState::LateUpdate() {}
-void BossSpecialState::Draw() {}
+void BossSpecialState::LateUpdate()
+{
+}
+
+void BossSpecialState::Draw()
+{
+}
 
 void BossSpecialState::Exit()
 {
 	m_GroundedFrag = true;
 	m_SpecialFrag = false;
 	m_AttackTimer = 0.0f;
+
+	// 終了時にプレイヤーの方を向き直す
+	const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
+	DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&BossPosF);
+
+	const DirectX::XMFLOAT3 PlayerPosF = m_pOwner->GetTargetPos();
+	DirectX::XMVECTOR PlayerPosXM = DirectX::XMLoadFloat3(&PlayerPosF);
+
+	DirectX::XMVECTOR Direction = DirectX::XMVectorSubtract(PlayerPosXM, BossPosXM);
+	Direction = DirectX::XMVectorSetY(Direction, 0.0f);
+
+	if (XMVectorGetX(XMVector3LengthSq(Direction)) > 0.0001f)
+	{
+		float dx = DirectX::XMVectorGetX(Direction);
+		float dz = DirectX::XMVectorGetZ(Direction);
+		// プレイヤーの方向を正面にする
+		float angle_radian = std::atan2f(dx, dz) + XM_PI;
+		m_pOwner->SetRotationY(angle_radian);
+	}
 }
 
 void BossSpecialState::ParryTime()
@@ -96,40 +123,31 @@ void BossSpecialState::ParryTime()
 	switch (m_Flinch)
 	{
 	case BossSpecialState::enFlinch::none:
-		//ひるんだ時のアニメーションの再生へ入る.
 		m_Flinch = enFlinch::Flinch;
 		break;
 	case BossSpecialState::enFlinch::Flinch:
-		//アニメーションの再生.
 		m_pOwner->SetAnimSpeed(0.03);
 		m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchParis);
-		//アニメーションの再生が終了したら.
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::FlinchParis))
 		{
 			m_pOwner->SetAnimSpeed(0.01);
 			m_pOwner->ChangeAnim(Boss::enBossAnim::Flinch);
-			//怯み中のコードに入る.
 			m_Flinch = enFlinch::FlinchTimer;
 		}
 		break;
 	case BossSpecialState::enFlinch::FlinchTimer:
-		//怯み中のアニメーションの再生が終了したら.
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Flinch))
 		{
 			m_pOwner->SetAnimSpeed(0.03);
 			m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchToIdol);
-			//待機にもどるアニメーションの再生.
 			m_Flinch = enFlinch::FlinchToIdol;
 		}
 		break;
 	case BossSpecialState::enFlinch::FlinchToIdol:
-		//待機へ戻るアニメーションの再生が終了したら.
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::FlinchToIdol))
 		{
 			m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
 		}
-		break;
-	default:
 		break;
 	}
 }
@@ -155,18 +173,27 @@ void BossSpecialState::JumpTime()
 	{
 		m_DistanceTraveled = 0.0f;
 
-		//座標を空中にワープ
+		// 空中にワープ
 		XMFLOAT3 CurrentPos = m_pOwner->GetPosition();
 		CurrentPos.y = 10.0f;
 		m_pOwner->SetPosition(CurrentPos);
 
+		// ターゲット計算（プレイヤーの手前を狙う）
 		XMFLOAT3 PlayerPos = m_pOwner->GetTargetPos();
 		XMVECTOR bPos = XMLoadFloat3(&CurrentPos);
 		XMVECTOR pPos = XMLoadFloat3(&PlayerPos);
 
-		XMVECTOR targetVec = XMVectorSubtract(pPos, bPos);
-		targetVec = XMVector3Normalize(targetVec);
-		DirectX::XMStoreFloat3(&m_TargetDirection, targetVec);
+		XMVECTOR toPlayerVec = XMVectorSubtract(pPos, bPos);
+		XMVECTOR toPlayerDir = XMVector3Normalize(toPlayerVec);
+
+		// プレイヤーの 3.0f 手前を着地目標にする（通り過ぎ防止）
+		float offsetDist = 3.0f;
+		XMVECTOR targetPos = XMVectorSubtract(pPos, XMVectorScale(toPlayerDir, offsetDist));
+
+		XMVECTOR finalTargetVec = XMVectorSubtract(targetPos, bPos);
+		finalTargetVec = XMVector3Normalize(finalTargetVec);
+
+		DirectX::XMStoreFloat3(&m_TargetDirection, finalTargetVec);
 
 		m_pOwner->SetAnimSpeed(0.01);
 		m_pOwner->ChangeAnim(Boss::enBossAnim::Special_1);
@@ -179,21 +206,21 @@ void BossSpecialState::BossAttack()
 	float deltaTime = Time::GetInstance().GetDeltaTime();
 	const float floorY = 0.0f;
 	const float PlayerYOffset = 1.0f;
-	const float Tolerance = 2.0f;
 	const float One = 1.0f;
 	const float MinusOne = -1.0f;
 
 	XMFLOAT3 CurrentPos = m_pOwner->GetPosition();
-	XMFLOAT3 TargetPos = m_pOwner->GetTargetPos();
-	TargetPos.y += PlayerYOffset;
+	XMFLOAT3 TargetPosF = m_pOwner->GetTargetPos();
+	TargetPosF.y += PlayerYOffset;
 
 	XMVECTOR BossPosVec = XMLoadFloat3(&CurrentPos);
-	XMVECTOR PlayerPosVec = XMLoadFloat3(&TargetPos);
+	XMVECTOR PlayerPosVec = XMLoadFloat3(&TargetPosF);
 
-	//終了判定
-	float Distance = XMVectorGetX(XMVector3Length(XMVectorSubtract(PlayerPosVec, BossPosVec)));
-	//if (Distance <= Tolerance || CurrentPos.y <= floorY + 0.1f)
-	if (CurrentPos.y <= floorY + 0.1f)
+	// 距離判定と高さ判定による終了処理
+	float DistanceToPlayer = XMVectorGetX(XMVector3Length(XMVectorSubtract(PlayerPosVec, BossPosVec)));
+
+	// 修正：プレイヤーとの距離が近い(2.5f以下)か、地面に付いたら攻撃終了
+	if (CurrentPos.y <= floorY + 0.1f || DistanceToPlayer <= 2.5f)
 	{
 		CurrentPos.y = floorY;
 		m_pOwner->SetPosition(CurrentPos);
@@ -204,33 +231,30 @@ void BossSpecialState::BossAttack()
 		return;
 	}
 
-	//追尾（ホーミング）計算
+	// 追尾（ホーミング）計算
 	XMVECTOR CurrentDir = XMLoadFloat3(&m_TargetDirection);
 	XMVECTOR finalMoveDir;
 
 	float trackingThreshold = 15.0f;
 
-	if (Distance > trackingThreshold)
+	if (DistanceToPlayer > trackingThreshold)
 	{
-		//プレイヤーへの最新方向
 		XMVECTOR ToPlayerDir = XMVector3Normalize(XMVectorSubtract(PlayerPosVec, BossPosVec));
 
-		//徐々にターゲット方向へ近づける
 		float lerpFactor = 1.0f * deltaTime;
 		XMVECTOR TargetStepDir = XMVectorLerp(CurrentDir, ToPlayerDir, lerpFactor);
 		TargetStepDir = XMVector3Normalize(TargetStepDir);
 
-		//角度制限の適用
 		XMVECTOR DotProduct = XMVector3Dot(CurrentDir, TargetStepDir);
 		float cosTheta = XMVectorGetX(DotProduct);
-		float AngleRad = acosf(XMMin(One, XMMax(MinusOne, cosTheta)));
+		float AngleRad = acosf(std::max(MinusOne, std::min(One, cosTheta)));
 
 		float maxTurnRadians = XMConvertToRadians(m_MaxTrackingAngle) * deltaTime;
 
 		if (AngleRad > maxTurnRadians)
 		{
 			XMVECTOR rotationAxis = XMVector3Cross(CurrentDir, TargetStepDir);
-			if (XMVector3LengthSq(rotationAxis).m128_f32[0] > 0.0001f)
+			if (XMVectorGetX(XMVector3LengthSq(rotationAxis)) > 0.0001f)
 			{
 				rotationAxis = XMVector3Normalize(rotationAxis);
 				XMMATRIX rotationMatrix = XMMatrixRotationAxis(rotationAxis, maxTurnRadians);
@@ -242,19 +266,21 @@ void BossSpecialState::BossAttack()
 	}
 	else
 	{
-		// 近づいたら追尾を更新せず、真っ直ぐ進む
+		// 一定距離内ならホーミングを停止し、慣性で突っ込む
 		finalMoveDir = CurrentDir;
 	}
 
 	finalMoveDir = XMVector3Normalize(finalMoveDir);
 	XMStoreFloat3(&m_TargetDirection, finalMoveDir);
 
-	//移動実行
+	// 移動実行
 	XMVECTOR moveVector = XMVectorScale(finalMoveDir, m_AttackMoveSpeed * deltaTime);
 	XMVECTOR newBossPosVec = XMVectorAdd(BossPosVec, moveVector);
 
 	XMFLOAT3 newBossPos;
 	XMStoreFloat3(&newBossPos, newBossPosVec);
+
+	// 地面を突き抜けないように制限
 	if (newBossPos.y < floorY) newBossPos.y = floorY;
 
 	m_pOwner->SetPosition(newBossPos);

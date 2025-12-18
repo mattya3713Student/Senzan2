@@ -13,6 +13,14 @@ class BossShoutState
 	: public BossAttackStateBase
 {
 public:
+	enum class enShout : byte
+	{
+		none,
+		Shout,
+		ShoutTime,
+		ShoutToIdol,
+	};
+public:
 	BossShoutState(Boss* owner);
 	~BossShoutState() override;
 
@@ -34,4 +42,9 @@ private:
 
 	//遷移の時間のタイム変数.
 	float m_TransitionTimer = 60.0f;
+
+	//攻撃開始位置.
+	DirectX::XMFLOAT3 m_StartPos;
+
+	enShout m_List;
 };

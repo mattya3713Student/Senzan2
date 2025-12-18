@@ -53,21 +53,16 @@ void BossSlashState::Enter()
 	//Y軸回転角度を計算し、ボスをプレイヤーに向かせる.
 	float dx = DirectX::XMVectorGetX(Direction);
 	float dz = DirectX::XMVectorGetZ(Direction);
-	float angle_radian = std::atan2f(dx, dz);
+	float angle_radian = std::atan2f(-dx, -dz);
 	m_pOwner->SetRotationY(angle_radian);
 
 	//初期位置を保存.
 	DirectX::XMStoreFloat3(&m_StartPos, BossPosXM);
 
 
-	//m_pOwner->SetAnimSpeed(m_currentAnimSpeed);
-
-	//アニメーション再生の無限ループ用.
-	//m_pOwner->SetIsLoop(true);
-	//m_pOwner->ChangeAnim(5);
 
 	//アニメーションの速度.
-	m_pOwner->SetAnimSpeed(0.03);
+	m_pOwner->SetAnimSpeed(0.06);
 	//斬るアニメーションの再生.
 	m_pOwner->ChangeAnim(Boss::enBossAnim::Slash);
 
@@ -76,29 +71,26 @@ void BossSlashState::Enter()
 
 void BossSlashState::Update()
 {
-	//斬る攻撃の
-
-	//----------------------------------------------------------------------
-	// AnimChangeがfalseの時
-	// Slashアニメーションが終了した際にSlashToIdolをアニメーション再生させる
-	// AnimChangeをtrueにします
-	// SlashToIdolが終了した際に待機状態に移動する.
-	//----------------------------------------------------------------------
-	if (AnimChange == false)
+	switch (m_List)
 	{
+	case BossSlashState::enList::none:
+		m_List = enList::SlashAttack;
+		break;
+	case BossSlashState::enList::SlashAttack:
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Slash))
 		{
-			//m_pOwner->ChangeAnim(Boss::enBossAnim::Slash);
 			m_pOwner->ChangeAnim(Boss::enBossAnim::SlashToIdol);
-			AnimChange = true;
+			m_List = enList::SlashIdol;
 		}
-	}
-	if (AnimChange == true)
-	{
+		break;
+	case BossSlashState::enList::SlashIdol:
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::SlashToIdol))
 		{
 			m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
 		}
+		break;
+	default:
+		break;
 	}
 }
 

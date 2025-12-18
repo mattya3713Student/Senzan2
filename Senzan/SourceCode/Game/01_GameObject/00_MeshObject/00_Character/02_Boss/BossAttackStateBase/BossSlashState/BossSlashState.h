@@ -17,10 +17,9 @@ class BossSlashState final
 public:
 	enum class enList : byte
 	{
+		none,			//何もしない.
 		SlashAttack,	//斬る攻撃.
 		SlashIdol,		//斬る攻撃から待機.
-
-		none,
 	};
 public:
 	BossSlashState(Boss* owner);
