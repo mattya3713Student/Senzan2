@@ -36,6 +36,7 @@ void UILoader::LoadFromJson(
 			std::shared_ptr<UIObject> ui = std::make_shared<UIObject>();
 
 			ui->AttachSprite(pSprite);
+			ui->SetUIName(imageName);
 
 			// ŠeŽíî•ñ‚ðÝ’è.
 			ui->SetPosition(DirectX::XMFLOAT3(value["Pos"]["x"], value["Pos"]["y"], value["Pos"]["z"]));
