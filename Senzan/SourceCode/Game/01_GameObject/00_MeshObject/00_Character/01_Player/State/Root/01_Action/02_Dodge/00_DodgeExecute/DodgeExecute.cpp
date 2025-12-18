@@ -65,7 +65,7 @@ void DodgeExecute::LateUpdate()
 	// ˆÚ“®—Ê‰ÁŽZ.
 	DirectX::XMFLOAT3 movement = {};
 	movement.x = moveDirection.x * moveAmount;
-	movement.y = 0.f;
+	movement.y = 0.0f;
 	movement.z = moveDirection.z * moveAmount;
 
 	m_pOwner->AddPosition(movement);
