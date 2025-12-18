@@ -16,20 +16,13 @@ BossChargeState::~BossChargeState()
 
 void BossChargeState::Enter()
 {
+	m_pOwner->SetAnimSpeed(0.03);
+	m_pOwner->ChangeAnim(Boss::enBossAnim::Charge);
 }
 
 void BossChargeState::Update()
 {
-	//‚±‚±‚ÅdeltaTime‚ÌŽžŠÔ‚ÌŒv‘ª‚ð‚·‚é.
-	float deltaTime = Time::GetInstance().GetDeltaTime();
-	//Œo‰ßŽžŠÔ‚Ì‰ÁŽZ.
-	m_Timer += deltaTime;
-	if (!ChargeFlag && m_Timer >= m_TransitionTimer)
-	{
-		m_pOwner->ChangeAnim(6);
-		ChargeFlag = true;
-	}
-	if (ChargeFlag && m_Timer >= m_TransitionTimer + m_pOwner->GetAnimPeriod(6))
+	if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Charge))
 	{
 		m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossChargeSlashState>(m_pOwner));
 	}

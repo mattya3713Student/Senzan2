@@ -33,17 +33,20 @@ Boss::Boss()
 	, deleta_time(0.f)
 	, m_HitPoint(0.0f)
 {
-	AttachMesh(MeshManager::GetInstance().GetSkinMesh("boss_attack"));
+	AttachMesh(MeshManager::GetInstance().GetSkinMesh("boss"));
 
 	//DirectX::XMFLOAT3 pos = { 0.05f, 10.0f, 20.05f };
 	DirectX::XMFLOAT3 pos = { 0.05f, 0.05f, 20.05f };
-	DirectX::XMFLOAT3 scale = { 10.0f, 10.0f, 10.0f };
+	DirectX::XMFLOAT3 scale = { 5.0f, 5.0f, 5.0f };
 	DirectX::XMFLOAT3 Rotation = { 0.0f,0.0f,0.0f };
 	m_spTransform->SetPosition(pos);
 	m_spTransform->SetScale(scale);
 	m_spTransform->SetRotationDegrees(Rotation);
 
 	// ステートマシンの初期ステートを、SlashChargeStateに設定
+	//Idolに遷移させるんだけど
+	//アニメーションの再生系統を今日するのでここを変更していく.
+	//m_State->ChangeState(std::make_shared<BossStompState>(this));
 	m_State->ChangeState(std::make_shared<BossIdolState>(this));
 	//m_State->ChangeState(std::make_shared<BossShoutState>());
 
@@ -103,6 +106,11 @@ void Boss::Hit()
 
 	//Bossの体力でのステートにいれる.
 	constexpr float Dead_HP = zero;
+
+	//被弾時のアニメーションの再生.
+	SetAnimSpeed(0.03);
+	ChangeAnim(enBossAnim::Hit);
+
 	//いったんこの10ダメだけにしておく.
 	//最後はTenをBaseにして+や-を使用する感じになると思っている.
 	m_HitPoint -= ten;

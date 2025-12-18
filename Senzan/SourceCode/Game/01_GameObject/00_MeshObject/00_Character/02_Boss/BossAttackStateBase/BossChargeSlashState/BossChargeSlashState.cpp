@@ -13,10 +13,12 @@
 #include <memory> 
 #include <cstdio> // printf のため
 
-constexpr float MY_PI = 3.1415926535f;
-
 BossChargeSlashState::BossChargeSlashState(Boss* owner)
 	: BossAttackStateBase(owner)
+
+	, m_Parry(enParry::none)
+
+	, m_List(enChargeSlashAnim::none)
 {
 	Enter();
 }
@@ -44,24 +46,43 @@ void BossChargeSlashState::Enter()
 	//Y軸回転角度を計算し、ボスをプレイヤーに向かせる.
 	float dx = DirectX::XMVectorGetX(Direction);
 	float dz = DirectX::XMVectorGetZ(Direction);
-	float angle_radian = std::atan2f(dx, dz);
+	float angle_radian = std::atan2f(-dx, -dz);
 	m_pOwner->SetRotationY(angle_radian);
 
 	//初期位置を保存.
 	DirectX::XMStoreFloat3(&m_StartPos, BossPosXM);
-	m_pOwner->SetAnimSpeed(m_currentAnimSpeed);
-	m_pOwner->ChangeAnim(6);
 
+	//アニメーション速度.
+	m_pOwner->SetAnimSpeed(0.03);
+	//ため斬りアニメーションの再生.
+	m_pOwner->ChangeAnim(Boss::enBossAnim::ChargeAttack);
 }
 
 void BossChargeSlashState::Update()
 {
-	m_currentTimer += m_currentAnimSpeed;
-
-	//ここはいったんこのままにしておくアニメーションの結合が完了しだい書く.
-	if (m_currentTimer > m_pOwner->GetAnimPeriod(m_pOwner->m_AnimNo))
+	switch (m_List)
 	{
+	case BossChargeSlashState::enChargeSlashAnim::none:
+		m_List = enChargeSlashAnim::Charge;
+		break;
+	case BossChargeSlashState::enChargeSlashAnim::Charge:
+		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::ChargeAttack))
+		{
+			m_pOwner->ChangeAnim(Boss::enBossAnim::ChargeToIdol);
+			m_List = enChargeSlashAnim::ChargeSlash;
+		}
+		break;
+	case BossChargeSlashState::enChargeSlashAnim::ChargeSlash:
+		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::ChargeToIdol))
+		{
+			m_List = enChargeSlashAnim::ChargeSlashToIdol;
+		}
+		break;
+	case BossChargeSlashState::enChargeSlashAnim::ChargeSlashToIdol:
 		m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
+		break;
+	default:
+		break;
 	}
 }
 
@@ -79,6 +100,50 @@ void BossChargeSlashState::Exit()
 
 void BossChargeSlashState::BoneDraw()
 {
+}
+
+void BossChargeSlashState::ParryTime()
+{
+	switch (m_Parry)
+	{
+	case BossChargeSlashState::enParry::none:
+		//ひるんだ時のアニメーションの再生へ入る.
+		m_Parry = enParry::Flinch;
+		break;
+	case BossChargeSlashState::enParry::Flinch:
+		//アニメーションの再生.
+		m_pOwner->SetAnimSpeed(0.03);
+		m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchParis);
+		//アニメーションの再生が終了したら.
+		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::FlinchParis))
+		{
+			m_pOwner->SetAnimSpeed(0.01);
+			m_pOwner->ChangeAnim(Boss::enBossAnim::Flinch);
+			//怯み中のコードに入る.
+			m_Parry = enParry::FlinchTimer;
+		}
+		break;
+	case BossChargeSlashState::enParry::FlinchTimer:
+		//怯み中のアニメーションの再生が終了したら.
+		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Flinch))
+		{
+			m_pOwner->SetAnimSpeed(0.03);
+			m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchToIdol);
+			//待機にもどるアニメーションの再生.
+			m_Parry = enParry::FlinchToIdol;
+		}
+		break;
+	case BossChargeSlashState::enParry::FlinchToIdol:
+		//待機へ戻るアニメーションの再生が終了したら.
+		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::FlinchToIdol))
+		{
+			m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
+		}
+		break;
+	default:
+		break;
+	}
+
 }
 
 
