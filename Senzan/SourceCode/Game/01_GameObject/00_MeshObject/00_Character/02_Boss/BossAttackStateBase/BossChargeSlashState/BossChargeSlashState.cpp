@@ -16,9 +16,9 @@
 BossChargeSlashState::BossChargeSlashState(Boss* owner)
 	: BossAttackStateBase(owner)
 
-	, AnimChange(false)
 	, m_Parry(enParry::none)
 
+	, m_List(enChargeSlashAnim::none)
 {
 	Enter();
 }
@@ -46,7 +46,7 @@ void BossChargeSlashState::Enter()
 	//Y軸回転角度を計算し、ボスをプレイヤーに向かせる.
 	float dx = DirectX::XMVectorGetX(Direction);
 	float dz = DirectX::XMVectorGetZ(Direction);
-	float angle_radian = std::atan2f(dx, dz);
+	float angle_radian = std::atan2f(-dx, -dz);
 	m_pOwner->SetRotationY(angle_radian);
 
 	//初期位置を保存.
@@ -56,26 +56,33 @@ void BossChargeSlashState::Enter()
 	m_pOwner->SetAnimSpeed(0.03);
 	//ため斬りアニメーションの再生.
 	m_pOwner->ChangeAnim(Boss::enBossAnim::ChargeAttack);
-
-	AnimChange = true;
 }
 
 void BossChargeSlashState::Update()
 {
-	if (static_cast<bool>(AnimChange) == false)
+	switch (m_List)
 	{
+	case BossChargeSlashState::enChargeSlashAnim::none:
+		m_List = enChargeSlashAnim::Charge;
+		break;
+	case BossChargeSlashState::enChargeSlashAnim::Charge:
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::ChargeAttack))
 		{
 			m_pOwner->ChangeAnim(Boss::enBossAnim::ChargeToIdol);
-			AnimChange = true;
+			m_List = enChargeSlashAnim::ChargeSlash;
 		}
-	}
-	if (static_cast<bool>(AnimChange) == true)
-	{
+		break;
+	case BossChargeSlashState::enChargeSlashAnim::ChargeSlash:
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::ChargeToIdol))
 		{
-			m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
+			m_List = enChargeSlashAnim::ChargeSlashToIdol;
 		}
+		break;
+	case BossChargeSlashState::enChargeSlashAnim::ChargeSlashToIdol:
+		m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
+		break;
+	default:
+		break;
 	}
 }
 

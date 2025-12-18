@@ -23,6 +23,30 @@ BossLaserState::~BossLaserState()
 
 void BossLaserState::Enter()
 {
+    //ボスの向きを設定.
+    const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
+    DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&BossPosF);
+
+    const DirectX::XMFLOAT3 PlayerPosF = m_pOwner->m_PlayerPos;
+    DirectX::XMVECTOR PlayerPosXM = DirectX::XMLoadFloat3(&PlayerPosF);
+
+    DirectX::XMVECTOR Direction = DirectX::XMVectorSubtract(PlayerPosXM, BossPosXM);
+    //X,Z平面の方向.
+    Direction = DirectX::XMVectorSetY(Direction, 0.0f);
+
+    //Y軸回転角度を計算し、ボスをプレイヤーに向かせる.
+    float dx = DirectX::XMVectorGetX(Direction);
+    float dz = DirectX::XMVectorGetZ(Direction);
+    float angle_radian = std::atan2f(-dx, -dz);
+    m_pOwner->SetRotationY(angle_radian);
+
+    //攻撃開始位置.
+    DirectX::XMFLOAT3 m_StartPos;
+
+    //初期位置を保存.
+    DirectX::XMStoreFloat3(&m_StartPos, BossPosXM);
+
+
     m_pOwner->SetAnimSpeed(0.01);
     m_pOwner->ChangeAnim(Boss::enBossAnim::LaserCharge);
     m_AnimChange = enAnimChange::Charge;

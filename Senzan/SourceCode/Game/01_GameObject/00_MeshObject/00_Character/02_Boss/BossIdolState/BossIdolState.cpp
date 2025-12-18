@@ -17,6 +17,8 @@ BossIdolState::~BossIdolState()
 
 void BossIdolState::Enter()
 {
+
+
 	m_pOwner->SetIsLoop(true);
 	m_pOwner->SetAnimSpeed(m_AnimSpeed);
 	//待機アニメションを再生.
@@ -25,56 +27,42 @@ void BossIdolState::Enter()
 
 void BossIdolState::Update()
 {
-	//ここにプレイヤーとボスの距離を図る(三平方の定理を使用して作成していく)
-
-	//ボスのポジションを入手する.
-	// 修正: GetPosition() が XMFLOAT3 を返す前提でロード
+	// 1. ボスとプレイヤーの座標を取得
 	const DirectX::XMFLOAT3& BossPosF = m_pOwner->GetPosition();
 	DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&BossPosF);
 
-	//プレイヤーのポジションを入手する.
 	const DirectX::XMFLOAT3& PlayerPosF = m_pOwner->m_PlayerPos;
 	DirectX::XMVECTOR PlayerPosXM = DirectX::XMLoadFloat3(&PlayerPosF);
 
-	//プレイヤー - ボスの距離を求めていく.
-	// D3DXVECTOR3 DistancePos = PlayerPos - BossPos; -> XMVectorSubtract
-	DirectX::XMVECTOR DistancePosXM = DirectX::XMVectorSubtract(PlayerPosXM, BossPosXM);
+	// --------------------------------------------------------
+	// 2. プレイヤーの方を向く処理 (常に実行)
+	// --------------------------------------------------------
+	// ボスからプレイヤーへのベクトルを計算
+	DirectX::XMVECTOR LookAtVec = DirectX::XMVectorSubtract(PlayerPosXM, BossPosXM);
 
-	//長さの2乗を求める.
-	// D3DXVec3LengthSq(&DistancePos); -> XMVector3LengthSq
-	// 注意: 戻り値はXMVECTORなので、XMVectorGetXでfloatを取り出す
+	float dx = DirectX::XMVectorGetX(LookAtVec);
+	float dz = DirectX::XMVectorGetZ(LookAtVec);
+
+	// 前回の修正を反映：モデルが逆を向く場合は -dx, -dz にする
+	// もしこれで正解ならこのまま、まだ逆なら dx, dz に戻してください
+	float angle_radian = std::atan2f(-dx, -dz);
+
+	m_pOwner->SetRotationY(angle_radian);
+	// --------------------------------------------------------
+
+	// 3. 距離の判定
+	DirectX::XMVECTOR DistancePosXM = DirectX::XMVectorSubtract(PlayerPosXM, BossPosXM);
 	float DistanceSq = DirectX::XMVectorGetX(DirectX::XMVector3LengthSq(DistancePosXM));
 
-	//ローカル変数.
-	constexpr float Ten = 25.0f;
-
-	//距離でアイドルから動作へ変更させたい.
-	//今は10.0fに入ったら次の動作に入る.
-	//2上しているので10.0f * 10.0fの計算式になる
+	constexpr float Ten = 30.0f;
 	const float IDLE_RANGE_SQ = Ten * Ten;
 
-	//atan2を使用してMoveに入る前に角度を取得しておく.
 	if (DistanceSq <= IDLE_RANGE_SQ)
 	{
-		//プレイヤーからボスへのベクトルを取得.
-		// D3DXVECTOR3 direction = BossPos - PlayerPos; -> XMVectorSubtract
-		DirectX::XMVECTOR directionXM = DirectX::XMVectorSubtract(BossPosXM, PlayerPosXM);
+		// 既に上で回転は計算しているので、initalAngleとして再利用可能
+		auto MoveState = std::make_shared<BossMoveState>(m_pOwner);
+		// MoveState->SetInitialAngle(angle_radian); // 必要であれば渡す
 
-		// 2D平面上の角度の計算(Y軸は無視).
-		// XMVECTORのX, Z成分を取得
-		float dx = DirectX::XMVectorGetX(directionXM);
-		float dz = DirectX::XMVectorGetZ(directionXM);
-
-		// atan2()を使用.
-		float initalAngle = atan2f(dx, dz); // DirectXMathでは atan2f を使用
-
-		//今ジョイントのためにここをコメント化している.
-		//このコードでBossのState系統を変更している.
-		//auto MoveState = std::make_shared<BossMoveState>(m_pOwner);
-		auto MoveState = std::make_shared<BossSpecialState>(m_pOwner);
-		//MoveState->SetInitialAngle(initalAngle);
-
-		//m_pOwner->GetStateMachine()->ChangeState(MoveState);
 		m_pOwner->GetStateMachine()->ChangeState(MoveState);
 		return;
 	}

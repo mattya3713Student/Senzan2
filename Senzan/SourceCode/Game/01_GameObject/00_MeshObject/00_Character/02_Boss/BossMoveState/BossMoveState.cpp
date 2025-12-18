@@ -1,8 +1,5 @@
 ﻿#include "BossMoveState.h"
-
 #include "Game/04_Time/Time.h"
-
-
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossSpecialState/BossSpecialState.h"
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossChargeSlashState/BossChargeSlashState.h"
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossSlashState/BossSlashState.h"
@@ -11,51 +8,40 @@
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossShoutState/BossShoutState.h"
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossStompState/BossStompState.h"
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossThrowingState/BossThrowingState.h"
-
-
 #include "System/Singleton/ImGui/CImGuiManager.h"
-
-
 #include <algorithm>
+#include <random>
 
 static constexpr double Move_Run_AnimSpeed = 0.07;
 
-// コンストラクタ（変更なし）
 BossMoveState::BossMoveState(Boss* owner)
 	: StateBase<Boss>(owner)
 	, m_RotationAngle(0.0f)
-	, m_RotationSpeed(0.0015f) // 回転速度
+	, m_RotationSpeed(0.0015f)
 	, m_rotationDirection(1.0f)
-
-	, m_pAttack(std::make_unique<BossSpecialState>(owner))
-	, m_pSlash(std::make_unique<BossSlashState>(owner))
-	, m_pCharge(std::make_unique<BossChargeState>(owner))
-	, m_pLaser(std::make_unique<BossLaserState>(owner))
-	, m_pShout(std::make_unique<BossShoutState>(owner))
-	, m_pStomp(std::make_unique<BossStompState>(owner))
-	, m_pThrowing(std::make_unique<BossThrowingState>(owner))
-
 	, m_AnimNo()
 	, m_AnimTimer()
 	, m_BonePos()
 	, m_InitBossPos()
+	, m_Phase(MovePhase::Start) // 走り出しから開始
 {
 }
 
-// デストラクタ（変更なし）
 BossMoveState::~BossMoveState()
 {
 }
 
-// Enter（変更なし）
 void BossMoveState::Enter()
 {
 	m_Timer = 0.0f;
-	// 周回中心の初期位置としてボスの現在位置を保存
-	m_InitBossPos = m_pOwner->GetPosition();
-	//左右移動のアニメションを再生(Updateで書いたほうがいいかも).
-}
+	m_RotationAngle = 0.0f;
+	m_rotationDirection = 1.0f;
+	m_Phase = MovePhase::Start;
 
+	// 最初のアニメーション設定
+	m_pOwner->SetAnimSpeed(Move_Run_AnimSpeed);
+	m_pOwner->ChangeAnim(Boss::enBossAnim::IdolToRun);
+}
 
 void BossMoveState::Update()
 {
@@ -64,117 +50,136 @@ void BossMoveState::Update()
 	float delta = Time::GetInstance().GetDeltaTime();
 	m_Timer += delta;
 
-	//----------------------------------------
-	//周回軌道中心をプレイヤーに向けて移動させる
-	//----------------------------------------
-
-	// プレイヤーの位置を目標点としてロード
+	// 1. 座標情報の取得
+	XMVECTOR vBossPos = XMLoadFloat3(&m_pOwner->GetPosition());
 	XMFLOAT3 playerPosF = m_pOwner->GetTargetPos();
 	XMVECTOR vTarget = XMLoadFloat3(&playerPosF);
 
-	// 現在の周回中心の位置をロード (m_InitBossPosを使用)
-	XMVECTOR vCurrentCenter = XMLoadFloat3(&m_InitBossPos);
+	// プレイヤーへの方向ベクトルと距離
+	XMVECTOR vToPlayer = XMVectorSubtract(vTarget, vBossPos);
+	vToPlayer = XMVectorSetY(vToPlayer, 0.0f); // 高さ無視
+	float distanceToPlayer = XMVectorGetX(XMVector3Length(vToPlayer));
 
-	// 目標 (vTarget) への方向ベクトルを計算
-	XMVECTOR vDirToTarget = XMVectorSubtract(vTarget, vCurrentCenter);
+	// 判定基準
+	constexpr float STRAFE_RANGE = 20.0f; // 左右移動に切り替える距離
 
-	// Y軸方向の移動は無視し、X-Z平面の移動のみとする
-	vDirToTarget = XMVectorSetY(vDirToTarget, 0.0f);
-
-	// 目標との距離をチェック
-	float distance_center = XMVectorGetX(XMVector3Length(vDirToTarget));
-
-	// 周回中心の移動速度を定義 (調整用)
-	constexpr float CENTER_MOVE_SPEED = 0.15f;
-	float moveStep = CENTER_MOVE_SPEED * delta;
-
-	// 距離が移動ステップ量より大きい、または近づいている場合のみ移動
-	if (distance_center > 0.001f)
+	// --------------------------------------------------------
+	// 2. フェーズ別移動・アニメーション処理
+	// --------------------------------------------------------
+	switch (m_Phase)
 	{
-		// 移動ステップ量を正規化して適用
-		XMVECTOR vMove = XMVector3Normalize(vDirToTarget);
-		// 目標を通り過ぎないように、移動量を制限する
-		vMove = XMVectorScale(vMove, std::min(moveStep, distance_center));
+	case MovePhase::Start: // 【走り出し】
+		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::IdolToRun))
+		{
+			m_pOwner->ChangeAnim(Boss::enBossAnim::Run);
+			m_Phase = MovePhase::Run;
+		}
+		break;
 
-		// 周回中心の位置を更新 (ゆっくりプレイヤーに近づく)
-		vCurrentCenter = XMVectorAdd(vCurrentCenter, vMove);
-		XMStoreFloat3(&m_InitBossPos, vCurrentCenter); // メンバ変数に保存
+	case MovePhase::Run: // 【まっすぐ走る】
+	{
+		constexpr float APPROACH_SPEED = 0.15f;
+		XMVECTOR vMoveDir = XMVector3Normalize(vToPlayer);
+		XMVECTOR vNewPos = XMVectorAdd(vBossPos, XMVectorScale(vMoveDir, APPROACH_SPEED * delta));
+
+		XMFLOAT3 newPosF;
+		XMStoreFloat3(&newPosF, vNewPos);
+		m_pOwner->SetPosition(newPosF);
+		vBossPos = vNewPos;
 	}
 
-	//----------------------------------------
-	// 1. 円運動（更新された中心 vCurrentCenter を周回する）
-	//----------------------------------------
+	if (distanceToPlayer <= STRAFE_RANGE)
+	{
+		m_Phase = MovePhase::Stop;
+		// ここで停止アニメーションを開始（必要に応じて追加）
+		m_pOwner->ChangeAnim(Boss::enBossAnim::RunToIdol);
+	}
+	break;
 
-	XMVECTOR vCenter = vCurrentCenter; // 更新された周回中心を使用
+	case MovePhase::Stop: // 【停止中】
+		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::RunToIdol))
+		{
+			m_Phase = MovePhase::Strafe;
+			float fixedDistance = 10.0f;
+			XMVECTOR vOffset = XMVectorSet(0.0f, 0.0f, fixedDistance, 0.0f);
+			XMStoreFloat3(&m_InitBossPos, XMVectorSubtract(vBossPos, vOffset));
+		}
+		break;
 
-	// 回転角度を更新
-	m_RotationAngle += m_RotationSpeed * delta * m_rotationDirection;
+	case MovePhase::Strafe: // 【左右移動】
+	{
+		XMVECTOR vCurrentCenter = XMLoadFloat3(&m_InitBossPos);
+		XMVECTOR vDirToCenterTarget = XMVectorSubtract(vTarget, vCurrentCenter);
+		vDirToCenterTarget = XMVectorSetY(vDirToCenterTarget, 0.0f);
 
-	// 角度が制限を超えたら方向を反転（左右往復）
-	const float MAX_ANGLE = XM_PIDIV4; // π/4 ラジアン (45度)
-	if (fabsf(m_RotationAngle) > MAX_ANGLE)
-		m_rotationDirection *= -1.0f;
+		float distToCenter = XMVectorGetX(XMVector3Length(vDirToCenterTarget));
+		constexpr float CENTER_MOVE_SPEED = 0.15f;
 
-	// ボスが中心から離れる距離（円の半径）を定義
-	constexpr float fixedDistance = 10.0f;
+		if (distToCenter > 0.001f)
+		{
+			XMVECTOR vMove = XMVectorScale(XMVector3Normalize(vDirToCenterTarget), std::min(CENTER_MOVE_SPEED * delta, distToCenter));
+			vCurrentCenter = XMVectorAdd(vCurrentCenter, vMove);
+			XMStoreFloat3(&m_InitBossPos, vCurrentCenter);
+		}
 
-	// オフセット基準ベクトル (Z軸方向にfixedDistance離れた点)
-	XMVECTOR initialOffset = XMVectorSet(0.0f, 0.0f, fixedDistance, 0.0f);
+		m_RotationAngle += m_RotationSpeed * delta * m_rotationDirection;
+		const float MAX_ANGLE = XM_PIDIV4;
+		if (fabsf(m_RotationAngle) > MAX_ANGLE)
+		{
+			m_rotationDirection *= -1.0f;
+		}
 
-	// Y軸回転行列を作成し、オフセットベクトルに適用
-	XMMATRIX rot = XMMatrixRotationY(m_RotationAngle);
-	XMVECTOR vOffset = XMVector3Transform(initialOffset, rot);
+		constexpr float orbitRadius = 10.0f;
+		XMVECTOR initialOffset = XMVectorSet(0.0f, 0.0f, orbitRadius, 0.0f);
+		XMMATRIX rotMatrix = XMMatrixRotationY(m_RotationAngle);
+		XMVECTOR vFinalOffset = XMVector3Transform(initialOffset, rotMatrix);
+		XMVECTOR vFinalPos = XMVectorAdd(vCurrentCenter, vFinalOffset);
 
-	// 中心位置にオフセットを加算し、新しいボスの位置を決定
-	XMVECTOR vNew = XMVectorAdd(vCenter, vOffset);
+		XMFLOAT3 finalPosF;
+		XMStoreFloat3(&finalPosF, vFinalPos);
+		m_pOwner->SetPosition(finalPosF);
 
-	XMFLOAT3 newPos;
-	XMStoreFloat3(&newPos, vNew);
-	m_pOwner->SetPosition(newPos); // ボスの位置を直接設定
+		m_pOwner->SetAnimSpeed(Move_Run_AnimSpeed);
+		if (m_rotationDirection > 0)
+			m_pOwner->ChangeAnim(Boss::enBossAnim::LeftMove);
+		else
+			m_pOwner->ChangeAnim(Boss::enBossAnim::RightMove);
+	}
+	break;
+	}
 
-	//----------------------------------------
-	// 2. プレイヤー方向を向く
-	//----------------------------------------
+	// 常にプレイヤーを向く
+	XMVECTOR vFinalBossPos = XMLoadFloat3(&m_pOwner->GetPosition());
+	XMVECTOR vLookAt = XMVectorSubtract(vTarget, vFinalBossPos);
+	float dx = XMVectorGetX(vLookAt);
+	float dz = XMVectorGetZ(vLookAt);
+	float angle = atan2f(dx, dz) + DirectX::XM_PI;
+	m_pOwner->SetRotationY(angle);
 
-	// プレイヤーへの方向ベクトルを計算 (プレイヤー位置 - ボス位置)
-	XMVECTOR vLookDir = XMVectorSubtract(vTarget, vNew); // vTarget (プレイヤー位置) を使用
-
-	float dx = XMVectorGetX(vLookDir);
-	float dz = XMVectorGetZ(vLookDir);
-
-	// atan2fでY軸回転角度を計算
-	float angle = atan2f(dx, dz) + D3DX_PI;
-	m_pOwner->SetRotationY(angle); // ボスをプレイヤーの方向に向かせる
-
-	// -----------------------
-	// 3. 一定時間経過後に攻撃判定
-	// -----------------------
-	constexpr float AttackDelay = 270.0f; // 2秒後に攻撃可能 (この値はフレーム数か秒か要確認)
+	// --------------------------------------------------------
+	// 4. 攻撃判定 (フェーズに関わらず、時間経過のみで判定)
+	// --------------------------------------------------------
+	constexpr float AttackDelay = 270.0f;
 	if (m_Timer >= AttackDelay)
 	{
-		// プレイヤーとボスの距離を再計算
-		float distance_to_player = XMVectorGetX(XMVector3Length(vLookDir));
-
+		float dist = XMVectorGetX(XMVector3Length(vLookAt));
 		std::vector<std::function<std::unique_ptr<StateBase<Boss>>()>> candidates;
 
-		// 距離に応じた攻撃候補の選択ロジック
-		if (distance_to_player < 8.0f)
-		{
+		// 距離に応じた攻撃抽選
+		if (dist < 15.0f) {
 			candidates = {
 				[this]() { return std::make_unique<BossSlashState>(m_pOwner); },
 				[this]() { return std::make_unique<BossChargeState>(m_pOwner); },
 				[this]() { return std::make_unique<BossStompState>(m_pOwner); }
 			};
 		}
-		else if (distance_to_player < 30.0f)
-		{
+		else if (dist < 40.0f) {
 			candidates = {
 				[this]() { return std::make_unique<BossThrowingState>(m_pOwner); },
 				[this]() { return std::make_unique<BossShoutState>(m_pOwner); }
 			};
 		}
-		else
-		{
+		else {
 			candidates = {
 				[this]() { return std::make_unique<BossSpecialState>(m_pOwner); },
 				[this]() { return std::make_unique<BossLaserState>(m_pOwner); }
@@ -187,31 +192,18 @@ void BossMoveState::Update()
 			static std::mt19937 gen(rd());
 			std::uniform_int_distribution<> dis(0, static_cast<int>(candidates.size()) - 1);
 
-			auto nextAttack = candidates[dis(gen)]();
-			m_pOwner->GetStateMachine()->ChangeState(std::move(nextAttack));
+			// ステートマシンを切り替えて即座にUpdateを終了
+			m_pOwner->GetStateMachine()->ChangeState(std::move(candidates[dis(gen)]()));
 			return;
 		}
 	}
-
-	if (m_rotationDirection > 0)
-	{
-		//右移動のアニメションを再生.
-		m_pOwner->SetAnimSpeed(Move_Run_AnimSpeed);
-		m_pOwner->ChangeAnim(Boss::enBossAnim::LeftMove);
-	}
-	else
-	{
-		m_pOwner->SetAnimSpeed(Move_Run_AnimSpeed);
-		m_pOwner->ChangeAnim(Boss::enBossAnim::RightMove);
-	}
 }
-
 
 void BossMoveState::LateUpdate()
 {
 }
 
-void BossMoveState::Draw()
+void BossMoveState::Draw() 
 {
 }
 

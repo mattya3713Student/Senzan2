@@ -23,6 +23,32 @@ BossThrowingState::~BossThrowingState()
 
 void BossThrowingState::Enter()
 {
+	//ボスの向きを設定.
+	const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
+	DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&BossPosF);
+
+	const DirectX::XMFLOAT3 PlayerPosF = m_pOwner->m_PlayerPos;
+	DirectX::XMVECTOR PlayerPosXM = DirectX::XMLoadFloat3(&PlayerPosF);
+
+	DirectX::XMVECTOR Direction = DirectX::XMVectorSubtract(PlayerPosXM, BossPosXM);
+	//X,Z平面の方向.
+	Direction = DirectX::XMVectorSetY(Direction, 0.0f);
+
+	//Y軸回転角度を計算し、ボスをプレイヤーに向かせる.
+	float dx = DirectX::XMVectorGetX(Direction);
+	float dz = DirectX::XMVectorGetZ(Direction);
+	float angle_radian = std::atan2f(-dx, -dz);
+	m_pOwner->SetRotationY(angle_radian);
+
+	//攻撃開始位置.
+	DirectX::XMFLOAT3 m_StartPos;
+
+	//初期位置を保存.
+	DirectX::XMStoreFloat3(&m_StartPos, BossPosXM);
+
+
+	m_pOwner->SetAnimSpeed(0.06);
+	m_pOwner->ChangeAnim(Boss::enBossAnim::LaserCharge);
 }
 
 void BossThrowingState::Update()
@@ -38,7 +64,11 @@ void BossThrowingState::Update()
 		break;
 	case BossThrowingState::enThrowing::Anim:
 		//アニメーションをここには書かない.
-		m_List = enThrowing::Attack;
+		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::LaserCharge))
+		{
+			m_pOwner->ChangeAnim(Boss::enBossAnim::Laser);
+			m_List = enThrowing::Attack;
+		}
 		break;
 	case BossThrowingState::enThrowing::Attack:
 		//アニメーションをしている時に攻撃を発動させる.
@@ -59,21 +89,19 @@ void BossThrowingState::Update()
 		if (!m_pBall->IsAction)
 		{
 			m_IsLaunched = false; // 次の攻撃のためにリセット
-			m_List = enThrowing::CoolDown;
+			if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Laser))
+			{
+				m_pOwner->ChangeAnim(Boss::enBossAnim::LaserEnd);
+				m_List = enThrowing::CoolDown;
+			}
 		}
-		break;
-		BossAttack();
-		//何らかの条件でCoolDownに移動.
-		m_List = enThrowing::CoolDown;
 		break;
 	case BossThrowingState::enThrowing::CoolDown:
 		//攻撃のクールタイムが終了した際にTransに移動する.
 
-		m_Timer += deltaTime;
-		if (m_Timer >= m_TransitionTimer)
+		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::LaserEnd))
 		{
 			m_pBall->ResetPosition();
-			m_Timer = 0.0f;
 			m_List = enThrowing::Trans;
 		}
 		break;

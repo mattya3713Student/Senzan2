@@ -47,7 +47,7 @@ Boss::Boss()
 	//Idolに遷移させるんだけど
 	//アニメーションの再生系統を今日するのでここを変更していく.
 	//m_State->ChangeState(std::make_shared<BossStompState>(this));
-	m_State->ChangeState(std::make_shared<BossSpecialState>(this));
+	m_State->ChangeState(std::make_shared<BossIdolState>(this));
 	//m_State->ChangeState(std::make_shared<BossShoutState>());
 
 

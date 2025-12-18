@@ -38,6 +38,16 @@ public:
 		Long,	//‰“‹——£.
 		None,	//‰½‚à‚µ‚È‚¢.
 	};
+
+	enum class MovePhase : byte
+	{
+		Start,
+		Run,
+		Stop,
+		Strafe,
+	};
+
+	MovePhase m_Phase = MovePhase::Start;
 public:
 	BossMoveState(Boss* owner);
 	~BossMoveState();

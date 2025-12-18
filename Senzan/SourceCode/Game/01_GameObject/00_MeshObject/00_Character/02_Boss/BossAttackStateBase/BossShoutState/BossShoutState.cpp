@@ -10,6 +10,10 @@
 BossShoutState::BossShoutState(Boss* owner)
 	: BossAttackStateBase (owner)
     , m_pBossIdol()
+
+    , m_StartPos()
+
+    , m_List(enShout::none)
 {
 }
 
@@ -19,17 +23,65 @@ BossShoutState::~BossShoutState()
 
 void BossShoutState::Enter()
 {
+    //ボスの向きを設定.
+    const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
+    DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&BossPosF);
+
+    const DirectX::XMFLOAT3 PlayerPosF = m_pOwner->m_PlayerPos;
+    DirectX::XMVECTOR PlayerPosXM = DirectX::XMLoadFloat3(&PlayerPosF);
+
+    DirectX::XMVECTOR Direction = DirectX::XMVectorSubtract(PlayerPosXM, BossPosXM);
+    //X,Z平面の方向.
+    Direction = DirectX::XMVectorSetY(Direction, 0.0f);
+
+    //Y軸回転角度を計算し、ボスをプレイヤーに向かせる.
+    float dx = DirectX::XMVectorGetX(Direction);
+    float dz = DirectX::XMVectorGetZ(Direction);
+    float angle_radian = std::atan2f(-dx, -dz);
+    m_pOwner->SetRotationY(angle_radian);
+
+    //初期位置を保存.
+    DirectX::XMStoreFloat3(&m_StartPos, BossPosXM);
+
     //アニメーション速度.
-    m_pOwner->SetAnimSpeed(0.01);
+    m_pOwner->SetAnimSpeed(0.03);
     m_pOwner->ChangeAnim(Boss::enBossAnim::LaserCharge);
 }
 
 void BossShoutState::Update()
 {
-    if (m_pOwner->IsAnimEnd(Boss::enBossAnim::LaserCharge))
+
+    switch (m_List)
     {
-        m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
+    case BossShoutState::enShout::none:
+        m_List = enShout::Shout;
+        break;
+    case BossShoutState::enShout::Shout:
+        if (m_pOwner->IsAnimEnd(Boss::enBossAnim::LaserCharge))
+        {
+            m_pOwner->SetAnimSpeed(0.05);
+            m_pOwner->ChangeAnim(Boss::enBossAnim::Laser);
+            m_List = enShout::ShoutTime;
+        }
+        break;
+    case BossShoutState::enShout::ShoutTime:
+        if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Laser))
+        {
+            m_pOwner->SetAnimSpeed(0.03);
+            m_pOwner->ChangeAnim(Boss::enBossAnim::LaserEnd);
+            m_List = enShout::ShoutToIdol;
+        }
+        break;
+    case BossShoutState::enShout::ShoutToIdol:
+        if (m_pOwner->IsAnimEnd(Boss::enBossAnim::LaserEnd))
+        {
+            m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
+        }
+        break;
+    default:
+        break;
     }
+
 }
 
 void BossShoutState::LateUpdate()

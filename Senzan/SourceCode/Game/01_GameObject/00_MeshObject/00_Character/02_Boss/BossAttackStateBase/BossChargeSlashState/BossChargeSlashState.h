@@ -12,6 +12,14 @@ class BossChargeSlashState
 	: public BossAttackStateBase
 {
 public:
+	enum class enChargeSlashAnim : byte
+	{
+		none,
+		Charge,
+		ChargeSlash,
+		ChargeSlashToIdol,
+	};
+
 	enum class enParry : byte
 	{
 		none,
@@ -59,7 +67,8 @@ private:
 	float m_Timer = 0.0f;
 	float m_Timers = 60.0f;
 
-	float AnimChange;
+	enChargeSlashAnim m_List;
+
 	enParry m_Parry;
 
 };
