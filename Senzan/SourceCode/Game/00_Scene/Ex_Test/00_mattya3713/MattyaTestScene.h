@@ -4,6 +4,7 @@
 
 class Ground;
 class Player;
+class Boss;
 class CameraBase;
 class DirectionLight;
 class CapsuleCollider;
@@ -38,8 +39,9 @@ private:
 	std::unique_ptr<CapsuleCollider>		m_TestPressCollision;
 	std::unique_ptr<CapsuleCollider>		m_TestAttackCollision;
 
-	std::unique_ptr<Ground>		m_pGround;
-	std::unique_ptr<Player>		m_pPlayer;
+	std::unique_ptr<Ground>		m_upGround;
+	std::unique_ptr<Player>		m_upPlayer;
+	std::unique_ptr<Boss>		m_upBoss;
 
 
 };
