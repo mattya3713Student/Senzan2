@@ -8,6 +8,15 @@ class BossLaserState
 	: public BossAttackStateBase
 {
 public:
+	enum class enAnimChange : byte
+	{
+		Charge,		//‚½‚ß’†.
+		Attack,		//‚½‚ßUŒ‚”­Ë’†.
+		ChargeEnd,	//‚½‚ßUŒ‚‚©‚ç‘Ò‹@.
+
+		none,		//‰½‚à‚µ‚È‚¢.
+	};
+public:
 	BossLaserState(Boss* owner);
 	~BossLaserState() override;
 
@@ -26,4 +35,6 @@ private:
 
 	//‘JˆÚ‚ÌŠÔ‚Ìƒ^ƒCƒ€•Ï”.
 	float m_TransitionTimer = 120.0f;
+
+	enAnimChange m_AnimChange;
 };

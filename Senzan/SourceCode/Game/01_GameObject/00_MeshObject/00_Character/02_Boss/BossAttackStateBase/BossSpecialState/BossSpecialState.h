@@ -16,11 +16,20 @@ public:
 	enum class enSpecial : byte
 	{
 		None,		//何もしない.
-		Charge,		//ため時間.
+		Charge,
 		Jump,		//飛んでいるとき
 		Attack,		//Playerに向かっての攻撃.
 		CoolTime,	//クールタイム.
 		Trans		//Idolに遷移.
+	};
+
+	//パリィ用の列挙.
+	enum class enFlinch : byte
+	{
+		none,			//何もしない.
+		Flinch,			//パリィ時.
+		FlinchTimer,	//怯み状態中.
+		FlinchToIdol,	//怯みから待機への遷移.
 	};
 public:
 	BossSpecialState(Boss* owner);
@@ -32,22 +41,26 @@ public:
 	void Draw() override;
 	void Exit() override;
 
+	//パリィしているときとしていないときのコード.
+	void ParryTime();
 
 private:
 	//============================================================
 	// 特殊攻撃のCharge/Jump/Attackの時の関数
 	//============================================================
-	//ため時間関数.
-	void ChargeTime();
-	//ジャンプ時関数.
+	//ジャンプの時にPlayerの追尾コードを書く関数. 
 	void JumpTime();
 	//アタック時関数.
 	void BossAttack() override;
+
+	void ChargeTime();
 private:
 	//============================================================
 	// 特殊攻撃に必要になるメンバ変数.
 	//============================================================
 	enSpecial m_List;
+
+	enFlinch m_Flinch;
 
 	DirectX::XMFLOAT3 m_Velocity;
 

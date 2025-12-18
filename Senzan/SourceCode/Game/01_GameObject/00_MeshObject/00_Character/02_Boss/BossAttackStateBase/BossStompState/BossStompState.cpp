@@ -35,6 +35,31 @@ void BossStompState::Enter()
 	m_Velocity = {};
 	m_Velocity.y = m_JumpPower;
 
+	//ボスの向きを設定.
+	const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
+	DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&BossPosF);
+
+	const DirectX::XMFLOAT3 PlayerPosF = m_pOwner->m_PlayerPos;
+	DirectX::XMVECTOR PlayerPosXM = DirectX::XMLoadFloat3(&PlayerPosF);
+
+	DirectX::XMVECTOR Direction = DirectX::XMVectorSubtract(PlayerPosXM, BossPosXM);
+	//X,Z平面の方向.
+	Direction = DirectX::XMVectorSetY(Direction, 0.0f);
+
+	//Y軸回転角度を計算し、ボスをプレイヤーに向かせる.
+	float dx = DirectX::XMVectorGetX(Direction);
+	float dz = DirectX::XMVectorGetZ(Direction);
+	float angle_radian = std::atan2f(-dx, -dz);
+	m_pOwner->SetRotationY(angle_radian);
+
+	//攻撃開始位置.
+	DirectX::XMFLOAT3 m_StartPos;
+
+	//初期位置を保存.
+	DirectX::XMStoreFloat3(&m_StartPos, BossPosXM);
+
+	m_pOwner->SetAnimSpeed(0.06);
+	m_pOwner->ChangeAnim(Boss::enBossAnim::Special_0);
 }
 
 void BossStompState::Update()
@@ -44,36 +69,37 @@ void BossStompState::Update()
 	switch (m_List)
 	{
 	case BossStompState::enAttack::None:
-		//次の遷移への移動.
-		m_List = enAttack::Stomp;
+
+		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Special_0))
+		{
+			m_pOwner->ChangeAnim(Boss::enBossAnim::Special_1);
+			//次の遷移への移動.
+			m_List = enAttack::Stomp;
+		}
 		break;
 	case BossStompState::enAttack::Stomp:
 		//ここで踏みつけ攻撃の動作を実装.
 		BossAttack();
 
+		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Special_1))
+		{
+			m_pOwner->ChangeAnim(Boss::enBossAnim::SpecialToIdol);
+			m_List = enAttack::CoolTime;
+		}
+
 		if (m_pOwner->GetPositionY() < 0)
 		{
 			m_Velocity.y = 0.0f;
 			m_pOwner->SetPositionY(0.f);
-			m_List = enAttack::CoolTime;
 		}
 		break;
 	case BossStompState::enAttack::CoolTime:
-		//クールタイム.
-		//この時にdeltaTimeの設定をする.
-		//deltaTimeの加算.
-		m_Timer += deltaTime;
-		if (m_Timer > TransitionTimer)
+		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::SpecialToIdol))
 		{
 			m_List = enAttack::Trans;
 		}
 		break;
 	case BossStompState::enAttack::Trans:
-		//Idolへの遷移.
-		if (GetAsyncKeyState(VK_RETURN) & 0x8000)
-		{
-			m_List = enAttack::None;
-		}
 		m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
 		break;
 	default:

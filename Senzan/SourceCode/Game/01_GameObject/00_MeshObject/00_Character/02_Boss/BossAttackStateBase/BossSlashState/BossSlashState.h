@@ -15,6 +15,13 @@ class BossSlashState final
 	: public BossAttackStateBase
 {
 public:
+	enum class enList : byte
+	{
+		none,			//何もしない.
+		SlashAttack,	//斬る攻撃.
+		SlashIdol,		//斬る攻撃から待機.
+	};
+public:
 	BossSlashState(Boss* owner);
 	~BossSlashState();
 
@@ -35,4 +42,8 @@ private:
 	std::shared_ptr<MeshObject>		m_Mesh;
 
 	std::shared_ptr<Transform> m_pTransform;
+
+	enList m_List;
+
+	bool AnimChange;
 };

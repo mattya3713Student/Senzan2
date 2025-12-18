@@ -38,6 +38,16 @@ public:
 		Long,	//遠距離.
 		None,	//何もしない.
 	};
+
+	enum class MovePhase : byte
+	{
+		Start,
+		Run,
+		Stop,
+		Strafe,
+	};
+
+	MovePhase m_Phase = MovePhase::Start;
 public:
 	BossMoveState(Boss* owner);
 	~BossMoveState();
@@ -61,7 +71,7 @@ public:
 private:
 	//現在のボスの回転度を確認する.
 	float m_RotationAngle;
-	float m_RotationSpeed;
+	double m_RotationSpeed;
 	float m_rotationDirection;	//1.0f:順方向, -1.0:逆方向.
 
 	int							m_AnimNo;	//アニメーション番号.

@@ -11,6 +11,9 @@
 constexpr float MY_PI = 3.1415926535f;
 
 
+constexpr static float AnimSlashTime		= 3000.0f;
+constexpr static float AnimSlashToIdolTime	= 30.0f;
+
 
 BossSlashState::BossSlashState(Boss* owner)
 	: BossAttackStateBase(owner)
@@ -18,6 +21,10 @@ BossSlashState::BossSlashState(Boss* owner)
 	, m_pIdol()
 
 	, m_pTransform(std::make_shared<Transform>())
+
+	, m_List	(enList::none)
+
+	, AnimChange(false)
 {
 	//m_pColl->SetHeight(50.0f);
 	//m_pColl->SetRadius(5.0f);
@@ -46,30 +53,44 @@ void BossSlashState::Enter()
 	//Y軸回転角度を計算し、ボスをプレイヤーに向かせる.
 	float dx = DirectX::XMVectorGetX(Direction);
 	float dz = DirectX::XMVectorGetZ(Direction);
-	float angle_radian = std::atan2f(dx, dz);
+	float angle_radian = std::atan2f(-dx, -dz);
 	m_pOwner->SetRotationY(angle_radian);
 
 	//初期位置を保存.
 	DirectX::XMStoreFloat3(&m_StartPos, BossPosXM);
 
 
-	m_pOwner->SetAnimSpeed(m_currentAnimSpeed);
 
-	//アニメーション再生の無限ループ用.
-	//m_pOwner->SetIsLoop(true);
-	//m_pOwner->ChangeAnim(5);
+	//アニメーションの速度.
+	m_pOwner->SetAnimSpeed(0.06);
+	//斬るアニメーションの再生.
+	m_pOwner->ChangeAnim(Boss::enBossAnim::Slash);
 
+	AnimChange = false;
 }
 
 void BossSlashState::Update()
 {
-	float deltaTime = Time::GetInstance().GetDeltaTime();
-
-	m_currentTimer += m_currentAnimSpeed;
-
-	if (m_currentTimer > m_pOwner->GetAnimPeriod(m_pOwner->m_AnimNo))
+	switch (m_List)
 	{
-		m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
+	case BossSlashState::enList::none:
+		m_List = enList::SlashAttack;
+		break;
+	case BossSlashState::enList::SlashAttack:
+		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Slash))
+		{
+			m_pOwner->ChangeAnim(Boss::enBossAnim::SlashToIdol);
+			m_List = enList::SlashIdol;
+		}
+		break;
+	case BossSlashState::enList::SlashIdol:
+		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::SlashToIdol))
+		{
+			m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
+		}
+		break;
+	default:
+		break;
 	}
 }
 

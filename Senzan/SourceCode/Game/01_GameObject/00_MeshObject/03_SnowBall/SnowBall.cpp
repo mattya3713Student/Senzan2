@@ -40,7 +40,7 @@ void SnowBall::Update()
 	// ----------------------------------------------------
 	// 1. ŠÔ t ‚ÌŒvZ
 
-	float deltaTime = Time::GetInstance().GetDeltaTime() * 0.01f;
+	float deltaTime = Time::GetInstance().GetDeltaTime() * 0.1f;
 	ThrowingTime += deltaTime;
 
 	// t ‚ğŒvZ‚µA1.0 ‚É§ŒÀ
