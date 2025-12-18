@@ -13,12 +13,12 @@
 #include <memory> 
 #include <cstdio> // printf のため
 
-constexpr float MY_PI = 3.1415926535f;
-
 BossChargeSlashState::BossChargeSlashState(Boss* owner)
 	: BossAttackStateBase(owner)
 
 	, AnimChange(false)
+	, m_Parry(enParry::none)
+
 {
 	Enter();
 }
@@ -56,13 +56,13 @@ void BossChargeSlashState::Enter()
 	m_pOwner->SetAnimSpeed(0.03);
 	//ため斬りアニメーションの再生.
 	m_pOwner->ChangeAnim(Boss::enBossAnim::ChargeAttack);
-	
+
 	AnimChange = true;
 }
 
 void BossChargeSlashState::Update()
 {
-	if (AnimChange == false)
+	if (static_cast<bool>(AnimChange) == false)
 	{
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::ChargeAttack))
 		{
@@ -70,7 +70,7 @@ void BossChargeSlashState::Update()
 			AnimChange = true;
 		}
 	}
-	if (AnimChange == true)
+	if (static_cast<bool>(AnimChange) == true)
 	{
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::ChargeToIdol))
 		{
@@ -93,6 +93,50 @@ void BossChargeSlashState::Exit()
 
 void BossChargeSlashState::BoneDraw()
 {
+}
+
+void BossChargeSlashState::ParryTime()
+{
+	switch (m_Parry)
+	{
+	case BossChargeSlashState::enParry::none:
+		//ひるんだ時のアニメーションの再生へ入る.
+		m_Parry = enParry::Flinch;
+		break;
+	case BossChargeSlashState::enParry::Flinch:
+		//アニメーションの再生.
+		m_pOwner->SetAnimSpeed(0.03);
+		m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchParis);
+		//アニメーションの再生が終了したら.
+		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::FlinchParis))
+		{
+			m_pOwner->SetAnimSpeed(0.01);
+			m_pOwner->ChangeAnim(Boss::enBossAnim::Flinch);
+			//怯み中のコードに入る.
+			m_Parry = enParry::FlinchTimer;
+		}
+		break;
+	case BossChargeSlashState::enParry::FlinchTimer:
+		//怯み中のアニメーションの再生が終了したら.
+		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Flinch))
+		{
+			m_pOwner->SetAnimSpeed(0.03);
+			m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchToIdol);
+			//待機にもどるアニメーションの再生.
+			m_Parry = enParry::FlinchToIdol;
+		}
+		break;
+	case BossChargeSlashState::enParry::FlinchToIdol:
+		//待機へ戻るアニメーションの再生が終了したら.
+		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::FlinchToIdol))
+		{
+			m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
+		}
+		break;
+	default:
+		break;
+	}
+
 }
 
 

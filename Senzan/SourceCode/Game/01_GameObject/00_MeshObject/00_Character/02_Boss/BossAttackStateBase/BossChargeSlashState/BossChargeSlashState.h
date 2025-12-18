@@ -12,6 +12,14 @@ class BossChargeSlashState
 	: public BossAttackStateBase
 {
 public:
+	enum class enParry : byte
+	{
+		none,
+		Flinch,			//ƒpƒŠƒB.
+		FlinchTimer,	//‹¯‚İó‘Ô’†.
+		FlinchToIdol,	//‹¯‚İ‚©‚ç‘Ò‹@‚Ö‚Ì‘JˆÚ.
+	};
+public:
 	BossChargeSlashState(Boss* owner);
 	~BossChargeSlashState() override;
 
@@ -22,6 +30,9 @@ public:
 	void Exit() override;
 
 	void BoneDraw();
+
+	void ParryTime();
+
 
 private:
 	void BossAttack() override;
@@ -49,4 +60,6 @@ private:
 	float m_Timers = 60.0f;
 
 	float AnimChange;
+	enParry m_Parry;
+
 };

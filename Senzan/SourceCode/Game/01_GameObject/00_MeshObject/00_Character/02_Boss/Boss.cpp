@@ -106,6 +106,11 @@ void Boss::Hit()
 
 	//Bossの体力でのステートにいれる.
 	constexpr float Dead_HP = zero;
+
+	//被弾時のアニメーションの再生.
+	SetAnimSpeed(0.03);
+	ChangeAnim(enBossAnim::Hit);
+
 	//いったんこの10ダメだけにしておく.
 	//最後はTenをBaseにして+や-を使用する感じになると思っている.
 	m_HitPoint -= ten;

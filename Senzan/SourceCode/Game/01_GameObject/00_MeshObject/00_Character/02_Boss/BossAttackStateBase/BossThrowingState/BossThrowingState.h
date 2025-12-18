@@ -23,6 +23,14 @@ public:
 		Trans		//次のステートに遷移.
 	};
 
+	//投擲のパリィ時の列挙.
+	enum class enParry : byte
+	{
+		none,			//何もしない.
+		Flinch,			//パリィ時.
+		FlinchTimer,	//怯み状態中.
+		FlinchToIdol,	//怯みから待機への遷移.
+	};
 public:
 	BossThrowingState(Boss* owner);
 	~BossThrowingState() override;
@@ -32,6 +40,8 @@ public:
 	void LateUpdate() override;
 	void Draw() override;
 	void Exit() override;
+
+	void ParryTime();
 
 private:
 	void BossAttack() override;
@@ -45,6 +55,8 @@ private:
 	float m_TransitionTimer;
 
 	enThrowing m_List;
+
+	enParry m_Parry;
 
 	std::unique_ptr<SnowBall> m_pBall;
 

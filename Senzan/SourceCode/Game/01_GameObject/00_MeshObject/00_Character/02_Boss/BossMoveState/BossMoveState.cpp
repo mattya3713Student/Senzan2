@@ -34,6 +34,11 @@ BossMoveState::BossMoveState(Boss* owner)
 	, m_pShout(std::make_unique<BossShoutState>(owner))
 	, m_pStomp(std::make_unique<BossStompState>(owner))
 	, m_pThrowing(std::make_unique<BossThrowingState>(owner))
+
+	, m_AnimNo()
+	, m_AnimTimer()
+	, m_BonePos()
+	, m_InitBossPos()
 {
 }
 

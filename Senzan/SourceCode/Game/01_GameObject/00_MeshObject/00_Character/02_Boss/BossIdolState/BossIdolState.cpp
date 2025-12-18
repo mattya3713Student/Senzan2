@@ -70,8 +70,8 @@ void BossIdolState::Update()
 
 		//今ジョイントのためにここをコメント化している.
 		//このコードでBossのState系統を変更している.
-		auto MoveState = std::make_shared<BossMoveState>(m_pOwner);
-		//auto MoveState = std::make_shared<BossSpecialState>(m_pOwner);
+		//auto MoveState = std::make_shared<BossMoveState>(m_pOwner);
+		auto MoveState = std::make_shared<BossSpecialState>(m_pOwner);
 		//MoveState->SetInitialAngle(initalAngle);
 
 		//m_pOwner->GetStateMachine()->ChangeState(MoveState);

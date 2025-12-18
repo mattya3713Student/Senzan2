@@ -11,6 +11,7 @@ BossThrowingState::BossThrowingState(Boss* owner)
 	, m_Timer(0.0f)
 	, m_TransitionTimer(60.0f)
 	, m_List(enThrowing::None)
+	, m_Parry(enParry::none)
 
 	, m_pBall(std::make_unique<SnowBall>())
 {
@@ -22,7 +23,6 @@ BossThrowingState::~BossThrowingState()
 
 void BossThrowingState::Enter()
 {
-	//
 }
 
 void BossThrowingState::Update()
@@ -102,6 +102,49 @@ void BossThrowingState::Draw()
 
 void BossThrowingState::Exit()
 {
+}
+
+void BossThrowingState::ParryTime()
+{
+	switch (m_Parry)
+	{
+	case BossThrowingState::enParry::none:
+		//ひるんだ時のアニメーションの再生へ入る.
+		m_Parry = enParry::Flinch;
+		break;
+	case BossThrowingState::enParry::Flinch:
+		//アニメーションの再生.
+		m_pOwner->SetAnimSpeed(0.03);
+		m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchParis);
+		//アニメーションの再生が終了したら.
+		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::FlinchParis))
+		{
+			m_pOwner->SetAnimSpeed(0.01);
+			m_pOwner->ChangeAnim(Boss::enBossAnim::Flinch);
+			//怯み中のコードに入る.
+			m_Parry = enParry::FlinchTimer;
+		}
+		break;
+	case BossThrowingState::enParry::FlinchTimer:
+		//怯み中のアニメーションの再生が終了したら.
+		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Flinch))
+		{
+			m_pOwner->SetAnimSpeed(0.03);
+			m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchToIdol);
+			//待機にもどるアニメーションの再生.
+			m_Parry = enParry::FlinchToIdol;
+		}
+		break;
+	case BossThrowingState::enParry::FlinchToIdol:
+		//待機へ戻るアニメーションの再生が終了したら.
+		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::FlinchToIdol))
+		{
+			m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
+		}
+		break;
+	default:
+		break;
+	}
 }
 
 void BossThrowingState::BossAttack()
