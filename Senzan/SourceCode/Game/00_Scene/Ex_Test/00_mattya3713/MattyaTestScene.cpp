@@ -11,6 +11,7 @@
 
 #include "Game/01_GameObject/00_MeshObject/00_Character/00_Ground/Ground.h"	// 地面Static.
 #include "Game/01_GameObject/00_MeshObject/00_Character/01_Player/Player.h"	// プレイヤー.
+#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/Boss.h"	// ボス.
 
 #include "Game/03_Collision/00_Core/ColliderBase.h"	
 #include "Game/03_Collision/00_Core/01_Capsule/CapsuleCollider.h"
@@ -30,8 +31,9 @@ MattyaTestScene::MattyaTestScene()
 	, m_pLight(std::make_shared<DirectionLight>())
 	, m_TestPressCollision(std::make_unique<CapsuleCollider>())
 	, m_TestAttackCollision(std::make_unique<CapsuleCollider>())
-	, m_pPlayer(std::make_unique<Player>())
-	, m_pGround(std::make_unique<Ground>())
+	, m_upPlayer(std::make_unique<Player>())
+	, m_upBoss(std::make_unique<Boss>())
+	, m_upGround(std::make_unique<Ground>())
 {
 	Initialize();
 }
@@ -43,7 +45,7 @@ MattyaTestScene::~MattyaTestScene()
 
 void MattyaTestScene::Initialize()
 {
-	m_pCamera = std::make_shared<PlayerThirdPersonCamera>(std::ref(*m_pPlayer));
+	m_pCamera = std::make_shared<PlayerThirdPersonCamera>(std::ref(*m_upPlayer));
 	// カメラ設定.
 	m_pCamera->SetPosition(DirectX::XMFLOAT3(0.0f, 5.0f, -50.0f));
 	m_pCamera->SetLook(DirectX::XMFLOAT3(0.0f, 2.0f, 5.0f));
@@ -53,7 +55,7 @@ void MattyaTestScene::Initialize()
 	m_pLight->SetDirection(DirectX::XMFLOAT3(1.5f, 1.f, -1.f));
 	LightManager::AttachDirectionLight(m_pLight);
 
-	m_pGround = std::make_unique<Ground>();
+	m_upGround = std::make_unique<Ground>();
 
 	m_TestPressCollision->SetColor(Color::eColor::Cyan);
 	m_TestPressCollision->SetHeight(2.0f);
@@ -83,14 +85,16 @@ void MattyaTestScene::Create()
 void MattyaTestScene::Update()
 {
 	Input::Update();
-	m_pGround->Update();
-	m_pPlayer->SetTargetPos(m_TestAttackCollision.get()->GetPosition());
-	m_pPlayer->Update();
+	m_upGround->Update();
+	m_upPlayer->SetTargetPos(m_TestAttackCollision.get()->GetPosition());
+	m_upPlayer->Update();
+	m_upBoss->Update();
 }
 
 void MattyaTestScene::LateUpdate()
 {
-	m_pPlayer->LateUpdate();
+	m_upPlayer->LateUpdate();
+	m_upBoss->LateUpdate();
 	CameraManager::GetInstance().LateUpdate();
 
 	static float s_TimeCounter = 0.0f;
@@ -118,10 +122,11 @@ void MattyaTestScene::LateUpdate()
 void MattyaTestScene::Draw()
 {
 	Shadow::Begin();
-	m_pGround->DrawDepth();
+	m_upGround->DrawDepth();
 	Shadow::End();
-	m_pGround->Draw();
-	m_pPlayer->Draw();
+	m_upGround->Draw();
+	m_upPlayer->Draw();
+	m_upBoss->Draw();
 
 	m_TestPressCollision->SetDebugInfo();
 	m_TestAttackCollision->SetDebugInfo();
