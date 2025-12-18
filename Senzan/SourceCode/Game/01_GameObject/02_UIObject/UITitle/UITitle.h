@@ -23,6 +23,8 @@ public:
 	void LateUpdate();
 	void Draw();
 
+	TitleItems GetSelected();
+
 private:
 	void SelectUpdate();
 	void SelectLateUpdate(std::shared_ptr<UIObject> ui);
@@ -31,10 +33,10 @@ private:
 
 private:
 	std::vector<std::shared_ptr<UIObject>> m_pUIs;
+	TitleItems	m_Select;
 
 	float	m_AnimeSpeed;
 	bool	m_AnimReturn;
 	float	m_InitAlpha;
 	float	m_SelectAlpha;
-	int		m_Select;
 };

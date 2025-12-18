@@ -5,12 +5,10 @@
 #include "Graphic/DirectX/DirectX11/DirectX11.h"
 #include "Game//04_Time//Time.h"
 #include "Game/05_InputDevice/Input.h"
-#include "SceneManager/SceneManager.h"
-#include "Singleton/ResourceManager/ResourceManager.h"
 
 UITitle::UITitle()
 	: m_pUIs		()
-	, m_Select		( 0 )
+	, m_Select		( TitleItems::Start )
 	, m_InitAlpha	( 0.6 )
 	, m_SelectAlpha	( m_InitAlpha )
 	, m_AnimReturn	( false )
@@ -71,18 +69,6 @@ void UITitle::SelectUpdate()
 	{
 		InitAnim(TitleItems::End);
 	}
-
-	if (Input::IsKeyDown(VK_SPACE)
-	|| Input::IsKeyDown('C')
-	|| Input::IsButtonDown(XInput::Key::B))
-	{
-		if (m_Select == TitleItems::Start) {
-			SceneManager::LoadScene(eList::GameMain);
-		}
-		else if (m_Select == TitleItems::End) {
-			DestroyWindow(ResourceManager::GethWnd());
-		}
-	}
 	
 	AnimUpdate();
 }
@@ -125,7 +111,7 @@ void UITitle::InitAnim(TitleItems item)
 void UITitle::AnimUpdate()
 {
 	if (m_SelectAlpha < m_InitAlpha) { m_AnimReturn = false; }
-	else if (0.98f < m_SelectAlpha) { m_AnimReturn = true; }
+	else if (1.f < m_SelectAlpha) { m_AnimReturn = true; }
 
 	if (m_AnimReturn) {
 		m_SelectAlpha = m_SelectAlpha - Time::GetDeltaTime() * m_AnimeSpeed;
@@ -133,4 +119,11 @@ void UITitle::AnimUpdate()
 	else {
 		m_SelectAlpha = m_SelectAlpha + Time::GetDeltaTime() * m_AnimeSpeed;
 	}
+}
+
+//----------------------------------------------------------------.
+
+UITitle::TitleItems UITitle::GetSelected()
+{
+	return m_Select;
 }
