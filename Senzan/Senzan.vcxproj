@@ -277,6 +277,7 @@
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UILoader\UILoader.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UIObject.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UIObjectManager.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UITitle\UITitle.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\GameObject.cpp" />
     <ClCompile Include="SourceCode\Game\02_Camera\CameraBase.cpp" />
     <ClCompile Include="SourceCode\Game\03_Collision\Box\BoxCollider.cpp" />
@@ -353,6 +354,8 @@
     <ClInclude Include="Data\ImGui\Library\imstb_truetype.h" />
     <ClInclude Include="SourceCode\Constant.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\UILoader\UILoader.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\UITitle\UITitle.h" />
+    <ClInclude Include="SourceCode\System\Utility\Color\Color.h" />
     <ClInclude Include="SourceCode\System\Utility\EnumFlags\EnumFlags.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\00_Base\SceneBase.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\01_Title\Title.h" />

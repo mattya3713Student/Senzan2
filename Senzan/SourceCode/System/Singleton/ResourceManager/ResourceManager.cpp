@@ -66,3 +66,10 @@ void ResourceManager::SethWnd(HWND hWnd)
 {
 	GetInstance().m_hWnd = hWnd;
 }
+
+//------------------------------------------------------------------------.
+
+HWND ResourceManager::GethWnd()
+{
+	return GetInstance().m_hWnd;
+}

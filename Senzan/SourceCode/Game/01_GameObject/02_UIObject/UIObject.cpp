@@ -40,7 +40,6 @@ void UIObject::Draw()
 	if (auto sprite = m_pSprite.lock())
 	{		
 		const auto& rectTransform = sprite->GetRectTransform();
-		m_UIName = sprite->GetResourceName();
 
 		Transform newTransform = *m_Transform;
 		rectTransform->SetTransform(newTransform);

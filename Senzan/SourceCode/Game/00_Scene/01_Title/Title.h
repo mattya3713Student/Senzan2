@@ -2,6 +2,8 @@
 #include "../00_Base/SceneBase.h"
 #include "02_UIObject/UIObject.h"
 
+class UITitle;
+
 /*********************************************
 *	タイトルクラス.
 **/
@@ -20,5 +22,5 @@ public:
 	void Draw() override;
 	
 private: 	
-	std::vector<std::shared_ptr<UIObject>> m_pUIs;	// UIクラス.
+	std::shared_ptr<UITitle> m_pUI;
 };

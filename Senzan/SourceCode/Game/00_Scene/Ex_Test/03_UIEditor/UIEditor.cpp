@@ -6,6 +6,7 @@
 #include "Graphic/DirectX/DirectX11/DirectX11.h"
 #include "Game//04_Time//Time.h"
 #include "Singleton/SceneManager/SceneManager.h"
+#include "ResourceManager/ResourceManager.h"
 
 #if _DEBUG
 #include "ImGui/CImGuiManager.h"
@@ -190,6 +191,7 @@ void UIEditor::SelectSceneLoad(const std::string& sceneName)
 		for (auto& value : spriteArray) {
 			std::shared_ptr<UIObject> ui = std::make_shared<UIObject>();
 
+			ui->SetUIName(imageName);
 			ui->SetPosition(DirectX::XMFLOAT3(value["Pos"]["x"], value["Pos"]["y"], value["Pos"]["z"]));
 			ui->SetColor(DirectX::XMFLOAT4(value["Color"]["x"], value["Color"]["y"], value["Color"]["z"], value["Color"]["a"]));
 			ui->SetAlpha(value["Alpha"]);
@@ -602,28 +604,50 @@ void UIEditor::ImGuiEtcInfoEdit(std::shared_ptr<UIObject> object)
 
 void UIEditor::TriggeHgihLight()
 {
-	m_HighlightTime = 1.f * Time::GetDeltaTime();
+	m_HighlightTime = 30.f * Time::GetDeltaTime();
 }
 
 //-----------------------------------------------------------------------.
 
 void UIEditor::HighLightUI(std::shared_ptr<UIObject> object)
 {
-	if (0.f > m_HighlightTime) { return; }
+	if (m_HighlightTime <= 0.0f) return;
 
-	RECT rc;
-	GetWindowRect(&rc);
-
-	ImDrawList* draw = ImGui::GetForegroundDrawList();
 	DirectX::XMFLOAT3 pos = object->GetPosition();
 	DirectX::XMFLOAT2 size = object->GetDrawSize();
-	DirectX::XMFLOAT2 tekitouhensuu = DirectX::XMFLOAT2(rc.left + pos.x, rc.top + pos.y);
+	DirectX::XMFLOAT3 scale = object->GetScale();
+
+	POINT clientLT = { 0, 0 };
+	ClientToScreen(ResourceManager::GethWnd(), &clientLT);
+
+	ImVec2 iwp = ImVec2(
+		clientLT.x + pos.x + WND_W / 2 - size.x / 2,
+		clientLT.y + pos.y + WND_H / 2 - size.y / 2);
+	ImVec2 iws = ImVec2(size.x, size.y);
+
+	ImGui::SetNextWindowPos(iwp);
+	ImGui::SetNextWindowSize(iws);
+
+	ImGuiWindowFlags flags =
+		ImGuiWindowFlags_NoTitleBar |
+		ImGuiWindowFlags_NoResize |
+		ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoScrollbar |
+		ImGuiWindowFlags_NoInputs |
+		ImGuiWindowFlags_NoBackground;
+
+	ImGui::Begin("##UIHighlightOverlay", nullptr, flags);
+
+	ImDrawList* draw = ImGui::GetWindowDrawList();
+	ImVec2 fillsize = ImVec2(iwp.x + size.x, iwp.y + size.y);
 
 	draw->AddRectFilled(
-		ImVec2(rc.left + pos.x, rc.top + pos.y),
-		ImVec2(rc.left + pos.x + size.x, rc.top + pos.y + size.y),
-		IM_COL32(255, 0, 0, 255)
+		iwp,
+		fillsize,
+		IM_COL32(255, 0, 0, 100)
 	);
 
-	m_HighlightTime - Time::GetDeltaTime();
+	ImGui::End();
+
+	m_HighlightTime = m_HighlightTime - Time::GetDeltaTime();
 }
