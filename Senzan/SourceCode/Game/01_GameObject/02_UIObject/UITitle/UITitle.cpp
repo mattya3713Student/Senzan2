@@ -117,10 +117,10 @@ void UITitle::AnimUpdate()
 	else if (1.f < m_SelectAlpha) { m_AnimReturn = true; }
 
 	if (m_AnimReturn) {
-		m_SelectAlpha = m_SelectAlpha - Time::GetDeltaTime() * m_AnimeSpeed;
+		m_SelectAlpha = m_SelectAlpha - Time::GetInstance().GetDeltaTime() * m_AnimeSpeed;
 	}
 	else {
-		m_SelectAlpha = m_SelectAlpha + Time::GetDeltaTime() * m_AnimeSpeed;
+		m_SelectAlpha = m_SelectAlpha + Time::GetInstance().GetDeltaTime() * m_AnimeSpeed;
 	}
 }
 

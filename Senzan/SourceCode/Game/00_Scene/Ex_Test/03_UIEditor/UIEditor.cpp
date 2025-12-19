@@ -1,35 +1,18 @@
-<<<<<<< HEAD
-ÅEø#include "UIEditor.h"
-=======
 #include "UIEditor.h"
->>>>>>> main
 #include "FileManager/FileManager.h"
 #include "ResourceManager/SpriteManager/SpriteManager.h"
 #include "Game/05_InputDevice/Input.h"
 #include "Game/03_Collision/Sprite/SpriteCollider.h"
 #include "Graphic/DirectX/DirectX11/DirectX11.h"
-<<<<<<< HEAD
 #include "Game//04_Time//Time.h"
 #include "Singleton/SceneManager/SceneManager.h"
 #include "ResourceManager/ResourceManager.h"
-=======
->>>>>>> main
 
 #if _DEBUG
 #include "ImGui/CImGuiManager.h"
 #endif // _DEBUG
 
 
-<<<<<<< HEAD
-// jsonÂûã„Çí‰ΩúÊÅE
-using Json = nlohmann::json;
-
-namespace {
-	char m_NewSceneName[64] = ""; // Êñ∞Ë¶è‰ΩúÊÅEÁî®„Éê„ÉÉ„Éï„Ç°„Çí„É°„É≥„ÉêÂ§âÊï∞„Å´ËøΩÂä†
-}
-
-//-----------------------------------------------------------------------.
-=======
 // jsonå^ÇçÏê¨
 using Json = nlohmann::json;
 
@@ -38,8 +21,6 @@ namespace {
 	char m_NewSceneName[64] = ""; // êVãKçÏê¨ópÉoÉbÉtÉ@ÇÉÅÉìÉoïœêîÇ…í«â¡
 }
 
->>>>>>> main
-
 UIEditor::UIEditor()
 {
 }
@@ -47,17 +28,6 @@ UIEditor::~UIEditor()
 {
 }
 
-<<<<<<< HEAD
-//-----------------------------------------------------------------------.
-
-void UIEditor::Create()
-{
-	SelectSceneLoad("Title");
-}
-
-//-----------------------------------------------------------------------.
-
-=======
 
 //=============================================================================
 //		çÏê¨èàóù
@@ -65,60 +35,23 @@ void UIEditor::Create()
 void UIEditor::Create()
 {
 	SelectSceneLoad("Title");
-	SelectInit();
 }
 
 
 //=============================================================================
 //		ÉfÅ[É^ì«çû
 //=============================================================================
->>>>>>> main
 HRESULT UIEditor::LoadData()
 {
 	return E_NOTIMPL;
 }
 
-<<<<<<< HEAD
-//-----------------------------------------------------------------------.
-
-=======
 
 //=============================================================================
 //		èâä˙âªèàóù
 //=============================================================================
->>>>>>> main
 void UIEditor::Initialize()
 {
-}
-
-<<<<<<< HEAD
-//-----------------------------------------------------------------------.
-
-void UIEditor::Update()
-{
-	// „Ç≠„ÉºÂÖ•ÂäÅE
-	KeyInput();
-
-	// „Ç∑„Éº„É≥„ÇíÈÅ∏Êäû„Åô„ÇÅE
-	ImGuiSelectScene();
-
-	//--------------------------------------------------------------
-	//		UI„ÅÆËøΩÂä†„Å®ÂâäÈô§
-	//--------------------------------------------------------------
-	ImGui::Begin(IMGUI_JP("UI„ÅÆËøΩÂä†„ÉªÂâäÈô§"));
-	// „Ç∑„Éº„É≥„Å´UI„ÇíËøΩÂä†
-	AddDeleteSprite();
-	// ÁîªÂÉèÂêç„ÇíÂ§âÊõ¥„ÅóÂêçÂâçË¢´„Çä„Å´ÂØæÂá¶
-=======
-
-//-----------------------------------------------------------------------------
-//		UIëIëéûÇ…âºïœêîìôÇèâä˙âªÇ∑ÇÈ
-//-----------------------------------------------------------------------------
-void UIEditor::SelectInit()
-{
-	m_PatternNo = POINTS(0, 0);
-	m_PatternMax = POINTS(1, 1);
-	m_PatternAuto = false;
 }
 
 
@@ -140,38 +73,10 @@ void UIEditor::Update()
 	// ÉVÅ[ÉìÇ…UIÇí«â¡
 	AddDeleteSprite();
 	// âÊëúñºÇïœçXÇµñºëOîÌÇËÇ…ëŒèà
->>>>>>> main
 	RenameUIObjects();
 	ImGui::End();
 
 	//--------------------------------------------------------------
-<<<<<<< HEAD
-	//		UIË™øÊï¥
-	//--------------------------------------------------------------
-	ImGui::Begin(IMGUI_JP("UI„Ç®„ÉÅEÇ£„Çø„Éº„Ç¶„Ç£„É≥„Éâ„Ç¶"));
-	// UI„É™„Çπ„Éà„ÅEÊ§úÁ¥¢Èñ¢Êï∞
-	ImGuiSearchUI();
-	
-	//-----------------------------------------------------------
-	//		ÈÅ∏Êäû‰∏≠„ÅÆ„Ç™„Éñ„Ç∏„Çß„ÇØ„Éà„ÅEÁ∑®ÈõÅE
-	//-----------------------------------------------------------
-	if (m_SelectedUIIndex >= 0 && m_SelectedUIIndex < m_pUIs.size()) {
-		// ÈÅ∏Êäû„Åï„Çå„Å¶„ÅÅEÇãUI„ÇíË°®Á§∫
-		ImGui::Text(IMGUI_JP("ÈÅ∏Êäû„Åï„Çå„Å¶„ÅÅEÇãUI: %s"), m_pUIs[m_SelectedUIIndex]->GetUIName().c_str());
-
-
-		// Â∫ßÊ®ô„ÅEË™øÊï¥
-		ImGuiPosEdit(m_pUIs[m_SelectedUIIndex]);
-		// ZÂ∫ßÊ®ô„ÇíÂü∫Ê∫ñ„Å´„ÇΩ„Éº„ÉÅE
-		SortBySpritePosZ(m_pUIs[m_SelectedUIIndex]);
-
-		// ÁîªÂÉèÊÉÖÂ†±„ÅÆË™øÊï¥
-		ImGuiInfoEdit(m_pUIs[m_SelectedUIIndex]);
-		// „Åù„ÅE‰ªñ„ÅEÊÉÅE†±„ÅÆË™øÊï¥
-		ImGuiEtcInfoEdit(m_pUIs[m_SelectedUIIndex]);
-
-		HighLightUI(m_pUIs[m_SelectedUIIndex]);
-=======
 	//		UIí≤êÆ
 	//--------------------------------------------------------------
 	ImGui::Begin(IMGUI_JP("UIÉGÉfÉBÉ^Å[ÉEÉBÉìÉhÉE"));
@@ -195,71 +100,38 @@ void UIEditor::Update()
 		ImGuiInfoEdit(m_pUIs[m_SelectedUIIndex]);
 		// ÇªÇÃëºÇÃèÓïÒÇÃí≤êÆ
 		ImGuiEtcInfoEdit(m_pUIs[m_SelectedUIIndex]);
->>>>>>> main
+
+		HighLightUI(m_pUIs[m_SelectedUIIndex]);
 	}
 
 	ImGui::End();
 
 	//--------------------------------------------------------------
-<<<<<<< HEAD
-	//		‰øùÂ≠ò„Åô„ÇÅE
-	//--------------------------------------------------------------
-	ImGui::Begin(IMGUI_JP("UI‰øùÂ≠ò„Ç¶„Ç£„É≥„Éâ„Ç¶"));
-	if (ImGui::Button(IMGUI_JP("UI„Çí‰øùÂ≠ÅE))) {
-=======
 	//		ï€ë∂Ç∑ÇÈ
 	//--------------------------------------------------------------
 	ImGui::Begin(IMGUI_JP("UIï€ë∂ÉEÉBÉìÉhÉE"));
 	if (ImGui::Button(IMGUI_JP("UIÇï€ë∂"))) {
->>>>>>> main
 		SaveScene();
 		m_MoveAny = false;
 	}
 	ImGui::End();
 }
 
-<<<<<<< HEAD
-//-----------------------------------------------------------------------.
-=======
->>>>>>> main
 
 void UIEditor::LateUpdate() 
 {
 }
 
-<<<<<<< HEAD
-//-----------------------------------------------------------------------.
-
-=======
 
 //-----------------------------------------------------------------------------
 //		ÉLÅ[ì¸óÕèàóù
 //-----------------------------------------------------------------------------
->>>>>>> main
 void UIEditor::KeyInput()
 {
 	m_DragValue = 1.f;
 	if (GetAsyncKeyState(VK_SHIFT) && 0x8000) { m_DragValue *= 0.01f; }
 	if (GetAsyncKeyState(VK_SPACE) && 0x8000) { m_DragValue *= 0.001f; }
 }
-
-<<<<<<< HEAD
-//-----------------------------------------------------------------------.
-
-void UIEditor::Draw()
-{
-	if (m_pUIs.empty()) { return; }
-	for (size_t i = 0; i < m_pUIs.size(); ++i) 
-	{
-		DirectX11::GetInstance().SetDepth(false);
-		m_pUIs[i]->Draw();
-		DirectX11::GetInstance().SetDepth(true);
-	}
-}
-
-//-----------------------------------------------------------------------.
-
-=======
 
 //=============================================================================
 //		ï`âÊèàóù
@@ -276,7 +148,6 @@ void UIEditor::Draw()
 //-----------------------------------------------------------------------------
 //		ëIëÇµÇΩÉVÅ[ÉìÇÃUIÇì«Ç›çûÇ›
 //-----------------------------------------------------------------------------
->>>>>>> main
 void UIEditor::SelectSceneLoad(const std::string& sceneName)
 {
 	m_pSprite2Ds.clear();
@@ -288,26 +159,16 @@ void UIEditor::SelectSceneLoad(const std::string& sceneName)
 	m_CurrentSceneName = sceneName;
 	m_ScenePath = "Data\\Image\\Sprite\\UIData\\" + sceneName + ".json";
 
-<<<<<<< HEAD
-	// JSONË™≠„ÅøËæº„Åø
-	Json jsonData = FileManager::JsonLoad(m_ScenePath);
-
-	// Á©∫„Å™„ÇâÂÅEÊúüUI„ÇÅEÂÄãËøΩÂä†
-=======
 	// JSONì«Ç›çûÇ›
 	Json jsonData = FileManager::JsonLoad(m_ScenePath);
 
 	// ãÛÇ»ÇÁèâä˙UIÇ1å¬í«â¡
->>>>>>> main
 	if (jsonData.is_null() || jsonData.empty()) {
 		std::shared_ptr<Sprite2D> sprite = std::make_shared<Sprite2D>();
 		std::shared_ptr<UIObject> ui = std::make_shared<UIObject>();
 
-<<<<<<< HEAD
-		sprite->Initialize("Data\\Image\\Sprite\\Other\\White.png"); // ÈªíÁîªÂÉè„ÇíÂàùÊúü„ÅßÂá∫„ÅÅE
-=======
 		sprite->Initialize("Data\\Image\\Sprite\\Other\\White.png"); // çïâÊëúÇèâä˙Ç≈èoÇ∑
->>>>>>> main
+
 		ui->AttachSprite(sprite);
 		ui->SetPosition(0.f, 0.f, 0.f);
 
@@ -315,15 +176,6 @@ void UIEditor::SelectSceneLoad(const std::string& sceneName)
 		m_pUIs.push_back(ui);
 		m_SpritePosList.push_back(ui->GetPosition());
 
-<<<<<<< HEAD
-		// „Å§„ÅÅEÅß„Å´SaveScene()„ÅßÊõ∏„ÅçËæº„Çì„Åß„Åä„Åè
-		SaveScene();
-	}
-
-	// ‰øùÂ≠ò„Åï„Çå„ÅüUI„ÉÅEÅE„Çø„ÇíË™≠„ÅøËæº„Åø„ÄÅÂ±ïÈñã
-	for (auto& [imageName, spriteArray] : jsonData.items()) {
-		// Êã°ÂºµÂ≠ê„Åå .json „Å™„Çâ„Çπ„Ç≠„ÉÅEÅE
-=======
 		// Ç¬Ç¢Ç≈Ç…SaveScene()Ç≈èëÇ´çûÇÒÇ≈Ç®Ç≠
 		SaveScene();
 	}
@@ -331,27 +183,12 @@ void UIEditor::SelectSceneLoad(const std::string& sceneName)
 	// ï€ë∂Ç≥ÇÍÇΩUIÉfÅ[É^Çì«Ç›çûÇ›ÅAìWäJ
 	for (auto& [imageName, spriteArray] : jsonData.items()) {
 		// ägí£éqÇ™ .json Ç»ÇÁÉXÉLÉbÉv
->>>>>>> main
 		std::string::size_type dotPos = imageName.find_last_of('.');
 		if (dotPos != std::string::npos) {
 			std::string ext = imageName.substr(dotPos);
 			if (ext == ".json" || ext == ".JSON") continue;
 		}
-		
-<<<<<<< HEAD
-		// „Çπ„Éó„É©„Ç§„ÉàÂèñÂæÅE
-		std::shared_ptr<Sprite2D> Sprite = SpriteManager::GetSprite2D(GetBaseName(imageName));
-		if (!Sprite) {
-			MessageBoxA(NULL, ("„Çπ„Éó„É©„Ç§„Éà„ÅåË¶ã„Å§„Åã„Çä„Åæ„Åõ„Çì: " + imageName).c_str(), "Error", MB_OK);
-			continue;
-		}
 
-		// ÂêÑUI„Ç§„É≥„Çπ„Çø„É≥„Çπ„ÇíÂ±ïÈñã
-		for (auto& value : spriteArray) {
-			std::shared_ptr<UIObject> ui = std::make_shared<UIObject>();
-
-			ui->SetUIName(imageName);
-=======
 		// ÉXÉvÉâÉCÉgéÊìæ
 		std::shared_ptr<Sprite2D> Sprite = SpriteManager::GetSprite2D(GetBaseName(imageName));
 		if (!Sprite) {
@@ -363,7 +200,6 @@ void UIEditor::SelectSceneLoad(const std::string& sceneName)
 		for (auto& value : spriteArray) {
 			std::shared_ptr<UIObject> ui = std::make_shared<UIObject>();
 
->>>>>>> main
 			ui->SetPosition(DirectX::XMFLOAT3(value["Pos"]["x"], value["Pos"]["y"], value["Pos"]["z"]));
 			ui->SetColor(DirectX::XMFLOAT4(value["Color"]["x"], value["Color"]["y"], value["Color"]["z"], value["Color"]["a"]));
 			ui->SetAlpha(value["Alpha"]);
@@ -371,68 +207,41 @@ void UIEditor::SelectSceneLoad(const std::string& sceneName)
 			ui->SetPivot(DirectX::XMFLOAT2(value["Pivot"]["x"], value["Pivot"]["y"]));
 			ui->SetRotation(DirectX::XMFLOAT3(value["Rotate"]["x"], value["Rotate"]["y"], value["Rotate"]["z"]));
 			ui->SetDrawSize(DirectX::XMFLOAT2(value["Disp"]["w"], value["Disp"]["h"]));
-			
-<<<<<<< HEAD
-			// „É™„Çπ„Éà„Å´ËøΩÂä†
-=======
-			// Ç»Ç¢ÇÃÇ©ÅHÅH
-			//ui->SetBase(DirectX::XMFLOAT2(value["Base"]["w"], value["Base"]["h"]));
-			//ui->SetStride(DirectX::XMFLOAT2(value["Stride"]["w"], value["Stride"]["h"]));
 
 			// ÉäÉXÉgÇ…í«â¡
->>>>>>> main
 			m_pSprite2Ds.push_back(Sprite);
 			ui->AttachSprite(Sprite);
 			m_pUIs.push_back(ui);
 			m_SpritePosList.push_back(ui->GetPosition());
 		}
 	}
-<<<<<<< HEAD
-	// ZÂ∫ßÊ®ô„ÇíÂü∫Ê∫ñ„Å´„ÇΩ„Éº„Éà„Åô„ÇÅE
-=======
-	// Zç¿ïWÇäÓèÄÇ…É\Å[ÉgÇ∑ÇÈ
->>>>>>> main
 	std::sort(m_pUIs.begin(), m_pUIs.end(), [](std::shared_ptr<UIObject> a, std::shared_ptr<UIObject> b) {
 		return a->GetPosition().z < b->GetPosition().z;
 		});
 }
 
-<<<<<<< HEAD
-//-----------------------------------------------------------------------.
-
-=======
 
 //-----------------------------------------------------------------------------
 //		åªç›ÉVÅ[ÉìÇÃUIèÓïÒÇï€ë∂
 //-----------------------------------------------------------------------------
->>>>>>> main
 HRESULT UIEditor::SaveScene()
 {
 	Json jsonData;
 	for (size_t i = 0; i < m_pUIs.size(); ++i)
 	{
-<<<<<<< HEAD
-		std::string imageName = m_pUIs[i]->GetUIName();
-
-		// ÁîªÂÉèÂêç„Åî„Å®„ÅÆ„É™„Çπ„Éà„Å´UIÊÉÅE†±„ÇíËøΩÂä†
-=======
 		std::string imageName = m_pUIs[i]->GetResourceName();
 
 		// âÊëúñºÇ≤Ç∆ÇÃÉäÉXÉgÇ…UIèÓïÒÇí«â¡
->>>>>>> main
 		Json SpriteState;
 		SpriteState["Pos"]["x"] = m_pUIs[i]->GetPosition().x;
 		SpriteState["Pos"]["y"] = m_pUIs[i]->GetPosition().y;
 		SpriteState["Pos"]["z"] = m_pUIs[i]->GetPosition().z;
 		SpriteState["Disp"]["w"] = m_pUIs[i]->GetDrawSize().x;
 		SpriteState["Disp"]["h"] = m_pUIs[i]->GetDrawSize().y;
-<<<<<<< HEAD
-=======
 		//SpriteState["Base"]["w"] = m_pUIs[i]->GetSpriteData().Base.w;
 		//SpriteState["Base"]["h"] = m_pUIs[i]->GetSpriteData().Base.h;
 		//SpriteState["Stride"]["w"] = m_pUIs[i]->GetSpriteData().Stride.w;
 		//SpriteState["Stride"]["h"] = m_pUIs[i]->GetSpriteData().Stride.h;
->>>>>>> main
 
 		SpriteState["Color"]["x"] = m_pUIs[i]->GetColor().x;
 		SpriteState["Color"]["y"] = m_pUIs[i]->GetColor().y;
@@ -449,11 +258,7 @@ HRESULT UIEditor::SaveScene()
 		SpriteState["Rotate"]["y"] = m_pUIs[i]->GetRotation().y;
 		SpriteState["Rotate"]["z"] = m_pUIs[i]->GetRotation().z;
 
-<<<<<<< HEAD
-		// jsonData[ÁîªÂÉèÂêç] „Å´ÈÖçÂÅE„Å®„Åó„Å¶ËøΩÂä†
-=======
 		// jsonData[âÊëúñº] Ç…îzóÒÇ∆ÇµÇƒí«â¡
->>>>>>> main
 		jsonData[imageName].push_back(SpriteState);
 	}
 	std::string outPath = "Data\\Image\\Sprite\\UIData\\" + m_CurrentSceneName + ".json";
@@ -462,22 +267,6 @@ HRESULT UIEditor::SaveScene()
 	return S_OK;
 }
 
-<<<<<<< HEAD
-//-----------------------------------------------------------------------.
-
-void UIEditor::SortBySpritePosZ(std::shared_ptr<UIObject> object)
-{
-	// ‰Ωï„ÇÇÂ∫ßÊ®ô„Å´Èñ¢„Åó„Å¶Â§âÊõ¥„Åå„Å™„ÅÅE†¥ÂêàÊó©Êúü„É™„Çø„Éº„É≥
-	if (!m_MovedSpritePos) { return; }
-
-	// „ÇΩ„Éº„ÉàÂâç„ÅÆÈÅ∏Êäû„Åï„Çå„Å¶„ÅÅEÅü UI „ÅÆ„Éù„Ç§„É≥„Çø„Çí‰øùÂ≠ÅE
-	std::shared_ptr<UIObject> pPreviousSelectedUI = object;
-
-	// ZÂ∫ßÊ®ô„ÇíÂü∫Ê∫ñ„Å´„ÇΩ„Éº„Éà„Åô„ÇÅE
-	std::sort(m_pUIs.begin(), m_pUIs.end(),
-		[](const std::shared_ptr<UIObject>& a, const std::shared_ptr<UIObject>& b) {
-			if (!a || !b) return false; // UIObject„Åånullptr„Å™„ÇâÂæå„Çç„Å´
-=======
 
 //-----------------------------------------------------------------------------
 //		Zç¿ïWÇå≥Ç…É\Å[ÉgÇ∑ÇÈä÷êî
@@ -494,7 +283,6 @@ void UIEditor::SortBySpritePosZ(std::shared_ptr<UIObject> object)
 	std::sort(m_pUIs.begin(), m_pUIs.end(),
 		[](const std::shared_ptr<UIObject>& a, const std::shared_ptr<UIObject>& b) {
 			if (!a || !b) return false; // UIObjectÇ™nullptrÇ»ÇÁå„ÇÎÇ…
->>>>>>> main
 
 			const auto& posA = a->GetPosition();
 			const auto& posB = b->GetPosition();
@@ -502,24 +290,11 @@ void UIEditor::SortBySpritePosZ(std::shared_ptr<UIObject> object)
 			return posA.z < posB.z;
 		});
 
-<<<<<<< HEAD
-	// „ÇΩ„Éº„ÉàÂæå„Å´„ÄÅ‰ª•ÂâçÈÅ∏Êäû„Åï„Çå„Å¶„ÅÅEÅü UI „Åå„Åæ„Å†„É™„Çπ„Éà„Å´Â≠òÂú®„Åô„Çã„ÅãÁ¢∫Ë™ç„Åó„ÄÅÂÅEÈÅ∏ÊäÅE
-=======
 	// É\Å[Égå„Ç…ÅAà»ëOëIëÇ≥ÇÍÇƒÇ¢ÇΩ UI Ç™Ç‹ÇæÉäÉXÉgÇ…ë∂ç›Ç∑ÇÈÇ©ämîFÇµÅAçƒëIë
->>>>>>> main
 	if (pPreviousSelectedUI != nullptr)
 	{
 		auto it = std::find(m_pUIs.begin(), m_pUIs.end(), pPreviousSelectedUI);
 		if (it != m_pUIs.end()) {
-<<<<<<< HEAD
-			// ÂÜçÈÅ∏ÊäÅE
-			m_SelectedUIIndex = static_cast<int>(std::distance(m_pUIs.begin(), it));
-		}
-		else {
-			// ‰ª•ÂâçÈÅ∏Êäû„Åï„Çå„Å¶„ÅÅEÅüUI„Åå„É™„Çπ„Éà„Å´„Å™„ÅÅE†¥ÂêÅE
-			object = nullptr;
-			m_SelectedUIIndex = 0;
-=======
 			// çƒëIë
 			m_SelectedUIIndex = static_cast<int>(std::distance(m_pUIs.begin(), it));
 		}
@@ -527,28 +302,12 @@ void UIEditor::SortBySpritePosZ(std::shared_ptr<UIObject> object)
 			// à»ëOëIëÇ≥ÇÍÇƒÇ¢ÇΩUIÇ™ÉäÉXÉgÇ…Ç»Ç¢èÍçá
 			object = nullptr;
 			m_SelectedUIIndex = 0; // Ç‹ÇΩÇÕìKêÿÇ»ÉfÉtÉHÉãÉgíl
->>>>>>> main
 		}
 	}
 
 	m_MovedSpritePos = false;
 }
 
-<<<<<<< HEAD
-//-----------------------------------------------------------------------.
-
-void UIEditor::ImGuiSelectScene()
-{
-	ImGui::Begin(IMGUI_JP("„Ç∑„Éº„É≥ÁÆ°ÁêÅE));
-
-	// Êñ∞Ë¶è„Ç∑„Éº„É≥„ÅÆ‰ΩúÊÅE
-	ImGui::InputText(IMGUI_JP("Êñ∞Ë¶è„Ç∑„Éº„É≥ÂêÅE), m_NewSceneName, IM_ARRAYSIZE(m_NewSceneName));
-	if (ImGui::Button(IMGUI_JP("Êñ∞Ë¶è„Ç∑„Éº„É≥‰ΩúÊÅE"))) {
-		std::string newPath = "Data\\Image\\Sprite\\UIData\\" + std::string(m_NewSceneName) + ".json";
-		if (!std::filesystem::exists(newPath)) {
-			std::ofstream ofs(newPath);
-			ofs << "{}"; // Á©∫„ÅÆJSON„ÇíÊõ∏„ÅçËæº„ÇÄ
-=======
 
 //-----------------------------------------------------------------------------
 //		ImGuiÇópÇ¢ÇΩÉVÅ[ÉìëIëä÷êî
@@ -564,7 +323,6 @@ void UIEditor::ImGuiSelectScene()
 		if (!std::filesystem::exists(newPath)) {
 			std::ofstream ofs(newPath);
 			ofs << "{}"; // ãÛÇÃJSONÇèëÇ´çûÇﬁ
->>>>>>> main
 			ofs.close();
 		}
 		m_CurrentSceneName = m_NewSceneName;
@@ -573,17 +331,10 @@ void UIEditor::ImGuiSelectScene()
 	}
 
 	ImGui::Separator();
-<<<<<<< HEAD
-	ImGui::Text(IMGUI_JP("Êó¢Â≠ò„ÅE„Ç∑„Éº„É≥"));
-
-	static std::string sceneToDelete; // ÂâäÈô§ÂÄôË£ú„ÅE„Ç∑„Éº„É≥ÂêÅE
-	static bool showDeleteConfirm = false; // ÂâäÈô§Á¢∫Ë™ç„ÉÄ„Ç§„Ç¢„É≠„Ç∞Ë°®Á§∫„Éï„É©„Ç∞
-=======
 	ImGui::Text(IMGUI_JP("ä˘ë∂ÇÃÉVÅ[Éì"));
 
 	static std::string sceneToDelete; // çÌèúåÛï‚ÇÃÉVÅ[Éìñº
 	static bool showDeleteConfirm = false; // çÌèúämîFÉ_ÉCÉAÉçÉOï\é¶ÉtÉâÉO
->>>>>>> main
 
 	for (const auto& entry : std::filesystem::directory_iterator("Data\\Image\\Sprite\\UIData\\")) {
 		if (entry.path().extension() == ".json") {
@@ -598,11 +349,7 @@ void UIEditor::ImGuiSelectScene()
 			}
 			ImGui::SameLine();
 
-<<<<<<< HEAD
-			if (ImGui::Button(IMGUI_JP("ÂâäÈô§"))) {
-=======
 			if (ImGui::Button(IMGUI_JP("çÌèú"))) {
->>>>>>> main
 				sceneToDelete = sceneName;
 				showDeleteConfirm = true;
 			}
@@ -611,17 +358,6 @@ void UIEditor::ImGuiSelectScene()
 		}
 	}
 
-<<<<<<< HEAD
-	// ÂâäÈô§Á¢∫Ë™ç„É¢„Éº„ÉÄ„É´
-	if (showDeleteConfirm) {
-		ImGui::OpenPopup(IMGUI_JP("ÂâäÈô§Á¢∫Ë™ÅE));
-	}
-	if (ImGui::BeginPopupModal(IMGUI_JP("ÂâäÈô§Á¢∫Ë™ÅE), NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-		ImGui::Text("%s\n%s", sceneToDelete.c_str(), IMGUI_JP("„ÇíÂâäÈô§„Åó„Åæ„Åô„ÅãÅEÅE));
-		ImGui::Separator();
-
-		if (ImGui::Button(IMGUI_JP("„ÅØ„ÅÅE), ImVec2(120, 0))) {
-=======
 	// çÌèúämîFÉÇÅ[É_Éã
 	if (showDeleteConfirm) {
 		ImGui::OpenPopup(IMGUI_JP("çÌèúämîF"));
@@ -631,7 +367,6 @@ void UIEditor::ImGuiSelectScene()
 		ImGui::Separator();
 
 		if (ImGui::Button(IMGUI_JP("ÇÕÇ¢"), ImVec2(120, 0))) {
->>>>>>> main
 			std::string deletePath = "Data\\Image\\Sprite\\UIData\\" + sceneToDelete + ".json";
 			if (std::filesystem::exists(deletePath)) {
 				try {
@@ -641,17 +376,10 @@ void UIEditor::ImGuiSelectScene()
 			}
 
 			if (m_CurrentSceneName == sceneToDelete) {
-<<<<<<< HEAD
-				// ÂâäÈô§ÂØæË±°„ÅÆ„Ç∑„Éº„É≥„ÇíÁèæÂú®„ÅÆ„Ç∑„Éº„É≥„Åã„ÇâÂ§ñ„Åô
-				m_CurrentSceneName.clear();
-
-				// UI„Å™„Å©„ÅÆ„ÉÅEÅE„Çø„Çí„ÇØ„É™„Ç¢
-=======
 				// çÌèúëŒè€ÇÃÉVÅ[ÉìÇåªç›ÇÃÉVÅ[ÉìÇ©ÇÁäOÇ∑
 				m_CurrentSceneName.clear();
 
 				// UIÇ»Ç«ÇÃÉfÅ[É^ÇÉNÉäÉA
->>>>>>> main
 				m_pUIs.clear();
 				m_pSprite2Ds.clear();
 				m_SpritePosList.clear();
@@ -663,11 +391,7 @@ void UIEditor::ImGuiSelectScene()
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SameLine();
-<<<<<<< HEAD
-		if (ImGui::Button(IMGUI_JP("„ÅÅEÅÑ„ÅÅE), ImVec2(120, 0))) {
-=======
 		if (ImGui::Button(IMGUI_JP("Ç¢Ç¢Ç¶"), ImVec2(120, 0))) {
->>>>>>> main
 			sceneToDelete.clear();
 			showDeleteConfirm = false;
 			ImGui::CloseCurrentPopup();
@@ -677,23 +401,6 @@ void UIEditor::ImGuiSelectScene()
 
 	ImGui::End();
 }
-
-<<<<<<< HEAD
-//-----------------------------------------------------------------------.
-
-void UIEditor::ImGuiSearchUI()
-{
-	if (ImGui::TreeNodeEx(IMGUI_JP("UI„É™„Çπ„ÉÅE), ImGuiTreeNodeFlags_DefaultOpen)) {
-		// Ê§úÁ¥¢„Éê„ÅE
-		ImGui::InputText(IMGUI_JP("Ê§úÁ¥¢"), m_SearchBuffer, IM_ARRAYSIZE(m_SearchBuffer));
-		// „Çπ„ÇØ„É≠„Éº„É´ÂèØËÉΩ„Å™„É™„Çπ„ÉÅE
-		ImGui::BeginChild(IMGUI_JP("„É™„Çπ„ÉÅE), ImVec2(315, 200), true, ImGuiWindowFlags_HorizontalScrollbar);
-
-		for (int i = 0; i < m_pUIs.size(); ++i) {
-			// Ê§úÁ¥¢„Éï„Ç£„É´„Çø„É™„É≥„Ç∞
-			if (strlen(m_SearchBuffer) > 0
-				&& m_pUIs[i]->GetUIName().find(m_SearchBuffer) == std::string::npos) {
-=======
 
 //-----------------------------------------------------------------------------
 //		UIÉäÉXÉgåüçıä÷êî
@@ -710,20 +417,13 @@ void UIEditor::ImGuiSearchUI()
 			// åüçıÉtÉBÉãÉ^ÉäÉìÉO
 			if (strlen(m_SearchBuffer) > 0
 				&& m_pUIs[i]->GetResourceName().find(m_SearchBuffer) == std::string::npos) {
->>>>>>> main
 				continue;
 			}
 
 			bool isSelected = (m_SelectedUIIndex == i);
-<<<<<<< HEAD
-			if (ImGui::Selectable(m_pUIs[i]->GetUIName().c_str(), isSelected)) {
-				m_SelectedUIIndex = i; // ÈÅ∏ÊäûÊõ¥Êñ∞
-				TriggeHgihLight();
-=======
 			if (ImGui::Selectable(m_pUIs[i]->GetResourceName().c_str(), isSelected)) {
 				m_SelectedUIIndex = i; // ëIëçXêV
-				SelectInit();
->>>>>>> main
+				TriggeHgihLight();
 			}
 		}
 		ImGui::EndChild();
@@ -731,20 +431,6 @@ void UIEditor::ImGuiSearchUI()
 	}
 }
 
-<<<<<<< HEAD
-//-----------------------------------------------------------------------.
-
-void UIEditor::AddDeleteSprite()
-{
-	std::vector<std::string> spriteNames = SpriteManager::GetSprite2D2List();
-	if (ImGui::TreeNodeEx(IMGUI_JP("ËøΩÂä†ÂèØËÉΩUI„É™„Çπ„ÉÅE), ImGuiTreeNodeFlags_DefaultOpen)) {
-		// Ê§úÁ¥¢„Éê„ÅE
-		ImGui::InputText(IMGUI_JP("Ê§úÁ¥¢"), m_SpriteSearchBuffer,
-			IM_ARRAYSIZE(m_SpriteSearchBuffer));
-		// „Çπ„ÇØ„É≠„Éº„É´ÂèØËÉΩ„Å™„É™„Çπ„ÉÅE
-		ImGui::BeginChild(IMGUI_JP("„É™„Çπ„ÉÅE),
-			ImVec2(315, 200), true, ImGuiWindowFlags_HorizontalScrollbar);
-=======
 
 //-----------------------------------------------------------------------------
 //		SpriteManagerÇ©ÇÁUIÇí«â¡
@@ -759,16 +445,11 @@ void UIEditor::AddDeleteSprite()
 		// ÉXÉNÉçÅ[Éãâ¬î\Ç»ÉäÉXÉg
 		ImGui::BeginChild(IMGUI_JP("ÉäÉXÉg"),
 			ImVec2(315, 100), true, ImGuiWindowFlags_HorizontalScrollbar);
->>>>>>> main
 
 		for (int i = 0; i < spriteNames.size(); ++i) {
 			const std::string& name = spriteNames[i];
 
-<<<<<<< HEAD
-			// Ê§úÁ¥¢„Éï„Ç£„É´„Çø
-=======
 			// åüçıÉtÉBÉãÉ^
->>>>>>> main
 			if (strlen(m_SpriteSearchBuffer) > 0 &&
 				name.find(m_SpriteSearchBuffer) == std::string::npos) {
 				continue;
@@ -776,22 +457,13 @@ void UIEditor::AddDeleteSprite()
 
 			bool isSelected = (m_SelectedSpriteName == name);
 			if (ImGui::Selectable(name.c_str(), isSelected)) {
-<<<<<<< HEAD
-				m_SelectedSpriteName = name; // ÈÅ∏ÊäûÊõ¥Êñ∞
-=======
 				m_SelectedSpriteName = name; // ëIëçXêV
->>>>>>> main
 			}
 		}
 		ImGui::EndChild();
 
-<<<<<<< HEAD
-		// ÈÅ∏Êäû„Åï„Çå„Åü„Çπ„Éó„É©„Ç§„Éà„ÇíUI„Å®„Åó„Å¶ËøΩÂä†
-		if (ImGui::Button(IMGUI_JP("UIËøΩÂä†"))) {
-=======
 		// ëIëÇ≥ÇÍÇΩÉXÉvÉâÉCÉgÇUIÇ∆ÇµÇƒí«â¡
 		if (ImGui::Button(IMGUI_JP("UIí«â¡"))) {
->>>>>>> main
 			if (!m_SelectedSpriteName.empty()) {
 				std::shared_ptr<Sprite2D> pSprite = SpriteManager::GetSprite2D(m_SelectedSpriteName);
 				if (!pSprite) return;
@@ -802,32 +474,19 @@ void UIEditor::AddDeleteSprite()
 				m_pSprite2Ds.push_back(pSprite);
 				m_pUIs.push_back(ui);
 				m_SpritePosList.push_back(ui->GetPosition());
-<<<<<<< HEAD
 
 				TriggeHgihLight();
 			}
 		}
 
-		// ÈÅ∏Êäû„Åï„Çå„ÅüUI„ÇíÂâäÈô§
-		if (ImGui::Button(IMGUI_JP("UIÂâäÈô§")) && !m_pUIs.empty()) {
-=======
-			}
-		}
-
 		// ëIëÇ≥ÇÍÇΩUIÇçÌèú
 		if (ImGui::Button(IMGUI_JP("UIçÌèú")) && !m_pUIs.empty()) {
->>>>>>> main
 			m_pUIs[m_SelectedUIIndex].reset();
 			
 			m_pUIs.erase(m_pUIs.begin() + m_SelectedUIIndex);
 			m_pSprite2Ds.erase(m_pSprite2Ds.begin() + m_SelectedUIIndex);
 			m_SpritePosList.erase(m_SpritePosList.begin() + m_SelectedUIIndex);
-
-<<<<<<< HEAD
-			// „Ç§„É≥„ÉÅEÉÉ„ÇØ„Çπ„Çí„É™„Çª„ÉÅEÉà
-=======
 			// ÉCÉìÉfÉbÉNÉXÇÉäÉZÉbÉg
->>>>>>> main
 			m_SelectedUIIndex = 0;
 		}
 
@@ -835,29 +494,15 @@ void UIEditor::AddDeleteSprite()
 	}
 }
 
-<<<<<<< HEAD
-//-----------------------------------------------------------------------.
-
-=======
 
 //-----------------------------------------------------------------------------
 //		É\Å[ÉgÇ∆ñºëOïœçXÇìØéûÇ…çsÇ§
 //-----------------------------------------------------------------------------
->>>>>>> main
 void UIEditor::RenameUIObjects()
 {
 	if (m_pUIs.empty()) { return; }
 	std::vector<std::pair<std::string, std::shared_ptr<UIObject>>> nameUIList;
 
-<<<<<<< HEAD
-	// UIÂêç„Å®UI„Ç™„Éñ„Ç∏„Çß„ÇØ„Éà„ÅE„Éö„Ç¢„ÇíÂèéÈõÅE
-	for (std::shared_ptr<UIObject> ui : m_pUIs) {
-		std::string baseName = GetBaseName(ui->GetUIName());
-		nameUIList.emplace_back(baseName, ui);
-	}
-
-	// „Éä„É≥„Éê„É™„É≥„Ç∞„Åó„Å¶ÂêçÂâç„ÇíÂÅEË®≠ÂÆÅE
-=======
 	// UIñºÇ∆UIÉIÉuÉWÉFÉNÉgÇÃÉyÉAÇé˚èW
 	for (std::shared_ptr<UIObject> ui : m_pUIs) {
 		std::string baseName = GetBaseName(ui->GetResourceName());
@@ -865,26 +510,12 @@ void UIEditor::RenameUIObjects()
 	}
 
 	// ÉiÉìÉoÉäÉìÉOÇµÇƒñºëOÇçƒê›íË
->>>>>>> main
 	std::unordered_map<std::string, int> nameCount;
 
 	for (auto& [baseName, ui] : nameUIList) {
 		int index = nameCount[baseName]++;
 		std::string newName = baseName + "_" + std::to_string(index);
-<<<<<<< HEAD
 		ui->SetUIName(newName);
-	}
-}
-
-//-----------------------------------------------------------------------.
-
-void UIEditor::ImGuiPosEdit(std::shared_ptr<UIObject> object)
-{
-	if (ImGui::TreeNode(IMGUI_JP("Â∫ßÊ®ÅE)))
-	{
-		// „Éâ„É©„ÉÅEÇ∞&„Éâ„É≠„ÉÅEÅEÁî®„Å´„Éû„Ç¶„ÇπÊìç‰Ωú„ÅEDirectInput„ÇíÁî®ÊÑÅE
-=======
-		ui->SetResourceName(newName);
 	}
 }
 
@@ -897,7 +528,6 @@ void UIEditor::ImGuiPosEdit(std::shared_ptr<UIObject> object)
 	if (ImGui::TreeNode(IMGUI_JP("ç¿ïW")))
 	{
 		// ÉhÉâÉbÉO&ÉhÉçÉbÉvópÇ…É}ÉEÉXëÄçÏÇÃDirectInputÇópà”
->>>>>>> main
 		DirectX::XMFLOAT3 pos = object->GetPosition();
 		bool posdrag = ImGui::DragFloat3("##Position", &pos.x, m_DragValue);
 	
@@ -907,14 +537,9 @@ void UIEditor::ImGuiPosEdit(std::shared_ptr<UIObject> object)
 		GetWindowRect(GetForegroundWindow(), &rect);
 		DirectX::XMFLOAT2 objectpos = DirectX::XMFLOAT2(object->GetPosition().x + rect.left, object->GetPosition().y + rect.top);
 
-<<<<<<< HEAD
-		// ÁîªÂÉèÁØÅEõ≤ÂÜÅEÅßÂ∑¶„ÇØ„É™„ÉÅEÇØÂÖ•Âäõ‰∏≠„ÅÆÂ†¥Âêà„ÄÅ„Éâ„É©„ÉÅEÇ∞Êìç‰Ωú„ÇíÈñãÂßÅE
-		if (SpriteCollider::PointInSquare(MousePos, objectpos,object->GetDrawSize()) && !m_DoDrag) {
-=======
 		// âÊëúîÕàÕì‡Ç≈ç∂ÉNÉäÉbÉNì¸óÕíÜÇÃèÍçáÅAÉhÉâÉbÉOëÄçÏÇäJén
 		if (SpriteCollider::PointInSquare(MousePos, objectpos,object->GetDrawSize()) && !m_DoDrag) {
 			// âˆÇµÇ¢É|ÉCÉìÉg(ÇŸÇÒÇ‹Ç…îªíËÇ∆ÇÍÇÈÇÃÇ±ÇÍÅHÅH)
->>>>>>> main
 			if (Input::IsMouseGrab()) {
 				m_DoDrag = true;
 				m_OffsetPos = DirectX::XMFLOAT2(pos.x - MousePos.x, pos.y - MousePos.y);
@@ -922,15 +547,6 @@ void UIEditor::ImGuiPosEdit(std::shared_ptr<UIObject> object)
 		}
 		if (m_DoDrag) {
 			posdrag = true;
-<<<<<<< HEAD
-			// Ë£úÊ≠£ÂÄ§+„Éû„Ç¶„ÇπÂ∫ßÊ®ô„Åó„ÅüÂ∫ßÊ®ô„ÇíÂÖ•„Çå„Çã
-			pos = DirectX::XMFLOAT3(MousePos.x + m_OffsetPos.x, MousePos.y + m_OffsetPos.y, pos.z);
-			// „Éû„Ç¶„Çπ„ÅÆÂ∑¶„ÇØ„É™„ÉÅEÇØ„ÇíË©±„Åó„ÅüÂ†¥Âêà„ÄÅ„Éâ„É©„ÉÅEÇ∞Êìç‰Ωú„ÇíÂÅúÊ≠¢
-			if (!Input::IsMouseGrab()) { m_DoDrag = false; }
-		}
-
-		// Â§âÊõ¥„Åå„ÅÇ„Å£„ÅüÂ†¥Âêà‰øùÂ≠ò„Åô„ÇÅE
-=======
 			// ï‚ê≥íl+É}ÉEÉXç¿ïWÇµÇΩç¿ïWÇì¸ÇÍÇÈ
 			pos = DirectX::XMFLOAT3(MousePos.x + m_OffsetPos.x, MousePos.y + m_OffsetPos.y, pos.z);
 			// É}ÉEÉXÇÃç∂ÉNÉäÉbÉNÇòbÇµÇΩèÍçáÅAÉhÉâÉbÉOëÄçÏÇí‚é~
@@ -938,7 +554,6 @@ void UIEditor::ImGuiPosEdit(std::shared_ptr<UIObject> object)
 		}
 
 		// ïœçXÇ™Ç†Ç¡ÇΩèÍçáï€ë∂Ç∑ÇÈ
->>>>>>> main
 		if (posdrag) {
 			object->SetPosition(pos);
 			m_MoveAny = true;
@@ -948,15 +563,6 @@ void UIEditor::ImGuiPosEdit(std::shared_ptr<UIObject> object)
 	}
 }
 
-<<<<<<< HEAD
-//-----------------------------------------------------------------------.
-
-void UIEditor::ImGuiInfoEdit(std::shared_ptr<UIObject> object)
-{
-	if (ImGui::TreeNode(IMGUI_JP("ÁîªÂÉèÊÉÖÂ†±")))
-	{
-		// Ë°®Á§∫„Çµ„Ç§„Ç∫„Çí‰ª£ÂÖ•
-=======
 
 //-----------------------------------------------------------------------------
 //		èÓïÒí≤êÆä÷êî(ëIëÇ≥ÇÍÇΩUIObect)
@@ -965,27 +571,9 @@ void UIEditor::ImGuiInfoEdit(std::shared_ptr<UIObject> object)
 {
 	if (ImGui::TreeNode(IMGUI_JP("âÊëúèÓïÒ")))
 	{
-		// å≥ÅAï\é¶ÅAï™äÑÇªÇÍÇºÇÍÇÃÉTÉCÉYÇë„ì¸
-		//DirectX::XMFLOAT2 base = DirectX::XMFLOAT2(
-		//	object->GetSpriteData().x,
-		//	object->GetSpriteData().y);
-		//DirectX::XMFLOAT2 stride = DirectX::XMFLOAT2(
-		//	object->GetSpriteData().Stride.w,
-		//	object->GetSpriteData().Stride.h);
->>>>>>> main
 		DirectX::XMFLOAT2 disp = DirectX::XMFLOAT2(
 			object->GetDrawSize().x,
 			object->GetDrawSize().y);
-
-<<<<<<< HEAD
-		ImGui::Text(IMGUI_JP("Ë°®Á§∫„Çµ„Ç§„Ç∫(x,y)"));
-		bool dispdrag = ImGui::DragFloat2("##DispDrag", &disp.x, m_DragValue);
-
-		// Â§âÊõ¥„Åå„ÅÇ„Å£„ÅüÂ†¥Âêà‰øùÂ≠ò„Åô„ÇÅE
-		if (dispdrag)
-		{
-			object->SetDrawSize(disp);
-=======
 		//ImGui::Text(IMGUI_JP("å≥ÇÃÉTÉCÉY(x,y)"));
 		//bool basedrag = ImGui::DragFloat2("##BaseDrag", base, m_DragValue);
 
@@ -1004,20 +592,11 @@ void UIEditor::ImGuiInfoEdit(std::shared_ptr<UIObject> object)
 			object->SetDrawSize(disp);
 		//	object->SetBase(base);
 		//	object->SetStride(stride);
->>>>>>> main
 			m_MoveAny = true;
 		}
 		ImGui::TreePop();
 	}
 }
-
-<<<<<<< HEAD
-//-----------------------------------------------------------------------.
-
-void UIEditor::ImGuiEtcInfoEdit(std::shared_ptr<UIObject> object)
-{
-	if (ImGui::TreeNode(IMGUI_JP("„Åù„ÅE‰ªÅE)))
-=======
 
 //-----------------------------------------------------------------------------
 //		ÇªÇÃëºÇÃèÓïÒí≤êÆä÷êî(ëIëÇ≥ÇÍÇΩUIObect)
@@ -1025,25 +604,12 @@ void UIEditor::ImGuiEtcInfoEdit(std::shared_ptr<UIObject> object)
 void UIEditor::ImGuiEtcInfoEdit(std::shared_ptr<UIObject> object)
 {
 	if (ImGui::TreeNode(IMGUI_JP("ÇªÇÃëº")))
->>>>>>> main
 	{
 		DirectX::XMFLOAT4 color = object->GetColor();
 		DirectX::XMFLOAT3 scale = object->GetScale();
 		DirectX::XMFLOAT3 rot = object->GetRotation();
 		DirectX::XMFLOAT2 pivot = object->GetPivot();
 
-<<<<<<< HEAD
-		ImGui::Text(IMGUI_JP("„Ç´„É©„Éº"));
-		bool colorslider = ImGui::ColorEdit4("##Color", &color.x);
-		ImGui::Text(IMGUI_JP("„Çπ„Ç±„Éº„É´"));
-		bool scaledrag = ImGui::DragFloat3("##ScaleDrag", &scale.x, m_DragValue);
-		ImGui::Text(IMGUI_JP("ÂõûËª¢Ëª∏"));
-		bool Pivotdrag = ImGui::DragFloat2("##PivotDrag", &pivot.x, m_DragValue);
-		ImGui::Text(IMGUI_JP("ÂõûËª¢"));
-		bool rotdrag = ImGui::DragFloat3("##RotDrag", &rot.x, m_DragValue);
-
-		// Â§âÊõ¥„Åå„ÅÇ„Å£„ÅüÂ†¥Âêà‰øùÂ≠ò„Åô„ÇÅE
-=======
 		ImGui::Text(IMGUI_JP("ÉJÉâÅ["));
 		bool colorslider = ImGui::ColorEdit4("##Color", &color.x);
 		ImGui::Text(IMGUI_JP("ÉXÉPÅ[Éã"));
@@ -1054,7 +620,6 @@ void UIEditor::ImGuiEtcInfoEdit(std::shared_ptr<UIObject> object)
 		bool rotdrag = ImGui::DragFloat3("##RotDrag", &rot.x, m_DragValue);
 
 		// ïœçXÇ™Ç†Ç¡ÇΩèÍçáï€ë∂Ç∑ÇÈ
->>>>>>> main
 		if (scaledrag
 			|| Pivotdrag
 			|| rotdrag
@@ -1069,14 +634,13 @@ void UIEditor::ImGuiEtcInfoEdit(std::shared_ptr<UIObject> object)
 		}
 		ImGui::TreePop();
 	}
-<<<<<<< HEAD
 }
 
 //-----------------------------------------------------------------------.
 
 void UIEditor::TriggeHgihLight()
 {
-	m_HighlightTime = 30.f * Time::GetDeltaTime();
+	m_HighlightTime = 30.f * Time::GetInstance().GetDeltaTime();
 }
 
 //-----------------------------------------------------------------------.
@@ -1121,7 +685,5 @@ void UIEditor::HighLightUI(std::shared_ptr<UIObject> object)
 
 	ImGui::End();
 
-	m_HighlightTime = m_HighlightTime - Time::GetDeltaTime();
-=======
->>>>>>> main
+	m_HighlightTime = m_HighlightTime - Time::GetInstance().GetDeltaTime();
 }

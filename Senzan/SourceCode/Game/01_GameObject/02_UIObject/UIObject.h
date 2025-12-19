@@ -109,7 +109,6 @@ public: // Getter、Setter.
 	* @brief 接続している資源名を取得.
 	******************************************************/
 	const std::string GetResourceName() const;
-	void SetResourceName(const std::string& name);
 
 
 	/******************************************************
@@ -117,15 +116,6 @@ public: // Getter、Setter.
 	******************************************************/
 	const std::string& GetUIName() const;
 	void SetUIName(const std::string& name);
-
-	/******************************************************
-	* @brief SceneJsonでSpiteManagerから情報を取得.
-	* @param name	SceneJsonのパス.
-	* @param uis	std::vector<CUIObject*>.
-	******************************************************/
-	void LoadFromJson(
-		const std::string& scenepath,
-		std::vector<std::shared_ptr<UIObject>>& uis);
 
 
 protected:
