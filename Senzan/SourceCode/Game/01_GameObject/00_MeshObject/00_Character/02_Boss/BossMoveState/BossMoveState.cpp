@@ -158,44 +158,44 @@ void BossMoveState::Update()
 	// --------------------------------------------------------
 	// 4. 攻撃判定 (フェーズに関わらず、時間経過のみで判定)
 	// --------------------------------------------------------
-	//constexpr float AttackDelay = 270.0f;
-	//if (m_Timer >= AttackDelay)
-	//{
-	//	float dist = XMVectorGetX(XMVector3Length(vLookAt));
-	//	std::vector<std::function<std::unique_ptr<StateBase<Boss>>()>> candidates;
+	constexpr float AttackDelay = 270.0f;
+	if (m_Timer >= AttackDelay)
+	{
+		float dist = XMVectorGetX(XMVector3Length(vLookAt));
+		std::vector<std::function<std::unique_ptr<StateBase<Boss>>()>> candidates;
 
-	//	// 距離に応じた攻撃抽選
-	//	if (dist < 15.0f) {
-	//		candidates = {
-	//			[this]() { return std::make_unique<BossSlashState>(m_pOwner); },
-	//			[this]() { return std::make_unique<BossChargeState>(m_pOwner); },
-	//			[this]() { return std::make_unique<BossStompState>(m_pOwner); }
-	//		};
-	//	}
-	//	else if (dist < 40.0f) {
-	//		candidates = {
-	//			[this]() { return std::make_unique<BossThrowingState>(m_pOwner); },
-	//			[this]() { return std::make_unique<BossShoutState>(m_pOwner); }
-	//		};
-	//	}
-	//	else {
-	//		candidates = {
-	//			[this]() { return std::make_unique<BossSpecialState>(m_pOwner); },
-	//			[this]() { return std::make_unique<BossLaserState>(m_pOwner); }
-	//		};
-	//	}
+		// 距離に応じた攻撃抽選
+		if (dist < 15.0f) {
+			candidates = {
+				[this]() { return std::make_unique<BossSlashState>(m_pOwner); },
+				[this]() { return std::make_unique<BossChargeState>(m_pOwner); },
+				[this]() { return std::make_unique<BossStompState>(m_pOwner); }
+			};
+		}
+		else if (dist < 40.0f) {
+			candidates = {
+				[this]() { return std::make_unique<BossThrowingState>(m_pOwner); },
+				[this]() { return std::make_unique<BossShoutState>(m_pOwner); }
+			};
+		}
+		else {
+			candidates = {
+				[this]() { return std::make_unique<BossSpecialState>(m_pOwner); },
+				[this]() { return std::make_unique<BossLaserState>(m_pOwner); }
+			};
+		}
 
-	//	if (!candidates.empty())
-	//	{
-	//		static std::random_device rd;
-	//		static std::mt19937 gen(rd());
-	//		std::uniform_int_distribution<> dis(0, static_cast<int>(candidates.size()) - 1);
+		if (!candidates.empty())
+		{
+			static std::random_device rd;
+			static std::mt19937 gen(rd());
+			std::uniform_int_distribution<> dis(0, static_cast<int>(candidates.size()) - 1);
 
-	//		// ステートマシンを切り替えて即座にUpdateを終了
-	//		m_pOwner->GetStateMachine()->ChangeState(std::move(candidates[dis(gen)]()));
-	//		return;
-	//	}
-	//}
+			// ステートマシンを切り替えて即座にUpdateを終了
+			m_pOwner->GetStateMachine()->ChangeState(std::move(candidates[dis(gen)]()));
+			return;
+		}
+	}
 }
 
 void BossMoveState::LateUpdate()
