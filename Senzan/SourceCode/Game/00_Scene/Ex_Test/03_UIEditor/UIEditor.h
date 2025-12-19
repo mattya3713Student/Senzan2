@@ -20,8 +20,6 @@ public:
 private:
 	// 選択したシーンのUIを読み込み
 	void SelectSceneLoad(const std::string& sceneName);
-	// UI選択時に仮変数等を初期化する
-	void SelectInit();
 	// 現在シーンのUI情報を保存
 	HRESULT SaveScene();
 	// キー入力処理

@@ -8,12 +8,9 @@
 #include "Game/05_InputDevice/Input.h"
 #include "Game/03_Collision/Sprite/SpriteCollider.h"
 #include "Graphic/DirectX/DirectX11/DirectX11.h"
-<<<<<<< HEAD
 #include "Game//04_Time//Time.h"
 #include "Singleton/SceneManager/SceneManager.h"
 #include "ResourceManager/ResourceManager.h"
-=======
->>>>>>> main
 
 #if _DEBUG
 #include "ImGui/CImGuiManager.h"
@@ -37,8 +34,6 @@ using Json = nlohmann::json;
 namespace {
 	char m_NewSceneName[64] = ""; // 新規作成用バッファをメンバ変数に追加
 }
-
->>>>>>> main
 
 UIEditor::UIEditor()
 {
@@ -65,7 +60,6 @@ void UIEditor::Create()
 void UIEditor::Create()
 {
 	SelectSceneLoad("Title");
-	SelectInit();
 }
 
 
@@ -89,36 +83,6 @@ HRESULT UIEditor::LoadData()
 >>>>>>> main
 void UIEditor::Initialize()
 {
-}
-
-<<<<<<< HEAD
-//-----------------------------------------------------------------------.
-
-void UIEditor::Update()
-{
-	// 繧ｭ繝ｼ蜈･蜉・
-	KeyInput();
-
-	// 繧ｷ繝ｼ繝ｳ繧帝∈謚槭☆繧・
-	ImGuiSelectScene();
-
-	//--------------------------------------------------------------
-	//		UI縺ｮ霑ｽ蜉縺ｨ蜑企勁
-	//--------------------------------------------------------------
-	ImGui::Begin(IMGUI_JP("UI縺ｮ霑ｽ蜉繝ｻ蜑企勁"));
-	// 繧ｷ繝ｼ繝ｳ縺ｫUI繧定ｿｽ蜉
-	AddDeleteSprite();
-	// 逕ｻ蜒丞錐繧貞､画峩縺怜錐蜑崎｢ｫ繧翫↓蟇ｾ蜃ｦ
-=======
-
-//-----------------------------------------------------------------------------
-//		UI選択時に仮変数等を初期化する
-//-----------------------------------------------------------------------------
-void UIEditor::SelectInit()
-{
-	m_PatternNo = POINTS(0, 0);
-	m_PatternMax = POINTS(1, 1);
-	m_PatternAuto = false;
 }
 
 
@@ -195,7 +159,8 @@ void UIEditor::Update()
 		ImGuiInfoEdit(m_pUIs[m_SelectedUIIndex]);
 		// その他の情報の調整
 		ImGuiEtcInfoEdit(m_pUIs[m_SelectedUIIndex]);
->>>>>>> main
+
+		HighLightUI(m_pUIs[m_SelectedUIIndex]);
 	}
 
 	ImGui::End();
@@ -243,24 +208,6 @@ void UIEditor::KeyInput()
 	if (GetAsyncKeyState(VK_SPACE) && 0x8000) { m_DragValue *= 0.001f; }
 }
 
-<<<<<<< HEAD
-//-----------------------------------------------------------------------.
-
-void UIEditor::Draw()
-{
-	if (m_pUIs.empty()) { return; }
-	for (size_t i = 0; i < m_pUIs.size(); ++i) 
-	{
-		DirectX11::GetInstance().SetDepth(false);
-		m_pUIs[i]->Draw();
-		DirectX11::GetInstance().SetDepth(true);
-	}
-}
-
-//-----------------------------------------------------------------------.
-
-=======
-
 //=============================================================================
 //		描画処理
 //=============================================================================
@@ -307,7 +254,7 @@ void UIEditor::SelectSceneLoad(const std::string& sceneName)
 		sprite->Initialize("Data\\Image\\Sprite\\Other\\White.png"); // 鮟堤判蜒上ｒ蛻晄悄縺ｧ蜃ｺ縺・
 =======
 		sprite->Initialize("Data\\Image\\Sprite\\Other\\White.png"); // 黒画像を初期で出す
->>>>>>> main
+
 		ui->AttachSprite(sprite);
 		ui->SetPosition(0.f, 0.f, 0.f);
 
@@ -337,21 +284,7 @@ void UIEditor::SelectSceneLoad(const std::string& sceneName)
 			std::string ext = imageName.substr(dotPos);
 			if (ext == ".json" || ext == ".JSON") continue;
 		}
-		
-<<<<<<< HEAD
-		// 繧ｹ繝励Λ繧､繝亥叙蠕・
-		std::shared_ptr<Sprite2D> Sprite = SpriteManager::GetSprite2D(GetBaseName(imageName));
-		if (!Sprite) {
-			MessageBoxA(NULL, ("繧ｹ繝励Λ繧､繝医′隕九▽縺九ｊ縺ｾ縺帙ｓ: " + imageName).c_str(), "Error", MB_OK);
-			continue;
-		}
 
-		// 蜷ФI繧､繝ｳ繧ｹ繧ｿ繝ｳ繧ｹ繧貞ｱ暮幕
-		for (auto& value : spriteArray) {
-			std::shared_ptr<UIObject> ui = std::make_shared<UIObject>();
-
-			ui->SetUIName(imageName);
-=======
 		// スプライト取得
 		std::shared_ptr<Sprite2D> Sprite = SpriteManager::GetSprite2D(GetBaseName(imageName));
 		if (!Sprite) {
@@ -371,13 +304,6 @@ void UIEditor::SelectSceneLoad(const std::string& sceneName)
 			ui->SetPivot(DirectX::XMFLOAT2(value["Pivot"]["x"], value["Pivot"]["y"]));
 			ui->SetRotation(DirectX::XMFLOAT3(value["Rotate"]["x"], value["Rotate"]["y"], value["Rotate"]["z"]));
 			ui->SetDrawSize(DirectX::XMFLOAT2(value["Disp"]["w"], value["Disp"]["h"]));
-			
-<<<<<<< HEAD
-			// 繝ｪ繧ｹ繝医↓霑ｽ蜉
-=======
-			// ないのか？？
-			//ui->SetBase(DirectX::XMFLOAT2(value["Base"]["w"], value["Base"]["h"]));
-			//ui->SetStride(DirectX::XMFLOAT2(value["Stride"]["w"], value["Stride"]["h"]));
 
 			// リストに追加
 >>>>>>> main
@@ -387,11 +313,6 @@ void UIEditor::SelectSceneLoad(const std::string& sceneName)
 			m_SpritePosList.push_back(ui->GetPosition());
 		}
 	}
-<<<<<<< HEAD
-	// Z蠎ｧ讓吶ｒ蝓ｺ貅悶↓繧ｽ繝ｼ繝医☆繧・
-=======
-	// Z座標を基準にソートする
->>>>>>> main
 	std::sort(m_pUIs.begin(), m_pUIs.end(), [](std::shared_ptr<UIObject> a, std::shared_ptr<UIObject> b) {
 		return a->GetPosition().z < b->GetPosition().z;
 		});
@@ -678,23 +599,6 @@ void UIEditor::ImGuiSelectScene()
 	ImGui::End();
 }
 
-<<<<<<< HEAD
-//-----------------------------------------------------------------------.
-
-void UIEditor::ImGuiSearchUI()
-{
-	if (ImGui::TreeNodeEx(IMGUI_JP("UI繝ｪ繧ｹ繝・), ImGuiTreeNodeFlags_DefaultOpen)) {
-		// 讀懃ｴ｢繝舌・
-		ImGui::InputText(IMGUI_JP("讀懃ｴ｢"), m_SearchBuffer, IM_ARRAYSIZE(m_SearchBuffer));
-		// 繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ蜿ｯ閭ｽ縺ｪ繝ｪ繧ｹ繝・
-		ImGui::BeginChild(IMGUI_JP("繝ｪ繧ｹ繝・), ImVec2(315, 200), true, ImGuiWindowFlags_HorizontalScrollbar);
-
-		for (int i = 0; i < m_pUIs.size(); ++i) {
-			// 讀懃ｴ｢繝輔ぅ繝ｫ繧ｿ繝ｪ繝ｳ繧ｰ
-			if (strlen(m_SearchBuffer) > 0
-				&& m_pUIs[i]->GetUIName().find(m_SearchBuffer) == std::string::npos) {
-=======
-
 //-----------------------------------------------------------------------------
 //		UIリスト検索関数
 //-----------------------------------------------------------------------------
@@ -722,8 +626,7 @@ void UIEditor::ImGuiSearchUI()
 =======
 			if (ImGui::Selectable(m_pUIs[i]->GetResourceName().c_str(), isSelected)) {
 				m_SelectedUIIndex = i; // 選択更新
-				SelectInit();
->>>>>>> main
+				TriggeHgihLight();
 			}
 		}
 		ImGui::EndChild();
@@ -802,15 +705,8 @@ void UIEditor::AddDeleteSprite()
 				m_pSprite2Ds.push_back(pSprite);
 				m_pUIs.push_back(ui);
 				m_SpritePosList.push_back(ui->GetPosition());
-<<<<<<< HEAD
 
 				TriggeHgihLight();
-			}
-		}
-
-		// 驕ｸ謚槭＆繧後◆UI繧貞炎髯､
-		if (ImGui::Button(IMGUI_JP("UI蜑企勁")) && !m_pUIs.empty()) {
-=======
 			}
 		}
 
@@ -822,10 +718,6 @@ void UIEditor::AddDeleteSprite()
 			m_pUIs.erase(m_pUIs.begin() + m_SelectedUIIndex);
 			m_pSprite2Ds.erase(m_pSprite2Ds.begin() + m_SelectedUIIndex);
 			m_SpritePosList.erase(m_SpritePosList.begin() + m_SelectedUIIndex);
-
-<<<<<<< HEAD
-			// 繧､繝ｳ繝・ャ繧ｯ繧ｹ繧偵Μ繧ｻ繝・ヨ
-=======
 			// インデックスをリセット
 >>>>>>> main
 			m_SelectedUIIndex = 0;
@@ -871,20 +763,7 @@ void UIEditor::RenameUIObjects()
 	for (auto& [baseName, ui] : nameUIList) {
 		int index = nameCount[baseName]++;
 		std::string newName = baseName + "_" + std::to_string(index);
-<<<<<<< HEAD
 		ui->SetUIName(newName);
-	}
-}
-
-//-----------------------------------------------------------------------.
-
-void UIEditor::ImGuiPosEdit(std::shared_ptr<UIObject> object)
-{
-	if (ImGui::TreeNode(IMGUI_JP("蠎ｧ讓・)))
-	{
-		// 繝峨Λ繝・げ&繝峨Ο繝・・逕ｨ縺ｫ繝槭え繧ｹ謫堺ｽ懊・DirectInput繧堤畑諢・
-=======
-		ui->SetResourceName(newName);
 	}
 }
 
@@ -965,27 +844,9 @@ void UIEditor::ImGuiInfoEdit(std::shared_ptr<UIObject> object)
 {
 	if (ImGui::TreeNode(IMGUI_JP("画像情報")))
 	{
-		// 元、表示、分割それぞれのサイズを代入
-		//DirectX::XMFLOAT2 base = DirectX::XMFLOAT2(
-		//	object->GetSpriteData().x,
-		//	object->GetSpriteData().y);
-		//DirectX::XMFLOAT2 stride = DirectX::XMFLOAT2(
-		//	object->GetSpriteData().Stride.w,
-		//	object->GetSpriteData().Stride.h);
->>>>>>> main
 		DirectX::XMFLOAT2 disp = DirectX::XMFLOAT2(
 			object->GetDrawSize().x,
 			object->GetDrawSize().y);
-
-<<<<<<< HEAD
-		ImGui::Text(IMGUI_JP("陦ｨ遉ｺ繧ｵ繧､繧ｺ(x,y)"));
-		bool dispdrag = ImGui::DragFloat2("##DispDrag", &disp.x, m_DragValue);
-
-		// 螟画峩縺後≠縺｣縺溷ｴ蜷井ｿ晏ｭ倥☆繧・
-		if (dispdrag)
-		{
-			object->SetDrawSize(disp);
-=======
 		//ImGui::Text(IMGUI_JP("元のサイズ(x,y)"));
 		//bool basedrag = ImGui::DragFloat2("##BaseDrag", base, m_DragValue);
 
@@ -1010,14 +871,6 @@ void UIEditor::ImGuiInfoEdit(std::shared_ptr<UIObject> object)
 		ImGui::TreePop();
 	}
 }
-
-<<<<<<< HEAD
-//-----------------------------------------------------------------------.
-
-void UIEditor::ImGuiEtcInfoEdit(std::shared_ptr<UIObject> object)
-{
-	if (ImGui::TreeNode(IMGUI_JP("縺昴・莉・)))
-=======
 
 //-----------------------------------------------------------------------------
 //		その他の情報調整関数(選択されたUIObect)
@@ -1069,14 +922,13 @@ void UIEditor::ImGuiEtcInfoEdit(std::shared_ptr<UIObject> object)
 		}
 		ImGui::TreePop();
 	}
-<<<<<<< HEAD
 }
 
 //-----------------------------------------------------------------------.
 
 void UIEditor::TriggeHgihLight()
 {
-	m_HighlightTime = 30.f * Time::GetDeltaTime();
+	m_HighlightTime = 30.f * Time::GetInstance().GetDeltaTime();
 }
 
 //-----------------------------------------------------------------------.
@@ -1121,7 +973,5 @@ void UIEditor::HighLightUI(std::shared_ptr<UIObject> object)
 
 	ImGui::End();
 
-	m_HighlightTime = m_HighlightTime - Time::GetDeltaTime();
-=======
->>>>>>> main
+	m_HighlightTime = m_HighlightTime - Time::GetInstance().GetDeltaTime();
 }

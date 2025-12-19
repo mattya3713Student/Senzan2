@@ -109,7 +109,13 @@ public: // Getter、Setter.
 	* @brief 接続している資源名を取得.
 	******************************************************/
 	const std::string GetResourceName() const;
-	void SetResourceName(const std::string& name);
+
+
+	/******************************************************
+	* @brief 接続している資源名を取得.
+	******************************************************/
+	const std::string& GetUIName() const;
+	void SetUIName(const std::string& name);
 
 
 	/******************************************************
