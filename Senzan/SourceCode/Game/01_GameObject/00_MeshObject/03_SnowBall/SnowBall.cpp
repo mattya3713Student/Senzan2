@@ -20,6 +20,7 @@ SnowBall::SnowBall()
 	m_spTransform->SetScale(scale);
 
 	IsVisible = false;
+	m_TimeScale = 0.1f;
 }
 
 SnowBall::~SnowBall()
@@ -43,8 +44,9 @@ void SnowBall::Update()
 	float deltaTime = Time::GetInstance().GetDeltaTime() * 0.1f;
 	ThrowingTime += deltaTime;
 
+
 	// t を計算し、1.0 に制限
-	float t = ThrowingTime / Totle_ThrowingTime;
+	float t = ThrowingTime / Totle_ThrowingTime * m_TimeScale;
 	t = std::min(t, 1.0f);
 
 	// ----------------------------------------------------
@@ -63,7 +65,7 @@ void SnowBall::Update()
 
 	// Step B: Lerp Level 2 (最終位置)
 	// B(t) = Lerp(A, B, t)
-// Step B: Lerp Level 2 (最終位置 B(t) を求める)
+	// Step B: Lerp Level 2 (最終位置 B(t) を求める)
 	XMVECTOR NewPosition_Vec = XMVectorLerp(A, B, t);
 
 	// ----------------------------------------------------
