@@ -5,6 +5,8 @@
 *	ゲームオーバー画像クラス.
 **/
 
+class UIGameOver;
+
 class GameOver
 	: public SceneBase
 {
@@ -19,4 +21,5 @@ public:
 	void Draw() override;
 
 private:
+	std::shared_ptr<UIGameOver> m_pUI;
 };

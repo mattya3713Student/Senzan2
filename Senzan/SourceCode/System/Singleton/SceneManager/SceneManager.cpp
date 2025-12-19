@@ -2,6 +2,7 @@
 
 #include "Graphic/DirectX/DirectX9/DirectX9.h"
 #include "Graphic/DirectX/DirectX11/DirectX11.h"
+#include "02_UIObject/Fade/FadeManager.h"
 
 #include "Game/00_Scene/00_Base/SceneBase.h"
 #include "Game/00_Scene/01_Title/Title.h"
@@ -21,7 +22,6 @@
 
 SceneManager::SceneManager()
 	: m_pScene	( std::make_unique<GameMain>() )
-	, m_hWnd	()
 	, m_pBuffer	( nullptr )
 
 #if _DEBUG
@@ -34,13 +34,6 @@ SceneManager::SceneManager()
 SceneManager::~SceneManager()
 {
 }
-
-void SceneManager::Create(HWND hWnd)
-{
-	m_hWnd = hWnd;
-	LoadData();
-}
-
 
 void SceneManager::LoadData()
 {
@@ -74,7 +67,7 @@ void SceneManager::Update()
 	SceneManager& pI = GetInstance();
 	pI.m_pScene->Update();
 	pI.m_pScene->LateUpdate();
-
+	
 #if _DEBUG
 	ImGui::Begin("Scene");
 	if (ImGui::Button("Title")) { LoadScene(eList::Title); }
@@ -108,11 +101,6 @@ void SceneManager::LoadScene(eList Scene)
 	//シーン作成.
 	pI.MakeScene(Scene);
 	pI.m_pScene->Create();
-}
-
-HWND SceneManager::GetHWND() const
-{
-	return m_hWnd;
 }
 
 //シーン作成.

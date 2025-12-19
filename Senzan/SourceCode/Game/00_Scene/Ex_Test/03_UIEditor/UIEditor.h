@@ -48,6 +48,8 @@ private:
 	// その他の情報調整関数(選択されたUIObect)
 	void ImGuiEtcInfoEdit(std::shared_ptr<UIObject> object);
 
+	void TriggeHgihLight();
+	void HighLightUI(std::shared_ptr<UIObject> object);
 private:
 	std::string m_CurrentSceneName;
 	bool m_MoveAny;	// UI情報変更の有無.
@@ -74,10 +76,5 @@ private:
 	bool m_DoDrag;				// ドラッグ中
 	bool m_MovedSpritePos;		// 画像座標が変更された際のフラグ
 
-	// パターン確認用の変数
-	POINTS	m_PatternNo;		// 仮のパターン
-	POINTS	m_PatternMax;		// 仮の最大パターン
-	bool	m_PatternAuto;		// パターンを自動で進める
-	float	m_AnimationSpeed;	// 送り速度(フレーム)
-	float	m_AnimationSpeedMax;// 最大送り速度(フレーム)
+	float	m_HighlightTime;
 };
