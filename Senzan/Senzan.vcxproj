@@ -274,6 +274,7 @@
     <ClCompile Include="SourceCode\Game\01_GameObject\01_SpriteObject\CSpriteObject.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\Fade\Fade.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\Fade\FadeManager.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UIEnding\UIEnding.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UIGameOver\UIGameOver.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UILoader\UILoader.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UIObject.cpp" />
@@ -354,6 +355,7 @@
     <ClInclude Include="Data\ImGui\Library\imstb_textedit.h" />
     <ClInclude Include="Data\ImGui\Library\imstb_truetype.h" />
     <ClInclude Include="SourceCode\Constant.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\UIEnding\UIEnding.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\UIGameOver\UIGameOver.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\UILoader\UILoader.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\UITitle\UITitle.h" />

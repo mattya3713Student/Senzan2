@@ -32,11 +32,11 @@ void GameOver::Update()
 		|| Input::IsKeyDown('C')
 		|| Input::IsButtonDown(XInput::Key::B))
 	{
-		if (m_pUI->GetSelected() == m_pUI->GameOverItems::Start) {
+		if (m_pUI->GetSelected() == m_pUI->Items::Continue) {
 			SceneManager::LoadScene(eList::GameMain);
 		}
-		else if (m_pUI->GetSelected() == m_pUI->GameOverItems::End) {
-			DestroyWindow(ResourceManager::GethWnd());
+		else if (m_pUI->GetSelected() == m_pUI->Items::End) {
+			SceneManager::LoadScene(eList::Title);
 		}
 	}
 }

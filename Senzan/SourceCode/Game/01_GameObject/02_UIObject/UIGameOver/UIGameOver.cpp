@@ -8,11 +8,11 @@
 
 UIGameOver::UIGameOver()
 	: m_pUIs		()
-	, m_Select		( GameOverItems::Start )
-	, m_InitAlpha	( 0.6 )
+	, m_Select		( Items::Continue )
+	, m_InitAlpha	( 0.6f )
 	, m_SelectAlpha	( m_InitAlpha )
 	, m_AnimReturn	( false )
-	, m_AnimeSpeed	( 0.25f )
+	, m_AnimeSpeed	( 0.3f )
 {
 	UILoader::LoadFromJson("Data\\Image\\Sprite\\UIData\\GameOver.json", m_pUIs);
 }
@@ -49,7 +49,7 @@ void UIGameOver::Draw()
 	{
 		DirectX11::GetInstance().SetDepth(false);
 		ui->Draw();
-		DirectX11::GetInstance().SetDepth(false);
+		DirectX11::GetInstance().SetDepth(true);
 	}
 }
 
@@ -61,13 +61,15 @@ void UIGameOver::SelectUpdate()
 	|| Input::IsKeyDown(VK_UP)
 	|| Input::IsButtonDown(XInput::Key::Up)) 
 	{
-		InitAnim(GameOverItems::Start);
+		if (m_Select == Items::Continue) { return; }
+		InitAnim(Items::Continue);
 	}
 	else if (Input::IsKeyDown('S')
 	||	Input::IsKeyDown(VK_DOWN)
 	||	Input::IsButtonDown(XInput::Key::Down) ) 
 	{
-		InitAnim(GameOverItems::End);
+		if (m_Select == Items::End) { return; }
+		InitAnim(Items::End);
 	}
 	
 	AnimUpdate();
@@ -99,7 +101,7 @@ void UIGameOver::SelectLateUpdate(std::shared_ptr<UIObject> ui)
 
 //----------------------------------------------------------------.
 
-void UIGameOver::InitAnim(GameOverItems item)
+void UIGameOver::InitAnim(Items item)
 {
 	m_Select = item;
 	m_SelectAlpha = m_InitAlpha;
@@ -123,7 +125,7 @@ void UIGameOver::AnimUpdate()
 
 //----------------------------------------------------------------.
 
-UIGameOver::GameOverItems UIGameOver::GetSelected()
+UIGameOver::Items UIGameOver::GetSelected()
 {
 	return m_Select;
 }

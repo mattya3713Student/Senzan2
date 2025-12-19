@@ -6,13 +6,14 @@
 #include "Game//04_Time//Time.h"
 #include "Game/05_InputDevice/Input.h"
 
+
 UITitle::UITitle()
 	: m_pUIs		()
-	, m_Select		( TitleItems::Start )
-	, m_InitAlpha	( 0.6 )
+	, m_Select		( Items::Start )
+	, m_InitAlpha	( 0.6f )
 	, m_SelectAlpha	( m_InitAlpha )
 	, m_AnimReturn	( false )
-	, m_AnimeSpeed	( 0.25f )
+	, m_AnimeSpeed	( 0.3f )
 {
 	UILoader::LoadFromJson("Data\\Image\\Sprite\\UIData\\Title.json", m_pUIs);
 }
@@ -49,7 +50,7 @@ void UITitle::Draw()
 	{
 		DirectX11::GetInstance().SetDepth(false);
 		ui->Draw();
-		DirectX11::GetInstance().SetDepth(false);
+		DirectX11::GetInstance().SetDepth(true);
 	}
 }
 
@@ -61,13 +62,15 @@ void UITitle::SelectUpdate()
 	|| Input::IsKeyDown(VK_UP)
 	|| Input::IsButtonDown(XInput::Key::Up)) 
 	{
-		InitAnim(TitleItems::Start);
+		if (m_Select == Items::Start) { return; }
+		InitAnim(Items::Start);
 	}
 	else if (Input::IsKeyDown('S')
 	||	Input::IsKeyDown(VK_DOWN)
 	||	Input::IsButtonDown(XInput::Key::Down) ) 
 	{
-		InitAnim(TitleItems::End);
+		if (m_Select == Items::End) { return; }
+		InitAnim(Items::End);
 	}
 	
 	AnimUpdate();
@@ -99,7 +102,7 @@ void UITitle::SelectLateUpdate(std::shared_ptr<UIObject> ui)
 
 //----------------------------------------------------------------.
 
-void UITitle::InitAnim(TitleItems item)
+void UITitle::InitAnim(Items item)
 {
 	m_Select = item;
 	m_SelectAlpha = m_InitAlpha;
@@ -123,7 +126,7 @@ void UITitle::AnimUpdate()
 
 //----------------------------------------------------------------.
 
-UITitle::TitleItems UITitle::GetSelected()
+UITitle::Items UITitle::GetSelected()
 {
 	return m_Select;
 }
