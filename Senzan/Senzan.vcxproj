@@ -419,7 +419,6 @@
     <ClInclude Include="SourceCode\Game\01_GameObject\GameObject.h" />
     <ClInclude Include="SourceCode\Game\02_Camera\CameraBase.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\CollisionInfo.h" />
-    <ClInclude Include="SourceCode\Game\03_Collision\Sprite\SpriteCollider.h" />
     <ClInclude Include="SourceCode\System\Singleton\CollisionDetector\CollisionDetector.h" />
     <ClInclude Include="SourceCode\System\Singleton\CameraManager\CameraManager.h" />
     <ClInclude Include="SourceCode\Game\02_Camera\ThirdPersonCamera\PlayerThirdPersonCamera.h" />
