@@ -14,15 +14,18 @@ namespace {
 }
 
 CameraBase::CameraBase()
-	: m_Transform()
-	, m_LookPos({ 0.f, 0.f, 0.f })
-	, m_Distance(5.f)
-	, m_View()
-	, m_Proj()
-	, m_MouseSensitivity(MOUSE_SENSITIVITY)
+	: m_spTransform			()
+	, m_LookPos				({ 0.f, 0.f, 0.f })
+	, m_ShakeOffset			({ 0.f, 0.f, 0.f })
+	, m_Distance			(5.f)
+	, m_ForwardVec			()
+	, m_RightVec			()
+	, m_View				()
+	, m_Proj				()
+	, m_MouseSensitivity	(MOUSE_SENSITIVITY)
 	, m_ControllerSensitivity(CONTROLLER_SENSITIVITY)
-	, m_Yaw()
-	, m_Pitch()
+	, m_Yaw					()
+	, m_Pitch				()
 {
 }
 
@@ -79,14 +82,14 @@ bool CameraBase::VFCulling(const DirectX::XMFLOAT3& Position, const float radius
 
 const DirectX::XMFLOAT3& CameraBase::GetPosition() const
 {
-	return m_Transform.Position;
+	return m_spTransform.Position;
 }
 
 //---------------------------------------------------------------------.
 
 void CameraBase::SetPosition(const DirectX::XMFLOAT3& Position)
 {
-	m_Transform.Position = Position;
+	m_spTransform.Position = Position;
 }
 
 //---------------------------------------------------------------------.
@@ -109,7 +112,7 @@ const DirectX::XMFLOAT3 CameraBase::GetLookDirection()
 {
 	// XMVector3NormalizeはXMVECTORを返すため、XMStoreFloat3でXMFLOAT3に変換
 	DirectX::XMVECTOR vLook = DirectX::XMLoadFloat3(&m_LookPos);
-	DirectX::XMVECTOR vPosition = DirectX::XMLoadFloat3(&m_Transform.Position);
+	DirectX::XMVECTOR vPosition = DirectX::XMLoadFloat3(&m_spTransform.Position);
 	DirectX::XMVECTOR vDirection = DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(vLook, vPosition));
 
 	DirectX::XMFLOAT3 direction;
@@ -142,14 +145,14 @@ const DirectX::XMMATRIX CameraBase::GetViewProjMatrix() const
 
 const DirectX::XMFLOAT3 CameraBase::GetForwardVec() const
 {
-	return m_Transform.GetForward();
+	return m_spTransform.GetForward();
 }
 
 //---------------------------------------------------------------------.
 
 const DirectX::XMFLOAT3 CameraBase::GetRightVec() const
 {
-	return m_Transform.GetRight();
+	return m_spTransform.GetRight();
 }
 
 //---------------------------------------------------------------------.
@@ -166,16 +169,28 @@ const float& CameraBase::GetPitch() const
 	return m_Pitch;
 }
 
+// シェイクオフセットの設定.
+void CameraBase::SetShakeOffset(const DirectX::XMFLOAT3& offset)
+{
+	m_ShakeOffset = offset;
+}
+
+
 //---------------------------------------------------------------------.
 
 void CameraBase::ViewUpdate()
 {
-	// DirectXMathの関数でビュー行列を更新
-	DirectX::XMVECTOR vPosition = DirectX::XMLoadFloat3(&m_Transform.Position);
-	DirectX::XMVECTOR vLook = DirectX::XMLoadFloat3(&m_LookPos);
-	DirectX::XMVECTOR vUp = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f); // 定数Upベクトル
+	DirectX::XMVECTOR v_position = DirectX::XMLoadFloat3(&m_spTransform.Position);
+	DirectX::XMVECTOR v_look = DirectX::XMLoadFloat3(&m_LookPos);
+	DirectX::XMVECTOR v_up = Axis::UP_VECTOR;
+	DirectX::XMVECTOR v_shake_offset = DirectX::XMLoadFloat3(&m_ShakeOffset);
 
-	m_View = DirectX::XMMatrixLookAtLH(vPosition, vLook, vUp);
+	v_position = DirectX::XMVectorAdd(v_position, v_shake_offset);
+
+	m_View = DirectX::XMMatrixLookAtLH(v_position, v_look, v_up);
+
+	// シェイクオフセットをリセット.
+	m_ShakeOffset = { 0.0f, 0.0f, 0.0f };
 }
 
 //---------------------------------------------------------------------.
@@ -197,7 +212,7 @@ void CameraBase::CalculateMoveVector()
 	// クォータニオンの更新.
 	DirectX::XMVECTOR v_Quaternion =
 		DirectX::XMQuaternionRotationRollPitchYaw(m_Pitch, m_Yaw, 0.0f);
-	DirectX::XMStoreFloat4(&m_Transform.Quaternion, v_Quaternion);
+	DirectX::XMStoreFloat4(&m_spTransform.Quaternion, v_Quaternion);
 
 	// 前方ベクトルの更新.
 	DirectX::XMVECTOR forward = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
@@ -213,7 +228,7 @@ void CameraBase::CalculateMoveVector()
 	DirectX::XMVECTOR v_look_pos = DirectX::XMLoadFloat3(&m_LookPos);
 	DirectX::XMVECTOR v_back_vec = DirectX::XMVectorScale(v_rotated_forward, -m_Distance);
 	DirectX::XMVECTOR v_new_camera_pos = DirectX::XMVectorAdd(v_look_pos, v_back_vec);
-	DirectX::XMStoreFloat3(&m_Transform.Position, v_new_camera_pos);
+	DirectX::XMStoreFloat3(&m_spTransform.Position, v_new_camera_pos);
 }
 
 //---------------------------------------------------------------------.
@@ -257,4 +272,8 @@ std::vector<DirectX::XMFLOAT4> CameraBase::CalcFrustum()
 	DirectX::XMStoreFloat4(&frustum[5], v_plane_far);
 
 	return frustum;
+}
+
+void CameraBase::ApplyCameraShake()
+{
 }

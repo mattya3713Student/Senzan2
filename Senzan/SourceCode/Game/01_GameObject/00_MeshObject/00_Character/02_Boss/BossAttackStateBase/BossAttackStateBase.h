@@ -1,7 +1,7 @@
 #pragma once
 
 #include "System//Utility//StateMachine//StateBase.h"
-#include "Game\03_Collision\Capsule\CapsuleCollider.h"
+#include "Game\03_Collision\00_Core\01_Capsule\CapsuleCollider.h"
 
 /*****************************************************************
 *	ボスの攻撃ベースクラス(基底クラス).
@@ -47,12 +47,15 @@ protected:
 	// 
 
 	//アニメーションに必要なメンバ変数を設定している.
- 	int							m_AnimNo;	//アニメーション番号.
-	double						m_AnimSpeed = 0.0001;// アニメーション速度.
-	double						m_AnimTimer;// アニメ―ション経過時間.
 	DirectX::XMFLOAT3			m_BonePos;	// ボーン座標.
 
+	LPD3DXANIMATIONCONTROLLER   AnimCtrl;
+
 	std::shared_ptr<Transform> m_pTransform;
+
+	float m_currentTimer;
+	static constexpr float m_currentAnimSpeed = 0.001;
+
 
 
 };

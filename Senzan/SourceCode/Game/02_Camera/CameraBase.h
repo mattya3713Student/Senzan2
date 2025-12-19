@@ -90,6 +90,9 @@ public: // Getter、Setter.
 	****************************************************/
 	const float& GetPitch() const;
 
+	// シェイクオフセットの設定.
+	void SetShakeOffset(const DirectX::XMFLOAT3& offset);
+
 protected:
 
 	/****************************************************
@@ -114,19 +117,23 @@ protected:
 	****************************************************/
 	std::vector<DirectX::XMFLOAT4> CalcFrustum();
 
+	// カメラシェイクを適用する.
+	void ApplyCameraShake();
+
 protected:
-	Transform			m_Transform;
-	DirectX::XMFLOAT3	m_LookPos;	// 注視点.
-	float m_Distance;
+	Transform		  m_spTransform;
+	DirectX::XMFLOAT3 m_LookPos;	// 注視点.
+	DirectX::XMFLOAT3 m_ShakeOffset; 
+	float			  m_Distance;
 
 	DirectX::XMFLOAT3 m_ForwardVec; // カメラの前方ベクトル
 	DirectX::XMFLOAT3 m_RightVec;   // カメラの右方ベクトル
 
-	DirectX::XMMATRIX	m_View;		//　ビュー(カメラ)行列.
-	DirectX::XMMATRIX	m_Proj;		//　プロジェクション(射影)行列.
+	DirectX::XMMATRIX m_View;		//　ビュー(カメラ)行列.
+	DirectX::XMMATRIX m_Proj;		//　プロジェクション(射影)行列.
 
 	DirectX::XMFLOAT2 m_MouseSensitivity;// マウス感度.
 	DirectX::XMFLOAT2 m_ControllerSensitivity;// マウス感度.
-	float m_Yaw;
-	float m_Pitch;
+	float			  m_Yaw;
+	float			  m_Pitch;
 };

@@ -1,4 +1,4 @@
-#include "Root.h"
+ï»¿#include "Root.h"
 
 #include "../../Player.h"
 
@@ -23,23 +23,27 @@
 #include "01_Action/02_Dodge/00_DodgeExecute/DodgeExecute.h"	
 #include "01_Action/02_Dodge/01_JustDodge/JustDodge.h"
 
+#include "Game/04_Time/Time.h"
+
 #include "System/Singleton/Debug/Log/DebugLog.h"
+
+
 
 namespace PlayerState {
 Root::Root(Player* owner)
     : PlayerStateBase(owner)
-    , m_pPause          (std::make_unique<Pause>(owner))
-    , m_pKnockBack      (std::make_unique<KnockBack>(owner))
-    , m_pDead           (std::make_unique<Dead>(owner))
-    , m_pSpecialAttack  (std::make_unique<SpecialAttack>(owner))
-    , m_pIdle           (std::make_unique<Idle>(owner))
-    , m_pRun            (std::make_unique<Run>(owner))
-    , m_pCombo_0        (std::make_unique<AttackCombo_0>(owner))
-    , m_pCombo_1        (std::make_unique<AttackCombo_1>(owner))
-    , m_pCombo_2        (std::make_unique<AttackCombo_2>(owner))
-    , m_pParry          (std::make_unique<Parry>(owner))
-    , m_pDodgeExecute   (std::make_unique<DodgeExecute>(owner))
-    , m_pJustDodge      (std::make_unique<JustDodge>(owner))
+    , m_pPause          ( nullptr )
+    , m_pKnockBack      ( nullptr )
+    , m_pDead           ( nullptr )
+    , m_pSpecialAttack  ( nullptr )
+    , m_pIdle           ( nullptr )
+    , m_pRun            ( nullptr )
+    , m_pCombo_0        ( nullptr )
+    , m_pCombo_1        ( nullptr )
+    , m_pCombo_2        ( nullptr )
+    , m_pParry          ( nullptr )
+    , m_pDodgeExecute   ( nullptr )
+    , m_pJustDodge      ( nullptr )
 	, m_CurrentActiveState(std::ref(*m_pRun.get())) 
 {
 }
@@ -50,12 +54,25 @@ Root::~Root()
 
 constexpr PlayerState::eID Root::GetStateID() const
 {
-    // Œ»İ—LŒø‚ÈƒXƒe[ƒg‚ğæ“¾.
+    // ç¾åœ¨æœ‰åŠ¹ãªã‚¹ãƒ†ãƒ¼ãƒˆã‚’å–å¾—.
     return m_CurrentActiveState.get().GetStateID();
 }
 
 void Root::Enter()
 {
+    m_pPause = std::make_unique<Pause>(m_pOwner);
+    m_pKnockBack = std::make_unique<KnockBack>(m_pOwner);
+    m_pDead = std::make_unique<Dead>(m_pOwner);
+    m_pSpecialAttack = std::make_unique<SpecialAttack>(m_pOwner);
+    m_pIdle = std::make_unique<Idle>(m_pOwner);
+    m_pRun = std::make_unique<Run>(m_pOwner);
+    m_pCombo_0 = std::make_unique<AttackCombo_0>(m_pOwner);
+    m_pCombo_1 = std::make_unique<AttackCombo_1>(m_pOwner);
+    m_pCombo_2 = std::make_unique<AttackCombo_2>(m_pOwner);
+    m_pParry = std::make_unique<Parry>(m_pOwner);
+    m_pDodgeExecute = std::make_unique<DodgeExecute>(m_pOwner);
+    m_pJustDodge = std::make_unique<JustDodge>(m_pOwner);
+    m_CurrentActiveState = std::ref(*m_pRun.get());
 }
 
 void Root::Update()
@@ -76,10 +93,10 @@ void Root::Exit()
 {
 }
 
-// ƒXƒe[ƒg‚Ì•ÏX.
+// ã‚¹ãƒ†ãƒ¼ãƒˆã®å¤‰æ›´.
 void Root::ChangeState(PlayerState::eID id)
 {
-    // ‹­§Š„‚è‚İƒXƒe[ƒg.
+    // å¼·åˆ¶å‰²ã‚Šè¾¼ã¿ã‚¹ãƒ†ãƒ¼ãƒˆ.
     if (id == PlayerState::eID::KnockBack ||
         id == PlayerState::eID::Pause ||
         id == PlayerState::eID::Dead ||
@@ -87,7 +104,7 @@ void Root::ChangeState(PlayerState::eID id)
     {
         std::reference_wrapper<PlayerStateBase> newStateRef = GetPlayer()->GetStateReference(id);
 
-        // Œ»İ‚Æˆá‚¤ƒXƒe[ƒg‚È‚ç•ÏX.
+        // ç¾åœ¨ã¨é•ã†ã‚¹ãƒ†ãƒ¼ãƒˆãªã‚‰å¤‰æ›´.
         if (&m_CurrentActiveState.get() != &newStateRef.get())
         {
             m_CurrentActiveState.get().Exit();
@@ -101,7 +118,7 @@ void Root::ChangeState(PlayerState::eID id)
     try {
         std::reference_wrapper<PlayerStateBase> newStateRef = GetPlayer()->GetStateReference(id);
 
-        // Œ»İ‚Æˆá‚¤ƒXƒe[ƒg‚È‚ç•ÏX.
+        // ç¾åœ¨ã¨é•ã†ã‚¹ãƒ†ãƒ¼ãƒˆãªã‚‰å¤‰æ›´.
         if (&m_CurrentActiveState.get() != &newStateRef.get())
         {
             m_CurrentActiveState.get().Exit();
@@ -113,7 +130,7 @@ void Root::ChangeState(PlayerState::eID id)
     }
     catch (const std::exception& e) {
         std::string message = "Root::ChangeState failed (ID: " + std::to_string(static_cast<int>(id)) + "): " + e.what();
-        Log::GetInstance().Warning("PllayerƒXƒe[ƒg‚Ì•ÏXƒGƒ‰[", message.c_str());
+        Log::GetInstance().Warning("Pllayerã‚¹ãƒ†ãƒ¼ãƒˆã®å¤‰æ›´ã‚¨ãƒ©ãƒ¼", message.c_str());
         throw;
     }
 }
@@ -121,80 +138,81 @@ void Root::ChangeState(PlayerState::eID id)
 #pragma region GetStateRef
 
 //----------System----------.
-// ƒ|[ƒYƒXƒe[ƒg‚Ìæ“¾.
+// ãƒãƒ¼ã‚ºã‚¹ãƒ†ãƒ¼ãƒˆã®å–å¾—.
 std::reference_wrapper<PlayerStateBase> Root::GetPauseStateRef()
 {
     return std::ref(*m_pPause.get());
 }
 
-// ƒXƒ^ƒ“ƒXƒe[ƒg‚Ìæ“¾.
+// ã‚¹ã‚¿ãƒ³ã‚¹ãƒ†ãƒ¼ãƒˆã®å–å¾—.
 std::reference_wrapper<PlayerStateBase> Root::GetKnockBackStateRef()
 {
     return std::ref(*m_pKnockBack.get());
 }
 
-// €–SƒXƒe[ƒg‚Ìæ“¾.
+// æ­»äº¡ã‚¹ãƒ†ãƒ¼ãƒˆã®å–å¾—.
 std::reference_wrapper<PlayerStateBase> Root::GetDeadStateRef()
 {
     return std::ref(*m_pDead.get());
 }
 
-// •KE‹ZƒXƒe[ƒg‚Ìæ“¾.
+// å¿…æ®ºæŠ€ã‚¹ãƒ†ãƒ¼ãƒˆã®å–å¾—.
 std::reference_wrapper<PlayerStateBase> Root::GetSpecialAttackStateRef()
 {
     return std::ref(*m_pSpecialAttack.get());
 }
 
 //----------Movement----------.
-// ‘Ò‹@ƒXƒe[ƒg‚Ìæ“¾.
+// å¾…æ©Ÿã‚¹ãƒ†ãƒ¼ãƒˆã®å–å¾—.
 std::reference_wrapper<PlayerStateBase> Root::GetIdleStateRef()
 {
     return std::ref(*m_pIdle.get());
 }
 
-// ‘–‚èƒXƒe[ƒg‚Ìæ“¾.
+// èµ°ã‚Šã‚¹ãƒ†ãƒ¼ãƒˆã®å–å¾—.
 std::reference_wrapper<PlayerStateBase> Root::GetRunStateRef()
 {
     return std::ref(*m_pRun.get());
 }
 
 //----------Combat----------.
-// UŒ‚1’i–ÚƒXƒe[ƒg‚Ìæ“¾.
+// æ”»æ’ƒ1æ®µç›®ã‚¹ãƒ†ãƒ¼ãƒˆã®å–å¾—.
 std::reference_wrapper<PlayerStateBase> Root::GetCombo0StateRef()
 {
     return std::ref(*m_pCombo_0.get());
 }
 
-// UŒ‚2’i–ÚƒXƒe[ƒg‚Ìæ“¾.
+// æ”»æ’ƒ2æ®µç›®ã‚¹ãƒ†ãƒ¼ãƒˆã®å–å¾—.
 std::reference_wrapper<PlayerStateBase> Root::GetCombo1StateRef()
 {
     return std::ref(*m_pCombo_1.get());
 }
 
-// UŒ‚3’i–ÚƒXƒe[ƒg‚Ìæ“¾.
+// æ”»æ’ƒ3æ®µç›®ã‚¹ãƒ†ãƒ¼ãƒˆã®å–å¾—.
 std::reference_wrapper<PlayerStateBase> Root::GetCombo2StateRef()
 {
     return std::ref(*m_pCombo_2.get());
 }
 
-// ƒpƒŠƒBƒXƒe[ƒg‚Ìæ“¾.
+// ãƒ‘ãƒªã‚£ã‚¹ãƒ†ãƒ¼ãƒˆã®å–å¾—.
 std::reference_wrapper<PlayerStateBase> Root::GetParryStateRef()
 {
     return std::ref(*m_pParry.get());
 }
 
 //----------Dodge----------.
-// ‰ñ”ğƒXƒe[ƒg‚Ìæ“¾.
+// å›é¿ã‚¹ãƒ†ãƒ¼ãƒˆã®å–å¾—.
 std::reference_wrapper<PlayerStateBase> Root::GetDodgeExecuteStateRef()
 {
     return std::ref(*m_pDodgeExecute.get());
 }
 
-// ƒWƒƒƒXƒg‰ñ”ğƒXƒe[ƒg‚Ìæ“¾.
+// ã‚¸ãƒ£ã‚¹ãƒˆå›é¿ã‚¹ãƒ†ãƒ¼ãƒˆã®å–å¾—.
 std::reference_wrapper<PlayerStateBase> Root::GetJustDodgeStateRef()
 {
     return std::ref(*m_pJustDodge.get());
 }
+
 #pragma endregion
 
 } // PlayerState.

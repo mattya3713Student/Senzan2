@@ -72,28 +72,24 @@ VS_OUTPUT VS_Main(VS_INPUT_VERTEX inputV, VS_INPUT_INSTANCE inputI)
     else if (ShapeType == 2)
     {
         float ScaleXZ = Radius / R_unit;
+        float CylinderHalfLength = (Height - 2.0f * Radius) / 2.0f;
         ScaledPosition.x *= ScaleXZ;
         ScaledPosition.z *= ScaleXZ;
-        float HalfHeight = Height / 2.0f;
-        
-        // 南極側の半球.
-        if (ScaledPosition.y < -H_unit_half + 0.001f)
+       
+        // 南極側の半球 (Y <= -1.0).
+        if (ScaledPosition.y < -H_unit_half + 0.001f) // Y <= -1.0.
         {
-            // Y座標を球の中心からの相対座標に戻し、新しい半分の高さからのオフセットを計算.
-            ScaledPosition.y = -HalfHeight + ((ScaledPosition.y + H_unit_half) * ScaleXZ);
+            ScaledPosition.y = -CylinderHalfLength + ((ScaledPosition.y + H_unit_half) * ScaleXZ);
         }
-        // 北極側の半球
-        else if (ScaledPosition.y > H_unit_half - 0.001f)
+        // 北極側の半球 (Y >= 1.0).
+        else if (ScaledPosition.y > H_unit_half - 0.001f) // Y >= 1.0.
         {
-            // Y座標を球の中心からの相対座標に戻し、新しい半分の高さからのオフセットを計算.
-            ScaledPosition.y = HalfHeight + ((ScaledPosition.y - H_unit_half) * ScaleXZ);
+            ScaledPosition.y = CylinderHalfLength + ((ScaledPosition.y - H_unit_half) * ScaleXZ);
         }
-        // 円筒部分.
+        // 円筒部分 (-1.0 < Y < 1.0).
         else
         {
-            // 円筒部分のY座標を新しい半分の高さにスケーリング.
-            float scaleY_cylinder = HalfHeight / H_unit_half;
-            ScaledPosition.y *= scaleY_cylinder;
+            ScaledPosition.y *= (CylinderHalfLength / H_unit_half);
         }
     }
     

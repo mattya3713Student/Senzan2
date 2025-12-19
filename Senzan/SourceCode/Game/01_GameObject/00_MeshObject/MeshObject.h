@@ -60,28 +60,43 @@ public: // Getter、Setter.
 	void SetIsShadow(const bool& isShadow);
 
 
-	/************************************************************************
-	* @brief アニメーション速度を設定.
-	************************************************************************/
-	void SetAnimSpeed(const double& speed);
+	// アニメーション速度を設定.
+	void SetAnimSpeed(double speed);
 
-
-	/************************************************************************
-	* @brief アニメーションを変更.
-	************************************************************************/
-	void SetIsLoop(const bool& isLoop);
-
+	// アニメーションループの設定.
+	void SetIsLoop(bool isLoop);
 	
-	/************************************************************************
-	* @brief アニメーションを変更.
-	************************************************************************/
-	void ChangeAnim(const int& index);
+	// アニメーションループの設定.
+	void SetAnimTime(double StartTime);
+	
+	// アニメーションを変更.
+	template<typename T>
+	void ChangeAnim(T index_T)
+	{
+		int index = static_cast<int>(index_T);
+		//もし、アニメーションナンバーが自分の設定した番号と一緒なら返す.
+		if (m_AnimNo == index) { return; }
 
+		m_AnimNo = index;
+		if (std::shared_ptr<SkinMesh> skinMesh = std::dynamic_pointer_cast<SkinMesh>(m_pMesh.lock()))
+		{
+			skinMesh->ChangeAnimSet(index, m_pAnimCtrl);
+			m_AnimTimer = 0.0;
+		}
+	}
 
-	/************************************************************************
-	* @brief アニメーション終了時間を取得.
-	************************************************************************/
-	const double GetAnimPeriod(const int& index) const;
+	// アニメーション終了時間を取得.
+	double GetAnimPeriod(int index) const;
+	
+	// アニメーションが終了しているかを取得.
+	template<typename T>
+	inline bool IsAnimEnd(T Index_T) noexcept
+	{
+		int index = static_cast<int>(Index_T);
+
+		double EndTime = GetAnimPeriod(index);
+		return (m_AnimTimer + static_cast<double>(GetDelta())) >= EndTime;
+	};
 
 
 private:

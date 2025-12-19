@@ -25,6 +25,29 @@ namespace MyMath {
 		return IsNearlyEqual(a.x, b) && IsNearlyEqual(a.y, b) && IsNearlyEqual(a.z, b);
 	}
 
+	inline float NormalizeAngleDegrees(float angle);
+
+	/*************************************************************
+	* @brief	3Dベクトルを水平成分(XZ)のみで正規化し、2Dベクトルとして返す。
+	* @return	正規化された2Dベクトル (DirectX::XMFLOAT2)。
+	* @param[in]	vec	：正規化したい3Dベクトル。
+	* ************************************************************/
+	inline DirectX::XMFLOAT2 NormalizeVector3To2D(const DirectX::XMFLOAT3& vec)
+	{
+		// X, Z 成分の長さの二乗を計算.
+		float lengthSq = vec.x * vec.x + vec.z * vec.z;
+
+		// 長さ（L2ノルム）を計算.
+		float length = std::sqrt(lengthSq);
+
+		// 長さが0でなければ正規化し、そうでなければゼロベクトルを返す.
+		if (length > EPSILON_E4) // ゼロ除算を避けるための微小値チェック.
+		{
+			return DirectX::XMFLOAT2(vec.x / length, vec.z / length);
+		}
+		return DirectX::XMFLOAT2(0.0f, 0.0f);
+	}
+
 	/*************************************************************
 	* @brief	値を減少(増加)させる.
 	* @return	中央値になったかどうか.	

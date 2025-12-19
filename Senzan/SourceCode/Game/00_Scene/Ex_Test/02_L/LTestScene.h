@@ -13,6 +13,7 @@ class CapsuleCollider;
 
 #include <vector>
 
+#include "00_MeshObject//03_SnowBall//SnowBall.h"
 
 /*********************************************
 *	ゲームメイン画像クラス.
@@ -49,5 +50,6 @@ private:
 	float m_Radius; // 半径.
 	float m_Height;	// 高さ.
 
-
+	//雪玉表示用のクラス.
+	std::shared_ptr<SnowBall> m_pSnowBall;
 };

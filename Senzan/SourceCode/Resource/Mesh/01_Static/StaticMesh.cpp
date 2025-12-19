@@ -964,7 +964,7 @@ float StaticMesh::GetModelRadius()
 		*/
 	}
 
-	m_Radius = m_OriginalRadius * (std::max)(m_Transform.Scale.x, (std::max)(m_Transform.Scale.y, m_Transform.Scale.z));
+	m_Radius = m_OriginalRadius * (std::max)(m_spTransform.Scale.x, (std::max)(m_spTransform.Scale.y, m_spTransform.Scale.z));
 	return m_Radius;
 }
 
