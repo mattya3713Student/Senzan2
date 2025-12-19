@@ -35,7 +35,7 @@
 ////{
 ////	//ボスの移動のクールタイムのために
 ////	//deltaTimeを実装する.
-////	float deltaTime = Time::GetDeltaTime();
+////	float deltaTime = Time::GetInstance().GetDeltaTime();
 ////	m_CurrentTime += deltaTime;
 ////
 ////	//プレイヤーの位置.
@@ -77,7 +77,7 @@
 //void BossMoveState::Update()
 //{
 //	// デルタタイムを取得し、時間を更新
-//	float deltaTime = Time::GetDeltaTime();
+//	float deltaTime = Time::GetInstance().GetDeltaTime();
 //	m_CurrentTime += deltaTime;
 //
 //	// プレイヤーとボスの位置を取得

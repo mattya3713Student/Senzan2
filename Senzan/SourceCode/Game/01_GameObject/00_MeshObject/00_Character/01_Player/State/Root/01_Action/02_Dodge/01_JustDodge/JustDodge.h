@@ -9,21 +9,21 @@ class Player;
 **/
 
 namespace PlayerState {
-    class JustDodge final : public Dodge
-    {
-    public:
-        JustDodge(Player* owner);
-        ~JustDodge();
+class JustDodge final : public Dodge
+{
+public:
+    JustDodge(Player* owner);
+    ~JustDodge();
 
-        // ID�̎擾.
-        constexpr PlayerState::eID GetStateID() const override;
+    // ID�̎擾.
+    constexpr PlayerState::eID GetStateID() const override;
 
-        void Enter() override;
-        void Update() override;
-        void LateUpdate() override;
-        void Draw() override;
-        void Exit() override;
+    void Enter() override;
+    void Update() override;
+    void LateUpdate() override;
+    void Draw() override;
+    void Exit() override;
 
-    private:
-    };
+protected:
+};
 }

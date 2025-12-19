@@ -8,7 +8,7 @@ Ground::Ground()
 	_ASSERT_EXPR(mesh != nullptr, "メッシュの取得に失敗");
 	AttachMesh(mesh);
 	// スケールの設定.
-	m_Transform->Scale = { 10.0f, 1.0f, 10.0f };
+	m_spTransform->Scale = { 10.0f, 1.0f, 10.0f };
 	m_IsLight = false;
 	m_IsShadow = false;
 }

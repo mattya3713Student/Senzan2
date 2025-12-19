@@ -2,6 +2,7 @@
 #include "../../PlayerStateBase.h"
 
 class Player;
+class SingleTrigger;
 
 /**************************************************
 *	プレイヤーの操作によるステート(基底).
@@ -23,7 +24,8 @@ namespace PlayerState
         virtual void Draw() override;
         virtual void Exit() override;
 
-    private:
+    protected:
+        std::unique_ptr<SingleTrigger> m_AnimSpeedChangedTrigger;
 
     };
 }

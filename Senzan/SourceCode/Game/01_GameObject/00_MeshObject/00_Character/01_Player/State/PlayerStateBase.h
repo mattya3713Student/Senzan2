@@ -27,8 +27,14 @@ public:
 
     Player* GetPlayer() const;   // オーナー(プレイヤー)の取得.
 	
-    // TODO : Rootほしいタイミングなくね？
-    //PlayerState::Root* GetRoot() const;     // Rootを取得.  
+
+protected:
+
+    // 正面へラープ回転.
+    void RotetToFront();
+
+    // 目標の角度へラープ回転.
+    void RotetToTarget(float TargetRote, float RotetionSpeed);
         
 private:
 

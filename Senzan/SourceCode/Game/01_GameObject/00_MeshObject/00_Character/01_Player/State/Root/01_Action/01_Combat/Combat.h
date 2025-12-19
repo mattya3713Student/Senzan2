@@ -2,6 +2,7 @@
 #include "../Action.h"
 
 class Player;
+class SingleTrigger;
 
 /**************************************************
 *	プレイヤーの攻撃の共通処理ステート(基底).
@@ -23,6 +24,9 @@ namespace PlayerState
         virtual void Draw() override;
         virtual void Exit() override;
 
-    private:
+    protected:
+        float               m_Distance; // 各移動距離.
+        float               m_MaxTime;  // 各攻撃時間.
+        float               m_currentTime;  // 各経過時間.
     };
 }

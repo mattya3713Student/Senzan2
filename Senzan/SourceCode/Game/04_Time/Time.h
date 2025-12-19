@@ -2,9 +2,14 @@
 #include "System/Singleton/SingletonTemplate.h"
 #include <chrono>
 
-/************************
-*   タイムクラス.
-************************/
+
+/**********************************************************************************
+* @author    : 淵脇 未来.
+* @date      : 2025/10/5.
+* @brief     : ゲーム内の時間の制御.
+* @pattern   : Singleton.
+**********************************************************************************/
+
 class Time final
 	: public Singleton<Time>
 {
@@ -14,15 +19,30 @@ public:
 	~Time();
 
 	// フレーム間の経過時間を更新.
-	static void Update();
+	void Update();
 
 	// FPSを維持するための処理.
-	static void MaintainFPS();
+	void MaintainFPS();
 
 	// デルタタイムを取得.
-	static const float GetDeltaTime();
+	const float GetDeltaTime() const;
 
-	static float GetNowTime();
+	float GetNowTime();
+	float GetWorldTimeScale() const;
+
+	/*************************************************************
+	* @brief	ワールドの時間の流れを変更する.
+	* @param[in]	NewTimeScale	：新しい時間スケールの値(例: 0.5f で半分の速さ、2.0f で倍速).
+	* ************************************************************/
+	void SetWorldTimeScale(float NewTimeScale);
+
+	/*************************************************************
+	* @brief	ワールドの時間の流れを変更する.
+	* @param[in]	NewTimeScale	：新しい時間スケールの値(例: 0.5f で半分の速さ、2.0f で倍速).
+	* @param[in]	DurationSeconds	：NewTimeScale を適用する持続時間(秒). 0以下の場合は即座に戻る.
+	* ************************************************************/
+	void SetWorldTimeScale(float NewTimeScale, float DurationSeconds);
+
 private:
 	Time();
 
@@ -30,9 +50,15 @@ private:
 	Time(const Time& rhs)				= delete;
 	Time& operator = (const Time& rhs)	= delete;
 private:
-	// 前フレームの時間.
-	std::chrono::time_point<std::chrono::high_resolution_clock> m_PreviousTime;
+
+	std::chrono::time_point<std::chrono::high_resolution_clock> m_PreviousTime;	// 前フレームの時間.
 
 	float m_TargetFrameTime;// 目標フレーム時間(秒).
 	float m_DeltaTime;		// フレーム間の時間差.
+
+	float m_WorldTimeScale;	// 時間の尺度(通常1f, 2fで二倍の尺度で動く).
+
+	float m_OriginalTimeScale;		// 一時変更前の元の時間スケール (1.0fなど).
+	float m_TimeScaleRestoreTime;	// 時間スケールを元に戻す絶対時刻.
+
 };

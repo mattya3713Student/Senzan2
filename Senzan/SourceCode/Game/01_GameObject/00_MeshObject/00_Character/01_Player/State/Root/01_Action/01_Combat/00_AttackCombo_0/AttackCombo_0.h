@@ -4,7 +4,7 @@
 class Player;
 
 /**************************************************
-*	プレイヤーの攻撃三段目のステート(派生).
+*	プレイヤーの攻撃一段目のステート(派生).
 *	担当:淵脇 未来.
 **/
 
@@ -24,6 +24,9 @@ public:
     void Draw() override;
     void Exit() override;
 
-private:
+private:    
+
+private:    
+    DirectX::XMFLOAT3 m_MoveVec;    // 移動方向.
 };
 }

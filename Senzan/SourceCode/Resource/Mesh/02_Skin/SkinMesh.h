@@ -115,10 +115,8 @@ private:
 private:
 	ID3D11Buffer* m_pCBufferPerBone;		//コンスタントバッファ(ボーン毎).
 
-	// 【修正】D3DXMATRIX を XMMATRIX に変更
 	DirectX::XMMATRIX	m_mView;
 	DirectX::XMMATRIX	m_mProj;
-	// 【修正】D3DXVECTOR3 を XMFLOAT3 に変更
 	DirectX::XMFLOAT3	m_CamPos;
 
 	// アニメーション速度.

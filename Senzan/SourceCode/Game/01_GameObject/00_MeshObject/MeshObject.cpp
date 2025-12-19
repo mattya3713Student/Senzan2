@@ -46,9 +46,9 @@ void MeshObject::Draw()
 	// 描画直前で必要な情報をMesh本体に送る.
 	if (auto pMesh = m_pMesh.lock())
 	{
-		pMesh->SetPosition(m_Transform->Position);
-		pMesh->SetRotation(m_Transform->Rotation);
-		pMesh->SetScale(m_Transform->Scale);
+		pMesh->SetPosition(m_spTransform->Position);
+		pMesh->SetRotation(m_spTransform->Rotation);
+		pMesh->SetScale(m_spTransform->Scale);
 		pMesh->SetIsLight(m_IsLight);
 		pMesh->SetIsShadow(m_IsShadow);
 	}
@@ -61,8 +61,9 @@ void MeshObject::Draw()
 	// SkinMesh時の描画.
 	else if (std::shared_ptr<SkinMesh> skinMesh = std::dynamic_pointer_cast<SkinMesh>(m_pMesh.lock()))
 	{
-		skinMesh->SetAnimSpeed(m_AnimSpeed);
+		m_AnimTimer += m_AnimSpeed * GetDelta();
 		IsLoopAnimTimeSet();
+		m_pAnimCtrl->SetTrackPosition(0, m_AnimTimer);
 		skinMesh->Render(m_pAnimCtrl);
 	}
 }
@@ -79,9 +80,9 @@ void MeshObject::DrawDepth()
 	// 描画直前で必要な情報をMesh本体に送る.
 	if (auto pMesh = m_pMesh.lock())
 	{
-		pMesh->SetPosition(m_Transform->Position);
-		pMesh->SetRotation(m_Transform->Rotation);
-		pMesh->SetScale(m_Transform->Scale);
+		pMesh->SetPosition(m_spTransform->Position);
+		pMesh->SetRotation(m_spTransform->Rotation);
+		pMesh->SetScale(m_spTransform->Scale);
 	}
 
 	// StaticMesh時の深度描画.
@@ -92,7 +93,6 @@ void MeshObject::DrawDepth()
 	// SkinMesh時の深度描画.
 	else if (std::shared_ptr<SkinMesh> skinMesh = std::dynamic_pointer_cast<SkinMesh>(m_pMesh.lock()))
 	{
-		skinMesh->SetAnimSpeed(m_AnimSpeed);
 		skinMesh->RenderDepth(m_pAnimCtrl);
 	}
 
@@ -151,42 +151,31 @@ void MeshObject::SetIsLight(const bool& isLight)
 	m_IsLight = isLight;
 }
 
-//------------------------------------------------------------------------------------.
-
 void MeshObject::SetIsShadow(const bool& isShadow)
 {
 	m_IsShadow = isShadow;
 }
 
-//------------------------------------------------------------------------------------.
-
-void MeshObject::SetAnimSpeed(const double& speed)
+// アニメーションの速度を設定.
+void MeshObject::SetAnimSpeed(const double speed)
 {
 	m_AnimSpeed = speed;
 }
 
-void MeshObject::SetIsLoop(const bool& isLoop)
+// アニメーションのループ設定.
+void MeshObject::SetIsLoop(const bool isLoop)
 {
 	m_Isloop = isLoop;
 }
 
-//------------------------------------------------------------------------------------.
-
-void MeshObject::ChangeAnim(const int& index)
+// アニメーションループの設定.
+void MeshObject::SetAnimTime(double StartTime)
 {
-	//もし、アニメーションナンバーが自分の設定した番号と一緒なら返す.
-	if (m_AnimNo == index) { return; }
-
-	m_AnimNo = index;
-	if (std::shared_ptr<SkinMesh> skinMesh = std::dynamic_pointer_cast<SkinMesh>(m_pMesh.lock()))
-	{
-		skinMesh->ChangeAnimSet(index, m_pAnimCtrl);
-	}
+	m_AnimTimer = StartTime;
 }
 
-//------------------------------------------------------------------------------------.
-
-const double MeshObject::GetAnimPeriod(const int& index) const
+// アニメーション終了時間を取得.
+double MeshObject::GetAnimPeriod(int index) const
 {
 	if (std::shared_ptr<SkinMesh> skinMesh = std::dynamic_pointer_cast<SkinMesh>(m_pMesh.lock()))
 	{
@@ -197,22 +186,19 @@ const double MeshObject::GetAnimPeriod(const int& index) const
 
 void MeshObject::IsLoopAnimTimeSet()
 {
-	// アニメーション経過時間を増加.
-	m_AnimTimer += m_AnimSpeed;
-
 	// もしループしないなら最終フレームに到達時点でアニメーション固定.
 	if (!m_Isloop) {
 		double EndTime = GetAnimPeriod(m_AnimNo);
 		if (EndTime <= m_AnimTimer) {
 			if (std::shared_ptr<SkinMesh> skinMesh = std::dynamic_pointer_cast<SkinMesh>(m_pMesh.lock()))
 			{
-				skinMesh->ChangeAnimSet_StartPos(m_AnimNo, EndTime - m_AnimSpeed, m_pAnimCtrl);
-			m_AnimSpeed = 0.0;
+				if(MyMath::IsNearlyEqual(m_AnimSpeed, 0.0))
+					m_AnimTimer -= GetDelta();
+				m_pAnimCtrl->SetTrackPosition(0, m_AnimTimer);
+				m_AnimSpeed = 0.0;
 			}
 		}
 	}
-
-	// MEMO : アニメーションループする場合は自動でループされるので処理なし.
 }
 
 //------------------------------------------------------------------------------------.

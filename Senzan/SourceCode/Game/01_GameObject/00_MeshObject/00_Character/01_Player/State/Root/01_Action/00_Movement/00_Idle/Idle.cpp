@@ -1,8 +1,13 @@
 #include "Idle.h"
+#include "../../../../../Player.h"
+
+
 #include "Game/05_InputDevice/Input.h"
 #include "Game/05_InputDevice/VirtualPad.h"
 
-#include "../../../../../Player.h"
+#include "System/Singleton/ImGui/CImGuiManager.h"
+
+static constexpr double IDOL_ANIM_SPEED = 0.3;
 
 namespace PlayerState {
 Idle::Idle(Player* owner)
@@ -22,6 +27,10 @@ constexpr PlayerState::eID Idle::GetStateID() const
 void Idle::Enter()
 {
 	Movement::Enter();
+
+	m_pOwner->SetIsLoop(true);
+	m_pOwner->SetAnimSpeed(IDOL_ANIM_SPEED);
+	m_pOwner->ChangeAnim(Player::eAnim::Idle);
 }
 
 void Idle::Update()

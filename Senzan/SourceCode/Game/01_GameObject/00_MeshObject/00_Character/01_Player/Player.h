@@ -5,6 +5,7 @@
 template<typename FSM_Owner> class StateMachine;
 
 class PlayerStateBase;
+class CameraManager;
 
 // 前方宣言.
 namespace PlayerState {
@@ -15,15 +16,19 @@ class Pause;
 class KnockBack;
 class Dead;
 class SpecialAttack;
+class Action;
+class Movement;
 class Idle;
 class Run;
 class AttackCombo_0;
 class AttackCombo_1;
 class AttackCombo_2;
 class Parry;
+class Dodge;
 class DodgeExecute;
 class JustDodge;
 }
+
 
 /**********************************************************************************
 * @author    : 淵脇 未来.
@@ -34,19 +39,39 @@ class JustDodge;
 class Player
 	: public Character
 {
+	friend PlayerStateBase;
+	friend PlayerState::Root;
 	friend PlayerState::Pause;
 	friend PlayerState::KnockBack;
 	friend PlayerState::Dead;
 	friend PlayerState::SpecialAttack;
 	friend PlayerState::Idle;
 	friend PlayerState::Run;
+	friend PlayerState::Movement;
 	friend PlayerState::AttackCombo_0;
 	friend PlayerState::AttackCombo_1;
 	friend PlayerState::AttackCombo_2;
 	friend PlayerState::Parry;
 	friend PlayerState::DodgeExecute;
 	friend PlayerState::JustDodge;
+	friend PlayerState::Dodge;
+	friend PlayerState::Action;
 
+	enum class eAnim : uint8_t
+	{
+		Idle = 0,
+		Run,
+		Attack_0,
+		Attack_1,
+		Attack_2,
+		SpecialAttack_2,
+		SpecialAttack_1,
+		SpecialAttack_0,
+		Parry,
+		Dodge,
+		KnockBack,
+		Dead,
+	};
 
 	// 定数.
 protected:
@@ -62,22 +87,33 @@ public:
 	virtual void LateUpdate() override;
 	virtual void Draw() override;
 
+	void SetTargetPos(const DirectX::XMFLOAT3& NewTargetPos) noexcept { m_TargetPos = NewTargetPos; };
+
 	bool IsKnockBack() const noexcept;	// スタン中か.
 	bool IsDead() const noexcept;		// 死亡中か.
 	bool IsPaused() const noexcept;		// ポーズ中か.
 
 	// ステートの変更.
-	void ChangeState(PlayerState::eID id) const;
+	void ChangeState(PlayerState::eID id);
 
 	std::reference_wrapper<PlayerStateBase> GetStateReference(PlayerState::eID id);
 
 private:
 
-	// Playerの最終的なDeltaTimeの取得.
-	float GetDelta();
-
 	// マッピングを初期化.
 	void InitializeStateRefMap();
+
+	// 衝突_被ダメージ.
+	void HandleDamageDetection() override;
+	// 衝突_攻撃判定.
+	void HandleAttackDetection() override;
+	// 衝突_回避.
+	void HandleDodgeDetection() override;
+
+protected:
+
+	// Playerの最終的なDeltaTimeの取得.
+	
 
 protected:
 	std::unique_ptr<PlayerState::Root> m_RootState;	// ステートマシーン.
@@ -88,8 +124,25 @@ protected:
 
 protected:
 
+
+	//---共有---.
+	PlayerState::eID	m_NextStateID;		// 次遷移ステート.
+	bool m_IsStateChangeRequest;			// 次遷移ステートフラグ.
+
+	DirectX::XMFLOAT3	m_MoveVec;			// 一時保存の移動ベクトル.
+
+	//---System関連---.
+	bool				m_IsKnockBack;		// ノックバック中か否か.
+	DirectX::XMFLOAT3	m_KnockBackVec;		// ノックバックのベクトル.
+	float				m_KnockBackPower;	// ノックバックの強さ(被ダメの量に比例する予定).
+
 	//---MoveMent関連---.
-	float m_RunMoveSpeed;		// 移動速度.
-	DirectX::XMFLOAT2 m_MoveVec;// 一時保存の移動ベクトル,yをz座標として使用.
+	float				m_RunMoveSpeed;		// 移動速度.
+
+	//---Combat関連---.
+	DirectX::XMFLOAT3	m_TargetPos;		// 敵の座標.
+	
+	//---Dodge関連---.
+	bool				m_IsJustDodgeTiming;// ジャスト回避のタイミング.
 
 };

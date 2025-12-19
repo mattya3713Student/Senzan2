@@ -20,6 +20,8 @@ public:
 		m_wpCamera = pCamera;
 	}
 
+	// カメラを揺らす.
+	void ShakeCamera(float duration, float magnitude);
 
 	// カメラの更新.
 	void LateUpdate();
@@ -58,6 +60,10 @@ private:
 	// ビューとプロジェクションの更新.
 	void ViewAndProjectionUpdate();
 
+
 private:
 	std::weak_ptr<CameraBase> m_wpCamera;
+
+	float m_ShakeDuration = 0.0f;       // シェイクの残り時間.
+	float m_ShakeMagnitude = 0.0f;      // シェイクの強度.
 };

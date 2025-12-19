@@ -23,7 +23,7 @@ class Shout;			//叫びクラス.
 class ShoutState;		//叫び攻撃ステートクラス.
 
 //ボスの行動関係を書く.
-class BossIdleState;		//待機状態.
+class BossIdolState;		//待機状態.
 class BossMoveState;		//左右移動動状態.
 class BossAttackStateBase;	//攻撃ベースクラス.
 class BossStompState;		//踏みつけ攻撃
@@ -32,6 +32,11 @@ class BossChargeSlashState;	//溜め攻撃.
 class BossShoutState;		//叫び攻撃.
 class BossSpecialState;
 class BossLaserState;
+class BossDeadState;
+
+class BossThrowingState;
+
+class BossChargeState;
 
 class SkinMesh;
 
@@ -41,7 +46,7 @@ class SkinMesh;
 class Boss
 	: public Character
 {
-	friend BossIdleState;
+	friend BossIdolState;
 	friend BossMoveState;
 	friend BossStompState;
 	friend BossSlashState;
@@ -49,6 +54,48 @@ class Boss
 	friend BossShoutState;
 	friend BossSpecialState;
 	friend BossLaserState;
+	friend BossDeadState;
+	friend BossChargeState;
+	friend BossThrowingState;
+
+	//ボスのアニメーションの列挙.
+	enum class enBossAnim : byte
+	{
+		Idol = 0,		//待機.
+
+		RunToIdol,		//走りから待機.
+		Run,			//走り中.
+		IdolToRun,		//待機から走り.
+
+		Hit,			//被弾.
+
+		ChargeToIdol,	//ため攻撃から待機.
+		ChargeAttack,	//ため攻撃中.
+		Charge,			//ためている.
+
+		RightMove,		//右に進.
+		LeftMove,		//左に進.
+
+		SpecialToIdol,	//特殊攻撃と踏みつけ終了時に待機.
+		Special_1,		//特殊攻撃と踏みつけ中.
+		Special_0,		//飛ぶ.
+
+		FlinchToIdol,	//怯みから待機.
+		Flinch,			//怯み中.
+		FlinchParis,	//怯み(パリィ).
+
+		Dead,			//死亡.
+
+		LaserEnd,		//レーザーから待機.
+		Laser,			//レーザー中.
+		LaserCharge,	//レーザーのため.
+
+		SlashToIdol,	//斬る攻撃から待機.
+		Slash,			//斬る攻撃.
+
+		none,			//何もしない.
+	};
+
 public:
 	Boss();
 	~Boss() override;
@@ -70,6 +117,8 @@ public:
 	float boss_y = 0.f;
 	float boss_z = 0.f;
 
+	void Hit();
+
 
 public:
 	//プレイヤーの位置を取得するためにここにSetPlayer()を作成する.
@@ -78,10 +127,21 @@ public:
 	DirectX::XMFLOAT3 GetTargetPos() { return m_PlayerPos; }
 
 protected:
+
+	// 衝突_被ダメージ.
+	void HandleDamageDetection() override;
+	// 衝突_攻撃判定.
+	void HandleAttackDetection() override;
+	// 衝突_回避.
+	void HandleDodgeDetection() override;
+
+
+protected:
 	//ステートマシンのメンバ変数.
 	std::unique_ptr<StateMachine<Boss>> m_State;
 
 	DirectX::XMFLOAT3					m_PlayerPos;
+	DirectX::XMFLOAT3					m_PlayerVelocity;
 
 	float m_MoveSpped = 0.0f;
 
@@ -92,4 +152,7 @@ protected:
 
 
 	float deleta_time;
+
+	float m_HitPoint;
+
 };

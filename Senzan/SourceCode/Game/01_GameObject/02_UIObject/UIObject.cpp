@@ -41,7 +41,7 @@ void UIObject::Draw()
 	{		
 		const auto& rectTransform = sprite->GetRectTransform();
 
-		Transform newTransform = *m_Transform;
+		Transform newTransform = *m_spTransform;
 		rectTransform->SetTransform(newTransform);
 		rectTransform->SetAnchor(m_Anchor);
 		rectTransform->SetPivot(m_Pivot);

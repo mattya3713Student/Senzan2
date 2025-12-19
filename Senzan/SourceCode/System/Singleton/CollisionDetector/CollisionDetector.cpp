@@ -1,5 +1,6 @@
 ﻿#include "CollisionDetector.h"
-#include "Game/03_Collision/ColliderBase.h" 
+#include "Game/03_Collision/00_Core/ColliderBase.h" 
+#include "Game/03_Collision/00_Core/Ex_CompositeCollider/CompositeCollider.h" 
 
 void CollisionDetector::ExecuteCollisionDetection()
 {
@@ -18,20 +19,36 @@ void CollisionDetector::ExecuteCollisionDetection()
     {
         for (size_t j = i + 1; j < m_Colliders.size(); ++j)
         {
-            ColliderBase* colliderA = m_Colliders[i].get();
-            ColliderBase* colliderB = m_Colliders[j].get();
-
+            ColliderBase* colliderA = m_Colliders[i];
+            ColliderBase* colliderB = m_Colliders[j];
             if (!colliderA || !colliderB) { continue; }
+            if (!colliderA->GetActive() || !colliderB->GetActive()) { continue; }
+#if 0
 
-            // フィルタの判断と接触の判断を行う.
+            eCollisionGroup group_a = colliderA->GetMyMask();
+            eCollisionGroup group_b = colliderB->GetMyMask();
+
+            bool is_pattern1 = (group_a & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None &&
+                (group_b & eCollisionGroup::Player_JustDodge) != eCollisionGroup::None;
+
+            bool is_pattern2 = (group_a & eCollisionGroup::Player_JustDodge) != eCollisionGroup::None &&
+                (group_b & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None;
+
+            // パターン1 または パターン2 の時に実行
+            if (is_pattern1 || is_pattern2)
+            {
+                // 衝突後の処理
+                int i = 0;
+                i++;
+            }
+#endif
+            // フィルタの判断と接触の判断.
             CollisionInfo info = colliderA->CheckCollision(*colliderB);
-
-			// 当たってたら情報を記録して伝達.
             if (!info.IsHit) { continue; }
 
             // Detector側の記録リストに追加.
             m_PendingResponses.push_back(info);
-            
+
             // Collider A への情報追加.
             colliderA->AddCollisionInfo(info);
 
@@ -39,7 +56,8 @@ void CollisionDetector::ExecuteCollisionDetection()
             CollisionInfo info_reverse = info;
 
             // 法線ベクトルを反転.
-            info_reverse.Normal = DirectX::XMVectorNegate(info.Normal);
+            DirectX::XMVECTOR v_normal_reverse = DirectX::XMLoadFloat3(&info.Normal);
+            DirectX::XMStoreFloat3(&info_reverse.Normal, v_normal_reverse);
 
             // ポインタを入れ替え.
             const ColliderBase* temp_collider = info.ColliderA;
@@ -53,17 +71,42 @@ void CollisionDetector::ExecuteCollisionDetection()
 }
 
 // コライダーの登録.
-void CollisionDetector::RegisterCollider(std::shared_ptr<ColliderBase> collider)
+void CollisionDetector::RegisterCollider(ColliderBase& Collider)
 {
-    if (collider)
+    m_Colliders.push_back(&Collider);
+}
+
+// コライダーの登録.
+void CollisionDetector::RegisterCollider(const CompositeCollider& Collider)
+{
+    const std::vector<std::unique_ptr<ColliderBase>>& internal_colliders = Collider.GetInternalColliders();
+
+    for (const std::unique_ptr<ColliderBase>& collider_ptr : internal_colliders)
     {
-        m_Colliders.push_back(collider);
+        if (collider_ptr)
+        {
+            m_Colliders.push_back(collider_ptr.get());
+        }
     }
 }
 
 // コライダーの解除.
-void CollisionDetector::UnregisterCollider(std::shared_ptr<ColliderBase> collider)
+void CollisionDetector::UnregisterCollider(ColliderBase* Collider)
 {
-    auto it = std::remove(m_Colliders.begin(), m_Colliders.end(), collider);
+    auto it = std::remove(m_Colliders.begin(), m_Colliders.end(), static_cast<ColliderBase*>(Collider));
     m_Colliders.erase(it, m_Colliders.end());
+}
+
+// コライダーの解除.
+void CollisionDetector::UnregisterCollider(const CompositeCollider& Collider)
+{
+    const std::vector<std::unique_ptr<ColliderBase>>& internal_colliders = Collider.GetInternalColliders();
+
+    for (const std::unique_ptr<ColliderBase>& collider_ptr : internal_colliders)
+    {
+        if (collider_ptr)
+        {
+            UnregisterCollider(collider_ptr.get());
+        }
+    }
 }

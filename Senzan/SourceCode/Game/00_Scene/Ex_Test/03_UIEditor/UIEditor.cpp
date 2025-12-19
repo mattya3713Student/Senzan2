@@ -13,11 +13,12 @@
 #endif // _DEBUG
 
 
-// json型を作成
+// json�^��쐬
 using Json = nlohmann::json;
 
+
 namespace {
-	char m_NewSceneName[64] = ""; // 新規作成用バッファをメンバ変数に追加
+	char m_NewSceneName[64] = ""; // �V�K�쐬�p�o�b�t�@������o�ϐ��ɒǉ�
 }
 
 //-----------------------------------------------------------------------.
@@ -31,13 +32,20 @@ UIEditor::~UIEditor()
 
 //-----------------------------------------------------------------------.
 
+//=============================================================================
+//		�쐬����
+//=============================================================================
 void UIEditor::Create()
 {
 	SelectSceneLoad("Title");
+	SelectInit();
 }
 
 //-----------------------------------------------------------------------.
 
+//=============================================================================
+//		�f�[�^�Ǎ�
+//=============================================================================
 HRESULT UIEditor::LoadData()
 {
 	return E_NOTIMPL;
@@ -45,53 +53,70 @@ HRESULT UIEditor::LoadData()
 
 //-----------------------------------------------------------------------.
 
+//=============================================================================
+//		����������
+//=============================================================================
 void UIEditor::Initialize()
 {
 }
 
 //-----------------------------------------------------------------------.
 
+//-----------------------------------------------------------------------------
+//		UI�I����ɉ��ϐ��������������
+//-----------------------------------------------------------------------------
+void UIEditor::SelectInit()
+{
+	m_PatternNo = POINTS(0, 0);
+	m_PatternMax = POINTS(1, 1);
+	m_PatternAuto = false;
+}
+
+
+//=============================================================================
+//		�X�V����
+//=============================================================================
 void UIEditor::Update()
 {
-	// キー入力
+	// �L�[����
 	KeyInput();
 
-	// シーンを選択する
+	// �V�[����I�����
 	ImGuiSelectScene();
 
 	//--------------------------------------------------------------
-	//		UIの追加と削除
+	//		UI�̒ǉ��ƍ폜
 	//--------------------------------------------------------------
-	ImGui::Begin(IMGUI_JP("UIの追加・削除"));
-	// シーンにUIを追加
+	ImGui::Begin(IMGUI_JP("UI�̒ǉ��E�폜"));
+	// �V�[����UI��ǉ�
 	AddDeleteSprite();
-	// 画像名を変更し名前被りに対処
+	// �摜����ύX�����O���ɑΏ�
 	RenameUIObjects();
 	ImGui::End();
 
 	//--------------------------------------------------------------
-	//		UI調整
+	//		UI����
 	//--------------------------------------------------------------
-	ImGui::Begin(IMGUI_JP("UIエディターウィンドウ"));
-	// UIリストの検索関数
+	ImGui::Begin(IMGUI_JP("UI�G�f�B�^�[�E�B���h�E"));
+	// UI���X�g�̌����֐�
 	ImGuiSearchUI();
 	
 	//-----------------------------------------------------------
-	//		選択中のオブジェクトの編集
+	//		�I�𒆂̃I�u�W�F�N�g�̕ҏW
 	//-----------------------------------------------------------
 	if (m_SelectedUIIndex >= 0 && m_SelectedUIIndex < m_pUIs.size()) {
-		// 選択されているUIを表示
+		// �I�����Ă���UI��\��
 		ImGui::Text(IMGUI_JP("選択されているUI: %s"), m_pUIs[m_SelectedUIIndex]->GetUIName().c_str());
 
 
-		// 座標の調整
+		// ���W�̒���
 		ImGuiPosEdit(m_pUIs[m_SelectedUIIndex]);
-		// Z座標を基準にソート
+		// Z���W���Ƀ\�[�g
 		SortBySpritePosZ(m_pUIs[m_SelectedUIIndex]);
 
-		// 画像情報の調整
+		// �摜���̒���
 		ImGuiInfoEdit(m_pUIs[m_SelectedUIIndex]);
-		// その他の情報の調整
+		// ���̑��̏��̒���
 		ImGuiEtcInfoEdit(m_pUIs[m_SelectedUIIndex]);
 
 		HighLightUI(m_pUIs[m_SelectedUIIndex]);
@@ -100,10 +125,10 @@ void UIEditor::Update()
 	ImGui::End();
 
 	//--------------------------------------------------------------
-	//		保存する
+	//		�ۑ�����
 	//--------------------------------------------------------------
-	ImGui::Begin(IMGUI_JP("UI保存ウィンドウ"));
-	if (ImGui::Button(IMGUI_JP("UIを保存"))) {
+	ImGui::Begin(IMGUI_JP("UI�ۑ��E�B���h�E"));
+	if (ImGui::Button(IMGUI_JP("UI��ۑ�"))) {
 		SaveScene();
 		m_MoveAny = false;
 	}
@@ -118,6 +143,9 @@ void UIEditor::LateUpdate()
 
 //-----------------------------------------------------------------------.
 
+//-----------------------------------------------------------------------------
+//		�L�[���͏���
+//-----------------------------------------------------------------------------
 void UIEditor::KeyInput()
 {
 	m_DragValue = 1.f;
@@ -127,19 +155,25 @@ void UIEditor::KeyInput()
 
 //-----------------------------------------------------------------------.
 
+//=============================================================================
+//		�`�揈��
+//=============================================================================
 void UIEditor::Draw()
 {
 	if (m_pUIs.empty()) { return; }
 	for (size_t i = 0; i < m_pUIs.size(); ++i) 
 	{
-		DirectX11::GetInstance().SetDepth(false);
+	DirectX11::GetInstance().SetDepth(false);
 		m_pUIs[i]->Draw();
-		DirectX11::GetInstance().SetDepth(true);
-	}
+	DirectX11::GetInstance().SetDepth(true);
+}
 }
 
 //-----------------------------------------------------------------------.
 
+//-----------------------------------------------------------------------------
+//		�I������V�[����UI��ǂݍ���
+//-----------------------------------------------------------------------------
 void UIEditor::SelectSceneLoad(const std::string& sceneName)
 {
 	m_pSprite2Ds.clear();
@@ -151,15 +185,15 @@ void UIEditor::SelectSceneLoad(const std::string& sceneName)
 	m_CurrentSceneName = sceneName;
 	m_ScenePath = "Data\\Image\\Sprite\\UIData\\" + sceneName + ".json";
 
-	// JSON読み込み
+	// JSON�ǂݍ���
 	Json jsonData = FileManager::JsonLoad(m_ScenePath);
 
-	// 空なら初期UIを1個追加
+	// ��Ȃ珉��UI��1�ǉ�
 	if (jsonData.is_null() || jsonData.empty()) {
 		std::shared_ptr<Sprite2D> sprite = std::make_shared<Sprite2D>();
 		std::shared_ptr<UIObject> ui = std::make_shared<UIObject>();
 
-		sprite->Initialize("Data\\Image\\Sprite\\Other\\White.png"); // 黒画像を初期で出す
+		sprite->Initialize("Data\\Image\\Sprite\\Other\\White.png"); // ���摜������ŏo��
 		ui->AttachSprite(sprite);
 		ui->SetPosition(0.f, 0.f, 0.f);
 
@@ -167,27 +201,27 @@ void UIEditor::SelectSceneLoad(const std::string& sceneName)
 		m_pUIs.push_back(ui);
 		m_SpritePosList.push_back(ui->GetPosition());
 
-		// ついでにSaveScene()で書き込んでおく
+		// ���ł�SaveScene()�ŏ�������ł���
 		SaveScene();
 	}
 
-	// 保存されたUIデータを読み込み、展開
+	// �ۑ����ꂽUI�f�[�^��ǂݍ��݁A�W�J
 	for (auto& [imageName, spriteArray] : jsonData.items()) {
-		// 拡張子が .json ならスキップ
+		// �g���q�� .json �Ȃ�X�L�b�v
 		std::string::size_type dotPos = imageName.find_last_of('.');
 		if (dotPos != std::string::npos) {
 			std::string ext = imageName.substr(dotPos);
 			if (ext == ".json" || ext == ".JSON") continue;
 		}
 		
-		// スプライト取得
+		// �X�v���C�g�擾
 		std::shared_ptr<Sprite2D> Sprite = SpriteManager::GetSprite2D(GetBaseName(imageName));
 		if (!Sprite) {
-			MessageBoxA(NULL, ("スプライトが見つかりません: " + imageName).c_str(), "Error", MB_OK);
+			MessageBoxA(NULL, ("�X�v���C�g��������܂���: " + imageName).c_str(), "Error", MB_OK);
 			continue;
 		}
 
-		// 各UIインスタンスを展開
+		// �eUI�C���X�^���X��W�J
 		for (auto& value : spriteArray) {
 			std::shared_ptr<UIObject> ui = std::make_shared<UIObject>();
 
@@ -200,14 +234,18 @@ void UIEditor::SelectSceneLoad(const std::string& sceneName)
 			ui->SetRotation(DirectX::XMFLOAT3(value["Rotate"]["x"], value["Rotate"]["y"], value["Rotate"]["z"]));
 			ui->SetDrawSize(DirectX::XMFLOAT2(value["Disp"]["w"], value["Disp"]["h"]));
 			
-			// リストに追加
+			// �Ȃ��̂��H�H
+			//ui->SetBase(DirectX::XMFLOAT2(value["Base"]["w"], value["Base"]["h"]));
+			//ui->SetStride(DirectX::XMFLOAT2(value["Stride"]["w"], value["Stride"]["h"]));
+
+			// ���X�g�ɒǉ�
 			m_pSprite2Ds.push_back(Sprite);
 			ui->AttachSprite(Sprite);
 			m_pUIs.push_back(ui);
 			m_SpritePosList.push_back(ui->GetPosition());
 		}
 	}
-	// Z座標を基準にソートする
+	// Z���W���Ƀ\�[�g����
 	std::sort(m_pUIs.begin(), m_pUIs.end(), [](std::shared_ptr<UIObject> a, std::shared_ptr<UIObject> b) {
 		return a->GetPosition().z < b->GetPosition().z;
 		});
@@ -215,6 +253,9 @@ void UIEditor::SelectSceneLoad(const std::string& sceneName)
 
 //-----------------------------------------------------------------------.
 
+//-----------------------------------------------------------------------------
+//		���݃V�[����UI����ۑ�
+//-----------------------------------------------------------------------------
 HRESULT UIEditor::SaveScene()
 {
 	Json jsonData;
@@ -222,13 +263,17 @@ HRESULT UIEditor::SaveScene()
 	{
 		std::string imageName = m_pUIs[i]->GetUIName();
 
-		// 画像名ごとのリストにUI情報を追加
+		// �摜�����Ƃ̃��X�g��UI����ǉ�
 		Json SpriteState;
 		SpriteState["Pos"]["x"] = m_pUIs[i]->GetPosition().x;
 		SpriteState["Pos"]["y"] = m_pUIs[i]->GetPosition().y;
 		SpriteState["Pos"]["z"] = m_pUIs[i]->GetPosition().z;
 		SpriteState["Disp"]["w"] = m_pUIs[i]->GetDrawSize().x;
 		SpriteState["Disp"]["h"] = m_pUIs[i]->GetDrawSize().y;
+		//SpriteState["Base"]["w"] = m_pUIs[i]->GetSpriteData().Base.w;
+		//SpriteState["Base"]["h"] = m_pUIs[i]->GetSpriteData().Base.h;
+		//SpriteState["Stride"]["w"] = m_pUIs[i]->GetSpriteData().Stride.w;
+		//SpriteState["Stride"]["h"] = m_pUIs[i]->GetSpriteData().Stride.h;
 
 		SpriteState["Color"]["x"] = m_pUIs[i]->GetColor().x;
 		SpriteState["Color"]["y"] = m_pUIs[i]->GetColor().y;
@@ -245,7 +290,7 @@ HRESULT UIEditor::SaveScene()
 		SpriteState["Rotate"]["y"] = m_pUIs[i]->GetRotation().y;
 		SpriteState["Rotate"]["z"] = m_pUIs[i]->GetRotation().z;
 
-		// jsonData[画像名] に配列として追加
+		// jsonData[�摜��] �ɔz��Ƃ��Ēǉ�
 		jsonData[imageName].push_back(SpriteState);
 	}
 	std::string outPath = "Data\\Image\\Sprite\\UIData\\" + m_CurrentSceneName + ".json";
@@ -256,18 +301,21 @@ HRESULT UIEditor::SaveScene()
 
 //-----------------------------------------------------------------------.
 
+//-----------------------------------------------------------------------------
+//		Z���W����Ƀ\�[�g����֐�
+//-----------------------------------------------------------------------------
 void UIEditor::SortBySpritePosZ(std::shared_ptr<UIObject> object)
 {
-	// 何も座標に関して変更がない場合早期リターン
+	// ������W�Ɋւ��ĕύX���Ȃ��ꍇ�������^�[��
 	if (!m_MovedSpritePos) { return; }
 
-	// ソート前の選択されていた UI のポインタを保存
+	// �\�[�g�O�̑I�����Ă��� UI �̃|�C���^��ۑ�
 	std::shared_ptr<UIObject> pPreviousSelectedUI = object;
 
-	// Z座標を基準にソートする
+	// Z���W���Ƀ\�[�g����
 	std::sort(m_pUIs.begin(), m_pUIs.end(),
 		[](const std::shared_ptr<UIObject>& a, const std::shared_ptr<UIObject>& b) {
-			if (!a || !b) return false; // UIObjectがnullptrなら後ろに
+			if (!a || !b) return false; // UIObject��nullptr�Ȃ����
 
 			const auto& posA = a->GetPosition();
 			const auto& posB = b->GetPosition();
@@ -275,16 +323,16 @@ void UIEditor::SortBySpritePosZ(std::shared_ptr<UIObject> object)
 			return posA.z < posB.z;
 		});
 
-	// ソート後に、以前選択されていた UI がまだリストに存在するか確認し、再選択
+	// �\�[�g��ɁA�ȑO�I�����Ă��� UI ���܂����X�g�ɑ��݂��邩�m�F���A�đI��
 	if (pPreviousSelectedUI != nullptr)
 	{
 		auto it = std::find(m_pUIs.begin(), m_pUIs.end(), pPreviousSelectedUI);
 		if (it != m_pUIs.end()) {
-			// 再選択
+			// �đI��
 			m_SelectedUIIndex = static_cast<int>(std::distance(m_pUIs.begin(), it));
 		}
 		else {
-			// 以前選択されていたUIがリストにない場合
+			// �ȑO�I�����Ă���UI�����X�g�ɂȂ��ꍇ
 			object = nullptr;
 			m_SelectedUIIndex = 0;
 		}
@@ -295,17 +343,20 @@ void UIEditor::SortBySpritePosZ(std::shared_ptr<UIObject> object)
 
 //-----------------------------------------------------------------------.
 
+//-----------------------------------------------------------------------------
+//		ImGui��p�����V�[���I��֐�
+//-----------------------------------------------------------------------------
 void UIEditor::ImGuiSelectScene()
 {
-	ImGui::Begin(IMGUI_JP("シーン管理"));
+	ImGui::Begin(IMGUI_JP("�V�[���Ǘ�"));
 
-	// 新規シーンの作成
-	ImGui::InputText(IMGUI_JP("新規シーン名"), m_NewSceneName, IM_ARRAYSIZE(m_NewSceneName));
-	if (ImGui::Button(IMGUI_JP("新規シーン作成"))) {
+	// �V�K�V�[���̍쐬
+	ImGui::InputText(IMGUI_JP("�V�K�V�[����"), m_NewSceneName, IM_ARRAYSIZE(m_NewSceneName));
+	if (ImGui::Button(IMGUI_JP("�V�K�V�[���쐬"))) {
 		std::string newPath = "Data\\Image\\Sprite\\UIData\\" + std::string(m_NewSceneName) + ".json";
 		if (!std::filesystem::exists(newPath)) {
 			std::ofstream ofs(newPath);
-			ofs << "{}"; // 空のJSONを書き込む
+			ofs << "{}"; // ���JSON���������
 			ofs.close();
 		}
 		m_CurrentSceneName = m_NewSceneName;
@@ -314,10 +365,10 @@ void UIEditor::ImGuiSelectScene()
 	}
 
 	ImGui::Separator();
-	ImGui::Text(IMGUI_JP("既存のシーン"));
+	ImGui::Text(IMGUI_JP("�����̃V�[��"));
 
-	static std::string sceneToDelete; // 削除候補のシーン名
-	static bool showDeleteConfirm = false; // 削除確認ダイアログ表示フラグ
+	static std::string sceneToDelete; // �폜���̃V�[����
+	static bool showDeleteConfirm = false; // �폜�m�F�_�C�A���O�\���t���O
 
 	for (const auto& entry : std::filesystem::directory_iterator("Data\\Image\\Sprite\\UIData\\")) {
 		if (entry.path().extension() == ".json") {
@@ -332,7 +383,7 @@ void UIEditor::ImGuiSelectScene()
 			}
 			ImGui::SameLine();
 
-			if (ImGui::Button(IMGUI_JP("削除"))) {
+			if (ImGui::Button(IMGUI_JP("�폜"))) {
 				sceneToDelete = sceneName;
 				showDeleteConfirm = true;
 			}
@@ -341,15 +392,15 @@ void UIEditor::ImGuiSelectScene()
 		}
 	}
 
-	// 削除確認モーダル
+	// �폜�m�F���[�_��
 	if (showDeleteConfirm) {
-		ImGui::OpenPopup(IMGUI_JP("削除確認"));
+		ImGui::OpenPopup(IMGUI_JP("�폜�m�F"));
 	}
-	if (ImGui::BeginPopupModal(IMGUI_JP("削除確認"), NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-		ImGui::Text("%s\n%s", sceneToDelete.c_str(), IMGUI_JP("を削除しますか？"));
+	if (ImGui::BeginPopupModal(IMGUI_JP("�폜�m�F"), NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+		ImGui::Text("%s\n%s", sceneToDelete.c_str(), IMGUI_JP("��폜���܂����H"));
 		ImGui::Separator();
 
-		if (ImGui::Button(IMGUI_JP("はい"), ImVec2(120, 0))) {
+		if (ImGui::Button(IMGUI_JP("�͂�"), ImVec2(120, 0))) {
 			std::string deletePath = "Data\\Image\\Sprite\\UIData\\" + sceneToDelete + ".json";
 			if (std::filesystem::exists(deletePath)) {
 				try {
@@ -359,10 +410,10 @@ void UIEditor::ImGuiSelectScene()
 			}
 
 			if (m_CurrentSceneName == sceneToDelete) {
-				// 削除対象のシーンを現在のシーンから外す
+				// �폜�Ώۂ̃V�[������݂̃V�[������O��
 				m_CurrentSceneName.clear();
 
-				// UIなどのデータをクリア
+				// UI�Ȃǂ̃f�[�^��N���A
 				m_pUIs.clear();
 				m_pSprite2Ds.clear();
 				m_SpritePosList.clear();
@@ -374,7 +425,7 @@ void UIEditor::ImGuiSelectScene()
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SameLine();
-		if (ImGui::Button(IMGUI_JP("いいえ"), ImVec2(120, 0))) {
+		if (ImGui::Button(IMGUI_JP("������"), ImVec2(120, 0))) {
 			sceneToDelete.clear();
 			showDeleteConfirm = false;
 			ImGui::CloseCurrentPopup();
@@ -387,16 +438,19 @@ void UIEditor::ImGuiSelectScene()
 
 //-----------------------------------------------------------------------.
 
+//-----------------------------------------------------------------------------
+//		UI���X�g�����֐�
+//-----------------------------------------------------------------------------
 void UIEditor::ImGuiSearchUI()
 {
-	if (ImGui::TreeNodeEx(IMGUI_JP("UIリスト"), ImGuiTreeNodeFlags_DefaultOpen)) {
-		// 検索バー
-		ImGui::InputText(IMGUI_JP("検索"), m_SearchBuffer, IM_ARRAYSIZE(m_SearchBuffer));
-		// スクロール可能なリスト
+	if (ImGui::TreeNodeEx(IMGUI_JP("UI���X�g"), ImGuiTreeNodeFlags_DefaultOpen)) {
+		// �����o�[
+		ImGui::InputText(IMGUI_JP("����"), m_SearchBuffer, IM_ARRAYSIZE(m_SearchBuffer));
+		// �X�N���[���\�ȃ��X�g
 		ImGui::BeginChild(IMGUI_JP("リスト"), ImVec2(315, 200), true, ImGuiWindowFlags_HorizontalScrollbar);
 
 		for (int i = 0; i < m_pUIs.size(); ++i) {
-			// 検索フィルタリング
+			// �����t�B���^�����O
 			if (strlen(m_SearchBuffer) > 0
 				&& m_pUIs[i]->GetUIName().find(m_SearchBuffer) == std::string::npos) {
 				continue;
@@ -404,7 +458,7 @@ void UIEditor::ImGuiSearchUI()
 
 			bool isSelected = (m_SelectedUIIndex == i);
 			if (ImGui::Selectable(m_pUIs[i]->GetUIName().c_str(), isSelected)) {
-				m_SelectedUIIndex = i; // 選択更新
+				m_SelectedUIIndex = i; // �I��X�V
 				TriggeHgihLight();
 			}
 		}
@@ -415,21 +469,24 @@ void UIEditor::ImGuiSearchUI()
 
 //-----------------------------------------------------------------------.
 
+//-----------------------------------------------------------------------------
+//		SpriteManager����UI��ǉ�
+//-----------------------------------------------------------------------------
 void UIEditor::AddDeleteSprite()
 {
 	std::vector<std::string> spriteNames = SpriteManager::GetSprite2D2List();
-	if (ImGui::TreeNodeEx(IMGUI_JP("追加可能UIリスト"), ImGuiTreeNodeFlags_DefaultOpen)) {
-		// 検索バー
-		ImGui::InputText(IMGUI_JP("検索"), m_SpriteSearchBuffer,
+	if (ImGui::TreeNodeEx(IMGUI_JP("�ǉ��\UI���X�g"), ImGuiTreeNodeFlags_DefaultOpen)) {
+		// �����o�[
+		ImGui::InputText(IMGUI_JP("����"), m_SpriteSearchBuffer,
 			IM_ARRAYSIZE(m_SpriteSearchBuffer));
-		// スクロール可能なリスト
-		ImGui::BeginChild(IMGUI_JP("リスト"),
+		// �X�N���[���\�ȃ��X�g
+		ImGui::BeginChild(IMGUI_JP("���X�g"),
 			ImVec2(315, 200), true, ImGuiWindowFlags_HorizontalScrollbar);
 
 		for (int i = 0; i < spriteNames.size(); ++i) {
 			const std::string& name = spriteNames[i];
 
-			// 検索フィルタ
+			// �����t�B���^
 			if (strlen(m_SpriteSearchBuffer) > 0 &&
 				name.find(m_SpriteSearchBuffer) == std::string::npos) {
 				continue;
@@ -437,13 +494,13 @@ void UIEditor::AddDeleteSprite()
 
 			bool isSelected = (m_SelectedSpriteName == name);
 			if (ImGui::Selectable(name.c_str(), isSelected)) {
-				m_SelectedSpriteName = name; // 選択更新
+				m_SelectedSpriteName = name; // �I��X�V
 			}
 		}
 		ImGui::EndChild();
 
-		// 選択されたスプライトをUIとして追加
-		if (ImGui::Button(IMGUI_JP("UI追加"))) {
+		// �I����ꂽ�X�v���C�g��UI�Ƃ��Ēǉ�
+		if (ImGui::Button(IMGUI_JP("UI�ǉ�"))) {
 			if (!m_SelectedSpriteName.empty()) {
 				std::shared_ptr<Sprite2D> pSprite = SpriteManager::GetSprite2D(m_SelectedSpriteName);
 				if (!pSprite) return;
@@ -459,15 +516,15 @@ void UIEditor::AddDeleteSprite()
 			}
 		}
 
-		// 選択されたUIを削除
-		if (ImGui::Button(IMGUI_JP("UI削除")) && !m_pUIs.empty()) {
+		// �I����ꂽUI��폜
+		if (ImGui::Button(IMGUI_JP("UI�폜")) && !m_pUIs.empty()) {
 			m_pUIs[m_SelectedUIIndex].reset();
 			
 			m_pUIs.erase(m_pUIs.begin() + m_SelectedUIIndex);
 			m_pSprite2Ds.erase(m_pSprite2Ds.begin() + m_SelectedUIIndex);
 			m_SpritePosList.erase(m_SpritePosList.begin() + m_SelectedUIIndex);
 
-			// インデックスをリセット
+			// �C���f�b�N�X����Z�b�g
 			m_SelectedUIIndex = 0;
 		}
 
@@ -477,18 +534,21 @@ void UIEditor::AddDeleteSprite()
 
 //-----------------------------------------------------------------------.
 
+//-----------------------------------------------------------------------------
+//		�\�[�g�Ɩ��O�ύX�𓯎��ɍs��
+//-----------------------------------------------------------------------------
 void UIEditor::RenameUIObjects()
 {
 	if (m_pUIs.empty()) { return; }
 	std::vector<std::pair<std::string, std::shared_ptr<UIObject>>> nameUIList;
 
-	// UI名とUIオブジェクトのペアを収集
+	// UI����UI�I�u�W�F�N�g�̃y�A����W
 	for (std::shared_ptr<UIObject> ui : m_pUIs) {
 		std::string baseName = GetBaseName(ui->GetUIName());
 		nameUIList.emplace_back(baseName, ui);
 	}
 
-	// ナンバリングして名前を再設定
+	// �i���o�����O���Ė��O��Đݒ�
 	std::unordered_map<std::string, int> nameCount;
 
 	for (auto& [baseName, ui] : nameUIList) {
@@ -500,11 +560,14 @@ void UIEditor::RenameUIObjects()
 
 //-----------------------------------------------------------------------.
 
+//-----------------------------------------------------------------------------
+//		���W�����֐�(�I����ꂽUIObect)
+//-----------------------------------------------------------------------------
 void UIEditor::ImGuiPosEdit(std::shared_ptr<UIObject> object)
 {
-	if (ImGui::TreeNode(IMGUI_JP("座標")))
+	if (ImGui::TreeNode(IMGUI_JP("���W")))
 	{
-		// ドラッグ&ドロップ用にマウス操作のDirectInputを用意
+		// �h���b�O&�h���b�v�p�Ƀ}�E�X�����DirectInput��p��
 		DirectX::XMFLOAT3 pos = object->GetPosition();
 		bool posdrag = ImGui::DragFloat3("##Position", &pos.x, m_DragValue);
 	
@@ -514,8 +577,9 @@ void UIEditor::ImGuiPosEdit(std::shared_ptr<UIObject> object)
 		GetWindowRect(GetForegroundWindow(), &rect);
 		DirectX::XMFLOAT2 objectpos = DirectX::XMFLOAT2(object->GetPosition().x + rect.left, object->GetPosition().y + rect.top);
 
-		// 画像範囲内で左クリック入力中の場合、ドラッグ操作を開始
+		// �摜�͈͓�ō��N���b�N���͒��̏ꍇ�A�h���b�O�����J�n
 		if (SpriteCollider::PointInSquare(MousePos, objectpos,object->GetDrawSize()) && !m_DoDrag) {
+			// �������|�C���g(�ق�܂ɔ���Ƃ��̂���H�H)
 			if (Input::IsMouseGrab()) {
 				m_DoDrag = true;
 				m_OffsetPos = DirectX::XMFLOAT2(pos.x - MousePos.x, pos.y - MousePos.y);
@@ -523,13 +587,13 @@ void UIEditor::ImGuiPosEdit(std::shared_ptr<UIObject> object)
 		}
 		if (m_DoDrag) {
 			posdrag = true;
-			// 補正値+マウス座標した座標を入れる
+			// �␳�l+�}�E�X���W�������W������
 			pos = DirectX::XMFLOAT3(MousePos.x + m_OffsetPos.x, MousePos.y + m_OffsetPos.y, pos.z);
-			// マウスの左クリックを話した場合、ドラッグ操作を停止
+			// �}�E�X�̍��N���b�N��b�����ꍇ�A�h���b�O������~
 			if (!Input::IsMouseGrab()) { m_DoDrag = false; }
 		}
 
-		// 変更があった場合保存する
+		// �ύX���������ꍇ�ۑ�����
 		if (posdrag) {
 			object->SetPosition(pos);
 			m_MoveAny = true;
@@ -541,22 +605,33 @@ void UIEditor::ImGuiPosEdit(std::shared_ptr<UIObject> object)
 
 //-----------------------------------------------------------------------.
 
+//-----------------------------------------------------------------------------
+//		��񒲐��֐�(�I����ꂽUIObect)
+//-----------------------------------------------------------------------------
 void UIEditor::ImGuiInfoEdit(std::shared_ptr<UIObject> object)
 {
-	if (ImGui::TreeNode(IMGUI_JP("画像情報")))
+	if (ImGui::TreeNode(IMGUI_JP("�摜���")))
 	{
 		// 表示サイズを代入
 		DirectX::XMFLOAT2 disp = DirectX::XMFLOAT2(
 			object->GetDrawSize().x,
 			object->GetDrawSize().y);
 
-		ImGui::Text(IMGUI_JP("表示サイズ(x,y)"));
+		//ImGui::Text(IMGUI_JP("���̃T�C�Y(x,y)"));
+		//bool basedrag = ImGui::DragFloat2("##BaseDrag", base, m_DragValue);
+
+		ImGui::Text(IMGUI_JP("�\���T�C�Y(x,y)"));
 		bool dispdrag = ImGui::DragFloat2("##DispDrag", &disp.x, m_DragValue);
 
-		// 変更があった場合保存する
+		//ImGui::Text(IMGUI_JP("�����T�C�Y(x,y)"));
+		//bool stridedrag = ImGui::DragFloat2("##StrideDrag", stride, m_DragValue);
+
+		// �ύX���������ꍇ�ۑ�����
 		if (dispdrag)
 		{
 			object->SetDrawSize(disp);
+		//	object->SetBase(base);
+		//	object->SetStride(stride);
 			m_MoveAny = true;
 		}
 		ImGui::TreePop();
@@ -565,25 +640,28 @@ void UIEditor::ImGuiInfoEdit(std::shared_ptr<UIObject> object)
 
 //-----------------------------------------------------------------------.
 
+//-----------------------------------------------------------------------------
+//		���̑��̏�񒲐��֐�(�I����ꂽUIObect)
+//-----------------------------------------------------------------------------
 void UIEditor::ImGuiEtcInfoEdit(std::shared_ptr<UIObject> object)
 {
-	if (ImGui::TreeNode(IMGUI_JP("その他")))
+	if (ImGui::TreeNode(IMGUI_JP("���̑�")))
 	{
 		DirectX::XMFLOAT4 color = object->GetColor();
 		DirectX::XMFLOAT3 scale = object->GetScale();
 		DirectX::XMFLOAT3 rot = object->GetRotation();
 		DirectX::XMFLOAT2 pivot = object->GetPivot();
 
-		ImGui::Text(IMGUI_JP("カラー"));
+		ImGui::Text(IMGUI_JP("�J���["));
 		bool colorslider = ImGui::ColorEdit4("##Color", &color.x);
-		ImGui::Text(IMGUI_JP("スケール"));
+		ImGui::Text(IMGUI_JP("�X�P�[��"));
 		bool scaledrag = ImGui::DragFloat3("##ScaleDrag", &scale.x, m_DragValue);
-		ImGui::Text(IMGUI_JP("回転軸"));
+		ImGui::Text(IMGUI_JP("��]��"));
 		bool Pivotdrag = ImGui::DragFloat2("##PivotDrag", &pivot.x, m_DragValue);
-		ImGui::Text(IMGUI_JP("回転"));
+		ImGui::Text(IMGUI_JP("��]"));
 		bool rotdrag = ImGui::DragFloat3("##RotDrag", &rot.x, m_DragValue);
 
-		// 変更があった場合保存する
+		// �ύX���������ꍇ�ۑ�����
 		if (scaledrag
 			|| Pivotdrag
 			|| rotdrag
