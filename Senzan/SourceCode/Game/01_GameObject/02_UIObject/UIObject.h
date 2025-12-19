@@ -118,22 +118,6 @@ public: // Getter、Setter.
 	void SetUIName(const std::string& name);
 
 
-	/******************************************************
-	* @brief 接続している資源名を取得.
-	******************************************************/
-	const std::string& GetUIName() const;
-	void SetUIName(const std::string& name);
-
-	/******************************************************
-	* @brief SceneJsonでSpiteManagerから情報を取得.
-	* @param name	SceneJsonのパス.
-	* @param uis	std::vector<CUIObject*>.
-	******************************************************/
-	void LoadFromJson(
-		const std::string& scenepath,
-		std::vector<std::shared_ptr<UIObject>>& uis);
-
-
 protected:
 	std::weak_ptr<Sprite2D> m_pSprite;
 	std::string m_UIName;	// UIの自体名前.
