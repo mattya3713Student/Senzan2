@@ -2,6 +2,7 @@
 
 #include "Graphic/DirectX/DirectX9/DirectX9.h"
 #include "Graphic/DirectX/DirectX11/DirectX11.h"
+#include "02_UIObject/Fade/FadeManager.h"
 
 #include "Game/00_Scene/00_Base/SceneBase.h"
 #include "Game/00_Scene/01_Title/Title.h"
@@ -66,7 +67,7 @@ void SceneManager::Update()
 	SceneManager& pI = GetInstance();
 	pI.m_pScene->Update();
 	pI.m_pScene->LateUpdate();
-
+	
 #if _DEBUG
 	ImGui::Begin("Scene");
 	if (ImGui::Button("Title")) { LoadScene(eList::Title); }

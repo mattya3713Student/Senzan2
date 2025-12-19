@@ -5,6 +5,8 @@
 #include "Singleton/ResourceManager/ResourceManager.h"
 #include "SceneManager/SceneManager.h"
 
+#include "Singleton/ImGui/CImGuiManager.h"
+
 Title::Title()
 	: SceneBase		(  )
 	, m_pUI			(std::make_shared<UITitle>())
@@ -33,10 +35,10 @@ void Title::Update()
 	||	Input::IsKeyDown('C')
 	||	Input::IsButtonDown(XInput::Key::B))
 	{
-		if (m_pUI->GetSelected() == m_pUI->TitleItems::Start) {
+		if (m_pUI->GetSelected() == m_pUI->Items::Start) {
 			SceneManager::LoadScene(eList::GameMain);
 		}
-		else if (m_pUI->GetSelected() == m_pUI->TitleItems::End) {
+		else if (m_pUI->GetSelected() == m_pUI->Items::End) {
 			DestroyWindow(ResourceManager::GethWnd());
 		}
 	}
