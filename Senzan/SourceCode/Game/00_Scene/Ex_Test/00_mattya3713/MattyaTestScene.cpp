@@ -131,6 +131,8 @@ void MattyaTestScene::Draw()
 	m_TestPressCollision->SetDebugInfo();
 	m_TestAttackCollision->SetDebugInfo();
 
+	m_TestPressCollision->SetDebugInfo();
+
 	CollisionVisualizer::GetInstance().Draw();
 }
 

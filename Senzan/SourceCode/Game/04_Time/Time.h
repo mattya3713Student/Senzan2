@@ -24,7 +24,7 @@ public:
 	// FPSを維持するための処理.
 	void MaintainFPS();
 
-	// デルタタイムを取得.
+	// デルタタイムを取得.s
 	const float GetDeltaTime() const;
 
 	float GetNowTime();

@@ -1,7 +1,7 @@
 #include "Sprite2D.hlsli"
 
 /****************************************************************************
-*	UI—p’¸“_ƒVƒF[ƒ_[.
+*	UIç”¨é ‚ç‚¹ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼.
 ****************************************************************************/
 VSOutput main(
     float4 position : POSITION,
@@ -10,14 +10,16 @@ VSOutput main(
     VSOutput output = (VSOutput) 0;
 	
 	output.position = mul( position, cb_mWorld);
-	
-	//ƒXƒNƒŠ[ƒ“À•W‚É‡‚í‚¹‚éŒvZ.
+ 
+	//ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ã«åˆã‚ã›ã‚‹è¨ˆç®—.
     output.position.x = (output.position.x / cb_ViewPortW) * 2.0f - 1.0f;
-    output.position.y = 1.0f - (output.position.y / cb_ViewPortH) * 2.0f;
+	output.position.y = 1.0f - (output.position.y / cb_ViewPortH) * 2.0f;
+	output.position.z = 0.5;
+	output.position.w = 1;
 	
 	output.uv = uv;
 	
-	//UVƒXƒNƒ[ƒ‹(UVÀ•W‚ğ‘€ì‚·‚é).
+	//UVã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«(UVåº§æ¨™ã‚’æ“ä½œã™ã‚‹).
 	output.uv.x += cb_UV.x;
 	output.uv.y += cb_UV.y;
 
