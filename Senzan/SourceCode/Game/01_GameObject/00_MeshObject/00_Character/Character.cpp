@@ -15,16 +15,16 @@ Character::Character()
     m_upColliders = std::make_unique<CompositeCollider>();
 
     // 押し戻しの追加.
-  /*  std::unique_ptr<CapsuleCollider> pressCollider = std::make_unique<CapsuleCollider>(m_spTransform);
+    std::unique_ptr<CapsuleCollider> pressCollider = std::make_unique<CapsuleCollider>(m_spTransform);
 
     pressCollider->SetColor(Color::eColor::Cyan);
-    pressCollider->SetHeight(1.0f);
+    pressCollider->SetHeight(3.0f);
     pressCollider->SetRadius(1.0f);
     pressCollider->SetPositionOffset(0.f, 1.5f, 0.f);
     pressCollider->SetMyMask(PRESS_GROUP);
     pressCollider->SetTarGetTargetMask(eCollisionGroup::Press);
 
-    m_upColliders->AddCollider(std::move(pressCollider));*/
+    m_upColliders->AddCollider(std::move(pressCollider));
 }
 
 Character::~Character()

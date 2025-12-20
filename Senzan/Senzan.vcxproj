@@ -112,8 +112,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>L_PC</PreprocessorDefinitions>
-      <PreprocessorDefinitions>L_PC</PreprocessorDefinitions>
+      <PreprocessorDefinitions>MEMEU_PC</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp23</LanguageStandard>
       <AdditionalIncludeDirectories>SourceCode;SourceCode\Ggraphic;SourceCode\Resource;SourceCode\System;SourceCode\System\GameLoop;SourceCode\System\Singleton;SourceCode\System\Utility;SourceCode\Game\Scene;SourceCode\Game\01_GameObject;Data;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -140,7 +139,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>L_PC</PreprocessorDefinitions>
+      <PreprocessorDefinitions>MEMEU_PC</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp23</LanguageStandard>
       <AdditionalIncludeDirectories>SourceCode;SourceCode\Ggraphic;SourceCode\Resource;SourceCode\System;SourceCode\System\GameLoop;SourceCode\System\Singleton;SourceCode\System\Utility;SourceCode\Game\Scene;SourceCode\Game\01_GameObject;Data;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -278,10 +277,15 @@
     <ClCompile Include="SourceCode\Game\01_GameObject\01_SpriteObject\CSpriteObject.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\Fade\Fade.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\Fade\FadeManager.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UIEnding\UIEnding.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UIGameOver\UIGameOver.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UILoader\UILoader.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UIObject.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UIObjectManager.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UITitle\UITitle.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\GameObject.cpp" />
     <ClCompile Include="SourceCode\Game\02_Camera\CameraBase.cpp" />
+    <ClCompile Include="SourceCode\Game\02_Camera\LockOnCamera\LockOnCamera.cpp" />
     <ClCompile Include="SourceCode\Game\03_Collision\00_Core\00_Box\BoxCollider.cpp" />
     <ClCompile Include="SourceCode\Game\03_Collision\00_Core\01_Capsule\CapsuleCollider.cpp" />
     <ClCompile Include="SourceCode\Game\03_Collision\00_Core\ColliderBase.cpp" />
@@ -355,6 +359,7 @@
     <ClInclude Include="Data\ImGui\Library\imstb_truetype.h" />
     <ClInclude Include="SourceCode\Constant.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\03_BackGround\BackGround.h" />
+    <ClInclude Include="SourceCode\Game\02_Camera\LockOnCamera\LockOnCamera.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\00_Core\00_Box\BoxCollider.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\00_Core\01_Capsule\CapsuleCollider.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\00_Core\02_Sphere\SphereCollider.h" />

@@ -50,10 +50,12 @@ void Time::Update()
 // FPSを維持するための処理.
 void Time::MaintainFPS()
 {
-    if (m_DeltaTime < m_TargetFrameTime) {
-        m_DeltaTime = m_TargetFrameTime;
-        std::this_thread::sleep_for(
-            std::chrono::duration<float>(m_TargetFrameTime - m_DeltaTime));
+    Time& pI = GetInstance();
+
+    if (pI.m_DeltaTime < pI.m_TargetFrameTime)
+    {
+        auto sleepTime = pI.m_TargetFrameTime - pI.m_DeltaTime;
+        std::this_thread::sleep_for(std::chrono::duration<float>(sleepTime));
     }
 }
 

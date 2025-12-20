@@ -1,6 +1,8 @@
 #pragma once
 #include "../00_Base/SceneBase.h"
 
+class UIEnding;
+
 /*********************************************
 *	エンディングクラス.
 **/
@@ -18,5 +20,6 @@ public:
 	void LateUpdate() override;
 	void Draw() override;
 private:
+	std::shared_ptr<UIEnding> m_pUI;
 
 };

@@ -10,10 +10,9 @@
 
 #include "System/Singleton/CameraManager/CameraManager.h"
 #include "System/Singleton/Debug/Log/DebugLog.h"
-#include "System/Singleton/ImGui/CImGuiManager.h"
 
 
-static constexpr double RUN_ANIM_SPEED = 0.25;
+static constexpr double RUN_ANIM_SPEED = 7.0;
 
 namespace PlayerState {
 Run::Run(Player* owner)
