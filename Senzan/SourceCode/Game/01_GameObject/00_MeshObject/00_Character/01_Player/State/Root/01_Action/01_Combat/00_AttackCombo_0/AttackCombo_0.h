@@ -27,6 +27,7 @@ public:
 private:    
 
 private:    
-    DirectX::XMFLOAT3 m_MoveVec;    // 移動方向.
+    DirectX::XMFLOAT3 m_MoveVec;        // 移動方向.
+	bool              m_isComboAccepted;// コンボ受付フラグ.
 };
 }
