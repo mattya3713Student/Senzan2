@@ -277,6 +277,7 @@
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\Fade\Fade.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\Fade\FadeManager.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UIEnding\UIEnding.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UIGameMain\UIGameMain.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UIGameOver\UIGameOver.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UILoader\UILoader.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UIObject.cpp" />
@@ -356,6 +357,7 @@
     <ClInclude Include="Data\ImGui\Library\imstb_textedit.h" />
     <ClInclude Include="Data\ImGui\Library\imstb_truetype.h" />
     <ClInclude Include="SourceCode\Constant.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\UIGameMain\UIGameMain.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\00_Core\00_Box\BoxCollider.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\00_Core\01_Capsule\CapsuleCollider.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\00_Core\02_Sphere\SphereCollider.h" />

@@ -8,6 +8,7 @@ class MeshBase;
 class Boss;
 class CameraBase;
 class DirectionLight;
+class UIGameMain;
 
 #include <vector>
 
@@ -41,4 +42,6 @@ private:
 	//ˆêŽž“I‚È•\Ž¦—p.
 	std::unique_ptr<Boss>		m_pBoss;
 	std::unique_ptr<Player>		m_pPlayer;
+
+	std::shared_ptr<UIGameMain>	m_pUI;
 };
