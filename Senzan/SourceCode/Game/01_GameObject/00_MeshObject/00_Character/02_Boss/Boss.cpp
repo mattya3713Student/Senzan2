@@ -71,11 +71,12 @@ void Boss::Update()
 	//距離の計算後にステートを更新する.
 	m_State->Update();
 
+#if _DEBUG
 	if (GetAsyncKeyState(VK_RETURN) & 0x0001)
 	{
 		Hit();
 	}
-
+#endif
 }
 
 void Boss::Draw()
