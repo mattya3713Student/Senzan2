@@ -13,14 +13,16 @@
 #include "Game//01_GameObject//00_MeshObject//00_Character//02_Boss//Boss.h"
 #include "Game//01_GameObject//00_MeshObject//00_Character//01_Player//Player.h"
 
+#include "Game//01_GameObject//02_UIObject/UIGameMain/UIGameMain.h"
 
 #include <algorithm> // std::min のために必要
 
 // コンストラクタ.
 GameMain::GameMain()
 	: SceneBase()
-	, m_pCamera(std::make_shared<ThirdPersonCamera>())
-	, m_pLight(std::make_shared<DirectionLight>())
+	, m_pCamera	(std::make_shared<ThirdPersonCamera>())
+	, m_pLight	(std::make_shared<DirectionLight>())
+	, m_pUI		(std::make_shared<UIGameMain>())
 {
 	Initialize();
 }
@@ -60,11 +62,13 @@ void GameMain::Update()
 	m_pBoss->SetTargetPos(m_pPlayer->GetPosition());
 	//ターゲットの座標.
 	m_pBoss->Update();
+	m_pUI->Update();
 }
 
 void GameMain::LateUpdate()
 {
 	CameraManager::GetInstance().LateUpdate();
+	m_pUI->LateUpdate();
 }
 
 
@@ -79,7 +83,7 @@ void GameMain::Draw()
 	m_pBoss->Draw();
 	m_pPlayer->Draw();
 
-
+	m_pUI->Draw();
 }
 
 HRESULT GameMain::LoadData()

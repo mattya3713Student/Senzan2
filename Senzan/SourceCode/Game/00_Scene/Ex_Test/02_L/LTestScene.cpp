@@ -26,6 +26,8 @@
 
 #include "00_MeshObject/03_SnowBall/SnowBall.h"
 
+#include "00_MeshObject/00_Character/03_BackGround/BackGround.h"
+
 
 
 #include <algorithm> // std::min ‚Ì‚½‚ß‚É•K—v
@@ -40,6 +42,8 @@ LTestScene::LTestScene()
 	, m_ptransform(std::make_shared<Transform>())
 
 	, m_pSnowBall(std::make_shared<SnowBall>())
+
+	, m_pSkyBox(std::make_unique<BackGround>())
 {
 	Initialize();
 }
@@ -92,8 +96,10 @@ void LTestScene::LateUpdate()
 void LTestScene::Draw()
 {
 	Shadow::Begin();
+	m_pSkyBox->DrawDepth();
 	m_pGround->DrawDepth();
 	Shadow::End();
+	m_pSkyBox->Draw();
 	m_pGround->Draw();
 
 	m_pBoss->Draw();

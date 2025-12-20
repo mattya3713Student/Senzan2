@@ -7,7 +7,7 @@
 
 #include "System/Singleton/ImGui/CImGuiManager.h"
 
-static constexpr double IDOL_ANIM_SPEED = 0.3;
+static constexpr double IDOL_ANIM_SPEED = 1.0;
 
 namespace PlayerState {
 Idle::Idle(Player* owner)
