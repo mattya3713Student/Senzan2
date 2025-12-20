@@ -41,8 +41,6 @@ private:
 public:
 	~SceneManager();
 
-	void Create(HWND hWnd);
-
 	// データの読み込み.
 	void LoadData();
 
@@ -51,17 +49,12 @@ public:
 
 	// シーンの読み込み.
 	static void LoadScene(eList Scene);
-
-	// HWNDを取得.
-	HWND GetHWND() const;
-
 private:
 	// シーンを作成.
 	void MakeScene(eList Scene);
 
 private:
 	std::unique_ptr<SceneBase>		m_pScene;
-	HWND		m_hWnd;
 	Buffer* m_pBuffer;		// 次シーンへインスタンスを入れるバッファー.
 
 #if _DEBUG

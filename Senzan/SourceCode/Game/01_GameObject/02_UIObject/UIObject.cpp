@@ -1,6 +1,7 @@
 ﻿#include "UIObject.h"
 #include "Resource/Mesh/00_Sprite/UISprite/UISprite.h"
 
+
 UIObject::UIObject()
 	: GameObject		()
 	, m_pSprite			()
@@ -181,7 +182,14 @@ const std::string UIObject::GetResourceName() const
 
 //----------------------------------------------------------------.
 
-void UIObject::SetResourceName(const std::string& name)
+const std::string& UIObject::GetUIName() const
 {
-	m_pSprite.lock()->SetResourceName(name);
+	return m_UIName;
+}
+
+//----------------------------------------------------------------.
+
+void UIObject::SetUIName(const std::string& name)
+{
+	m_UIName = name;
 }
