@@ -44,7 +44,7 @@ Player::Player()
     , m_IsKnockBack     ( false )
     , m_KnockBackVec    ( { 0.f,0.f,0.f } )
     , m_KnockBackPower  ( 0.f )
-    , m_RunMoveSpeed    ( 1.f )
+    , m_RunMoveSpeed    ( 50.f )
     , m_IsJustDodgeTiming( false )
 {
     // ステートの初期化.
@@ -72,7 +72,7 @@ Player::Player()
     damage_collider->SetMyMask(eCollisionGroup::Player_Damage);
     damage_collider->SetTarGetTargetMask(eCollisionGroup::Enemy_Attack);
 
-    m_upColliders->AddCollider(std::move(damage_collider));
+    //m_upColliders->AddCollider(std::move(damage_collider));
 
     // ジャスト回避の追加.
     std::unique_ptr<CapsuleCollider> justdodge_collider = std::make_unique<CapsuleCollider>(m_spTransform);
@@ -84,7 +84,7 @@ Player::Player()
     justdodge_collider->SetMyMask(eCollisionGroup::Player_JustDodge);
     justdodge_collider->SetTarGetTargetMask(eCollisionGroup::Enemy_Attack);
 
-    m_upColliders->AddCollider(std::move(justdodge_collider));
+    //m_upColliders->AddCollider(std::move(justdodge_collider));
 
     CollisionDetector::GetInstance().RegisterCollider(*m_upColliders);
 
