@@ -129,6 +129,7 @@
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UIGameOver\UIGameOver.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UILoader\UILoader.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UITitle\UITitle.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UIGameMain\UIGameMain.cpp" />
     <ClCompile Include="SourceCode\Game\02_Camera\LockOnCamera\LockOnCamera.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -273,6 +274,7 @@
     <ClInclude Include="SourceCode\Game\03_Collision\00_Core\Ex_CompositeCollider\CompositeCollider.h" />
     <ClInclude Include="SourceCode\System\Utility\EnumFlags\EnumFlags.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\Sprite\SpriteCollider.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\UIGameMain\UIGameMain.h" />
     <ClInclude Include="SourceCode\Game\02_Camera\LockOnCamera\LockOnCamera.h" />
   </ItemGroup>
   <ItemGroup>
