@@ -44,7 +44,7 @@ void BossShoutState::Enter()
     DirectX::XMStoreFloat3(&m_StartPos, BossPosXM);
 
     //アニメーション速度.
-    m_pOwner->SetAnimSpeed(0.03);
+    m_pOwner->SetAnimSpeed(15.0);
     m_pOwner->ChangeAnim(Boss::enBossAnim::LaserCharge);
 }
 
@@ -59,7 +59,7 @@ void BossShoutState::Update()
     case BossShoutState::enShout::Shout:
         if (m_pOwner->IsAnimEnd(Boss::enBossAnim::LaserCharge))
         {
-            m_pOwner->SetAnimSpeed(0.05);
+            m_pOwner->SetAnimSpeed(10.0);
             m_pOwner->ChangeAnim(Boss::enBossAnim::Laser);
             m_List = enShout::ShoutTime;
         }
@@ -67,7 +67,7 @@ void BossShoutState::Update()
     case BossShoutState::enShout::ShoutTime:
         if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Laser))
         {
-            m_pOwner->SetAnimSpeed(0.03);
+            m_pOwner->SetAnimSpeed(15.0);
             m_pOwner->ChangeAnim(Boss::enBossAnim::LaserEnd);
             m_List = enShout::ShoutToIdol;
         }

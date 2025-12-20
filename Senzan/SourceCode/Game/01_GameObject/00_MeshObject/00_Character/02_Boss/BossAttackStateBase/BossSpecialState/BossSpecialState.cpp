@@ -18,11 +18,11 @@ BossSpecialState::BossSpecialState(Boss* owner)
 	, m_GroundedFrag(true)
 	, m_Timer(0.0f)
 	, m_TransitionTimer(5.0f)
-	, m_AttackTimer(3.0f)
+	, m_AttackTimer(0.0f)
 	, m_UpSpeed(0.15f)
 	, m_TargetDirection(0.0f, 0.0f, 0.0f)
 	, m_MaxTrackingAngle(3.0f)
-	, m_AttackMoveSpeed(1.5f)
+	, m_AttackMoveSpeed(80.5f)
 	, m_AttackDistance(9999.0f)
 	, m_DistanceTraveled(0.0f)
 {
@@ -38,7 +38,7 @@ void BossSpecialState::Enter()
 	m_Velocity = {};
 	m_DistanceTraveled = 0.0f;
 	m_GroundedFrag = true;
-	m_pOwner->SetAnimSpeed(0.01);
+	m_pOwner->SetAnimSpeed(10.0);
 	// 最初の待機モーションへ（必要に応じて追加）
 	m_pOwner->ChangeAnim(Boss::enBossAnim::Idol);
 }
@@ -126,11 +126,11 @@ void BossSpecialState::ParryTime()
 		m_Flinch = enFlinch::Flinch;
 		break;
 	case BossSpecialState::enFlinch::Flinch:
-		m_pOwner->SetAnimSpeed(0.03);
+		m_pOwner->SetAnimSpeed(15.0);
 		m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchParis);
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::FlinchParis))
 		{
-			m_pOwner->SetAnimSpeed(0.01);
+			m_pOwner->SetAnimSpeed(5.0);
 			m_pOwner->ChangeAnim(Boss::enBossAnim::Flinch);
 			m_Flinch = enFlinch::FlinchTimer;
 		}
@@ -138,7 +138,7 @@ void BossSpecialState::ParryTime()
 	case BossSpecialState::enFlinch::FlinchTimer:
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Flinch))
 		{
-			m_pOwner->SetAnimSpeed(0.03);
+			m_pOwner->SetAnimSpeed(15.0);
 			m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchToIdol);
 			m_Flinch = enFlinch::FlinchToIdol;
 		}
@@ -161,7 +161,7 @@ void BossSpecialState::ChargeTime()
 	{
 		m_Timer = 0.0f;
 		m_Velocity = { 0.0f, 0.0f, 0.0f };
-		m_pOwner->SetAnimSpeed(0.03);
+		m_pOwner->SetAnimSpeed(15.0);
 		m_pOwner->ChangeAnim(Boss::enBossAnim::Special_0);
 		m_List = enSpecial::Jump;
 	}
@@ -195,7 +195,7 @@ void BossSpecialState::JumpTime()
 
 		DirectX::XMStoreFloat3(&m_TargetDirection, finalTargetVec);
 
-		m_pOwner->SetAnimSpeed(0.01);
+		m_pOwner->SetAnimSpeed(5.0);
 		m_pOwner->ChangeAnim(Boss::enBossAnim::Special_1);
 		m_List = enSpecial::Attack;
 	}
@@ -225,7 +225,7 @@ void BossSpecialState::BossAttack()
 		CurrentPos.y = floorY;
 		m_pOwner->SetPosition(CurrentPos);
 		m_Timer = 0.0f;
-		m_pOwner->SetAnimSpeed(0.03);
+		m_pOwner->SetAnimSpeed(15.0);
 		m_pOwner->ChangeAnim(Boss::enBossAnim::SpecialToIdol);
 		m_List = enSpecial::CoolTime;
 		return;

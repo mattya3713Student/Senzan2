@@ -11,7 +11,7 @@
 // Transform.h のインクルードが不足している場合は追加してください
 #include <DirectXMath.h>
 #include <memory> 
-#include <cstdio> // printf のため
+#include <cstdio> 
 
 BossChargeSlashState::BossChargeSlashState(Boss* owner)
 	: BossAttackStateBase(owner)
@@ -53,7 +53,7 @@ void BossChargeSlashState::Enter()
 	DirectX::XMStoreFloat3(&m_StartPos, BossPosXM);
 
 	//アニメーション速度.
-	m_pOwner->SetAnimSpeed(0.03);
+	m_pOwner->SetAnimSpeed(25.0);
 	//ため斬りアニメーションの再生.
 	m_pOwner->ChangeAnim(Boss::enBossAnim::ChargeAttack);
 }
@@ -112,12 +112,12 @@ void BossChargeSlashState::ParryTime()
 		break;
 	case BossChargeSlashState::enParry::Flinch:
 		//アニメーションの再生.
-		m_pOwner->SetAnimSpeed(0.03);
+		m_pOwner->SetAnimSpeed(15.0);
 		m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchParis);
 		//アニメーションの再生が終了したら.
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::FlinchParis))
 		{
-			m_pOwner->SetAnimSpeed(0.01);
+			m_pOwner->SetAnimSpeed(5.0);
 			m_pOwner->ChangeAnim(Boss::enBossAnim::Flinch);
 			//怯み中のコードに入る.
 			m_Parry = enParry::FlinchTimer;
@@ -127,7 +127,7 @@ void BossChargeSlashState::ParryTime()
 		//怯み中のアニメーションの再生が終了したら.
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Flinch))
 		{
-			m_pOwner->SetAnimSpeed(0.03);
+			m_pOwner->SetAnimSpeed(15.0);
 			m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchToIdol);
 			//待機にもどるアニメーションの再生.
 			m_Parry = enParry::FlinchToIdol;

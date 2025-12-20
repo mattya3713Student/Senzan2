@@ -130,6 +130,7 @@
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UILoader\UILoader.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UITitle\UITitle.cpp" />
     <ClCompile Include="SourceCode\Game\02_Camera\LockOnCamera\LockOnCamera.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\03_BackGround\BackGround.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SourceCode\Constant.h" />
@@ -274,6 +275,7 @@
     <ClInclude Include="SourceCode\System\Utility\EnumFlags\EnumFlags.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\Sprite\SpriteCollider.h" />
     <ClInclude Include="SourceCode\Game\02_Camera\LockOnCamera\LockOnCamera.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\03_BackGround\BackGround.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Shader\PMX\Header.hlsli" />
