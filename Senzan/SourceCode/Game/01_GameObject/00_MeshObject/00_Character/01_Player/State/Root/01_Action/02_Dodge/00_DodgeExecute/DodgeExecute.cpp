@@ -53,7 +53,7 @@ void DodgeExecute::LateUpdate()
 
 	// Œo‰ßŽžŠÔ‚ð‰ÁŽZ.
 	double value = MyMath::IsNearlyEqual(m_pOwner->m_AnimSpeed, 0.0) ? 1.0 : m_pOwner->m_AnimSpeed;
-	float deltaTime = value * m_pOwner->GetDelta();
+	float deltaTime = static_cast<float>(value) * m_pOwner->GetDelta();
 	float speed = m_Distance / m_MaxTime;
 	float moveAmount = speed * deltaTime;
 

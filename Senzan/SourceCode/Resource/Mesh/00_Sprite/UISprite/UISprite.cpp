@@ -23,7 +23,7 @@ Sprite2D::Sprite2D()
     , m_ResourceName        ()
     , m_WorldMatrix         ()
     , m_DrawSize            ()
-    , m_Color               ( {1.0f, 1.0f ,1.0f , 1.0f} )   
+    , m_Color               ( {1.0f, 1.0f ,1.0f , 1.0f} )
 {
 }
 
@@ -94,7 +94,7 @@ void Sprite2D::Render()
         // 【D3DXからXMへ】行列の転置をXMMatrixTransposeに置き換え
         m = DirectX::XMMatrixTranspose(m);
         cb.mWorld = m;
-
+        
         //カラー.
         cb.vColor = m_Color;
 
@@ -174,6 +174,14 @@ const std::string& Sprite2D::GetResourceName() const
 {
     return m_ResourceName;
 }
+
+
+//-----------------------------------------------------------------------------------------------------------------
+void Sprite2D::SetResourceName(const std::string& name)
+{
+    m_ResourceName = name;
+}
+
 
 //-----------------------------------------------------------------------------------------------------------------
 

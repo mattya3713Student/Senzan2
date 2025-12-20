@@ -17,9 +17,7 @@ void FadeManager::Update()
 
 void FadeManager::Draw()
 {
-    DirectX11::GetInstance().SetDepth(false);
     m_pFade->Draw();
-    DirectX11::GetInstance().SetDepth(true);
 }
 
 void FadeManager::StartFade(const Fade::FadeType type)

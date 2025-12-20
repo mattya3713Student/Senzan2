@@ -1,5 +1,6 @@
 ﻿#include "Fade.h"
-#include "System/Singleton/ResourceManager/SpriteManager/SpriteManager.h"
+#include "Singleton/ResourceManager/SpriteManager/SpriteManager.h"
+#include "Graphic/DirectX/DirectX11/DirectX11.h"
 
 Fade::Fade()
     : UIObject          ()
@@ -9,7 +10,7 @@ Fade::Fade()
     , m_IsFadeCompleted ( false )
 {
     // フェード画像を接続.
-    AttachSprite(SpriteManager::GetSprite2D("FadeImg"));
+    AttachSprite(SpriteManager::GetSprite2D("White"));
 }
 
 //-------------------------------------------------------------------------.
@@ -26,7 +27,7 @@ void Fade::Update()
     if (!m_IsStartFade) { return; }
 
     // α値の更新.
-    m_Color.w += m_LastFadeType == FadeType::FadeIn ? m_AlphaSpeed : -m_AlphaSpeed;
+    m_Color.w += m_LastFadeType == FadeType::FadeIn ? -m_AlphaSpeed : m_AlphaSpeed;
 
     // α値をクランプし、フェード完了設定.
     if (m_Color.w >= 1.0f || m_Color.w <= 0.0f)
@@ -43,7 +44,9 @@ void Fade::Update()
 
 void Fade::Draw()
 {
+    DirectX11::GetInstance().SetDepth(false);
     UIObject::Draw();
+    DirectX11::GetInstance().SetDepth(true);
 }
 
 //-------------------------------------------------------------------------.

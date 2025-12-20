@@ -111,8 +111,16 @@ public: // Getter、Setter.
 	const std::string GetResourceName() const;
 
 
+	/******************************************************
+	* @brief 接続している資源名を取得.
+	******************************************************/
+	const std::string& GetUIName() const;
+	void SetUIName(const std::string& name);
+
+
 protected:
 	std::weak_ptr<Sprite2D> m_pSprite;
+	std::string m_UIName;	// UIの自体名前.
 	DirectX::XMFLOAT2 m_Anchor;	// アンカー.
 	DirectX::XMFLOAT2 m_Pivot;	// ピボット.
 	DirectX::XMFLOAT2 m_DrawSize;	// 描画幅、高さ.

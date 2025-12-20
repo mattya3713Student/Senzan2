@@ -1,5 +1,8 @@
 ﻿#pragma once
 #include "../00_Base/SceneBase.h"
+#include "02_UIObject/UIObject.h"
+
+class UITitle;
 
 /*********************************************
 *	タイトルクラス.
@@ -17,5 +20,7 @@ public:
 	void Update() override;
 	void LateUpdate() override;
 	void Draw() override;
+	
 private: 	
+	std::shared_ptr<UITitle> m_pUI;
 };
