@@ -25,5 +25,6 @@ public:
     void Exit() override;
 
 private:
+    DirectX::XMFLOAT3 m_MoveVec;        // ˆÚ“®•ûŒü.
 };
 }

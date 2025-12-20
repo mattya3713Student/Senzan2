@@ -4,6 +4,7 @@
 
 #include "Game/02_Camera/CameraBase.h"
 #include "Game/02_Camera/ThirdPersonCamera/PlayerThirdPersonCamera.h"
+#include "Game/02_Camera/LockOnCamera/LockOnCamera.h"
 
 #include "Graphic/Shadow/Shadow.h"
 #include "Graphic/Light/DirectionLight/DirectionLight.h"
@@ -45,7 +46,7 @@ MattyaTestScene::~MattyaTestScene()
 
 void MattyaTestScene::Initialize()
 {
-	m_pCamera = std::make_shared<PlayerThirdPersonCamera>(std::ref(*m_upPlayer));
+	m_pCamera = std::make_shared<LockOnCamera>(std::ref(*m_upPlayer), std::ref(*m_upBoss));
 	// カメラ設定.
 	m_pCamera->SetPosition(DirectX::XMFLOAT3(0.0f, 5.0f, -50.0f));
 	m_pCamera->SetLook(DirectX::XMFLOAT3(0.0f, 2.0f, 5.0f));
@@ -58,8 +59,8 @@ void MattyaTestScene::Initialize()
 	m_upGround = std::make_unique<Ground>();
 
 	m_TestPressCollision->SetColor(Color::eColor::Cyan);
-	m_TestPressCollision->SetHeight(2.0f);
-	m_TestPressCollision->SetRadius(0.5f);
+	m_TestPressCollision->SetHeight(60.0f);
+	m_TestPressCollision->SetRadius(20.0f);
 	m_TestPressCollision->SetPositionOffset(0.f,1.5f,0.f);
 	m_TestPressCollision->SetMyMask(eCollisionGroup::Press);
 	m_TestPressCollision->SetTarGetTargetMask(eCollisionGroup::Press);
@@ -68,7 +69,7 @@ void MattyaTestScene::Initialize()
 	m_TestAttackCollision->SetColor(Color::eColor::Red);
 	m_TestAttackCollision->SetHeight(2.0f);
 	m_TestAttackCollision->SetRadius(0.5f);
-	m_TestAttackCollision->SetPositionOffset(0.f,1.5f,3.f);
+	m_TestAttackCollision->SetPositionOffset(0.f,1.5f,50.f);
 	m_TestAttackCollision->SetMyMask(eCollisionGroup::Enemy_Attack);
 
 	m_TestAttackCollision->SetTarGetTargetMask(eCollisionGroup::Player_Damage 
@@ -84,6 +85,26 @@ void MattyaTestScene::Create()
 
 void MattyaTestScene::Update()
 {
+	// ウィンドウとして独立させる
+	ImGui::Begin("Performance Monitor");
+
+	// 1. 基本的なFPS表示
+	float fps = ImGui::GetIO().Framerate;
+	float ms = 1000.0f / fps;
+
+	ImGui::Text("Average: %.1f FPS (%.3f ms/frame)", fps, ms);
+
+	// 2. 状態に応じた警告表示
+	if (fps < 50.0f) {
+		ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Warning: Low FPS!");
+	}
+	else {
+		ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Status: Stable");
+	}
+
+	ImGui::Separator();
+	ImGui::End();
+
 	Input::Update();
 	m_upGround->Update();
 	m_upPlayer->SetTargetPos(m_TestAttackCollision.get()->GetPosition());
@@ -105,7 +126,7 @@ void MattyaTestScene::LateUpdate()
 	float sine_y = AMPLITUDE * sinf(DirectX::XM_2PI * (s_TimeCounter / PERIOD));
 	const float BASE_OFFSET_X = 0.0f;
 	const float BASE_OFFSET_Y = 1.5f;
-	const float BASE_OFFSET_Z = 3.0f;
+	const float BASE_OFFSET_Z = 10.0f;
 	float final_offset_y = BASE_OFFSET_Y + sine_y;
 
 	// オフセット位置を設定

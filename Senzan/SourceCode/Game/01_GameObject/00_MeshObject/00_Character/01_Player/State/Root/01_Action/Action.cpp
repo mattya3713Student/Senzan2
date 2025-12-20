@@ -23,7 +23,6 @@ void Action::Enter()
 
 void Action::Update()
 {
-
 	// ‰ñ”ðƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚½‚ç.
 	if (VirtualPad::GetInstance().IsActionDown(VirtualPad::eGameAction::Dodge))
 	{
