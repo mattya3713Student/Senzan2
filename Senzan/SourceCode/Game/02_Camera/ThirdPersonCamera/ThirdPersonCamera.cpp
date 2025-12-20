@@ -41,17 +41,17 @@ void ThirdPersonCamera::Update()
     }
     else // マウス入力.
     {
-        // マウスの相対移動量を計算.
-        DirectX::XMFLOAT2 mouse_delta = Input::GetClientCursorDelta();
-        moveVecXM = DirectX::XMLoadFloat2(&mouse_delta);
-         
-        // Y反転.
-        DirectX::XMVECTOR negY = DirectX::XMVectorSet(1.0f, -1.0f, 1.0f, 1.0f);
-        moveVecXM = DirectX::XMVectorMultiply(moveVecXM, negY);
+        //// マウスの相対移動量を計算.
+        //DirectX::XMFLOAT2 mouse_delta = Input::GetClientCursorDelta();
+        //moveVecXM = DirectX::XMLoadFloat2(&mouse_delta);
+        // 
+        //// Y反転.
+        //DirectX::XMVECTOR negY = DirectX::XMVectorSet(1.0f, -1.0f, 1.0f, 1.0f);
+        //moveVecXM = DirectX::XMVectorMultiply(moveVecXM, negY);
 
-        // 感度を適用する.
-        DirectX::XMVECTOR sensitivityXM = XMLoadFloat2(&m_MouseSensitivity);
-        moveVecXM = DirectX::XMVectorMultiply(moveVecXM, sensitivityXM);
+        //// 感度を適用する.
+        //DirectX::XMVECTOR sensitivityXM = XMLoadFloat2(&m_MouseSensitivity);
+        //moveVecXM = DirectX::XMVectorMultiply(moveVecXM, sensitivityXM);
     }
 
     DirectX::XMStoreFloat2(&m_MoveVec, moveVecXM);
