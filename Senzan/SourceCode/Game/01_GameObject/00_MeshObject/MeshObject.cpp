@@ -192,9 +192,9 @@ void MeshObject::IsLoopAnimTimeSet()
 		if (EndTime <= m_AnimTimer) {
 			if (std::shared_ptr<SkinMesh> skinMesh = std::dynamic_pointer_cast<SkinMesh>(m_pMesh.lock()))
 			{
-				if(MyMath::IsNearlyEqual(m_AnimSpeed, 0.0))
-					m_AnimTimer -= GetDelta();
-				m_pAnimCtrl->SetTrackPosition(0, m_AnimTimer);
+				while(m_AnimTimer > EndTime)
+					m_AnimTimer -= 0.016;
+				m_pAnimCtrl->SetTrackPosition(0, EndTime);
 				m_AnimSpeed = 0.0;
 			}
 		}
