@@ -43,5 +43,5 @@ private:
 	std::unique_ptr<Boss>		m_pBoss;
 	std::unique_ptr<Player>		m_pPlayer;
 
-	std::shared_ptr<UIGameMain> m_pUI;
+	std::shared_ptr<UIGameMain>	m_pUI;
 };
