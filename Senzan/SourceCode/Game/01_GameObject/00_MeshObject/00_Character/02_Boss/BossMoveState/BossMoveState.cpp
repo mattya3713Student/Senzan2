@@ -48,7 +48,6 @@ void BossMoveState::Update()
 	using namespace DirectX;
 
 	float delta = Time::GetInstance().GetDeltaTime();
-	m_Timer += delta;
 
 	// 1. 座標情報の取得
 	XMVECTOR vBossPos = XMLoadFloat3(&m_pOwner->GetPosition());

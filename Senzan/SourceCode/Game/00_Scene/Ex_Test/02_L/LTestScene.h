@@ -9,6 +9,7 @@ class Boss;
 class CameraBase;
 class DirectionLight;
 class CapsuleCollider;
+class BackGround;
 
 
 #include <vector>
@@ -52,4 +53,7 @@ private:
 
 	//雪玉表示用のクラス.
 	std::shared_ptr<SnowBall> m_pSnowBall;
+
+	//SkyBox表示用.
+	std::unique_ptr<BackGround> m_pSkyBox;
 };
