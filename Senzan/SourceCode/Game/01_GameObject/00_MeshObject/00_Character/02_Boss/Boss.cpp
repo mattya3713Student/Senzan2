@@ -56,6 +56,10 @@ Boss::Boss()
 
 	//ボスの最大体力.
 	m_HitPoint = HP_Max;
+
+	//動きをゆっくりにするコード.
+	//コメントアウトすることで速度がもとに戻る.
+	m_TimeScale = 0.1;
 }
 
 Boss::~Boss()
@@ -66,6 +70,11 @@ void Boss::Update()
 {
 	//距離の計算後にステートを更新する.
 	m_State->Update();
+
+	if (GetAsyncKeyState(VK_RETURN) & 0x0001)
+	{
+		Hit();
+	}
 
 }
 
@@ -107,19 +116,17 @@ void Boss::Hit()
 	//Bossの体力でのステートにいれる.
 	constexpr float Dead_HP = zero;
 
-	//被弾時のアニメーションの再生.
-	SetAnimSpeed(0.03);
-	ChangeAnim(enBossAnim::Hit);
 
 	//いったんこの10ダメだけにしておく.
 	//最後はTenをBaseにして+や-を使用する感じになると思っている.
 	m_HitPoint -= ten;
-	if (m_HitPoint <= ten)
+	if (m_HitPoint <= 0.0f)
 	{
-		m_HitPoint = ten;
 		//死んだときにDeadStateclassに入る.
 		m_State->ChangeState(std::make_shared<BossDeadState>(this));
 	}
+
+	Update();
 }
 
 void Boss::SetTargetPos(const DirectX::XMFLOAT3 Player_Pos)
