@@ -25,6 +25,7 @@ namespace PlayerState {
         void Exit() override;
 
     private:
-        bool m_IsAnimEnd = false;
+        bool m_IsAnimEnd;
+        float m_traveledDistance;
     };
 }
