@@ -31,10 +31,8 @@
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossSlashState\BossSlashState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossSpecialState\BossSpecialState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossStompState\BossStompState.cpp" />
-    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossIdleState\BossIdleState.cpp" />
-    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossIdleState\test.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossIdolState\BossIdolState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossMoveState\BossMoveState.cpp" />
-    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossMoveState\test1.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\Character.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\MeshObject.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\01_SpriteObject\CSpriteObject.cpp" />
@@ -120,8 +118,13 @@
     <ClCompile Include="Data\ImGui\Library\imgui_tables.cpp" />
     <ClCompile Include="Data\ImGui\Library\imgui_widgets.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\ImGui\CImGuiManager.cpp" />
-    <ClCompile Include="SourceCode\Game\05_InputDevice\XInputConfig\XInputConfig.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossDeadState\BossDeadState.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossThrowingState\BossThrowingState.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\03_SnowBall\SnowBall.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossChargeState\BossChargeState.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\CollisionDetector\CollisionDetector.cpp" />
+    <ClCompile Include="SourceCode\Game\00_Scene\Ex_Test\03_UIEditor\UIEditor.cpp" />
+    <ClCompile Include="SourceCode\Game\03_Collision\Sprite\SpriteCollider.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SourceCode\Constant.h" />
@@ -162,10 +165,8 @@
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossSlashState\BossSlashState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossSpecialState\BossSpecialState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossStompState\BossStompState.h" />
-    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossIdleState\BossIdleState.h" />
-    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossIdleState\test.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossIdolState\BossIdolState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossMoveState\BossMoveState.h" />
-    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossMoveState\test1.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\Character.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\MeshObject.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\01_SpriteObject\CSpriteObject.h" />
@@ -256,11 +257,17 @@
     <ClInclude Include="Data\ImGui\Library\imstb_textedit.h" />
     <ClInclude Include="Data\ImGui\Library\imstb_truetype.h" />
     <ClInclude Include="SourceCode\System\Singleton\ImGui\CImGuiManager.h" />
-    <ClInclude Include="SourceCode\Game\05_InputDevice\XInputConfig\XInputConfig.h" />
-    <ClInclude Include="SourceCode\Game\03_Collision\00_Core\CollisionInfo.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossDeadState\BossDeadState.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossThrowingState\BossThrowingState.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\03_SnowBall\SnowBall.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossChargeState\BossChargeState.h" />
+    <ClInclude Include="SourceCode\Game\03_Collision\CollisionInfo.h" />
     <ClInclude Include="SourceCode\System\Singleton\CollisionDetector\CollisionDetector.h" />
-    <ClInclude Include="SourceCode\System\Utility\EnumFlags\EnumFlags.h" />
+    <ClInclude Include="SourceCode\Game\00_Scene\Ex_Test\03_UIEditor\UIEditor.h" />
+    <ClInclude Include="SourceCode\Game\03_Collision\00_Core\CollisionInfo.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\00_Core\Ex_CompositeCollider\CompositeCollider.h" />
+    <ClInclude Include="SourceCode\System\Utility\EnumFlags\EnumFlags.h" />
+    <ClInclude Include="SourceCode\Game\03_Collision\Sprite\SpriteCollider.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Shader\PMX\Header.hlsli" />

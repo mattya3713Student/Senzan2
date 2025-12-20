@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../00_Base/SceneBase.h"
+#include "02_UIObject/UIObject.h"
 
 class Ground;
 class Player;
@@ -32,10 +33,10 @@ public:
 	HRESULT LoadData();
 
 private:
-
 	std::shared_ptr<CameraBase>			m_pCamera;			// ƒJƒƒ‰.
 	std::shared_ptr<DirectionLight>		m_pLight;			// ƒ‰ƒCƒg
 
 	std::unique_ptr<Ground>		m_pGround;
 
+	std::shared_ptr<UIObject> m_TestSprite;
 };

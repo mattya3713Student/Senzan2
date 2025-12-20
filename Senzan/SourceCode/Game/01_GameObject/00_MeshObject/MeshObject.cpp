@@ -174,6 +174,7 @@ void MeshObject::SetAnimTime(double StartTime)
 	m_AnimTimer = StartTime;
 }
 
+// アニメーション終了時間を取得.
 double MeshObject::GetAnimPeriod(int index) const
 {
 	if (std::shared_ptr<SkinMesh> skinMesh = std::dynamic_pointer_cast<SkinMesh>(m_pMesh.lock()))

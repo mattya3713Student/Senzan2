@@ -5,22 +5,15 @@
 #include "Game//01_GameObject//00_MeshObject//00_Character//01_Player//Player.h"
 #include "..//..//BossMoveState//BossMoveState.h"
 
-constexpr float MY_PI = 3.1415926535f;
+
+#include "00_MeshObject/00_Character/02_Boss/BossIdolState/BossIdolState.h"
 
 
 BossLaserState::BossLaserState(Boss* owner)
-	: BossAttackStateBase(owner)
-    , m_ChargeDuration(1.5f)      // 1.5秒予兆
-    , m_AttackDuration(1.0f)      // 1.0秒かけて薙ぎ払う
-    , m_CoolDownDuration(1.5f)      // 1.5秒硬直
-    , m_LaserLenght(30.0f)     // 射程30m
-    , m_SweepSpeed(MY_PI / 1.0f) // 1秒で180度(PI)回転
-    , m_StartAnglePitch(0.0f)      // 水平(0度)から開始
-    , m_EndAnglePitch(-MY_PI / 3.0f) // -60度まで回転
-    , m_CurrentPhase(Phase::Charge)
-    , m_PhaseTime(0.0f)
-    , m_CurrentAngle(0.0f)
-    , m_LaserOridin()
+	: BossAttackStateBase   (owner)
+    , m_pBossIdol           ()
+
+    , m_AnimChange            (enAnimChange::none)
 {
 }
 
@@ -30,55 +23,60 @@ BossLaserState::~BossLaserState()
 
 void BossLaserState::Enter()
 {
-    m_Attacktime = 0.0f;
-    m_PhaseTime = 0.0f;
-    m_CurrentPhase = Phase::Charge;
+    //ボスの向きを設定.
+    const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
+    DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&BossPosF);
 
-    //方向をむく.
+    const DirectX::XMFLOAT3 PlayerPosF = m_pOwner->m_PlayerPos;
+    DirectX::XMVECTOR PlayerPosXM = DirectX::XMLoadFloat3(&PlayerPosF);
 
-    DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
-    //ここにレーザーの生成位置を設定する.
-    //今はまだ発射させないらかかない最終的にはm_LaserOridinを使用してポジションを取得する.
-    m_CurrentAngle = m_StartAnglePitch;
+    DirectX::XMVECTOR Direction = DirectX::XMVectorSubtract(PlayerPosXM, BossPosXM);
+    //X,Z平面の方向.
+    Direction = DirectX::XMVectorSetY(Direction, 0.0f);
+
+    //Y軸回転角度を計算し、ボスをプレイヤーに向かせる.
+    float dx = DirectX::XMVectorGetX(Direction);
+    float dz = DirectX::XMVectorGetZ(Direction);
+    float angle_radian = std::atan2f(-dx, -dz);
+    m_pOwner->SetRotationY(angle_radian);
+
+    //攻撃開始位置.
+    DirectX::XMFLOAT3 m_StartPos;
+
+    //初期位置を保存.
+    DirectX::XMStoreFloat3(&m_StartPos, BossPosXM);
+
+
+    m_pOwner->SetAnimSpeed(0.01);
+    m_pOwner->ChangeAnim(Boss::enBossAnim::LaserCharge);
+    m_AnimChange = enAnimChange::Charge;
 }
 
 void BossLaserState::Update()
 {
-    const float Time_Rate = 1.0f;
-
-    const float deltaTime = Time::GetInstance().GetDeltaTime();
-
-    //全体の時間とフェーズ内時間を進める.
-    m_Attacktime += Time_Rate * Time::GetInstance().GetDeltaTime();
-    m_PhaseTime += Time::GetInstance().GetDeltaTime();
-
-
-    switch (m_CurrentPhase)
+    switch (m_AnimChange)
     {
-    case BossLaserState::Phase::Charge:
-        if (m_PhaseTime >= m_ChargeDuration)
+    case BossLaserState::enAnimChange::Charge:
+        if (m_pOwner->IsAnimEnd(Boss::enBossAnim::LaserCharge))
         {
-            //予兆から攻撃.
-            m_CurrentPhase = Phase::Attack;
-            m_PhaseTime = 0.0f;
+            m_pOwner->ChangeAnim(Boss::enBossAnim::Laser);
+            m_AnimChange = enAnimChange::Attack;
         }
         break;
-    case BossLaserState::Phase::Attack:
-        BossAttack();
-        if (m_PhaseTime >= m_AttackDuration)
+    case BossLaserState::enAnimChange::Attack:
+        if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Laser))
         {
-            //攻撃からクールダウン.
-            m_CurrentPhase = Phase::CoolDown;
-            m_PhaseTime = 0.0f;
+            m_pOwner->ChangeAnim(Boss::enBossAnim::LaserEnd);
+            m_AnimChange = enAnimChange::ChargeEnd;
         }
         break;
-    case BossLaserState::Phase::CoolDown:
-        if (m_PhaseTime >= m_CoolDownDuration)
+    case BossLaserState::enAnimChange::ChargeEnd:
+        if (m_pOwner->IsAnimEnd(Boss::enBossAnim::LaserEnd))
         {
-            //動作クラスへの移動.
-            m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossMoveState>(m_pOwner));
-            return;
+            m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
         }
+        break;
+    case BossLaserState::enAnimChange::none:
         break;
     default:
         break;
@@ -99,5 +97,4 @@ void BossLaserState::Exit()
 
 void BossLaserState::BossAttack()
 {
-    //
 }
