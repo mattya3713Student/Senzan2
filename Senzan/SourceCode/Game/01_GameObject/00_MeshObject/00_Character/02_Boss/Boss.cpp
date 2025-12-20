@@ -37,7 +37,7 @@ Boss::Boss()
 
 	//DirectX::XMFLOAT3 pos = { 0.05f, 10.0f, 20.05f };
 	DirectX::XMFLOAT3 pos = { 0.05f, 0.05f, 20.05f };
-	DirectX::XMFLOAT3 scale = { 5.0f, 5.0f, 5.0f };
+	DirectX::XMFLOAT3 scale = { 10.0f, 10.0f, 10.0f };
 	DirectX::XMFLOAT3 Rotation = { 0.0f,0.0f,0.0f };
 	m_spTransform->SetPosition(pos);
 	m_spTransform->SetScale(scale);
