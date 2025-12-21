@@ -294,7 +294,7 @@ void VirtualPad::SetupDefaultBindings()
 
 
     // Jump: スペース または Aボタン.
-    m_KeyMap[Action::Jump] = {
+    m_KeyMap[Action::Cancel] = {
         eActionType::Button,
         {
             { ESource::KeyBorad, VK_SPACE },
@@ -307,8 +307,7 @@ void VirtualPad::SetupDefaultBindings()
         eActionType::Button,
         {
             { ESource::MouseButton, VK_LBUTTON },
-            // ControllerTriggerAxis の処理は checkActionState の特殊ケースで処理されます.
-            { ESource::ControllerTriggerAxis, 0, EKey::None, EStickState::None, ETarget::RightTrigger, 1.0f }
+            { ESource::ControllerButton, 0, EKey::X }
         }
     };
 
@@ -317,7 +316,8 @@ void VirtualPad::SetupDefaultBindings()
         eActionType::Button,
         {
             { ESource::MouseButton, VK_RBUTTON },
-            { ESource::ControllerButton, 0, EKey::B }
+             { ESource::ControllerTriggerAxis, 0, EKey::None, EStickState::None, ETarget::RightTrigger, 1.0f },
+             { ESource::ControllerTriggerAxis, 0, EKey::None, EStickState::None, ETarget::LeftTrigger, 1.0f }
         }
     };
 
@@ -326,7 +326,8 @@ void VirtualPad::SetupDefaultBindings()
         eActionType::Button,
         {
             { ESource::KeyBorad, VK_LSHIFT },
-            { ESource::ControllerButton, 0, EKey::LB }
+            { ESource::ControllerButton, 0, EKey::LB },
+            { ESource::ControllerButton, 0, EKey::RB }
         }
     };
 

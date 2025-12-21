@@ -8,6 +8,8 @@ class Boss;
 class CameraBase;
 class DirectionLight;
 class CapsuleCollider;
+class UIGameMain;
+
 
 #include <vector>
 
@@ -43,5 +45,6 @@ private:
 	std::unique_ptr<Player>		m_upPlayer;
 	std::unique_ptr<Boss>		m_upBoss;
 
+	std::shared_ptr<UIGameMain>	m_upUI;
 
 };

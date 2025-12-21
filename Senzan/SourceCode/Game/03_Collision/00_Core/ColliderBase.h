@@ -16,10 +16,11 @@ enum class eCollisionGroup : uint32_t
 	Player_Damage	= 1 << 1,
 	Player_Dodge	= 1 << 2,
 	Player_JustDodge= 1 << 3,
-	Enemy_Attack	= 1 << 4,
-	Enemy_PreAttack = 1 << 5,
-	Enemy_Damage	= 1 << 6,
-	Press			= 1 << 7,
+	Player_Parry	= 1 << 4,
+	Enemy_Attack	= 1 << 5,
+	Enemy_PreAttack = 1 << 6,
+	Enemy_Damage	= 1 << 7,
+	Press			= 1 << 8,
 
 	_Max = 0xFFFFFFFF,
 };
@@ -91,6 +92,7 @@ public:
 	inline void SetColor(float NewR, float NewG, float NewB, float NewA) noexcept { m_Color = DirectX::XMFLOAT4(NewR, NewG, NewB, NewA); }
 
 	void SetAttackAmount(float Amount)noexcept { m_AttackAmount = Amount; }
+	float GetAttackAmount() const noexcept { return m_AttackAmount; }
 
 	// 衝突情報を追加する.
 	inline void AddCollisionInfo(const CollisionInfo& info) noexcept { m_CollisionEvents.push_back(info); }

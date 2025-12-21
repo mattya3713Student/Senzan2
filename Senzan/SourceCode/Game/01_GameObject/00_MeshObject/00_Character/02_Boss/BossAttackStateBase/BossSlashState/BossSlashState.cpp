@@ -36,6 +36,8 @@ BossSlashState::~BossSlashState()
 
 void BossSlashState::Enter()
 {
+	// 当たり判定を有効化.
+	m_pOwner->SetAttackColliderActive(true);
 	m_currentTimer = 0.0f;
 	m_Attacktime = 0.0f;
 
@@ -103,7 +105,8 @@ void BossSlashState::Draw()
 }
 
 void BossSlashState::Exit()
-{
+{	// 当たり判定を無効化.
+	m_pOwner->SetAttackColliderActive(false);
 }
 
 void BossSlashState::BossAttack()

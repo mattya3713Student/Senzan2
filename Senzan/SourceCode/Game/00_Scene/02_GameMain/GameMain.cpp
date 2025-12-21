@@ -12,14 +12,14 @@
 
 #include "Game/05_InputDevice/Input.h"
 
-#include "System/Singleton/CameraManager/CameraManager.h"
-
 #include "Graphic/Shadow/Shadow.h"
 #include "Graphic/Light/DirectionLight/DirectionLight.h"
 #include "Graphic/Light/LightManager.h"
 
+#include "System/Singleton/CameraManager/CameraManager.h"
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
 #include "System/Singleton/Debug\CollisionVisualizer\CollisionVisualizer.h"
+#include "SceneManager/SceneManager.h"
 
 #include <algorithm> // std::min のために必要
 
@@ -87,6 +87,19 @@ void GameMain::LateUpdate()
 	m_upUI->LateUpdate();
 
 	CollisionDetector::GetInstance().ExecuteCollisionDetection();
+
+	if (m_upPlayer->GetHP() <= 0.f)
+	{
+		SceneManager::GetInstance().LoadScene(eList::GameOver);
+		return;
+	}
+
+	if (m_upBoss->GetHP() <= 0.f)
+	{
+		SceneManager::GetInstance().LoadScene(eList::Ending);
+		return;
+	}
+
 }
 
 

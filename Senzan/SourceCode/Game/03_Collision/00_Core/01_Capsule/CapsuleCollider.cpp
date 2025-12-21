@@ -49,7 +49,6 @@ CollisionInfo CapsuleCollider::CheckCollision(const ColliderBase& other) const
         DirectX::XMVECTOR v_normal = DirectX::XMLoadFloat3(&info.Normal);
         v_normal = DirectX::XMVectorNegate(v_normal);
         DirectX::XMStoreFloat3(&info.Normal, v_normal);
-        info.AttackAmount = m_AttackAmount;
 
         // ポインタの入れ替え.
         const ColliderBase* temp_collider = info.ColliderA;

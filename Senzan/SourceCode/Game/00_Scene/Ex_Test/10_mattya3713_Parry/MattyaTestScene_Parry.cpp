@@ -2,6 +2,8 @@
 
 #include "Game/05_InputDevice/Input.h"
 
+#include "Game//01_GameObject//02_UIObject/UIGameMain/UIGameMain.h"
+
 #include "Game/02_Camera/CameraBase.h"
 #include "Game/02_Camera/ThirdPersonCamera/PlayerThirdPersonCamera.h"
 #include "Game/02_Camera/LockOnCamera/LockOnCamera.h"
@@ -30,8 +32,6 @@ MattyaTestScene_Parry::MattyaTestScene_Parry()
 	: SceneBase()
 	, m_pCamera()
 	, m_pLight(std::make_shared<DirectionLight>())
-	, m_TestPressCollision(std::make_unique<CapsuleCollider>())
-	, m_TestAttackCollision(std::make_unique<CapsuleCollider>())
 	, m_upPlayer(std::make_unique<Player>())
 	, m_upBoss(std::make_unique<Boss>())
 	, m_upGround(std::make_unique<Ground>())
@@ -87,7 +87,7 @@ void MattyaTestScene_Parry::Update()
 
 	Input::Update();
 	m_upGround->Update();
-	m_upPlayer->SetTargetPos(m_TestAttackCollision.get()->GetPosition());
+	//m_upPlayer->SetTargetPos(m_TestAttackCollision.get()->GetPosition());
 	m_upPlayer->Update();
 	m_upBoss->Update();
 }
@@ -98,23 +98,6 @@ void MattyaTestScene_Parry::LateUpdate()
 	m_upBoss->LateUpdate();
 	CameraManager::GetInstance().LateUpdate();
 
-	static float s_TimeCounter = 0.0f;
-	float deltaTime = Time::GetInstance().GetDeltaTime();
-	s_TimeCounter += deltaTime;
-	const float PERIOD = 200.0f;		// 周期.
-	const float AMPLITUDE = 3.5f;	// 揺れ幅.
-	float sine_y = AMPLITUDE * sinf(DirectX::XM_2PI * (s_TimeCounter / PERIOD));
-	const float BASE_OFFSET_X = 0.0f;
-	const float BASE_OFFSET_Y = 1.5f;
-	const float BASE_OFFSET_Z = 10.0f;
-	float final_offset_y = BASE_OFFSET_Y + sine_y;
-
-	// オフセット位置を設定
-	m_TestAttackCollision->SetPositionOffset(
-		BASE_OFFSET_X,
-		final_offset_y,
-		BASE_OFFSET_Z
-	);
 
 	CollisionDetector::GetInstance().ExecuteCollisionDetection();
 }
@@ -128,11 +111,6 @@ void MattyaTestScene_Parry::Draw()
 	m_upGround->Draw();
 	m_upPlayer->Draw();
 	m_upBoss->Draw();
-
-	m_TestPressCollision->SetDebugInfo();
-	m_TestAttackCollision->SetDebugInfo();
-
-	m_TestPressCollision->SetDebugInfo();
 
 	CollisionVisualizer::GetInstance().Draw();
 }

@@ -91,7 +91,7 @@ void AttackCombo_2::Update()
 
 	}
 
-#if 1
+#if 0
 	// --- ImGui デバッグメニュー (AttackCombo_1専用) ---
 	ImGui::Begin("AttackCombo_1 Debug"); // ← 1に変更
 
