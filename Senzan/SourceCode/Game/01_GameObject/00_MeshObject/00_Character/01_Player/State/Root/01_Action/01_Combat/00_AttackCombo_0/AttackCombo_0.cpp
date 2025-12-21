@@ -120,16 +120,9 @@ void AttackCombo_0::Update()
 	}
 
 	// 何も入力がなくアニメーションが終わった時,Idleステートに変える.
-	if (m_pOwner->IsAnimEnd(Player::eAnim::Attack_0))
+	if (m_currentTime >= m_pOwner->GetAnimPeriod(static_cast<int>(Player::eAnim::Attack_0)))
 	{
-		if (m_isComboAccepted) {
-			// コンボが受け付けられていれば、次のステート（AttackCombo_1など）へ
-			// m_pOwner->ChangeState(PlayerState::eID::AttackCombo_1); 
-			Log::GetInstance().Info("", "次のコンボへ遷移します");
-		}
-		else {
-			m_pOwner->ChangeState(PlayerState::eID::Idle);
-		}
+		m_pOwner->ChangeState(PlayerState::eID::Idle);
 	}
 #if 0
 
@@ -201,14 +194,14 @@ void AttackCombo_0::LateUpdate()
 	float delta_time = actual_anim_speed * m_pOwner->GetDelta();
 	m_currentTime += delta_time;
 
-	// アニメーション,踏み込み開始秒数.
-	float STEP_IN_START_TIME = 1.2f;
-	if (m_currentTime > STEP_IN_START_TIME)
-	{
-		m_AnimSpeedChangedTrigger->CheckAndTrigger(
-			[this]() { return m_pOwner->SetAnimSpeed(0.f); },
-			[&]() { return false; });
-	}
+	//// アニメーション,踏み込み開始秒数.
+	//float STEP_IN_START_TIME = 1.2f;
+	//if (m_currentTime > STEP_IN_START_TIME)
+	//{
+	//	m_AnimSpeedChangedTrigger->CheckAndTrigger(
+	//		[this]() { return m_pOwner->SetAnimSpeed(0.f); },
+	//		[&]() { return false; });
+	//}
 
 	// 移動量の算出.
 	float movement_speed = m_Distance / m_MaxTime;

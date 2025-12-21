@@ -137,6 +137,9 @@ protected:
 	void HandleDodgeDetection() override;
 
 
+	// 攻撃判定のActive
+	inline void SetAttackColliderActive(bool Active) const noexcept { m_pAttackCollider->SetActive(Active); }
+
 protected:
 	//ステートマシンのメンバ変数.
 	std::unique_ptr<StateMachine<Boss>> m_State;
@@ -151,6 +154,7 @@ protected:
 
 	D3DXVECTOR3 m_vCurrentMoveVelocity;
 
+	ColliderBase* m_pAttackCollider;	// 攻撃判定.
 
 	float deleta_time;
 

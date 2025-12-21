@@ -49,6 +49,7 @@ Player::Player()
     , m_KnockBackPower  ( 0.f )
     , m_IsDead          ( false )
     , m_RunMoveSpeed    ( 50.f )
+    , m_IsSuccessParry  ( false )
     , m_pAttackCollider ( nullptr )
     , m_IsJustDodgeTiming( false )
     , m_TargetPos        ( { 0.f,0.f,0.f } )
@@ -74,6 +75,8 @@ Player::Player()
     // 被ダメの追加.
     std::unique_ptr<CapsuleCollider> damage_collider = std::make_unique<CapsuleCollider>(m_spTransform);
 
+    m_pDamageCollider = damage_collider.get();
+
     damage_collider->SetColor(Color::eColor::Yellow);
     damage_collider->SetHeight(2.0f);
     damage_collider->SetRadius(0.5f);
@@ -82,6 +85,20 @@ Player::Player()
     damage_collider->SetTarGetTargetMask(eCollisionGroup::Enemy_Attack);
 
     m_upColliders->AddCollider(std::move(damage_collider));
+
+    // パリィの追加.
+    std::unique_ptr<CapsuleCollider> parry_collider = std::make_unique<CapsuleCollider>(m_spTransform);
+
+    m_pParryCollider = parry_collider.get();
+
+    parry_collider->SetColor(Color::eColor::Green);
+    parry_collider->SetHeight(2.0f);
+    parry_collider->SetRadius(0.5f);
+    parry_collider->SetPositionOffset(0.f, 1.5f, 0.f);
+    parry_collider->SetMyMask(eCollisionGroup::Player_Damage);
+    parry_collider->SetTarGetTargetMask(eCollisionGroup::Enemy_Attack);
+
+    m_upColliders->AddCollider(std::move(parry_collider));
 
     // ジャスト回避の追加.
     std::unique_ptr<CapsuleCollider> justdodge_collider = std::make_unique<CapsuleCollider>(m_spTransform);
@@ -114,6 +131,7 @@ Player::Player()
 
     attackCollider->SetActive(false);
     attackCollider->SetColor(Color::eColor::Red);
+    attackCollider->SetAttackAmount(10.0f);
     attackCollider->SetHeight(3.0f);
     attackCollider->SetRadius(1.0f);
     attackCollider->SetPositionOffset(0.f, 1.5f, 2.f);
@@ -136,6 +154,8 @@ Player::~Player()
 void Player::Update()
 {
     Character::Update();
+
+    m_IsSuccessParry = false;
 
     // ステート遷移のチェック.
     if (m_NextStateID != PlayerState::eID::None)
@@ -168,6 +188,7 @@ void Player::LateUpdate()
     // 衝突イベント処理を実行
     HandleDamageDetection();
     HandleAttackDetection();
+    HandleDodgeDetection();
     HandleDodgeDetection();
 
 }
@@ -353,6 +374,39 @@ void Player::HandleDodgeDetection()
 
             // MEMO : EnemyAttackに触れたとき.
             m_IsJustDodgeTiming = true;
+        }
+    }
+}
+
+void Player::HandleParryDetection()
+{
+    if (!m_upColliders) return;
+
+    const auto& internal_colliders = m_upColliders->GetInternalColliders();
+
+    for (const auto& collider_ptr : internal_colliders)
+    {
+        const ColliderBase* current_collider = collider_ptr.get();
+
+        if ((current_collider->GetMyMask() & eCollisionGroup::Player_Parry) == eCollisionGroup::None) {
+            continue;
+        }
+
+        for (const CollisionInfo& info : current_collider->GetCollisionEvents())
+        {
+            if (!info.IsHit) continue;
+            const ColliderBase* otherCollider = info.ColliderB;
+            if (!otherCollider) { continue; }
+
+            eCollisionGroup other_group = otherCollider->GetMyMask();
+
+            if ((other_group & eCollisionGroup::Enemy_Damage) != eCollisionGroup::None)
+            {
+                SetAttackColliderActive(false);
+
+                // 一フレーム1回.
+                return;
+            }
         }
     }
 }

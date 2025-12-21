@@ -115,11 +115,16 @@ private:
 	void HandleAttackDetection() override;
 	// 衝突_回避.
 	void HandleDodgeDetection() override;
+	
+	// 衝突_パリィ.
+	void HandleParryDetection();
 
 protected:
 
 	// 攻撃判定のActive
 	inline void SetAttackColliderActive(bool Active) const noexcept { m_pAttackCollider->SetActive(Active); }
+	inline void SetDamageColliderActive(bool Active) const noexcept { m_pDamageCollider->SetActive(Active); }
+	inline void SetParryColliderActive(bool Active) const noexcept { m_pParryCollider->SetActive(Active); }
 
 protected:
 	std::unique_ptr<PlayerState::Root> m_RootState;	// ステートマシーン.
@@ -141,6 +146,10 @@ protected:
 	float				m_CurrentUltValue;	// 閃値.
 	float				m_MaxUltValue;		// max閃値.
 
+	ColliderBase* m_pDamageCollider;	// 被ダメ判定.
+	ColliderBase* m_pAttackCollider;	// 攻撃判定.
+	ColliderBase* m_pParryCollider;		// パリィ判定.
+
 	//---System関連---.
 	bool				m_IsKnockBack;		// ノックバック中か否か.
 	DirectX::XMFLOAT3	m_KnockBackVec;		// ノックバックのベクトル.
@@ -151,8 +160,9 @@ protected:
 	float				m_RunMoveSpeed;		// 移動速度.
 
 	//---Combat関連---.
-	ColliderBase*		m_pAttackCollider;	// 攻撃判定.
 	DirectX::XMFLOAT3	m_TargetPos;		// 敵の座標.
+
+	bool				m_IsSuccessParry;	// パリィの成功.
 	
 	//---Dodge関連---.
 	bool				m_IsJustDodgeTiming;// ジャスト回避のタイミング.

@@ -32,6 +32,11 @@ void Movement::Update()
 	{
 		m_pOwner->ChangeState(PlayerState::eID::AttackCombo_0);
 	}
+	
+	if (VirtualPad::GetInstance().IsActionDown(VirtualPad::eGameAction::Parry))
+	{
+		m_pOwner->ChangeState(PlayerState::eID::Parry);
+	}
 
 	Action::Update();
 }

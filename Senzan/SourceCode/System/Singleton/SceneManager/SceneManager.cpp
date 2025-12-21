@@ -52,7 +52,7 @@ void SceneManager::LoadData()
 #elif _DEBUG
 	// 上記の環境マクロが定義されておらず、デバッグビルドの場合
 	// 通常は開発中のメインシーンから開始
-	initial_scene = eList::GameMain;
+	//initial_scene = eList::GameMain;
 
 #else
 	// リリースビルドまたは不明な環境の場合、タイトルから開始
@@ -111,6 +111,7 @@ void SceneManager::LoadScene(eList Scene)
 void SceneManager::MakeScene(eList Scene)
 {
 #if _DEBUG
+	Time::GetInstance().SetWorldTimeScale(1.0f);
 	m_CurrentSceneID = Scene;
 #endif
 	switch (Scene)

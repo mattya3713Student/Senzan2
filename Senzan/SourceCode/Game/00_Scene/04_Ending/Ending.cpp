@@ -1,20 +1,25 @@
 #include "Ending.h"
 #include "02_UIObject/UIEnding/UIEnding.h"
 #include "Game/05_InputDevice/Input.h"
+#include "Singleton/ResourceManager/ResourceManager.h"
 #include "SceneManager/SceneManager.h"
 
 Ending::Ending()
 	: SceneBase		(  )
 	, m_pUI			(std::make_shared<UIEnding>())
 {
+	Initialize();
 }
 
 Ending::~Ending()
 {
+	SoundManager::GetInstance().AllStop();
 }
 
 void Ending::Initialize()
 {
+	SoundManager::GetInstance().Play("‰F’ˆ”òsm‚ªÅŒã‚ÉŒ©‚½‚à‚Ì", true);
+	SoundManager::GetInstance().SetVolume("‰F’ˆ”òsm‚ªÅŒã‚ÉŒ©‚½‚à‚Ì", 9000);
 }
 
 void Ending::Create()
@@ -32,6 +37,7 @@ void Ending::Update()
 		|| Input::IsButtonDown(XInput::Key::B))
 	{
 		SceneManager::LoadScene(eList::Title);
+		return;
 	}
 }
 

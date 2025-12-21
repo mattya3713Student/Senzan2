@@ -62,12 +62,22 @@ Boss::Boss()
 	m_State->ChangeState(std::make_shared<BossIdolState>(this));
 	//m_State->ChangeState(std::make_shared<BossShoutState>());
 
-	/*m_TestPressCollision->SetColor(Color::eColor::Blue);
-	m_TestPressCollision->SetHeight(60.0f);
-	m_TestPressCollision->SetRadius(20.0f);
-	m_TestPressCollision->SetPositionOffset(0.f, 1.5f, 0.f);
-	m_TestPressCollision->SetMyMask(eCollisionGroup::Enemy_PreAttack);
-	m_TestPressCollision->SetTarGetTargetMask(eCollisionGroup::Player_JustDodge);*/
+
+	// 攻撃の追加.
+	std::unique_ptr<CapsuleCollider> attackCollider = std::make_unique<CapsuleCollider>(m_spTransform);
+
+	m_pAttackCollider = attackCollider.get();
+
+	attackCollider->SetActive(false);
+	attackCollider->SetColor(Color::eColor::Red);
+	attackCollider->SetAttackAmount(5.0f);
+	attackCollider->SetHeight(30.0f);
+	attackCollider->SetRadius(10.0f);
+	attackCollider->SetPositionOffset(0.f, 1.5f, -20.f);
+	attackCollider->SetMyMask(eCollisionGroup::Enemy_Attack);
+	attackCollider->SetTarGetTargetMask(eCollisionGroup::Player_Damage | eCollisionGroup::Player_Dodge | eCollisionGroup::Player_JustDodge | eCollisionGroup::Player_Parry);
+
+	m_upColliders->AddCollider(std::move(attackCollider));
 
 	//攻撃動作の確認用のために書いている.
 	//m_State->ChangeState(std::make_shared<BossStompState>(this));
@@ -78,7 +88,6 @@ Boss::Boss()
 	//動きをゆっくりにするコード.
 	//コメントアウトすることで速度がもとに戻る.
 	m_TimeScale = 0.1;
-
 
 	// 被ダメの追加.
 	std::unique_ptr<CapsuleCollider> damage_collider = std::make_unique<CapsuleCollider>(m_spTransform);
@@ -265,6 +274,14 @@ void Boss::HandleDodgeDetection()
 			const ColliderBase* otherCollider = info.ColliderB;
 			if (!otherCollider) { continue; }
 
+			eCollisionGroup other_group = otherCollider->GetMyMask();
+
+			if ((other_group & eCollisionGroup::Player_Attack) != eCollisionGroup::None)
+			{
+				//Parry();
+				// 1フレームに1回.
+				return;
+			}
 		}
 	}
 }

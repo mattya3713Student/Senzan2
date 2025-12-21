@@ -23,6 +23,8 @@ BossShoutState::~BossShoutState()
 
 void BossShoutState::Enter()
 {
+    // “–‚½‚è”»’è‚ð—LŒø‰».
+    m_pOwner->SetAttackColliderActive(true);
     //ƒ{ƒX‚ÌŒü‚«‚ðÝ’è.
     const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
     DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&BossPosF);
@@ -94,7 +96,8 @@ void BossShoutState::Draw()
 }
 
 void BossShoutState::Exit()
-{
+{	// “–‚½‚è”»’è‚ð–³Œø‰».
+    m_pOwner->SetAttackColliderActive(false);
   
 }
 

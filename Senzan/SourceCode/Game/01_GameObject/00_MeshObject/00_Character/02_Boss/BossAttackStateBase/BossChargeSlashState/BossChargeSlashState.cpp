@@ -31,6 +31,9 @@ void BossChargeSlashState::Enter()
 {
 	m_currentTimer = 0.0f;
 
+	// 当たり判定を有効化.
+	m_pOwner->SetAttackColliderActive(true);
+
 	//ボスの向きを設定.
 	const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
 	DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&BossPosF);
@@ -96,6 +99,8 @@ void BossChargeSlashState::Draw()
 
 void BossChargeSlashState::Exit()
 {
+	// 当たり判定を無効化.
+	m_pOwner->SetAttackColliderActive(false);
 }
 
 void BossChargeSlashState::BoneDraw()
