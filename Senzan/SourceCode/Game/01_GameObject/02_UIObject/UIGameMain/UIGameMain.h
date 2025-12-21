@@ -40,6 +40,7 @@ class UIGameMain
 		bool ConsumeChanged();
 	};
 
+
 public:
 	UIGameMain();
 	~UIGameMain();
@@ -87,17 +88,28 @@ public:
 	* @param now	現ステータス.
 	******************************************************/
 	void SetBossHP(float max, float now);
+private:
+	// 色補間関数.
+	DirectX::XMFLOAT4 LerpColor(
+		const DirectX::XMFLOAT4& a,
+		const DirectX::XMFLOAT4& b,
+		float t);
 
+	// コンボ数に応じて変色.
+	DirectX::XMFLOAT4 GetComboColor(int combo);
 
 private:
 	std::vector<std::shared_ptr<UIObject>> m_pUIs;
+	DirectX::XMFLOAT4 m_ComboColor;
 
 	float m_GuageDelSpeed;
 	float m_ClockSecInitRot;
 	float m_ClockSecNow;
 
 	int m_Combo;
+	int m_ComboBefore;
 	int m_ComboMax;
+	bool m_ComboChanged;
 
 	Gauge m_PlayerHP;
 	Gauge m_PlayerDamage;

@@ -4,6 +4,7 @@
 /*********************************************
 *	タイトルUIクラス.
 **/
+class Select;
 
 class UITitle
 {
@@ -29,6 +30,8 @@ public:
 	Items GetSelected();
 
 private:
+	// 選択肢生成.
+	void SelectCreate();
 	// 選択肢更新.
 	void SelectUpdate();
 	// 選択肢遅更新.
@@ -42,7 +45,9 @@ private:
 
 private:
 	std::vector<std::shared_ptr<UIObject>> m_pUIs;
+	std::shared_ptr<Select> m_pSelect;
 	Items	m_Select;
+	bool	m_IsSelected;
 
 	float	m_AnimeSpeed;
 	bool	m_AnimReturn;
