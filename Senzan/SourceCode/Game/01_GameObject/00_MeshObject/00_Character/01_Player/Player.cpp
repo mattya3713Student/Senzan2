@@ -46,6 +46,8 @@ Player::Player()
     , m_KnockBackPower  ( 0.f )
     , m_RunMoveSpeed    ( 50.f )
     , m_IsJustDodgeTiming( false )
+    , m_HP              ( 100.0f )
+    , m_IsDead          ( false )
 {
     // ステートの初期化.
     InitializeStateRefMap();
@@ -146,6 +148,11 @@ void Player::Draw()
     m_spTransform->SetRotationY(GetRotation().y - D3DXToRadian(180.0f));
 }
 
+float Player::GetHp() const noexcept
+{
+    return m_HP;
+}
+
 // ノック中か.
 bool Player::IsKnockBack() const noexcept
 {
@@ -155,7 +162,7 @@ bool Player::IsKnockBack() const noexcept
 // 死亡中か.
 bool Player::IsDead() const noexcept
 {
-    return false;
+    return m_IsDead;
 }
 
 // ポーズ中か.

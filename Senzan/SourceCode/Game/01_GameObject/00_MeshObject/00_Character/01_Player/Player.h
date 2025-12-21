@@ -88,6 +88,8 @@ public:
 	virtual void Draw() override;
 
 	void SetTargetPos(const DirectX::XMFLOAT3& NewTargetPos) noexcept { m_TargetPos = NewTargetPos; };
+	
+	float GetHp() const noexcept;	// HPの取得.
 
 	bool IsKnockBack() const noexcept;	// スタン中か.
 	bool IsDead() const noexcept;		// 死亡中か.
@@ -129,12 +131,13 @@ protected:
 	PlayerState::eID	m_NextStateID;		// 次遷移ステート.
 	bool m_IsStateChangeRequest;			// 次遷移ステートフラグ.
 
+	float m_HP;								// プレイヤーの体力.
 	DirectX::XMFLOAT3	m_MoveVec;			// 一時保存の移動ベクトル.
-
 	//---System関連---.
 	bool				m_IsKnockBack;		// ノックバック中か否か.
 	DirectX::XMFLOAT3	m_KnockBackVec;		// ノックバックのベクトル.
 	float				m_KnockBackPower;	// ノックバックの強さ(被ダメの量に比例する予定).
+	bool				m_IsDead;			// 死亡中か否か.
 
 	//---MoveMent関連---.
 	float				m_RunMoveSpeed;		// 移動速度.
