@@ -10,12 +10,32 @@
 #include "Singleton/ImGui/CImGuiManager.h"
 #endif
 
+
+namespace {
+	struct ComboColor
+	{
+		float rate;
+		DirectX::XMFLOAT4 color;
+	};
+
+	static const ComboColor kComboColorTable[] =
+	{
+		{ 0.0f, ColorPreset::White },
+		{ 0.3f, ColorPreset::TitleCyan },
+		{ 0.6f, ColorPreset::Green },
+		{ 1.0f, ColorPreset::WarmYellow },
+	};
+}
+
+
 UIGameMain::UIGameMain()
 	: m_pUIs			()
+	, m_ComboColor		()
 	, m_GuageDelSpeed	()
 	, m_ClockSecInitRot	( 6.28f )
 	, m_ClockSecNow		( 0.0f )
 	, m_Combo			( 0 )
+	, m_ComboBefore		( 0 )
 	, m_ComboMax		( 99 )
 	, m_PlayerHP		()
 	, m_PlayerDamage	()
@@ -63,9 +83,7 @@ void UIGameMain::Update()
 
 	m_PlayerHP.Update(dt);
 	m_PlayerDamage.Update(dt);
-
 	m_PlayerUlt.Update(dt);
-	
 	m_BossHP.Update(dt);
 	m_BossDamage.Update(dt);
 
@@ -111,7 +129,7 @@ void UIGameMain::Update()
 #endif
 
 
-	m_Combo = std::clamp(m_Combo, 0, m_ComboMax);
+	m_ComboColor = GetComboColor(m_Combo);
 
 	for (auto& ui : m_pUIs)
 	{
@@ -133,14 +151,25 @@ void UIGameMain::Update()
 		else if (ui->GetUIName() == "ClockSec_0") {
 			ui->SetRotationZ(m_ClockSecInitRot * m_ClockSecNow);
 		}
-
-		if (ui->GetUIName() == "Number0_0") {
+		else if (ui->GetUIName() == "Number0_0") {
 			ui->AttachSprite(ResourceManager::GetSprite2D("Number" + std::to_string((m_Combo / 10) % 10)));
+			ui->SetColor(m_ComboColor);
+			if (m_ComboChanged) { ui->SetColor(ColorPreset::LightGray); }
 		}
-		if (ui->GetUIName() == "Number0_1") {
+		else if (ui->GetUIName() == "Number0_1") {
 			ui->AttachSprite(ResourceManager::GetSprite2D("Number" + std::to_string(m_Combo % 10)));
+			ui->SetColor(m_ComboColor);
+			if (m_ComboChanged) { ui->SetColor(ColorPreset::LightGray); }
+		}
+		else if (ui->GetUIName() == "Combo_0") {
+			ui->SetColor(m_ComboColor);
+		}
+		else if (ui->GetUIName() == "Gradation_3") {
+			ui->SetColor(ColorPreset::Black);
+			if (m_ComboChanged) { ui->SetColor(ColorPreset::Invisible); }
 		}
 	}
+	m_ComboChanged = false;
 }
 
 //-----------------------------------------------------------------------.
@@ -216,6 +245,46 @@ void UIGameMain::SetBossHP(float max, float now)
 
 //-----------------------------------------------------------------------.
 
+DirectX::XMFLOAT4 UIGameMain::LerpColor(const DirectX::XMFLOAT4& a, const DirectX::XMFLOAT4& b, float t)
+{
+	return {
+		a.x + (b.x - a.x) * t,
+		a.y + (b.y - a.y) * t,
+		a.z + (b.z - a.z) * t,
+		a.w + (b.w - a.w) * t
+	};
+}
+
+//-----------------------------------------------------------------------.
+
+DirectX::XMFLOAT4 UIGameMain::GetComboColor(int combo)
+{
+	if (m_ComboBefore != m_Combo) { m_ComboChanged = true; }
+	m_ComboBefore = m_Combo;
+	m_Combo = std::clamp(m_Combo, 0, m_ComboMax);
+
+	int clamped = std::clamp(combo, 0, m_ComboMax);
+	float t = clamped / static_cast<float>(m_ComboMax);
+
+	const int count = _countof(kComboColorTable);
+
+	for (int i = 0; i < count - 1; ++i)
+	{
+		const auto& a = kComboColorTable[i];
+		const auto& b = kComboColorTable[i + 1];
+
+		if (t >= a.rate && t <= b.rate)
+		{
+			float localT = (t - a.rate) / (b.rate - a.rate);
+			return LerpColor(a.color, b.color, localT);
+		}
+	}
+
+	return kComboColorTable[count - 1].color;
+}
+
+//-----------------------------------------------------------------------.
+
 void UIGameMain::Gauge::Set(float max, float now)
 {
 	Max = max;
@@ -228,7 +297,6 @@ void UIGameMain::Gauge::Set(float max, float now)
 
 	float newRate = (Max > 0.0f) ? (Now / Max) : 0.0f;
 
-	// 緑ゲージ用（即イージング）.
 	IsEasing	= true;
 	EaseTime	= 0.0f;
 	EaseStart	= Rate;
@@ -242,7 +310,6 @@ void UIGameMain::Gauge::Set(float max, float now)
 
 void UIGameMain::Gauge::Update(float dt)
 {
-	// 遅延フェーズ（赤だけ）.
 	if (IsDelay)
 	{
 		DelayTime += dt;
@@ -255,7 +322,6 @@ void UIGameMain::Gauge::Update(float dt)
 		return;
 	}
 
-	// イージングフェーズ（緑も赤も）.
 	if (!IsEasing)
 		return;
 
@@ -281,14 +347,13 @@ void UIGameMain::Gauge::Update(float dt)
 
 void UIGameMain::Gauge::StartFollow(float targetRate)
 {
-	// 常に最新目標を上書きする.
 	IsDelay = true;
 	DelayTime = 0.0f;
 
-	IsEasing = false;	// 進行中でもリセット.
+	IsEasing = false;
 	EaseTime = 0.0f;
 
-	EaseStart = Rate;	// 今の赤位置から.
+	EaseStart = Rate;
 	EaseEnd = targetRate;
 
 	DelayMax = DelayFrame * Time::GetInstance().GetDeltaTime();
