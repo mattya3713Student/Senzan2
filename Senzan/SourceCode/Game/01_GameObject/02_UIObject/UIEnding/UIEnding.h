@@ -2,8 +2,9 @@
 #include "02_UIObject/UIObject.h"
 
 /*********************************************
-*	タイトルUIクラス.
+*	エンディングUIクラス.
 **/
+class Select;
 
 class UIEnding
 {
@@ -16,12 +17,15 @@ public:
 	void Draw();
 
 private:
+	// 選択肢生成.
+	void SelectCreate();
 	void SelectUpdate();
 	void SelectLateUpdate(std::shared_ptr<UIObject> ui);
 	void AnimUpdate();
 
 private:
 	std::vector<std::shared_ptr<UIObject>> m_pUIs;
+	std::shared_ptr<Select> m_pSelect;
 
 	float	m_AnimeSpeed;
 	bool	m_AnimReturn;
