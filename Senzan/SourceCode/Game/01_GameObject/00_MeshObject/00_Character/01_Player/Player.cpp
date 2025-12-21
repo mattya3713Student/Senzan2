@@ -41,12 +41,14 @@ Player::Player()
     , m_NextStateID     ( PlayerState::eID::None )
     , m_IsStateChangeRequest    ( false )
     , m_MoveVec         ( { 0.f,0.f,0.f } )
+    , m_Combo           ( 0 )
+    , m_CurrentUltValue ( 0.0f )
+    , m_MaxUltValue     ( 1000.0f )
     , m_IsKnockBack     ( false )
     , m_KnockBackVec    ( { 0.f,0.f,0.f } )
     , m_KnockBackPower  ( 0.f )
     , m_RunMoveSpeed    ( 50.f )
     , m_IsJustDodgeTiming( false )
-    , m_HP              ( 100.0f )
     , m_IsDead          ( false )
 {
     // ステートの初期化.
@@ -64,6 +66,9 @@ Player::Player()
     DirectX::XMFLOAT3 scale = { 3.f, 3.f, 3.f };
     m_spTransform->SetScale(scale);
 
+    m_MaxHP = 100.f;
+    m_HP = m_MaxHP;
+
     // 被ダメの追加.
     std::unique_ptr<CapsuleCollider> damage_collider = std::make_unique<CapsuleCollider>(m_spTransform);
 
@@ -74,7 +79,7 @@ Player::Player()
     damage_collider->SetMyMask(eCollisionGroup::Player_Damage);
     damage_collider->SetTarGetTargetMask(eCollisionGroup::Enemy_Attack);
 
-    //m_upColliders->AddCollider(std::move(damage_collider));
+    m_upColliders->AddCollider(std::move(damage_collider));
 
     // ジャスト回避の追加.
     std::unique_ptr<CapsuleCollider> justdodge_collider = std::make_unique<CapsuleCollider>(m_spTransform);
@@ -86,7 +91,20 @@ Player::Player()
     justdodge_collider->SetMyMask(eCollisionGroup::Player_JustDodge);
     justdodge_collider->SetTarGetTargetMask(eCollisionGroup::Enemy_Attack);
 
-    //m_upColliders->AddCollider(std::move(justdodge_collider));
+    m_upColliders->AddCollider(std::move(justdodge_collider));
+
+    // 押し戻しの追加.
+    std::unique_ptr<CapsuleCollider> pressCollider = std::make_unique<CapsuleCollider>(m_spTransform);
+
+    pressCollider->SetColor(Color::eColor::Cyan);
+    pressCollider->SetHeight(3.0f);
+    pressCollider->SetRadius(1.0f);
+    pressCollider->SetPositionOffset(0.f, 1.5f, 0.f);
+    pressCollider->SetMyMask(eCollisionGroup::Press);
+    pressCollider->SetTarGetTargetMask(eCollisionGroup::Press);
+
+    m_upColliders->AddCollider(std::move(pressCollider));
+
 
     CollisionDetector::GetInstance().RegisterCollider(*m_upColliders);
 
@@ -146,11 +164,6 @@ void Player::Draw()
     Character::Draw();
 
     m_spTransform->SetRotationY(GetRotation().y - D3DXToRadian(180.0f));
-}
-
-float Player::GetHp() const noexcept
-{
-    return m_HP;
 }
 
 // ノック中か.

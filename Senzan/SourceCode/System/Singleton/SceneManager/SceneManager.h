@@ -49,6 +49,24 @@ public:
 
 	// シーンの読み込み.
 	static void LoadScene(eList Scene);
+
+private:
+#if _DEBUG
+	const char* GetSceneName(eList scene) {
+		switch (scene) {
+		case eList::Title:    return "Title";
+		case eList::GameMain: return "GameMain";
+		case eList::GameOver: return "GameOver";
+		case eList::Ending:   return "Ending";
+		case eList::Mattya:  return "MattyaTest";
+		case eList::Memeu:   return "MemeuTest";
+		case eList::L:       return "LTest";
+		case eList::UIEditor: return "UIEditor";
+		default: return "Unknown";
+		}
+	}
+#endif // _DEBUG
+
 private:
 	// シーンを作成.
 	void MakeScene(eList Scene);
@@ -58,6 +76,7 @@ private:
 	Buffer* m_pBuffer;		// 次シーンへインスタンスを入れるバッファー.
 
 #if _DEBUG
+	eList m_CurrentSceneID;
 	eList m_DebugFirstScene;	// デバッグ時に最初に起動させるシーン.
 #endif // _DEBUG
 };

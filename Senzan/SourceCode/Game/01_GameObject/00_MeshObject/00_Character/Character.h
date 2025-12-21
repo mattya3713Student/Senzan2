@@ -17,6 +17,10 @@ public:
 	virtual void LateUpdate() override;
 	virtual void Draw() override;
 
+	inline float GetMaxHP() const noexcept { return m_MaxHP; }
+	inline float GetHP() const noexcept { return m_HP; }
+
+
 protected:
 
 	// 衝突応答処理.
@@ -32,4 +36,7 @@ protected:
 
 protected:
 	std::unique_ptr<CompositeCollider>	m_upColliders;	// 衝突.
+
+	float m_MaxHP;							// 最大.
+	float m_HP;								// 体力.
 };

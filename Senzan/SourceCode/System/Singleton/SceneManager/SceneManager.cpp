@@ -70,6 +70,8 @@ void SceneManager::Update()
 	
 #if _DEBUG
 	ImGui::Begin("Scene");
+	ImGui::Text(pI.GetSceneName(pI.m_CurrentSceneID));
+
 	if (ImGui::Button("Title")) { LoadScene(eList::Title); }
 	if (ImGui::Button("GameMain")) { LoadScene(eList::GameMain); }
 	if (ImGui::Button("Ending")) { LoadScene(eList::Ending); }
@@ -106,6 +108,9 @@ void SceneManager::LoadScene(eList Scene)
 //シーン作成.
 void SceneManager::MakeScene(eList Scene)
 {
+#if _DEBUG
+	m_CurrentSceneID = Scene;
+#endif
 	switch (Scene)
 	{
 		case eList::Title:

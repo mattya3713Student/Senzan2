@@ -89,7 +89,10 @@ public:
 
 	void SetTargetPos(const DirectX::XMFLOAT3& NewTargetPos) noexcept { m_TargetPos = NewTargetPos; };
 	
-	float GetHp() const noexcept;	// HPの取得.
+	inline int GetCombo() const noexcept { return m_Combo; }
+
+	inline float GetUltValue() const noexcept { return m_CurrentUltValue; }
+	inline float GetMaxUltValue() const noexcept { return m_MaxUltValue; }
 
 	bool IsKnockBack() const noexcept;	// スタン中か.
 	bool IsDead() const noexcept;		// 死亡中か.
@@ -131,8 +134,12 @@ protected:
 	PlayerState::eID	m_NextStateID;		// 次遷移ステート.
 	bool m_IsStateChangeRequest;			// 次遷移ステートフラグ.
 
-	float m_HP;								// プレイヤーの体力.
 	DirectX::XMFLOAT3	m_MoveVec;			// 一時保存の移動ベクトル.
+
+	int					m_Combo;			// コンボ.
+	float				m_CurrentUltValue;	// 閃値.
+	float				m_MaxUltValue;		// max閃値.
+
 	//---System関連---.
 	bool				m_IsKnockBack;		// ノックバック中か否か.
 	DirectX::XMFLOAT3	m_KnockBackVec;		// ノックバックのベクトル.
