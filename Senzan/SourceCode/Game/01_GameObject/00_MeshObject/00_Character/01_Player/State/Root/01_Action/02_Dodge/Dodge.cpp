@@ -90,6 +90,8 @@ void Dodge::Enter()
 
 	// ˆÚ“®•ûŒü‚ðŒü‚­.
 	m_pOwner->GetTransform()->RotateToDirection(final_move_3d);
+
+	SoundManager::GetInstance().Play("Dodge");
 }
 
 void Dodge::Update()

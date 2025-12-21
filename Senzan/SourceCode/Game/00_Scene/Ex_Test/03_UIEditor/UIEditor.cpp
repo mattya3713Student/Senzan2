@@ -8,9 +8,7 @@
 #include "Singleton/SceneManager/SceneManager.h"
 #include "ResourceManager/ResourceManager.h"
 
-#if _DEBUG
 #include "ImGui/CImGuiManager.h"
-#endif // _DEBUG.
 
 using Json = nlohmann::json;
 

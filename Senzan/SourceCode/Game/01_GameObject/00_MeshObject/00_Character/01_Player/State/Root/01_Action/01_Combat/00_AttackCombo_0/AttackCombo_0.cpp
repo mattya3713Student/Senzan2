@@ -10,13 +10,13 @@
 // 攻撃開始までの速度.
 static constexpr double AttackCombo_0_ANIM_SPEED_0 = 0.04; 
 
-static constexpr float CLOSE_RANGE_THRESHOLD = 20.0f;	// Bossまでの距離に置いて近いと判断する.
+static constexpr float CLOSE_RANGE_THRESHOLD = 10.0f;	// Bossまでの距離に置いて近いと判断する.
 
 
 static float g_DebugAnimSpeed0 = 10.f;
 static float g_DebugAnimSpeed1 = 2.8f;
 static float g_DebugMaxTime = 3.067f;
-static float g_DebugComboStartTime = 1.2f; // 受付開始（例：踏み込み終わりのタイミング）
+static float g_DebugComboStartTime = 0.5f; // 受付開始（例：踏み込み終わりのタイミング）
 static float g_DebugComboEndTime = 2.5f; // 受付終了（例：アニメーション終了の少し前）
 
 namespace PlayerState {
@@ -53,6 +53,9 @@ void AttackCombo_0::Enter()
 	m_pOwner->SetAnimTime(0.0);
 	m_pOwner->SetAnimSpeed(g_DebugAnimSpeed0); // デバッグ値を使用
 	m_pOwner->ChangeAnim(Player::eAnim::Attack_0);
+
+	// 当たり判定を有効化.
+	m_pOwner->SetAttackColliderActive(true);
 
 	// 距離算出用座標.
 	DirectX::XMFLOAT3 target_pos = m_pOwner->m_TargetPos;
@@ -194,7 +197,7 @@ void AttackCombo_0::LateUpdate()
 	Combat::LateUpdate();
 
 	// 経過時間を加算.
-	float actual_anim_speed = MyMath::IsNearlyEqual(static_cast<float>(m_pOwner->m_AnimSpeed), 0.0f) ? g_DebugAnimSpeed1 : m_pOwner->m_AnimSpeed;
+	float actual_anim_speed = MyMath::IsNearlyEqual(m_pOwner->m_AnimSpeed, 0.0) ? g_DebugAnimSpeed1 : static_cast<float>(m_pOwner->m_AnimSpeed);
 	float delta_time = actual_anim_speed * m_pOwner->GetDelta();
 	m_currentTime += delta_time;
 
@@ -232,6 +235,8 @@ void AttackCombo_0::Exit()
 {
 	Combat::Exit();
 	m_MoveVec = {};
+	// 当たり判定を無効化.
+	m_pOwner->SetAttackColliderActive(false);
 }
 
 } // PlayerState.

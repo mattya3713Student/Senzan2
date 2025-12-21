@@ -101,6 +101,7 @@ public:
 	~Boss() override;
 
 	void Update() override;
+	void LateUpdate() override;
 	void Draw() override;
 
 	void Init();

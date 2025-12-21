@@ -38,10 +38,11 @@ SceneManager::~SceneManager()
 void SceneManager::LoadData()
 {
 	// 最初にロードするシーンを環境に応じて決定
-	eList initial_scene;
+	eList initial_scene = eList::Title;
 
 	// --- 環境ごとの初期シーン設定 ---
 
+#if _DEBUG
 #ifdef MATTYA_PC
 	initial_scene = eList::Mattya;
 #elif defined(MEMEU_PC)
@@ -58,6 +59,7 @@ void SceneManager::LoadData()
 	initial_scene = eList::Title;
 
 #endif 
+#endif // _DEBUG.
 
 	LoadScene(initial_scene);
 }

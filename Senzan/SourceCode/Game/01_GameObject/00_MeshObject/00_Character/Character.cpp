@@ -82,3 +82,33 @@ void Character::HandleCollisionResponse()
         }
     }
 }
+
+void Character::ApplyDamage(float damageAmount)
+{
+    // すでに死亡している場合は何もしない
+    if (0.f >= m_HP) return;
+
+    // 無敵時間中ならダメージを受け付けない (必要であれば)
+    // if (m_InvincibleTimer > 0.0f) return;
+
+    // HPを減らす
+    m_HP -= damageAmount;
+
+    // HPが0以下になったら死亡処理
+    if (m_HP <= 0.0f)
+    {
+        m_HP = 0.0f;
+
+        // 死亡ステートへ（まだ作っていなければログやフラグのみでもOK）
+        // ChangeState(PlayerState::eID::Die); 
+        Log::GetInstance().Info("Player", "Player is Dead.");
+    }
+    else
+    {
+        // 被ダメージ時の共通処理（SE再生や一瞬だけ赤く光らせるフラグなど）
+        // PlaySound(SE_PlayerDamage);
+
+        // 無敵時間の設定 (例: 1.0秒間無敵)
+        // m_InvincibleTimer = 1.0f; 
+    }
+}

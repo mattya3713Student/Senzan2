@@ -38,11 +38,9 @@ public:
 private:
 	DirectX::XMFLOAT3 m_Size; // 一片の長さ.	
 
-#if _DEBUG
 public:
 
 	// デバッグ描画用設定.
 	void SetDebugInfo() override;
-#endif // _DEBUG.
 
 };

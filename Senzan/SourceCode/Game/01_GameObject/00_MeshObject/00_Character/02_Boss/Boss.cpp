@@ -6,6 +6,7 @@
 #include "Game/03_Collision/00_Core/01_Capsule/CapsuleCollider.h"
 #include "Game/03_Collision/00_Core/Ex_CompositeCollider/CompositeCollider.h"
 
+
 #include "BossAttackStateBase/BossAttackStateBase.h"
 #include "BossAttackStateBase/BossStompState/BossStompState.h"
 #include "BossAttackStateBase/BossSlashState/BossSlashState.h"
@@ -26,6 +27,8 @@
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossThrowingState/BossThrowingState.h"
 
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
+#include "System/Singleton/CameraManager/CameraManager.h"
+
 
 constexpr float HP_Max = 100.0f;
 
@@ -49,7 +52,7 @@ Boss::Boss()
 	m_spTransform->SetScale(scale);
 	m_spTransform->SetRotationDegrees(Rotation);
 
-	m_MaxHP = 1000.f;
+	m_MaxHP = 100.f;
 	m_HP = m_MaxHP;
 
 	// ステートマシンの初期ステートを、SlashChargeStateに設定
@@ -59,6 +62,12 @@ Boss::Boss()
 	m_State->ChangeState(std::make_shared<BossIdolState>(this));
 	//m_State->ChangeState(std::make_shared<BossShoutState>());
 
+	/*m_TestPressCollision->SetColor(Color::eColor::Blue);
+	m_TestPressCollision->SetHeight(60.0f);
+	m_TestPressCollision->SetRadius(20.0f);
+	m_TestPressCollision->SetPositionOffset(0.f, 1.5f, 0.f);
+	m_TestPressCollision->SetMyMask(eCollisionGroup::Enemy_PreAttack);
+	m_TestPressCollision->SetTarGetTargetMask(eCollisionGroup::Player_JustDodge);*/
 
 	//攻撃動作の確認用のために書いている.
 	//m_State->ChangeState(std::make_shared<BossStompState>(this));
@@ -78,12 +87,13 @@ Boss::Boss()
 	damage_collider->SetHeight(30.0f);
 	damage_collider->SetRadius(10.0f);
 	damage_collider->SetPositionOffset(0.f, 1.5f, 0.f);
-	damage_collider->SetMyMask(eCollisionGroup::Player_Damage);
-	damage_collider->SetTarGetTargetMask(eCollisionGroup::Enemy_Attack);
+	damage_collider->SetAttackAmount(10.f);
+	damage_collider->SetMyMask(eCollisionGroup::Enemy_Damage);
+	damage_collider->SetTarGetTargetMask(eCollisionGroup::Player_Attack);
 
 	m_upColliders->AddCollider(std::move(damage_collider));
 
-	// ジャスト回避の追加.
+	// プレスの追加.
 	std::unique_ptr<CapsuleCollider> press_collider = std::make_unique<CapsuleCollider>(m_spTransform);
 
 	press_collider->SetColor(Color::eColor::Cyan);
@@ -116,6 +126,24 @@ void Boss::Update()
 		Hit();
 	}
 #endif
+}
+
+void Boss::LateUpdate()
+{
+
+	Character::LateUpdate();
+
+	if (!m_State) {
+		return;
+	}
+
+	// ステートマシーンの最終更新を実行.
+	m_State->LateUpdate();
+
+	// 衝突イベント処理を実行
+	HandleDamageDetection();
+	HandleAttackDetection();
+	HandleDodgeDetection();
 }
 
 void Boss::Draw()
@@ -174,8 +202,43 @@ void Boss::SetTargetPos(const DirectX::XMFLOAT3 Player_Pos)
 	m_PlayerPos = Player_Pos;
 }
 
+
+// 衝突_被ダメージ.
 void Boss::HandleDamageDetection()
 {
+	if (!m_upColliders) return;
+
+	const auto& internal_colliders = m_upColliders->GetInternalColliders();
+
+	for (const auto& collider_ptr : internal_colliders)
+	{
+		const ColliderBase* current_collider = collider_ptr.get();
+
+		if ((current_collider->GetMyMask() & eCollisionGroup::Enemy_Damage) == eCollisionGroup::None) {
+			continue;
+		}
+
+		for (const CollisionInfo& info : current_collider->GetCollisionEvents())
+		{
+			if (!info.IsHit) continue;
+			const ColliderBase* otherCollider = info.ColliderB;
+			if (!otherCollider) { continue; }
+
+			eCollisionGroup other_group = otherCollider->GetMyMask();
+
+			if ((other_group & eCollisionGroup::Player_Attack) != eCollisionGroup::None)
+			{
+				// ダメージを適用 
+				ApplyDamage(info.AttackAmount);
+
+				Time::GetInstance().SetWorldTimeScale(0.1f, 0.016f * 8);
+				CameraManager::GetInstance().ShakeCamera(0.1f, 2.5f); // カメラを少し揺らす.
+
+				// 1フレームに1回.
+				return;
+			}
+		}
+	}
 }
 
 void Boss::HandleAttackDetection()
@@ -184,4 +247,24 @@ void Boss::HandleAttackDetection()
 
 void Boss::HandleDodgeDetection()
 {
+	if (!m_upColliders) return;
+
+	const auto& internal_colliders = m_upColliders->GetInternalColliders();
+
+	for (const auto& collider_ptr : internal_colliders)
+	{
+		const ColliderBase* current_collider = collider_ptr.get();
+
+		if ((current_collider->GetMyMask() & eCollisionGroup::Player_JustDodge) == eCollisionGroup::None) {
+			continue;
+		}
+
+		for (const CollisionInfo& info : current_collider->GetCollisionEvents())
+		{
+			if (!info.IsHit) continue;
+			const ColliderBase* otherCollider = info.ColliderB;
+			if (!otherCollider) { continue; }
+
+		}
+	}
 }
