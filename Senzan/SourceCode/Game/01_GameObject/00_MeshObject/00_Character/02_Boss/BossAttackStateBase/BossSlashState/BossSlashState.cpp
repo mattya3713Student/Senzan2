@@ -62,7 +62,7 @@ void BossSlashState::Enter()
 
 
 	//アニメーションの速度.
-	m_pOwner->SetAnimSpeed(0.06);
+	m_pOwner->SetAnimSpeed(30.0);
 	//斬るアニメーションの再生.
 	m_pOwner->ChangeAnim(Boss::enBossAnim::Slash);
 

@@ -16,7 +16,7 @@ BossChargeState::~BossChargeState()
 
 void BossChargeState::Enter()
 {
-	m_pOwner->SetAnimSpeed(0.03);
+	m_pOwner->SetAnimSpeed(25.0);
 	m_pOwner->ChangeAnim(Boss::enBossAnim::Charge);
 }
 
