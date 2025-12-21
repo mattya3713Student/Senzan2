@@ -19,17 +19,41 @@ constexpr PlayerState::eID Parry::GetStateID() const
 
 void Parry::Enter()
 {
+
+    m_IsParrySuccessful = false;
+
+    // アニメーション設定
+    m_pOwner->SetIsLoop(false);
+    m_pOwner->SetAnimTime(0.0f);
+    m_pOwner->SetAnimSpeed(1.0f);
+    m_pOwner->ChangeAnim(Player::eAnim::Parry);
 }
+
 void Parry::Update()
 {
+    Combat::Update();
+    
+    // アニメーション終了時の処理
+    if (m_pOwner->IsAnimEnd(Player::eAnim::Parry)) {
+        if (!m_IsParrySuccessful) {
+            m_pOwner->ChangeState(PlayerState::eID::Idle); // 失敗時も Idle に遷移
+        }
+    }
 }
+
 void Parry::LateUpdate()
 {
+    Combat::LateUpdate();
 }
+
 void Parry::Draw()
 {
+    Combat::Draw();
 }
+
 void Parry::Exit()
 {
+    Combat::Exit();
+    m_IsParrySuccessful = false;
 }
 } // PlayerState.
