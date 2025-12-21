@@ -20,21 +20,23 @@ public:
 	virtual ~BossAttackStateBase() = default;
 
 	//最初に入る.
-	void Enter() override = 0;
+	virtual void Enter() override {};
 	//動作.
-	void Update() override = 0;
+	virtual void Update() override {};
 	//かかなくていい.
-	void LateUpdate() override = 0;
+	virtual void LateUpdate() override {};
 	//描画.
-	void Draw() override = 0;
+	virtual void Draw() override {};
 	//終わるときに一回だけ入る.
-	void Exit() override = 0;
+	virtual void Exit() override {};
 
 	//攻撃を実行させる関数.
-	virtual void BossAttack() = 0;
+	virtual void BossAttack() {};
 
 	// パリィー用関数.
 	//virtual bool CanBeParried() const { return m_canBeParried; }
+
+	virtual void ParryTime() {};
 
 protected:
 	//メンバ変数を作成.

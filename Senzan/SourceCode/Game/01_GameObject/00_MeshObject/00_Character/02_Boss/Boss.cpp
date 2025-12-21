@@ -150,6 +150,7 @@ void Boss::LateUpdate()
 	m_State->LateUpdate();
 
 	// 衝突イベント処理を実行
+	HandleParryDetection();
 	HandleDamageDetection();
 	HandleAttackDetection();
 	HandleDodgeDetection();
@@ -280,6 +281,47 @@ void Boss::HandleDodgeDetection()
 			{
 				//Parry();
 				// 1フレームに1回.
+				return;
+			}
+		}
+	}
+}
+
+void Boss::HandleParryDetection()
+{
+	if (!m_upColliders) return;
+
+	const auto& internal_colliders = m_upColliders->GetInternalColliders();
+
+	for (const auto& collider_ptr : internal_colliders)
+	{
+		const ColliderBase* current_collider = collider_ptr.get();
+
+		if ((current_collider->GetMyMask() & eCollisionGroup::Enemy_Attack) == eCollisionGroup::None) {
+			continue;
+		}
+
+		for (const CollisionInfo& info : current_collider->GetCollisionEvents())
+		{
+			if (!info.IsHit) continue;
+			const ColliderBase* otherCollider = info.ColliderB;
+			if (!otherCollider) { continue; }
+
+			eCollisionGroup other_group = otherCollider->GetMyMask();
+
+			if ((other_group & eCollisionGroup::Player_Parry) != eCollisionGroup::None)
+			{
+				auto* currentState = m_State->m_pOwner; // 現在の状態を取得
+				if (BossAttackStateBase* attackState = dynamic_cast<BossAttackStateBase*>(currentState))
+				{
+					// 現在のステートが BossAttackStateBase だった場合のみ実行される
+					attackState->ParryTime();
+					return;
+				}
+
+				m_pAttackCollider->SetActive(false);
+
+				// 一フレーム1回.
 				return;
 			}
 		}

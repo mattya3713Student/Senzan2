@@ -19,6 +19,9 @@ constexpr PlayerState::eID Parry::GetStateID() const
 
 void Parry::Enter()
 {
+    m_pOwner->SetDamageColliderActive(false);
+    m_pOwner->SetParryColliderActive(true);
+
 
     m_IsParrySuccessful = false;
 
@@ -55,5 +58,8 @@ void Parry::Exit()
 {
     Combat::Exit();
     m_IsParrySuccessful = false;
+
+    m_pOwner->SetDamageColliderActive(true);
+    m_pOwner->SetParryColliderActive(false);
 }
 } // PlayerState.

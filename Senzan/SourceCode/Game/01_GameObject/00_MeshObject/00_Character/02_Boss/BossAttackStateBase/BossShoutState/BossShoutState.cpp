@@ -56,6 +56,9 @@ void BossShoutState::Update()
     switch (m_List)
     {
     case BossShoutState::enShout::none:
+
+        // “–‚½‚è”»’è‚ð—LŒø‰».
+        m_pOwner->SetAttackColliderActive(true);
         m_List = enShout::Shout;
         break;
     case BossShoutState::enShout::Shout:

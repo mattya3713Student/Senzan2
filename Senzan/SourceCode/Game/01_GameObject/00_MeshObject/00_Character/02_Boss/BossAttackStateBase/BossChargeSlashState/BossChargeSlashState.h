@@ -39,7 +39,7 @@ public:
 
 	void BoneDraw();
 
-	void ParryTime();
+	void ParryTime() override;
 
 
 private:

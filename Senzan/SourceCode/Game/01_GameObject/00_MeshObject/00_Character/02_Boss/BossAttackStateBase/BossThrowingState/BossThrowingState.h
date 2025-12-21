@@ -37,7 +37,7 @@ public:
 	void Draw() override;
 	void Exit() override;
 
-	void ParryTime();
+	void ParryTime() override ;
 
 private:
 	void BossAttack() override;
