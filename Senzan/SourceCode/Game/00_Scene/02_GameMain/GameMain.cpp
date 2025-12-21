@@ -38,6 +38,7 @@ GameMain::GameMain()
 // デストラクタ.
 GameMain::~GameMain()
 {
+	SoundManager::GetInstance().AllStop();
 }
 
 void GameMain::Initialize()
@@ -52,6 +53,8 @@ void GameMain::Initialize()
 	m_spCamera = std::make_shared<LockOnCamera>(std::ref(*m_upPlayer), std::ref(*m_upBoss));
 	CameraManager::GetInstance().SetCamera(m_spCamera);
 
+	SoundManager::GetInstance().Play("8-bit_Aggressive1", true);
+	SoundManager::GetInstance().SetVolume("8-bit_Aggressive1", 9000);
 }
 
 void GameMain::Create()
@@ -71,13 +74,17 @@ void GameMain::Update()
 	m_upUI->SetCombo(m_upPlayer->GetCombo());
 	m_upUI->SetPlayerHP(m_upPlayer->GetMaxHP(), m_upPlayer->GetHP());
 	m_upUI->SetPlayerUlt(m_upPlayer->GetMaxUltValue(), m_upPlayer->GetUltValue());
+
+	m_upUI->Update();
 }
 
 void GameMain::LateUpdate()
 {
 	m_upPlayer->LateUpdate();
-	//m_upBoss->LateUpdate();
+	m_upBoss->LateUpdate();
 	CameraManager::GetInstance().LateUpdate();
+
+	m_upUI->LateUpdate();
 
 	CollisionDetector::GetInstance().ExecuteCollisionDetection();
 }

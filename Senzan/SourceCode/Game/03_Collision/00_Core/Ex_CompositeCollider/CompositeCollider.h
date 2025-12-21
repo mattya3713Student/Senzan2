@@ -26,7 +26,7 @@ public:
         return m_Colliders;
     }
 
-    inline void SetDebugInfo() override { for (auto& collider : m_Colliders) { collider->SetDebugInfo(); } }
+    inline void SetDebugInfo() override { for (auto& collider : m_Colliders) { if(collider->GetActive()) collider->SetDebugInfo(); } }
 
 protected:
 

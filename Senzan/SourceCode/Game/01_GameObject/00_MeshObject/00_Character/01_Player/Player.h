@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "Game/01_GameObject/00_MeshObject/00_Character/Character.h"
+#include "Game/03_Collision/00_Core/ColliderBase.h"
 
 template<typename FSM_Owner> class StateMachine;
 
@@ -117,8 +118,8 @@ private:
 
 protected:
 
-	// Playerの最終的なDeltaTimeの取得.
-	
+	// 攻撃判定のActive
+	inline void SetAttackColliderActive(bool Active) const noexcept { m_pAttackCollider->SetActive(Active); }
 
 protected:
 	std::unique_ptr<PlayerState::Root> m_RootState;	// ステートマシーン.
@@ -132,7 +133,7 @@ protected:
 
 	//---共有---.
 	PlayerState::eID	m_NextStateID;		// 次遷移ステート.
-	bool m_IsStateChangeRequest;			// 次遷移ステートフラグ.
+	bool	m_IsStateChangeRequest;			// 次遷移ステートフラグ.
 
 	DirectX::XMFLOAT3	m_MoveVec;			// 一時保存の移動ベクトル.
 
@@ -150,6 +151,7 @@ protected:
 	float				m_RunMoveSpeed;		// 移動速度.
 
 	//---Combat関連---.
+	ColliderBase*		m_pAttackCollider;	// 攻撃判定.
 	DirectX::XMFLOAT3	m_TargetPos;		// 敵の座標.
 	
 	//---Dodge関連---.

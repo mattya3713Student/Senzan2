@@ -26,6 +26,9 @@ protected:
 	// 衝突応答処理.
 	void HandleCollisionResponse();
 
+	// ダメージ適用.
+	void ApplyDamage(float damageAmount);
+
 	// 衝突_被ダメージ.
 	virtual void HandleDamageDetection() = 0;
 	// 衝突_攻撃判定.

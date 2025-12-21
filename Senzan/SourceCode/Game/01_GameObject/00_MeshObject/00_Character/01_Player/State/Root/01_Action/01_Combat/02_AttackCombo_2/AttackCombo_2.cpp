@@ -48,6 +48,9 @@ void AttackCombo_2::Enter()
 	m_pOwner->SetAnimSpeed(g_2DebugAnimSpeed0); // デバッグ値を使用
 	m_pOwner->ChangeAnim(Player::eAnim::Attack_2);
 
+	// 当たり判定を有効化.
+	m_pOwner->SetAttackColliderActive(true);
+
 	// 距離算出用座標.
 	DirectX::XMFLOAT3 target_pos = m_pOwner->m_TargetPos;
 	DirectX::XMVECTOR v_target_pos = DirectX::XMLoadFloat3(&target_pos);
@@ -181,6 +184,8 @@ void AttackCombo_2::Exit()
 {
 	Combat::Exit();
 	m_MoveVec = {};
+	// 当たり判定を無効化.
+	m_pOwner->SetAttackColliderActive(false);
 }
 
 } // PlayerState.

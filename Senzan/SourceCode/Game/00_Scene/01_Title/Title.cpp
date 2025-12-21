@@ -15,6 +15,7 @@ Title::Title()
 
 Title::~Title()
 {
+	SoundManager::GetInstance().AllStop();
 }
 
 void Title::Initialize()
@@ -23,6 +24,8 @@ void Title::Initialize()
 
 void Title::Create()
 {
+	SoundManager::GetInstance().Play("8-bit_Aggressive1", true);
+	SoundManager::GetInstance().SetVolume("8-bit_Aggressive1", 100);
 }
 
 void Title::Update()

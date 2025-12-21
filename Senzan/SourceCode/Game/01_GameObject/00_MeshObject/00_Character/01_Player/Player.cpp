@@ -47,9 +47,11 @@ Player::Player()
     , m_IsKnockBack     ( false )
     , m_KnockBackVec    ( { 0.f,0.f,0.f } )
     , m_KnockBackPower  ( 0.f )
-    , m_RunMoveSpeed    ( 50.f )
-    , m_IsJustDodgeTiming( false )
     , m_IsDead          ( false )
+    , m_RunMoveSpeed    ( 50.f )
+    , m_pAttackCollider ( nullptr )
+    , m_IsJustDodgeTiming( false )
+    , m_TargetPos        ( { 0.f,0.f,0.f } )
 {
     // ステートの初期化.
     InitializeStateRefMap();
@@ -105,6 +107,20 @@ Player::Player()
 
     m_upColliders->AddCollider(std::move(pressCollider));
 
+    // 攻撃の追加.
+    std::unique_ptr<CapsuleCollider> attackCollider = std::make_unique<CapsuleCollider>(m_spTransform);
+
+    m_pAttackCollider = attackCollider.get();
+
+    attackCollider->SetActive(false);
+    attackCollider->SetColor(Color::eColor::Red);
+    attackCollider->SetHeight(3.0f);
+    attackCollider->SetRadius(1.0f);
+    attackCollider->SetPositionOffset(0.f, 1.5f, 2.f);
+    attackCollider->SetMyMask(eCollisionGroup::Player_Attack);
+    attackCollider->SetTarGetTargetMask(eCollisionGroup::Enemy_Damage);
+
+    m_upColliders->AddCollider(std::move(attackCollider));
 
     CollisionDetector::GetInstance().RegisterCollider(*m_upColliders);
 
@@ -265,15 +281,15 @@ void Player::HandleDamageDetection()
                 if (IsKnockBack() || IsDead()) { continue; }
 
                 // ダメージを適用 
-                // ApplyDamage(info.DamageAmount);
+                ApplyDamage(info.AttackAmount);
 
                 m_KnockBackVec = info.Normal;
-                m_KnockBackPower = 10.f;
+                m_KnockBackPower = 100.f;
 
                 // 状態をノックバックに遷移させる
                 ChangeState(PlayerState::eID::KnockBack);
 
-				CameraManager::GetInstance().ShakeCamera(2.5f, 4.5f); // カメラを少し揺らす.
+				CameraManager::GetInstance().ShakeCamera(0.5f, 4.5f); // カメラを少し揺らす.
 
                 // 1フレームに1回.
                 return;
@@ -284,6 +300,35 @@ void Player::HandleDamageDetection()
 
 void Player::HandleAttackDetection()
 {
+    if (!m_upColliders) return;
+
+    const auto& internal_colliders = m_upColliders->GetInternalColliders();
+
+    for (const auto& collider_ptr : internal_colliders)
+    {
+        const ColliderBase* current_collider = collider_ptr.get();
+
+        if ((current_collider->GetMyMask() & eCollisionGroup::Player_Attack) == eCollisionGroup::None) {
+            continue;
+        }
+
+        for (const CollisionInfo& info : current_collider->GetCollisionEvents())
+        {
+            if (!info.IsHit) continue;
+            const ColliderBase* otherCollider = info.ColliderB;
+            if (!otherCollider) { continue; }
+
+            eCollisionGroup other_group = otherCollider->GetMyMask();
+
+            if ((other_group & eCollisionGroup::Enemy_Damage) != eCollisionGroup::None)
+            {
+                SetAttackColliderActive(false);
+
+                // 一フレーム1回.
+                return;
+            }
+        }
+    }
 }
 
 void Player::HandleDodgeDetection()

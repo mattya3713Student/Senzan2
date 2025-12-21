@@ -23,20 +23,20 @@ bool ResourceManager::LoadMesh()
 
 //------------------------------------------------------------------------.
 
-//bool ResourceManager::LoadSounds()
-//{
-//	return SoundManager::LoadSounds(GetInstance().m_hWnd);
-//}
+bool ResourceManager::LoadSounds()
+{
+	return SoundManager::LoadSounds(GetInstance().m_hWnd);
+}
 
 //------------------------------------------------------------------------.
 
-//bool ResourceManager::LoadEffects()
-//{
-//	if (Effect::GetInstance().Create()	== false) { return false; }
-//	if (Effect::GetInstance().LoadData()	== false) { return false; }
-//	
-//	return true;
-//}
+bool ResourceManager::LoadEffects()
+{
+	/*if (EffectResource::GetInstance().Create()	== false) { return false; }
+	if (EffectResource::GetInstance().LoadData()	== false) { return false; }*/
+	
+	return true;
+}
 
 //------------------------------------------------------------------------.
 
