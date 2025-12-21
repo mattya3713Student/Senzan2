@@ -79,6 +79,8 @@ private:
 	double						m_AnimTimer;// アニメ―ション経過時間.
 	DirectX::XMFLOAT3			m_BonePos;	// ボーン座標.
 
+	float m_BaseAngle;
+
 	DirectX::XMFLOAT3 m_InitBossPos;
 
 	float m_Timer = 0.0f;

@@ -47,7 +47,7 @@ void BossLaserState::Enter()
     DirectX::XMStoreFloat3(&m_StartPos, BossPosXM);
 
 
-    m_pOwner->SetAnimSpeed(0.01);
+    m_pOwner->SetAnimSpeed(5.0);
     m_pOwner->ChangeAnim(Boss::enBossAnim::LaserCharge);
     m_AnimChange = enAnimChange::Charge;
 }
