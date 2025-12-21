@@ -9,22 +9,12 @@
 constexpr eCollisionGroup PRESS_GROUP = eCollisionGroup::Press;
 
 Character::Character()
-	: MeshObject()
-	, m_upColliders()
+	: MeshObject    ()
+	, m_upColliders ()
+    , m_MaxHP       (100.f)
+    , m_HP          (100.f)
 {
     m_upColliders = std::make_unique<CompositeCollider>();
-
-    // 押し戻しの追加.
-    std::unique_ptr<CapsuleCollider> pressCollider = std::make_unique<CapsuleCollider>(m_spTransform);
-
-    pressCollider->SetColor(Color::eColor::Cyan);
-    pressCollider->SetHeight(3.0f);
-    pressCollider->SetRadius(1.0f);
-    pressCollider->SetPositionOffset(0.f, 1.5f, 0.f);
-    pressCollider->SetMyMask(PRESS_GROUP);
-    pressCollider->SetTarGetTargetMask(eCollisionGroup::Press);
-
-    m_upColliders->AddCollider(std::move(pressCollider));
 }
 
 Character::~Character()
@@ -38,7 +28,6 @@ void Character::Update()
 
 void Character::LateUpdate()
 {
-
     HandleCollisionResponse();
 }
 
@@ -82,7 +71,7 @@ void Character::HandleCollisionResponse()
             if (info.PenetrationDepth > 0.0f)
             {
                 DirectX::XMVECTOR v_normal = DirectX::XMLoadFloat3(&info.Normal);
-                DirectX::XMVECTOR v_correction = DirectX::XMVectorScale(v_normal, info.PenetrationDepth);
+                DirectX::XMVECTOR v_correction = DirectX::XMVectorScale(v_normal, -info.PenetrationDepth);
                 // このゲームにy座標の概念はないのでyは切り捨て.
                 v_correction = DirectX::XMVectorSetY(v_correction, 0.0f);
                 DirectX::XMFLOAT3 correction = {};

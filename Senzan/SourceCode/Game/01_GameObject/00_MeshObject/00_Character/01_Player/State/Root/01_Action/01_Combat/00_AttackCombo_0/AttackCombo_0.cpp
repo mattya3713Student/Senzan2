@@ -194,7 +194,7 @@ void AttackCombo_0::LateUpdate()
 	Combat::LateUpdate();
 
 	// Œo‰ßŽžŠÔ‚ð‰ÁŽZ.
-	float actual_anim_speed = MyMath::IsNearlyEqual(m_pOwner->m_AnimSpeed, 0.0) ? g_DebugAnimSpeed1 : m_pOwner->m_AnimSpeed;
+	float actual_anim_speed = MyMath::IsNearlyEqual(static_cast<float>(m_pOwner->m_AnimSpeed), 0.0f) ? g_DebugAnimSpeed1 : m_pOwner->m_AnimSpeed;
 	float delta_time = actual_anim_speed * m_pOwner->GetDelta();
 	m_currentTime += delta_time;
 

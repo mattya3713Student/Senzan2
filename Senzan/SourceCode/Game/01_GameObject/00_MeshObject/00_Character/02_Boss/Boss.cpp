@@ -2,6 +2,10 @@
 
 #include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossIdolState/BossIdolState.h"
 #include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossMoveState/BossMoveState.h"
+
+#include "Game/03_Collision/00_Core/01_Capsule/CapsuleCollider.h"
+#include "Game/03_Collision/00_Core/Ex_CompositeCollider/CompositeCollider.h"
+
 #include "BossAttackStateBase/BossAttackStateBase.h"
 #include "BossAttackStateBase/BossStompState/BossStompState.h"
 #include "BossAttackStateBase/BossSlashState/BossSlashState.h"
@@ -20,6 +24,8 @@
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossChargeState/BossChargeState.h"
 
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossThrowingState/BossThrowingState.h"
+
+#include "System/Singleton/CollisionDetector/CollisionDetector.h"
 
 constexpr float HP_Max = 100.0f;
 
@@ -43,6 +49,9 @@ Boss::Boss()
 	m_spTransform->SetScale(scale);
 	m_spTransform->SetRotationDegrees(Rotation);
 
+	m_MaxHP = 1000.f;
+	m_HP = m_MaxHP;
+
 	// ステートマシンの初期ステートを、SlashChargeStateに設定
 	//Idolに遷移させるんだけど
 	//アニメーションの再生系統を今日するのでここを変更していく.
@@ -60,14 +69,44 @@ Boss::Boss()
 	//動きをゆっくりにするコード.
 	//コメントアウトすることで速度がもとに戻る.
 	m_TimeScale = 0.1;
+
+
+	// 被ダメの追加.
+	std::unique_ptr<CapsuleCollider> damage_collider = std::make_unique<CapsuleCollider>(m_spTransform);
+
+	damage_collider->SetColor(Color::eColor::Yellow);
+	damage_collider->SetHeight(30.0f);
+	damage_collider->SetRadius(10.0f);
+	damage_collider->SetPositionOffset(0.f, 1.5f, 0.f);
+	damage_collider->SetMyMask(eCollisionGroup::Player_Damage);
+	damage_collider->SetTarGetTargetMask(eCollisionGroup::Enemy_Attack);
+
+	m_upColliders->AddCollider(std::move(damage_collider));
+
+	// ジャスト回避の追加.
+	std::unique_ptr<CapsuleCollider> press_collider = std::make_unique<CapsuleCollider>(m_spTransform);
+
+	press_collider->SetColor(Color::eColor::Cyan);
+	press_collider->SetHeight(20.0f);
+	press_collider->SetRadius(5.1f);
+	press_collider->SetPositionOffset(0.f, 1.5f, 0.f);
+	press_collider->SetMyMask(eCollisionGroup::Press);
+	press_collider->SetTarGetTargetMask(eCollisionGroup::Press);
+
+	m_upColliders->AddCollider(std::move(press_collider));
+
+	CollisionDetector::GetInstance().RegisterCollider(*m_upColliders);
 }
 
 Boss::~Boss()
 {
+	CollisionDetector::GetInstance().UnregisterCollider(*m_upColliders);
 }
 
 void Boss::Update()
 {
+	Character::Update();
+
 	//距離の計算後にステートを更新する.
 	m_State->Update();
 
