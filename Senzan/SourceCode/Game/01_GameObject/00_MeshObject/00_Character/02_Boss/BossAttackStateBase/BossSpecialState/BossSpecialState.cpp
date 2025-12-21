@@ -51,6 +51,8 @@ void BossSpecialState::Update()
 	{
 	case BossSpecialState::enSpecial::None:
 		m_Velocity = {};
+		// 当たり判定を有効化.
+		m_pOwner->SetAttackColliderActive(true);
 		m_List = enSpecial::Charge;
 		break;
 
@@ -116,6 +118,9 @@ void BossSpecialState::Exit()
 		float angle_radian = std::atan2f(dx, dz) + XM_PI;
 		m_pOwner->SetRotationY(angle_radian);
 	}
+
+	// 当たり判定を有効化.
+	m_pOwner->SetAttackColliderActive(false);
 }
 
 void BossSpecialState::ParryTime()

@@ -51,6 +51,8 @@ void BossThrowingState::Update()
 	switch (m_List)
 	{
 	case enThrowing::None:
+		// “–‚½‚è”»’è‚ð–³Œø‰».
+		m_pOwner->SetAttackColliderActive(true);
 		m_List = enThrowing::Anim;
 		break;
 
@@ -114,6 +116,8 @@ void BossThrowingState::Draw()
 
 void BossThrowingState::Exit()
 {
+	// “–‚½‚è”»’è‚ð–³Œø‰».
+	m_pOwner->SetAttackColliderActive(false);
 }
 
 void BossThrowingState::ParryTime()

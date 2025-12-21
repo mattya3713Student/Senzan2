@@ -136,6 +136,9 @@ protected:
 	// Õ“Ë_‰ñ”ð.
 	void HandleDodgeDetection() override;
 
+	// Õ“Ë_‰ñ”ð.
+	void HandleParryDetection();
+
 
 	// UŒ‚”»’è‚ÌActive
 	inline void SetAttackColliderActive(bool Active) const noexcept { m_pAttackCollider->SetActive(Active); }

@@ -97,6 +97,7 @@ public:
 
 	bool IsKnockBack() const noexcept;	// スタン中か.
 	bool IsDead() const noexcept;		// 死亡中か.
+	bool IsParry() const noexcept;		// 死亡中か.
 	bool IsPaused() const noexcept;		// ポーズ中か.
 
 	// ステートの変更.

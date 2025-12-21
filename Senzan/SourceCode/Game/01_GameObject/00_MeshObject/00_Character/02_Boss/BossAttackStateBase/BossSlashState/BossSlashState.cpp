@@ -76,6 +76,9 @@ void BossSlashState::Update()
 	switch (m_List)
 	{
 	case BossSlashState::enList::none:
+
+		// 当たり判定を有効化.
+		m_pOwner->SetAttackColliderActive(true);
 		m_List = enList::SlashAttack;
 		break;
 	case BossSlashState::enList::SlashAttack:

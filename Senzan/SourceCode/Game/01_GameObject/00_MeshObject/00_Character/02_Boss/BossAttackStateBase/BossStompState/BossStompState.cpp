@@ -24,6 +24,9 @@ BossStompState::~BossStompState()
 
 void BossStompState::Enter()
 {
+	// 当たり判定を有効化.
+	m_pOwner->SetAttackColliderActive(true);
+
 	// 最初は動かさない（Y=0のまま）
 	m_Velocity = { 0.0f, 0.0f, 0.0f };
 	m_GroundedFrag = true;
@@ -105,6 +108,9 @@ void BossStompState::Exit()
 {
 	m_GroundedFrag = true;
 	m_pOwner->SetPositionY(0.0f);
+
+		// 当たり判定を無効化.
+		m_pOwner->SetAttackColliderActive(false);
 }
 
 void BossStompState::BossAttack()

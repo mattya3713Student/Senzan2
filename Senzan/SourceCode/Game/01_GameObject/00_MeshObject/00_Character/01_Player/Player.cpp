@@ -91,11 +91,12 @@ Player::Player()
 
     m_pParryCollider = parry_collider.get();
 
+    parry_collider->SetActive(false);
     parry_collider->SetColor(Color::eColor::Green);
     parry_collider->SetHeight(2.0f);
     parry_collider->SetRadius(0.5f);
     parry_collider->SetPositionOffset(0.f, 1.5f, 0.f);
-    parry_collider->SetMyMask(eCollisionGroup::Player_Damage);
+    parry_collider->SetMyMask(eCollisionGroup::Player_Parry);
     parry_collider->SetTarGetTargetMask(eCollisionGroup::Enemy_Attack);
 
     m_upColliders->AddCollider(std::move(parry_collider));
@@ -186,9 +187,9 @@ void Player::LateUpdate()
     HandleCollisionResponse();
 
     // 衝突イベント処理を実行
+    HandleParryDetection();
     HandleDamageDetection();
     HandleAttackDetection();
-    HandleDodgeDetection();
     HandleDodgeDetection();
 
 }
@@ -213,6 +214,11 @@ bool Player::IsKnockBack() const noexcept
 bool Player::IsDead() const noexcept
 {
     return m_IsDead;
+}
+
+bool Player::IsParry() const noexcept
+{
+    return m_IsSuccessParry;
 }
 
 // ポーズ中か.
@@ -299,7 +305,9 @@ void Player::HandleDamageDetection()
             if ((other_group & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None)
             {
                 // 既にスタン中や無敵時間であれば処理を中断
-                if (IsKnockBack() || IsDead()) { continue; }
+                if (IsKnockBack() || IsDead() || IsDead()) { continue; }
+
+                m_Combo = 0;
 
                 // ダメージを適用 
                 ApplyDamage(info.AttackAmount);
@@ -343,6 +351,8 @@ void Player::HandleAttackDetection()
 
             if ((other_group & eCollisionGroup::Enemy_Damage) != eCollisionGroup::None)
             {
+                ++m_Combo;
+                m_CurrentUltValue += static_cast<float>(1 * m_Combo);
                 SetAttackColliderActive(false);
 
                 // 一フレーム1回.
@@ -374,6 +384,7 @@ void Player::HandleDodgeDetection()
 
             // MEMO : EnemyAttackに触れたとき.
             m_IsJustDodgeTiming = true;
+            m_CurrentUltValue += static_cast<float>(1 * m_Combo);
         }
     }
 }
@@ -400,10 +411,12 @@ void Player::HandleParryDetection()
 
             eCollisionGroup other_group = otherCollider->GetMyMask();
 
-            if ((other_group & eCollisionGroup::Enemy_Damage) != eCollisionGroup::None)
+            if ((other_group & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None)
             {
-                SetAttackColliderActive(false);
+                SoundManager::GetInstance().Play("Parry");
+                m_IsSuccessParry = true;
 
+                m_CurrentUltValue += static_cast<float>(1 * m_Combo);
                 // 一フレーム1回.
                 return;
             }
