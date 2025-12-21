@@ -12,9 +12,9 @@ static constexpr double AttackCombo_0_ANIM_SPEED_0 = 0.04;
 
 static constexpr float CLOSE_RANGE_THRESHOLD = 20.0f;	// Bossまでの距離に置いて近いと判断する.
 
-// デバッグ用に値を弄れるように static 変数などで管理（またはクラスメンバに追加）
+
 static float g_DebugAnimSpeed0 = 10.f;
-static float g_DebugAnimSpeed1 = 2.8f; // ソース内で未定義だったSPEED_1用
+static float g_DebugAnimSpeed1 = 2.8f;
 static float g_DebugMaxTime = 3.067f;
 static float g_DebugComboStartTime = 1.2f; // 受付開始（例：踏み込み終わりのタイミング）
 static float g_DebugComboEndTime = 2.5f; // 受付終了（例：アニメーション終了の少し前）
