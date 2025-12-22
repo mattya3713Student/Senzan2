@@ -352,7 +352,7 @@ void Player::HandleAttackDetection()
             if ((other_group & eCollisionGroup::Enemy_Damage) != eCollisionGroup::None)
             {
                 ++m_Combo;
-                m_CurrentUltValue += static_cast<float>(m_Combo) * 0.1f;
+                m_CurrentUltValue += static_cast<float>(m_Combo) * 0.0f;
                 SetAttackColliderActive(false);
 
                 // 一フレーム1回.
@@ -383,8 +383,8 @@ void Player::HandleDodgeDetection()
             if (!otherCollider) { continue; }
 
             // MEMO : EnemyAttackに触れたとき.
-            m_IsJustDodgeTiming = true;
-            m_CurrentUltValue += static_cast<float>(m_Combo);
+            m_IsJustDodgeTiming = true;;
+            m_CurrentUltValue += static_cast<float>(m_Combo) * 0.0f;
         }
     }
 }
@@ -415,8 +415,8 @@ void Player::HandleParryDetection()
             {
                 SoundManager::GetInstance().Play("Parry");
                 m_IsSuccessParry = true;
-
-                m_CurrentUltValue += static_cast<float>(m_Combo);
+                
+                m_CurrentUltValue += static_cast<float>(m_Combo) * 0.0f;
                 // 一フレーム1回.
                 return;
             }
