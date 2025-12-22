@@ -83,7 +83,6 @@ void Main::Update()
     CImGuiManager::NewFrameSetting();
 
     Time::GetInstance().Update();
-    Time::GetInstance().MaintainFPS();
 
 	SceneManager::GetInstance().Update();
 

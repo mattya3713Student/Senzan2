@@ -132,6 +132,12 @@
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UIGameMain\UIGameMain.cpp" />
     <ClCompile Include="SourceCode\Game\02_Camera\LockOnCamera\LockOnCamera.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\03_BackGround\BackGround.cpp" />
+    <ClCompile Include="SourceCode\Game\00_Scene\Ex_Test\10_mattya3713_Parry\MattyaTestScene_Parry.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\Select\Select.cpp" />
+    <ClCompile Include="SourceCode\Resource\Effect\EffectResource.cpp" />
+    <ClCompile Include="SourceCode\Resource\Sound\DirectSound.cpp" />
+    <ClCompile Include="SourceCode\System\Singleton\ResourceManager\EffectManager\EffekseerManager.cpp" />
+    <ClCompile Include="SourceCode\System\Singleton\ResourceManager\SoundManager\SoundManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SourceCode\Constant.h" />
@@ -278,6 +284,12 @@
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\UIGameMain\UIGameMain.h" />
     <ClInclude Include="SourceCode\Game\02_Camera\LockOnCamera\LockOnCamera.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\03_BackGround\BackGround.h" />
+    <ClInclude Include="SourceCode\Game\00_Scene\Ex_Test\10_mattya3713_Parry\MattyaTestScene_Parry.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\Select\Select.h" />
+    <ClInclude Include="SourceCode\Resource\Effect\EffectResource.h" />
+    <ClInclude Include="SourceCode\Resource\Sound\DirectSound.h" />
+    <ClInclude Include="SourceCode\System\Singleton\ResourceManager\EffectManager\EffekseerManager.h" />
+    <ClInclude Include="SourceCode\System\Singleton\ResourceManager\SoundManager\SoundManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Shader\PMX\Header.hlsli" />
@@ -285,6 +297,7 @@
     <None Include="SourceCode\System\Utility\Math\Easing\Easing.inl" />
     <None Include="SourceCode\System\Utility\Math\Math.inl" />
     <None Include="SourceCode\System\Utility\String\FilePath\FilePath.inl" />
+    <None Include="SourceCode\Resource\Effect\git認識用フォルダ" />
   </ItemGroup>
   <ItemGroup>
     <Font Include="Data\ImGui\Font\arial.ttf" />
