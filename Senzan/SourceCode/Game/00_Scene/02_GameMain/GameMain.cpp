@@ -88,18 +88,6 @@ void GameMain::LateUpdate()
 
 	CollisionDetector::GetInstance().ExecuteCollisionDetection();
 
-	if (m_upPlayer->GetHP() <= 0.f)
-	{
-		SceneManager::GetInstance().LoadScene(eList::GameOver);
-		return;
-	}
-
-	if (m_upBoss->GetHP() <= 0.f)
-	{
-		SceneManager::GetInstance().LoadScene(eList::Ending);
-		return;
-	}
-
 }
 
 

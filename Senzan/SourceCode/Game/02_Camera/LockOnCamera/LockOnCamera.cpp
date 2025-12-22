@@ -3,9 +3,9 @@
 #include "Game/01_GameObject/00_MeshObject/00_Character/01_Player/Player.h"
 #include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/Boss.h"
 
-static constexpr float FOLLOW_SPEED = 0.1f;
+static constexpr float FOLLOW_SPEED = 0.004f;
 static constexpr float HEIGHT_OFFSET = 5.0f;
-static constexpr float LOOK_OFFSET = 2.5f;
+static constexpr float LOOK_OFFSET = 4.5f;
 
 LockOnCamera::LockOnCamera(const Player& player, const Boss& target)
     : m_rPlayer(player)
