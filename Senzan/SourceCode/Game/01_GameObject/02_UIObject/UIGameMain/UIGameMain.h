@@ -12,10 +12,10 @@ class UIGameMain
 	{
 		float Max = 0.0f;
 		float Now = 0.0f;
-		float Before = 0.0f;
+		float Before = 0.1f;
 
 		float InitRate = 1.0f;
-		float Rate = 1.0f;
+		float Rate = 0.0f;
 
 		// ó‘Ô.
 		bool IsChanged = false;

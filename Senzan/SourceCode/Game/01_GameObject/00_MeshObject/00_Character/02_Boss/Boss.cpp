@@ -253,6 +253,35 @@ void Boss::HandleDamageDetection()
 
 void Boss::HandleAttackDetection()
 {
+	if (!m_upColliders) return;
+
+	const auto& internal_colliders = m_upColliders->GetInternalColliders();
+
+	for (const auto& collider_ptr : internal_colliders)
+	{
+		const ColliderBase* current_collider = collider_ptr.get();
+
+		if ((current_collider->GetMyMask() & eCollisionGroup::Enemy_Attack) == eCollisionGroup::None) {
+			continue;
+		}
+
+		for (const CollisionInfo& info : current_collider->GetCollisionEvents())
+		{
+			if (!info.IsHit) continue;
+			const ColliderBase* otherCollider = info.ColliderB;
+			if (!otherCollider) { continue; }
+
+			eCollisionGroup other_group = otherCollider->GetMyMask();
+
+			if ((other_group & eCollisionGroup::Player_Damage) != eCollisionGroup::None)
+			{
+				SetAttackColliderActive(false);
+
+				// 1フレームに1回.
+				return;
+			}
+		}
+	}
 }
 
 void Boss::HandleDodgeDetection()

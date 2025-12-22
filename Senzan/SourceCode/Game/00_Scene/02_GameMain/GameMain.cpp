@@ -73,7 +73,7 @@ void GameMain::Update()
 	m_upUI->SetBossHP(m_upBoss->GetMaxHP(), m_upBoss->GetHP());
 	m_upUI->SetCombo(m_upPlayer->GetCombo());
 	m_upUI->SetPlayerHP(m_upPlayer->GetMaxHP(), m_upPlayer->GetHP());
-	m_upUI->SetPlayerUlt(m_upPlayer->GetMaxUltValue(), m_upPlayer->GetUltValue());
+ 	m_upUI->SetPlayerUlt(m_upPlayer->GetMaxUltValue(), m_upPlayer->GetUltValue());
 
 	m_upUI->Update();
 }
