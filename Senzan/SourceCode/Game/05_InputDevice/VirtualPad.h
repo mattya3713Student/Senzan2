@@ -19,7 +19,7 @@ public:
         MoveBackward,
         MoveRight,
         MoveLeft,
-        Jump,
+        Cancel,
         Attack,
         Parry,
         Dodge,
