@@ -17,13 +17,15 @@ static constexpr double Move_Run_AnimSpeed = 50.0;
 BossMoveState::BossMoveState(Boss* owner)
 	: StateBase<Boss>(owner)
 	, m_RotationAngle(0.0f)
-	, m_RotationSpeed(0.1f) 
+	, m_RotationSpeed(0.1f)
 	, m_rotationDirection(1.0f)
 	, m_AnimNo()
 	, m_AnimTimer()
 	, m_BonePos()
 	, m_InitBossPos()
 	, m_Phase(MovePhase::Start)
+
+	, m_Base(std::make_shared<BossStateBase>())
 {
 }
 
@@ -63,6 +65,8 @@ void BossMoveState::Update()
 
 	// 判定基準
 	constexpr float STRAFE_RANGE = 20.0f;
+
+	//m_Base->RptetoToTarget();
 
 	// --------------------------------------------------------
 	// 2. フェーズ別移動・アニメーション処理

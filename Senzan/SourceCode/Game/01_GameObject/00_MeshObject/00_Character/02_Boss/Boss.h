@@ -40,6 +40,15 @@ class BossChargeState;
 
 class SkinMesh;
 
+//前方宣言.
+namespace BossState
+{
+	enum class enID;
+}
+
+class BossStateBase;
+
+
 /***********************************************************************
 *	ボスキャラクラス.
 **/
@@ -57,6 +66,8 @@ class Boss
 	friend BossDeadState;
 	friend BossChargeState;
 	friend BossThrowingState;
+
+	friend BossStateBase;
 
 	//ボスのアニメーションの列挙.
 	enum class enBossAnim : byte
@@ -127,6 +138,9 @@ public:
 
 	DirectX::XMFLOAT3 GetTargetPos() { return m_PlayerPos; }
 
+	//ボスのステートの変更.
+	void ChangeState(BossState::enID id);
+
 protected:
 
 	// 衝突_被ダメージ.
@@ -144,8 +158,15 @@ protected:
 	inline void SetAttackColliderActive(bool Active) const noexcept { m_pAttackCollider->SetActive(Active); }
 
 protected:
+
+	//次のステートへの遷移.
+	BossState::enID	m_NextState;
+
 	//ステートマシンのメンバ変数.
 	std::unique_ptr<StateMachine<Boss>> m_State;
+
+	//一時保存の移動のベクトル.
+	DirectX::XMFLOAT3 m_MoveVector;
 
 	DirectX::XMFLOAT3					m_PlayerPos;
 	DirectX::XMFLOAT3					m_PlayerVelocity;
@@ -157,6 +178,7 @@ protected:
 
 	D3DXVECTOR3 m_vCurrentMoveVelocity;
 
+	ColliderBase* m_pDamegeCollider;	//被ダメ判定.
 	ColliderBase* m_pAttackCollider;	// 攻撃判定.
 
 	float deleta_time;

@@ -30,11 +30,20 @@
 #include "System/Singleton/CameraManager/CameraManager.h"
 
 
+#include "System//BossStateID.h"
+
+#include "System//BossStateBase.h"
+
+
 constexpr float HP_Max = 100.0f;
 
 Boss::Boss()
 	: Character()
+	, m_NextState(BossState::enID::None)
 	, m_State(std::make_unique<StateMachine<Boss>>(this))
+	
+	, m_MoveVector({0.0f, 0.0f ,0.0f })
+
 	, m_PlayerPos{}
 	, m_TurnSpeed(0.1f)
 	, m_MoveSpeed(0.3f)
@@ -62,6 +71,19 @@ Boss::Boss()
 	m_State->ChangeState(std::make_shared<BossIdolState>(this));
 	//m_State->ChangeState(std::make_shared<BossShoutState>());
 
+	//被ダメの追加.
+	std::unique_ptr<CapsuleCollider> damege_collider = std::make_unique<CapsuleCollider>(m_spTransform);
+
+	m_pDamegeCollider = damege_collider.get();
+
+	damege_collider->SetColor(Color::eColor::Yellow);
+	damege_collider->SetHeight(3.0f);
+	damege_collider->SetRadius(1.0f);
+	damege_collider->SetPositionOffset(0.0f, 2.5f, 0.0f);
+	damege_collider->SetMyMask(eCollisionGroup::Enemy_Damage);
+	damege_collider->SetTarGetTargetMask(eCollisionGroup::Player_Attack);
+
+	m_upColliders->AddCollider(std::move(damege_collider));
 
 	// 攻撃の追加.
 	std::unique_ptr<CapsuleCollider> attackCollider = std::make_unique<CapsuleCollider>(m_spTransform);
@@ -79,8 +101,20 @@ Boss::Boss()
 
 	m_upColliders->AddCollider(std::move(attackCollider));
 
-	//攻撃動作の確認用のために書いている.
-	//m_State->ChangeState(std::make_shared<BossStompState>(this));
+	//ToDo : 必要かどうかは分からないけれども押し出し処理を作成しておく.
+	//押し出し処理.
+	std::unique_ptr<CapsuleCollider> pressCollider = std::make_unique<CapsuleCollider>(m_spTransform);
+
+	pressCollider->SetColor(Color::eColor::Cyan);
+	pressCollider->SetHeight(3.0f);
+	pressCollider->SetRadius(1.0f);
+	pressCollider->SetPositionOffset(0.0f, 2.5f, 0.0f);
+	pressCollider->SetMyMask(eCollisionGroup::Press);
+	pressCollider->SetTarGetTargetMask(eCollisionGroup::Press);
+
+	m_upColliders->AddCollider(std::move(pressCollider));
+
+	CollisionDetector::GetInstance().RegisterCollider(*m_upColliders);
 
 	//ボスの最大体力.
 	m_HitPoint = HP_Max;
@@ -89,32 +123,9 @@ Boss::Boss()
 	//コメントアウトすることで速度がもとに戻る.
 	m_TimeScale = 0.1;
 
-	// 被ダメの追加.
-	std::unique_ptr<CapsuleCollider> damage_collider = std::make_unique<CapsuleCollider>(m_spTransform);
+	//ToDo : Rootを作成してステートの初期化を作成する.
+	
 
-	damage_collider->SetColor(Color::eColor::Yellow);
-	damage_collider->SetHeight(30.0f);
-	damage_collider->SetRadius(10.0f);
-	damage_collider->SetPositionOffset(0.f, 1.5f, 0.f);
-	damage_collider->SetAttackAmount(10.f);
-	damage_collider->SetMyMask(eCollisionGroup::Enemy_Damage);
-	damage_collider->SetTarGetTargetMask(eCollisionGroup::Player_Attack);
-
-	m_upColliders->AddCollider(std::move(damage_collider));
-
-	// プレスの追加.
-	std::unique_ptr<CapsuleCollider> press_collider = std::make_unique<CapsuleCollider>(m_spTransform);
-
-	press_collider->SetColor(Color::eColor::Cyan);
-	press_collider->SetHeight(20.0f);
-	press_collider->SetRadius(5.1f);
-	press_collider->SetPositionOffset(0.f, 1.5f, 0.f);
-	press_collider->SetMyMask(eCollisionGroup::Press);
-	press_collider->SetTarGetTargetMask(eCollisionGroup::Press);
-
-	m_upColliders->AddCollider(std::move(press_collider));
-
-	CollisionDetector::GetInstance().RegisterCollider(*m_upColliders);
 }
 
 Boss::~Boss()
@@ -210,6 +221,10 @@ void Boss::Hit()
 void Boss::SetTargetPos(const DirectX::XMFLOAT3 Player_Pos)
 {
 	m_PlayerPos = Player_Pos;
+}
+
+void Boss::ChangeState(BossState::enID id)
+{
 }
 
 

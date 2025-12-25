@@ -21,6 +21,8 @@ class BossSpecialState;
 class BossStompState;
 class BossThrowingState;
 
+#include "..//System/BossStateBase.h"
+
 #include <random>
 
 /******************************************************************************
@@ -93,5 +95,7 @@ private:
 	std::unique_ptr<BossStompState>			m_pStomp;
 	std::unique_ptr<BossThrowingState>		m_pThrowing;
 	std::unique_ptr<BossShoutState>			m_pShout;
+
+	std::shared_ptr<BossStateBase> m_Base;
 
 };
