@@ -1,7 +1,9 @@
 ﻿#pragma once
 
 //基底クラス.
-#include "System//Utility//StateMachine//StateBase.h"
+
+#include "..//System/BossStateBase.h"
+
 #include "Game\03_Collision\00_Core\01_Capsule\CapsuleCollider.h"
 
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossChargeSlashState/BossChargeSlashState.h"
@@ -25,11 +27,13 @@ class BossMoveState;
 
 class BossIdolState final
 	//ボスクラスを使用できるようになる.
-	: public StateBase<Boss>
+	: public BossStateBase
 {
 public:
 	BossIdolState(Boss* owner);
 	~BossIdolState();
+
+	constexpr BossState::enID GetStateID() const override;
 
 	//最初に入る.
 	void Enter() override;

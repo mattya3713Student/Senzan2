@@ -4,7 +4,9 @@
 
 #include "Game/04_Time/Time.h"    
 
-#include "System/Singleton/Debug/Log/DebugLog.h"    
+#include "System/Singleton/Debug/Log/DebugLog.h"  
+
+#include "Root//BossRoot.h"
 
 
 BossStateBase::BossStateBase(Boss* pOwner)

@@ -6,13 +6,18 @@
 
 
 BossIdolState::BossIdolState(Boss* owner)
-	: StateBase<Boss>(owner)
+	: BossStateBase(owner)
 	, m_AnimSpeed	(100.0f)
 {
 }
 
 BossIdolState::~BossIdolState()
 {
+}
+
+constexpr BossState::enID BossIdolState::GetStateID() const
+{
+	return BossState::enID::Idol;
 }
 
 void BossIdolState::Enter()

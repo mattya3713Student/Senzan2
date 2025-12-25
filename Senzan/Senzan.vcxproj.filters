@@ -139,6 +139,7 @@
     <ClCompile Include="SourceCode\System\Singleton\ResourceManager\EffectManager\EffekseerManager.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\ResourceManager\SoundManager\SoundManager.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\System\BossStateBase.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\System\Root\BossRoot.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SourceCode\Constant.h" />
@@ -293,6 +294,7 @@
     <ClInclude Include="SourceCode\System\Singleton\ResourceManager\SoundManager\SoundManager.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\System\BossStateID.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\System\BossStateBase.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\System\Root\BossRoot.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Shader\PMX\Header.hlsli" />
