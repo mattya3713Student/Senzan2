@@ -38,14 +38,14 @@ void BossStateBase::RotateToPlayer()
 	}
 
 	//目標の角度を入手.
-	float Target_Angle_Rad = std::atan2f(dx, dz);
+	float Target_Angle_Rad = std::atan2f(-dx, -dz);
 
 	//ラジアンを度数に変換する.
 	float Target_Angle_Deg = Target_Angle_Rad * (180.0f / DirectX::XM_PI);
 
 	//指定した速度でゆっくり回転させる.
 	//ToDo : 速度を変更するときは、第二引数を変更する.
-	RotetoToTarget(Target_Angle_Deg, 200.0f);
+	RotetoToTarget(Target_Angle_Deg, 300.0f);
 }
 
 //目的の角度に向かって指定した速度で回転させる.

@@ -66,12 +66,9 @@ Boss::Boss()
 	m_MaxHP = 100.f;
 	m_HP = m_MaxHP;
 
-	// ステートマシンの初期ステートを、SlashChargeStateに設定
-	//Idolに遷移させるんだけど
-	//アニメーションの再生系統を今日するのでここを変更していく.
-	//m_State->ChangeState(std::make_shared<BossStompState>(this));
-	m_State->ChangeState(std::make_shared<BossIdolState>(this));
-	//m_State->ChangeState(std::make_shared<BossShoutState>());
+
+	auto Root = std::make_shared<BossState::BossRoot>(this);
+	m_State->ChangeState(Root);
 
 	//被ダメの追加.
 	std::unique_ptr<CapsuleCollider> damege_collider = std::make_unique<CapsuleCollider>(m_spTransform);
@@ -79,9 +76,9 @@ Boss::Boss()
 	m_pDamegeCollider = damege_collider.get();
 
 	damege_collider->SetColor(Color::eColor::Yellow);
-	damege_collider->SetHeight(3.0f);
-	damege_collider->SetRadius(1.0f);
-	damege_collider->SetPositionOffset(0.0f, 2.5f, 0.0f);
+	damege_collider->SetHeight(20.0f);
+	damege_collider->SetRadius(5.0f);
+	damege_collider->SetPositionOffset(0.0f, 10.0f, 0.0f);
 	damege_collider->SetMyMask(eCollisionGroup::Enemy_Damage);
 	damege_collider->SetTarGetTargetMask(eCollisionGroup::Player_Attack);
 
@@ -95,9 +92,9 @@ Boss::Boss()
 	attackCollider->SetActive(false);
 	attackCollider->SetColor(Color::eColor::Red);
 	attackCollider->SetAttackAmount(5.0f);
-	attackCollider->SetHeight(30.0f);
-	attackCollider->SetRadius(10.0f);
-	attackCollider->SetPositionOffset(0.f, 1.5f, -20.f);
+	attackCollider->SetHeight(20.0f);
+	attackCollider->SetRadius(5.0f);
+	attackCollider->SetPositionOffset(0.f, 10.0f, -20.f);
 	attackCollider->SetMyMask(eCollisionGroup::Enemy_Attack);
 	attackCollider->SetTarGetTargetMask(eCollisionGroup::Player_Damage | eCollisionGroup::Player_Dodge | eCollisionGroup::Player_JustDodge | eCollisionGroup::Player_Parry);
 
@@ -108,9 +105,9 @@ Boss::Boss()
 	std::unique_ptr<CapsuleCollider> pressCollider = std::make_unique<CapsuleCollider>(m_spTransform);
 
 	pressCollider->SetColor(Color::eColor::Cyan);
-	pressCollider->SetHeight(3.0f);
-	pressCollider->SetRadius(1.0f);
-	pressCollider->SetPositionOffset(0.0f, 2.5f, 0.0f);
+	pressCollider->SetHeight(20.0f);
+	pressCollider->SetRadius(5.0f);
+	pressCollider->SetPositionOffset(0.0f, 10.0f, 0.0f);
 	pressCollider->SetMyMask(eCollisionGroup::Press);
 	pressCollider->SetTarGetTargetMask(eCollisionGroup::Press);
 

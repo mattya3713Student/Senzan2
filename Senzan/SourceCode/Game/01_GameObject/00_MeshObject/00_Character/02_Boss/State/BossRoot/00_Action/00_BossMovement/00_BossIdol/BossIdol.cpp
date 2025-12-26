@@ -19,7 +19,7 @@ namespace BossState
 	void BossIdol::Enter()
 	{
 		m_pOwner->SetIsLoop(true);
-		m_pOwner->SetAnimSpeed(5.0);
+		m_pOwner->SetAnimSpeed(50.0);
 		//待機アニメションを再生.
 		m_pOwner->ChangeAnim(Boss::enBossAnim::Idol);
 

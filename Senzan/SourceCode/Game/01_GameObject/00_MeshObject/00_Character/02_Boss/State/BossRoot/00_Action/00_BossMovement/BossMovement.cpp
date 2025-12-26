@@ -7,7 +7,7 @@ namespace BossState
 {
 	BossMovement::BossMovement(Boss* pOwner)
 		: BossAction(pOwner)
-		, m_Collision_Capsul(std::make_shared<CapsuleCollider>())
+		, m_Collision_Capsul(std::make_shared<CapsuleCollider>(pOwner->GetTransform()))
 	{
 	}
 

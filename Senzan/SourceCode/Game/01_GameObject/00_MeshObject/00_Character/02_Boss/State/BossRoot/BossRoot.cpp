@@ -25,6 +25,10 @@ namespace BossState
 	void BossState::BossRoot::Enter()
 	{
 		m_pIdol = std::make_unique<BossIdol>(m_pOwner);
+
+		m_CurrentState = std::ref(*m_pIdol.get());
+
+		m_CurrentState.get().Enter();
 	}
 
 	void BossState::BossRoot::Update()
