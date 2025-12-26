@@ -30,9 +30,11 @@
 #include "System/Singleton/CameraManager/CameraManager.h"
 
 
-#include "State//System//BossStateID.h"
+#include "State//BossStateID.h"
 
-#include "State//System//BossStateBase.h"
+#include "State//BossStateBase.h"
+
+#include "State//BossRoot//BossRoot.h"
 
 
 constexpr float HP_Max = 100.0f;
