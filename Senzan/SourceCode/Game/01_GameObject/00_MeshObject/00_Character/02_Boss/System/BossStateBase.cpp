@@ -6,8 +6,6 @@
 
 #include "System/Singleton/Debug/Log/DebugLog.h"  
 
-#include "Root//BossRoot.h"
-
 
 BossStateBase::BossStateBase(Boss* pOwner)
 	: StateBase<Boss> (pOwner)

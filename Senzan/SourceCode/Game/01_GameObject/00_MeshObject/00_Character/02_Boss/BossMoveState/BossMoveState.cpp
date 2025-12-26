@@ -25,7 +25,6 @@ BossMoveState::BossMoveState(Boss* owner)
 	, m_InitBossPos()
 	, m_Phase(MovePhase::Start)
 
-	, m_Base(std::make_shared<BossStateBase>())
 {
 }
 

@@ -6,11 +6,6 @@
 //ToDo : 前方宣言.
 class Boss;
 
-namespace BossState
-{
-	class BossRoot;
-}
-
 /**************************************************
 *	ボスの状態の基底クラス.
 *	ボスクラスで使う関数の作成.
@@ -27,7 +22,7 @@ public:
 	//		 継承もさせる.
 	//		 constにしていることにより変更不可能にしている.
 	//ボスの状態を取得する.
-	constexpr virtual BossState::enID GetStateID() const = 0;
+	//constexpr virtual BossState::enID GetStateID() const = 0;
 
 	//ボスの情報取得.
 	Boss* GetBoss() const;

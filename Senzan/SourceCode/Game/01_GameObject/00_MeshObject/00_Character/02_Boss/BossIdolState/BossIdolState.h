@@ -27,13 +27,12 @@ class BossMoveState;
 
 class BossIdolState final
 	//ボスクラスを使用できるようになる.
-	: public BossStateBase
+	: public StateBase<Boss>
 {
 public:
 	BossIdolState(Boss* owner);
 	~BossIdolState();
 
-	constexpr BossState::enID GetStateID() const override;
 
 	//最初に入る.
 	void Enter() override;
