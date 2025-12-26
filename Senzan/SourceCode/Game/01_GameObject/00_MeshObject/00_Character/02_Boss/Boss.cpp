@@ -36,6 +36,9 @@
 
 #include "State//BossRoot//BossRoot.h"
 
+#include "State/BossRoot/00_Action/00_BossMovement/00_BossIdol/BossIdol.h"
+#include "State/BossRoot/00_Action/00_BossMovement/01_BossMove/BossMove.h"
+
 
 constexpr float HP_Max = 100.0f;
 

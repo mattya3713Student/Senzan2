@@ -55,4 +55,4 @@ namespace BossState
 	void BossIdol::Exit()
 	{
 	}
-}
+} //BossState.

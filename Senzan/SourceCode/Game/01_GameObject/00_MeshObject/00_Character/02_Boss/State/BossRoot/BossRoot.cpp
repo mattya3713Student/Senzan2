@@ -56,10 +56,11 @@ namespace BossState
 
 	}
 
+#pragma region
 	std::reference_wrapper<BossIdol> BossState::BossRoot::GetIdolState()
 	{
 		return std::ref(*m_pIdol.get());
 	}
-
+#pragma endregion
 
 } //BossState.

@@ -273,6 +273,7 @@
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossIdolState\BossIdolState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossMoveState\BossMoveState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\00_Action\00_BossMovement\00_BossIdol\BossIdol.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\00_Action\00_BossMovement\01_BossMove\BossMove.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\00_Action\00_BossMovement\BossMovement.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\00_Action\BossAction.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\BossRoot.cpp" />
@@ -373,6 +374,7 @@
     <ClInclude Include="SourceCode\Constant.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\Ex_Test\10_mattya3713_Parry\MattyaTestScene_Parry.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\00_Action\00_BossMovement\00_BossIdol\BossIdol.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\00_Action\00_BossMovement\01_BossMove\BossMove.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\00_Action\00_BossMovement\BossMovement.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\00_Action\BossAction.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\BossRoot.h" />

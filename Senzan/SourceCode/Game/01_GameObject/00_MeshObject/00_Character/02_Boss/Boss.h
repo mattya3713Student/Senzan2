@@ -49,6 +49,7 @@ namespace BossState
 	enum class enID;
 
 	class BossIdol;
+	class BossMove;
 
 }
 
