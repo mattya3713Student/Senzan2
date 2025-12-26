@@ -2,7 +2,7 @@
 
 //基底クラス.
 
-#include "..//System/BossStateBase.h"
+#include "..//State//System/BossStateBase.h"
 
 #include "Game\03_Collision\00_Core\01_Capsule\CapsuleCollider.h"
 

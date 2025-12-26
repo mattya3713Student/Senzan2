@@ -1,6 +1,6 @@
 #include "BossStateBase.h"
 
-#include "..//Boss.h"
+#include "..//..//Boss.h"
 
 #include "Game/04_Time/Time.h"    
 
