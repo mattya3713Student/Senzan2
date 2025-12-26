@@ -6,6 +6,8 @@
 
 #include "System/Singleton/Debug/Log/DebugLog.h"  
 
+#include "BossRoot/BossRoot.h"
+
 
 BossStateBase::BossStateBase(Boss* pOwner)
 	: StateBase<Boss> (pOwner)
@@ -18,7 +20,7 @@ Boss* BossStateBase::GetBoss() const
 }
 
 //プレイヤーの方に常に向くようにする.
-void BossStateBase::RotateToPlayer(float RotationSpeed)
+void BossStateBase::RotateToPlayer()
 {
 	//ボスの位置を取得.
 	DirectX::XMFLOAT3 BossPos_XF = m_pOwner->GetPosition();

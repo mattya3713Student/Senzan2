@@ -41,11 +41,15 @@ class BossChargeState;
 class SkinMesh;
 
 
+
 //前方宣言.
 namespace BossState
 {
 	class BossRoot;
 	enum class enID;
+
+	class BossIdol;
+
 }
 
 class BossStateBase;
@@ -71,6 +75,8 @@ class Boss
 
 	friend BossStateBase;
 	friend BossState::BossRoot;
+
+	friend BossState::BossIdol;
 
 	//ボスのアニメーションの列挙.
 	enum class enBossAnim : byte

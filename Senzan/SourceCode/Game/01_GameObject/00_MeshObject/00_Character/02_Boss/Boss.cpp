@@ -229,7 +229,6 @@ void Boss::ChangeState(BossState::enID id)
 {
 }
 
-
 // 衝突_被ダメージ.
 void Boss::HandleDamageDetection()
 {
