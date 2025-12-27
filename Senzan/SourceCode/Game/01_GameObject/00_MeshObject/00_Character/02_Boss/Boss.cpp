@@ -73,6 +73,13 @@ Boss::Boss()
 	auto Root = std::make_shared<BossState::BossRoot>(this);
 	m_State->ChangeState(Root);
 
+	// 既に上で回転は計算しているので、initalAngleとして再利用可能
+	//auto MoveState = std::make_shared<BossIdolState>(this);
+	// MoveState->SetInitialAngle(angle_radian); // 必要であれば渡す
+
+	//GetStateMachine()->ChangeState(MoveState);
+
+
 	//被ダメの追加.
 	std::unique_ptr<CapsuleCollider> damege_collider = std::make_unique<CapsuleCollider>(m_spTransform);
 
@@ -227,6 +234,19 @@ void Boss::SetTargetPos(const DirectX::XMFLOAT3 Player_Pos)
 
 void Boss::ChangeState(BossState::enID id)
 {
+	// 1. StateMachine の現在のステートを取り出す
+	// m_pCurrentState が public なので直接アクセス可能
+	auto currentState = m_State->m_pCurrentState;
+	if (!currentState) return;
+
+	// 2. 現在のステートが BossRoot かどうかを確認 (キャスト)
+	auto root = std::dynamic_pointer_cast<BossState::BossRoot>(currentState);
+
+	if (root)
+	{
+		// 3. BossRoot に対して「子ステートを切り替えて」と命令する
+		root->ChangeState(id);
+	}
 }
 
 // 衝突_被ダメージ.

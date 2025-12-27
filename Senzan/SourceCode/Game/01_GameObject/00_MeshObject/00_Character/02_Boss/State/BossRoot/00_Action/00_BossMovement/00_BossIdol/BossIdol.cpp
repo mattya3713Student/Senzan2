@@ -4,6 +4,7 @@ namespace BossState
 {
 	BossIdol::BossIdol(Boss* pOwner)
 		: BossMovement (pOwner)
+		, m_pMove(nullptr)
 	{
 	}
 
@@ -39,9 +40,20 @@ namespace BossState
 
 		//距離の計算(2乗).
 		DirectX::XMVECTOR DistSq_Vec = DirectX::XMVector3Length(Diff_Vec);
-		
+		float currentDistanceSq = DirectX::XMVectorGetX(DistSq_Vec);
+
 		//判定.
 		//ToDo : ここに距離でMoveに入るようにする.
+		constexpr float MOVE_THRESHOLD = 30.0f;
+		const float MOVE_THRESHOLD_SQ = MOVE_THRESHOLD * MOVE_THRESHOLD;
+
+		// プレイヤーが一定距離より遠い場合に移動ステートへ
+		constexpr float MOVE_START_RANGE = 25.0f;
+		if (currentDistanceSq > MOVE_START_RANGE)
+		{
+			// BossRootを取得してステートを切り替える
+			m_pOwner->ChangeState(BossState::enID::Move);
+		}
 	}
 
 	void BossIdol::LateUpdate()

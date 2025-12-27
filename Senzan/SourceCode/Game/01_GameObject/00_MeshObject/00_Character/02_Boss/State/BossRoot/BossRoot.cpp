@@ -2,6 +2,7 @@
 
 #include "..//..//Boss.h"
 #include "00_Action/00_BossMovement/00_BossIdol/BossIdol.h"
+#include "00_Action/00_BossMovement/01_BossMove/BossMove.h"
 
 namespace BossState
 {
@@ -9,7 +10,10 @@ namespace BossState
 		: BossStateBase(pOwner)
 
 		, m_pIdol(nullptr)
-		, m_CurrentState(std::ref(*m_pIdol.get()))
+
+		, m_pMove(nullptr)
+
+		, m_CurrentState(std::ref(*this))
 	{
 	}
 
@@ -24,10 +28,12 @@ namespace BossState
 
 	void BossState::BossRoot::Enter()
 	{
+		// 実際のインスタンス生成
 		m_pIdol = std::make_unique<BossIdol>(m_pOwner);
+		m_pMove = std::make_unique<BossMove>(m_pOwner);
 
-		m_CurrentState = std::ref(*m_pIdol.get());
-
+		// 初期ステートを Idol に設定
+		m_CurrentState = std::ref(*static_cast<BossStateBase*>(m_pIdol.get()));
 		m_CurrentState.get().Enter();
 	}
 
@@ -51,15 +57,33 @@ namespace BossState
 		m_CurrentState.get().Exit();
 	}
 
-	void BossRoot::ChangeState(BossState::enID id)
+	void BossState::BossRoot::ChangeState(BossState::enID id)
 	{
+		if (m_CurrentState.get().GetStateID() == id) return;
 
+		m_CurrentState.get().Exit();
+
+		switch (id)
+		{
+		case BossState::enID::Idol:
+			m_CurrentState = std::ref(*static_cast<BossStateBase*>(m_pIdol.get()));
+			break;
+		case BossState::enID::Move:
+			m_CurrentState = std::ref(*static_cast<BossStateBase*>(m_pMove.get()));
+			break;
+		}
+
+		m_CurrentState.get().Enter();
 	}
 
 #pragma region
 	std::reference_wrapper<BossIdol> BossState::BossRoot::GetIdolState()
 	{
 		return std::ref(*m_pIdol.get());
+	}
+	std::reference_wrapper<BossMove> BossRoot::GetMoveState()
+	{
+		return std::ref(*m_pMove.get());
 	}
 #pragma endregion
 

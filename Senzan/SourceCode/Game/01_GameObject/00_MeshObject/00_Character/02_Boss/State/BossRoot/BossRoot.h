@@ -8,6 +8,7 @@ class Boss;
 namespace BossState
 {
 	class BossIdol;
+	class BossMove;
 }
 
 namespace BossState
@@ -37,9 +38,11 @@ namespace BossState
 
 #pragma region GetStateRef
 		std::reference_wrapper<BossIdol> GetIdolState();
+		std::reference_wrapper<BossMove> GetMoveState();
 #pragma	endregion
 	private:
 		std::unique_ptr<BossIdol> m_pIdol;
+		std::unique_ptr<BossMove> m_pMove;
 		//ƒƒ“ƒo•Ï”.
 		//ToDo : Œp³‚µ‚½ƒƒ“ƒo•Ï”‚ğ‘‚­.
 		std::reference_wrapper<BossStateBase> m_CurrentState;

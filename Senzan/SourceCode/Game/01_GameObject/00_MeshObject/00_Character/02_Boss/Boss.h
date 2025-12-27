@@ -78,6 +78,7 @@ class Boss
 	friend BossState::BossRoot;
 
 	friend BossState::BossIdol;
+	friend BossState::BossMove;
 
 	//ボスのアニメーションの列挙.
 	enum class enBossAnim : byte

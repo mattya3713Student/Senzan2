@@ -1,6 +1,8 @@
 #pragma once
 #include "..//BossMovement.h"
 
+#include "..//01_BossMove/BossMove.h"
+
 class Boss;
 
 /***********************************************
@@ -25,6 +27,6 @@ namespace BossState
 		void Exit() override;
 
 	private:
-
+		std::unique_ptr<BossMove> m_pMove;
 	};
 }

@@ -45,7 +45,7 @@ void BossStateBase::RotateToPlayer()
 
 	//指定した速度でゆっくり回転させる.
 	//ToDo : 速度を変更するときは、第二引数を変更する.
-	RotetoToTarget(Target_Angle_Deg, 300.0f);
+	RotetoToTarget(Target_Angle_Deg, 1000.0);
 }
 
 //目的の角度に向かって指定した速度で回転させる.

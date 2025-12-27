@@ -24,7 +24,6 @@ BossMoveState::BossMoveState(Boss* owner)
 	, m_BonePos()
 	, m_InitBossPos()
 	, m_Phase(MovePhase::Start)
-
 {
 }
 
@@ -64,8 +63,6 @@ void BossMoveState::Update()
 
 	// 判定基準
 	constexpr float STRAFE_RANGE = 20.0f;
-
-	//m_Base->RptetoToTarget();
 
 	// --------------------------------------------------------
 	// 2. フェーズ別移動・アニメーション処理
@@ -212,11 +209,11 @@ void BossMoveState::LateUpdate()
 {
 }
 
-void BossMoveState::Draw() 
+void BossMoveState::Draw()
 {
 }
 
-void BossMoveState::Exit() 
+void BossMoveState::Exit()
 {
 }
 
