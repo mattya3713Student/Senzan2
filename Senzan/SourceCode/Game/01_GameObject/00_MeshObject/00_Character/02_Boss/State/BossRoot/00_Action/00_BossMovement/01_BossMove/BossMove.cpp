@@ -9,4 +9,9 @@ namespace BossState
 	{
 	}
 
+	constexpr BossState::enID BossMove::GetStateID() const
+	{
+		return BossState::enID();
+	}
+
 }
