@@ -11,7 +11,7 @@ namespace BossState
         , m_Angle(0.0f)
         , m_StrafeSpeed(0.8f)
         , m_RotationAngle(0.0f)
-        , m_RotationSpeed(0.1f)
+        , m_RotationSpeed(0.5f)
         , m_rotationDirection(1.0f)
         , m_BaseAngle(0.0f)
         , m_Timer(0.0f)

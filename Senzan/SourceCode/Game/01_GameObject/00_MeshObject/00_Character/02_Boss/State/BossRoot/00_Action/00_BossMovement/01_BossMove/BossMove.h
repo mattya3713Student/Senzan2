@@ -40,7 +40,7 @@ namespace BossState
         float m_StrafeSpeed = 0.8f;    // 左右移動（回り込み）の速度
 
         float m_RotationAngle = 0.0f;
-        double m_RotationSpeed = 0.1f;
+        double m_RotationSpeed = 50.0f;
         float m_rotationDirection = 1.0f; // 1.0f:順方向, -1.0:逆方向
 
         float m_BaseAngle = 0.0f;
@@ -51,7 +51,8 @@ namespace BossState
         static constexpr float APPROACH_SPEED = 10.0f;
         static constexpr double MOVE_RUN_ANIM_SPEED = 50.0;
         static constexpr double STRAFE_ANIM_SPEED = 12.0;
-        static constexpr float TRACKING_DELAY = 0.7f;
+        static constexpr float TRACKING_DELAY = 0.3f;
+
 
     };
 }
