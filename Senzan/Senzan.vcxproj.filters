@@ -144,6 +144,8 @@
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\00_Action\00_BossMovement\BossMovement.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\00_Action\00_BossMovement\00_BossIdol\BossIdol.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\00_Action\00_BossMovement\01_BossMove\BossMove.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\00_Action\01_BossAttack\BossAttack.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\00_Action\01_BossAttack\00_Slash\Slash.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SourceCode\Constant.h" />
@@ -303,6 +305,8 @@
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\00_Action\00_BossMovement\BossMovement.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\00_Action\00_BossMovement\00_BossIdol\BossIdol.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\00_Action\00_BossMovement\01_BossMove\BossMove.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\00_Action\01_BossAttack\BossAttack.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\00_Action\01_BossAttack\00_Slash\Slash.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Shader\PMX\Header.hlsli" />

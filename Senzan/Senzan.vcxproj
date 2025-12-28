@@ -275,6 +275,8 @@
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\00_Action\00_BossMovement\00_BossIdol\BossIdol.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\00_Action\00_BossMovement\01_BossMove\BossMove.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\00_Action\00_BossMovement\BossMovement.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\00_Action\01_BossAttack\00_Slash\Slash.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\00_Action\01_BossAttack\BossAttack.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\00_Action\BossAction.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\BossRoot.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossStateBase.cpp" />
@@ -376,6 +378,8 @@
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\00_Action\00_BossMovement\00_BossIdol\BossIdol.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\00_Action\00_BossMovement\01_BossMove\BossMove.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\00_Action\00_BossMovement\BossMovement.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\00_Action\01_BossAttack\00_Slash\Slash.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\00_Action\01_BossAttack\BossAttack.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\00_Action\BossAction.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossRoot\BossRoot.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\State\BossStateBase.h" />
