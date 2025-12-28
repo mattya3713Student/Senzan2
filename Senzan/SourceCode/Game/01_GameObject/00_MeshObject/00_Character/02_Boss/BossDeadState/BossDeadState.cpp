@@ -2,7 +2,7 @@
 
 #include "00_MeshObject//00_Character//02_Boss//Boss.h"
 
-static constexpr double AnimSpeed = 0.03;
+static constexpr double AnimSpeed = 15.0;
 
 BossDeadState::BossDeadState(Boss* owner)
 	: StateBase<Boss>(owner)

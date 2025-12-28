@@ -16,10 +16,11 @@ enum class eCollisionGroup : uint32_t
 	Player_Damage	= 1 << 1,
 	Player_Dodge	= 1 << 2,
 	Player_JustDodge= 1 << 3,
-	Enemy_Attack	= 1 << 4,
-	Enemy_PreAttack = 1 << 5,
-	Enemy_Damage	= 1 << 6,
-	Press			= 1 << 7,
+	Player_Parry	= 1 << 4,
+	Enemy_Attack	= 1 << 5,
+	Enemy_PreAttack = 1 << 6,
+	Enemy_Damage	= 1 << 7,
+	Press			= 1 << 8,
 
 	_Max = 0xFFFFFFFF,
 };
@@ -90,6 +91,9 @@ public:
 	inline void SetColor(DirectX::XMFLOAT4 NewColor) noexcept { m_Color = NewColor; }
 	inline void SetColor(float NewR, float NewG, float NewB, float NewA) noexcept { m_Color = DirectX::XMFLOAT4(NewR, NewG, NewB, NewA); }
 
+	void SetAttackAmount(float Amount)noexcept { m_AttackAmount = Amount; }
+	float GetAttackAmount() const noexcept { return m_AttackAmount; }
+
 	// 衝突情報を追加する.
 	inline void AddCollisionInfo(const CollisionInfo& info) noexcept { m_CollisionEvents.push_back(info); }
 
@@ -115,7 +119,6 @@ public:
 		return A_collides_with_B && B_collides_with_A;
 	}
 
-
 	// 他のColliderとの衝突.
 	virtual CollisionInfo CheckCollision(const ColliderBase& other) const = 0;
 
@@ -130,6 +133,7 @@ protected:
 	std::weak_ptr<const Transform> m_wpTransform;	// 持ち主のトランスフォーム.
 	DirectX::XMFLOAT3	m_PositionOffset;			// オフセット位置.
 	bool				m_IsActive;					// アクティブか否か.
+	float				m_AttackAmount;				// 攻撃力.
 
 	// コリジョンフィルター用.
 	eCollisionGroup m_MyMask = eCollisionGroup::_Max;		// 自身が所属するグループ.
@@ -138,7 +142,6 @@ protected:
 	// 検出された衝突情報のリスト.
 	std::vector<CollisionInfo> m_CollisionEvents;
 
-#if _DEBUG
 public:
 
 	//------------デバッグ描画用-----------.
@@ -147,7 +150,6 @@ public:
 
 protected:
 	DirectX::XMFLOAT4	m_Color;					// 表示色.
-#endif // _DEBUG.
 
 };
 

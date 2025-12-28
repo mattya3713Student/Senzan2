@@ -46,6 +46,8 @@ void CollisionDetector::ExecuteCollisionDetection()
             CollisionInfo info = colliderA->CheckCollision(*colliderB);
             if (!info.IsHit) { continue; }
 
+            info.AttackAmount = colliderB->GetAttackAmount();
+
             // Detector側の記録リストに追加.
             m_PendingResponses.push_back(info);
 
@@ -62,7 +64,8 @@ void CollisionDetector::ExecuteCollisionDetection()
             // ポインタを入れ替え.
             const ColliderBase* temp_collider = info.ColliderA;
             info_reverse.ColliderA = info.ColliderB;
-            info_reverse.ColliderB = temp_collider;
+            info_reverse.ColliderB = temp_collider; 
+            info_reverse.AttackAmount = colliderA->GetAttackAmount();
 
             // 接触点はワールド座標なのでそのまま使用.
             colliderB->AddCollisionInfo(info_reverse);

@@ -2,8 +2,8 @@
 #include "System/Singleton/SingletonTemplate.h"
 #include "MeshManager/MeshManager.h"
 #include "SpriteManager/SpriteManager.h"
-//#include "Sound\SoundManager.h"
-//#include "Effect\Effect.h"
+#include "SoundManager/SoundManager.h"
+#include "Effect/EffectResource.h"
 
 /*******************************************
 *	アセット管理クラス.
@@ -27,13 +27,13 @@ public:
 	/******************************************************************
 	* @brief サウンドの読み込み.
 	******************************************************************/
-//	static bool LoadSounds();
+	static bool LoadSounds();
 
 
 	/******************************************************************
 	* @brief エフェクトの読み込み.
 	******************************************************************/
-//	static bool LoadEffects();
+	static bool LoadEffects();
 
 
 	/******************************************************************

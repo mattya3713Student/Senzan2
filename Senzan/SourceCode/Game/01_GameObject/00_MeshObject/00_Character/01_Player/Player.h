@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "Game/01_GameObject/00_MeshObject/00_Character/Character.h"
+#include "Game/03_Collision/00_Core/ColliderBase.h"
 
 template<typename FSM_Owner> class StateMachine;
 
@@ -89,10 +90,14 @@ public:
 
 	void SetTargetPos(const DirectX::XMFLOAT3& NewTargetPos) noexcept { m_TargetPos = NewTargetPos; };
 	
-	float GetHp() const noexcept;	// HPの取得.
+	inline int GetCombo() const noexcept { return m_Combo; }
+
+	inline float GetUltValue() const noexcept { return m_CurrentUltValue; }
+	inline float GetMaxUltValue() const noexcept { return m_MaxUltValue; }
 
 	bool IsKnockBack() const noexcept;	// スタン中か.
 	bool IsDead() const noexcept;		// 死亡中か.
+	bool IsParry() const noexcept;		// 死亡中か.
 	bool IsPaused() const noexcept;		// ポーズ中か.
 
 	// ステートの変更.
@@ -111,11 +116,16 @@ private:
 	void HandleAttackDetection() override;
 	// 衝突_回避.
 	void HandleDodgeDetection() override;
+	
+	// 衝突_パリィ.
+	void HandleParryDetection();
 
 protected:
 
-	// Playerの最終的なDeltaTimeの取得.
-	
+	// 攻撃判定のActive
+	inline void SetAttackColliderActive(bool Active) const noexcept { m_pAttackCollider->SetActive(Active); }
+	inline void SetDamageColliderActive(bool Active) const noexcept { m_pDamageCollider->SetActive(Active); }
+	inline void SetParryColliderActive(bool Active) const noexcept { m_pParryCollider->SetActive(Active); }
 
 protected:
 	std::unique_ptr<PlayerState::Root> m_RootState;	// ステートマシーン.
@@ -129,10 +139,18 @@ protected:
 
 	//---共有---.
 	PlayerState::eID	m_NextStateID;		// 次遷移ステート.
-	bool m_IsStateChangeRequest;			// 次遷移ステートフラグ.
+	bool	m_IsStateChangeRequest;			// 次遷移ステートフラグ.
 
-	float m_HP;								// プレイヤーの体力.
 	DirectX::XMFLOAT3	m_MoveVec;			// 一時保存の移動ベクトル.
+
+	int					m_Combo;			// コンボ.
+	float				m_CurrentUltValue;	// 閃値.
+	float				m_MaxUltValue;		// max閃値.
+
+	ColliderBase* m_pDamageCollider;	// 被ダメ判定.
+	ColliderBase* m_pAttackCollider;	// 攻撃判定.
+	ColliderBase* m_pParryCollider;		// パリィ判定.
+
 	//---System関連---.
 	bool				m_IsKnockBack;		// ノックバック中か否か.
 	DirectX::XMFLOAT3	m_KnockBackVec;		// ノックバックのベクトル.
@@ -144,6 +162,8 @@ protected:
 
 	//---Combat関連---.
 	DirectX::XMFLOAT3	m_TargetPos;		// 敵の座標.
+
+	bool				m_IsSuccessParry;	// パリィの成功.
 	
 	//---Dodge関連---.
 	bool				m_IsJustDodgeTiming;// ジャスト回避のタイミング.

@@ -18,16 +18,16 @@ Dodge::Dodge(Player* owner)
 	, m_currentTime(0.f)
 {
 
-    // 被ダメコライダーのポインタを保持.
-    const auto& internal_colliders = m_pOwner->m_upColliders->GetInternalColliders();
-    for (const std::unique_ptr<ColliderBase>& collider_ptr : internal_colliders)
-    {
-        if (collider_ptr && collider_ptr->GetMyMask() == eCollisionGroup::Player_Damage) // GetID()は仮の関数
-        {
-            m_pDamageDetectionCollider = collider_ptr.get();
-            break;
-        }
-    }
+    //// 被ダメコライダーのポインタを保持.
+    //const auto& internal_colliders = m_pOwner->m_upColliders->GetInternalColliders();
+    //for (const std::unique_ptr<ColliderBase>& collider_ptr : internal_colliders)
+    //{
+    //    if (collider_ptr && collider_ptr->GetMyMask() == eCollisionGroup::Player_Damage) // GetID()は仮の関数
+    //    {
+    //        m_pDamageDetectionCollider = collider_ptr.get();
+    //        break;
+    //    }
+    //}
 }
 
 Dodge::~Dodge()
@@ -38,13 +38,15 @@ void Dodge::Enter()
 {
     Action::Enter();
 
-    if (m_pDamageDetectionCollider != nullptr)
-        CollisionDetector::GetInstance().UnregisterCollider(m_pDamageDetectionCollider);
+  /*  if (m_pDamageDetectionCollider != nullptr)
+        CollisionDetector::GetInstance().UnregisterCollider(m_pDamageDetectionCollider);*/
 	
 	m_currentTime = 0.f;
 
 	DirectX::XMFLOAT2 input_vec = VirtualPad::GetInstance().GetAxisInput(VirtualPad::eGameAxisAction::Move);
 	DirectX::XMFLOAT3 final_move_3d = {};
+
+	Log::GetInstance().Info("", input_vec);
 
 	// 入力がなければプレイヤーの向いている方向へ.
 	if (MyMath::IsVector2NearlyZero(input_vec, 0.f))
@@ -90,6 +92,8 @@ void Dodge::Enter()
 
 	// 移動方向を向く.
 	m_pOwner->GetTransform()->RotateToDirection(final_move_3d);
+
+	SoundManager::GetInstance().Play("Dodge");
 }
 
 void Dodge::Update()

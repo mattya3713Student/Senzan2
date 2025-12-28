@@ -38,10 +38,6 @@ void Idle::Update()
 	// “ü—Í‚ðŽæ“¾.
 	DirectX::XMFLOAT2 input_vec = VirtualPad::GetInstance().GetAxisInput(VirtualPad::eGameAxisAction::Move);
 
-	// ˆÚ“®ƒxƒNƒgƒ‹‚ðŒ¸­‚³‚¹‚é.
-	bool is_x_move = MyMath::DecreaseToValue(m_pOwner->m_MoveVec.x, 0.f, m_pOwner->m_MoveVecDeceleration * m_pOwner->GetDelta() * 0.01f);
-	bool is_z_move = MyMath::DecreaseToValue(m_pOwner->m_MoveVec.y, 0.f, m_pOwner->m_MoveVecDeceleration * m_pOwner->GetDelta() * 0.01f);
-
 	// “ü—Í‚ª‚ ‚ê‚ÎˆÚ“®.
 	if (!MyMath::IsVector2NearlyZero(input_vec, 0.f)) {
 		m_pOwner->ChangeState(eID::Run);

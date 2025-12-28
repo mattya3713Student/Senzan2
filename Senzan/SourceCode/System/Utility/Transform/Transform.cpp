@@ -109,7 +109,7 @@ void Transform::RotateToDirection(const DirectX::XMFLOAT3& NormVecDirection)
 
 	// “àÏ‚Ìæ“¾.
 	DirectX::XMVECTOR dot_product_vec = DirectX::XMVector3Dot(v_current_forward, v_target_direction);
-	float dot;
+	float dot = {};
 	DirectX::XMStoreFloat(&dot, dot_product_vec);
 
 	// ‰ñ“]²‚Ìæ“¾.

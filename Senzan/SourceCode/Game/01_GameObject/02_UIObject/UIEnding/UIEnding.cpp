@@ -1,5 +1,6 @@
 #include "UIEnding.h"
 #include "02_UIObject/UILoader/UILoader.h"
+#include "02_UIObject/Select/Select.h"
 #include "Utility/Color/Color.h"
 
 #include "Graphic/DirectX/DirectX11/DirectX11.h"
@@ -9,12 +10,14 @@
 
 UIEnding::UIEnding()
 	: m_pUIs		( ) 
+	, m_pSelect		( std::make_shared<Select>() )
 	, m_InitAlpha	( 0.6f )
 	, m_SelectAlpha	( m_InitAlpha )
 	, m_AnimReturn	( false )
 	, m_AnimeSpeed	( 0.3f )
 {
 	UILoader::LoadFromJson("Data\\Image\\Sprite\\UIData\\Ending.json", m_pUIs);
+	SelectCreate();
 }
 
 //----------------------------------------------------------------.
@@ -25,20 +28,34 @@ UIEnding::~UIEnding()
 
 //----------------------------------------------------------------.
 
+void UIEnding::SelectCreate()
+{
+	for (auto& ui : m_pUIs)
+	{
+		if (ui->GetUIName() == "SelectFrame_0") {
+			m_pSelect->IsSelect(ui->GetPosition());
+		}
+	}
+}
+
+//----------------------------------------------------------------.
+
 void UIEnding::Update()
 {
 	SelectUpdate();
+	for (auto& ui : m_pUIs)
+	{
+		ui->Update();
+		SelectLateUpdate(ui);
+	}
+	m_pSelect->LateUpdate();
+	m_pSelect->Update();
 }
 
 //----------------------------------------------------------------.
 
 void UIEnding::LateUpdate()
 {
-	for (auto& ui : m_pUIs)
-	{
-		ui->Update();
-		SelectLateUpdate(ui);
-	}
 }
 
 //----------------------------------------------------------------.
@@ -51,6 +68,7 @@ void UIEnding::Draw()
 		ui->Draw();
 		DirectX11::GetInstance().SetDepth(true);
 	}
+	m_pSelect->Draw();
 }
 
 //----------------------------------------------------------------.

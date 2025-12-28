@@ -23,6 +23,8 @@ BossShoutState::~BossShoutState()
 
 void BossShoutState::Enter()
 {
+    // 当たり判定を有効化.
+    m_pOwner->SetAttackColliderActive(true);
     //ボスの向きを設定.
     const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
     DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&BossPosF);
@@ -44,7 +46,7 @@ void BossShoutState::Enter()
     DirectX::XMStoreFloat3(&m_StartPos, BossPosXM);
 
     //アニメーション速度.
-    m_pOwner->SetAnimSpeed(0.03);
+    m_pOwner->SetAnimSpeed(15.0);
     m_pOwner->ChangeAnim(Boss::enBossAnim::LaserCharge);
 }
 
@@ -54,12 +56,15 @@ void BossShoutState::Update()
     switch (m_List)
     {
     case BossShoutState::enShout::none:
+
+        // 当たり判定を有効化.
+        m_pOwner->SetAttackColliderActive(true);
         m_List = enShout::Shout;
         break;
     case BossShoutState::enShout::Shout:
         if (m_pOwner->IsAnimEnd(Boss::enBossAnim::LaserCharge))
         {
-            m_pOwner->SetAnimSpeed(0.05);
+            m_pOwner->SetAnimSpeed(10.0);
             m_pOwner->ChangeAnim(Boss::enBossAnim::Laser);
             m_List = enShout::ShoutTime;
         }
@@ -67,7 +72,7 @@ void BossShoutState::Update()
     case BossShoutState::enShout::ShoutTime:
         if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Laser))
         {
-            m_pOwner->SetAnimSpeed(0.03);
+            m_pOwner->SetAnimSpeed(15.0);
             m_pOwner->ChangeAnim(Boss::enBossAnim::LaserEnd);
             m_List = enShout::ShoutToIdol;
         }
@@ -94,7 +99,8 @@ void BossShoutState::Draw()
 }
 
 void BossShoutState::Exit()
-{
+{	// 当たり判定を無効化.
+    m_pOwner->SetAttackColliderActive(false);
   
 }
 

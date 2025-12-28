@@ -94,11 +94,9 @@ private:
 	float m_Radius; // 半径.
 	float m_Height;	// 高さ.
 
-#if _DEBUG
 public:
 
 	// デバッグ描画用設定.
 	void SetDebugInfo() override;
-#endif // _DEBUG.
 
 };

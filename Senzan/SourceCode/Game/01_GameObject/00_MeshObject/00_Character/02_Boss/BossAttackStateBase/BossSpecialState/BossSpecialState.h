@@ -42,7 +42,8 @@ public:
 	void Exit() override;
 
 	//パリィしているときとしていないときのコード.
-	void ParryTime();
+
+	void ParryTime() override;
 
 private:
 	//============================================================
