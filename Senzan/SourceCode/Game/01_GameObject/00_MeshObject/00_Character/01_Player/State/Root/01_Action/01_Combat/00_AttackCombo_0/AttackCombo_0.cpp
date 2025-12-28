@@ -10,13 +10,13 @@
 // 攻撃開始までの速度.
 static constexpr double AttackCombo_0_ANIM_SPEED_0 = 0.04; 
 
-static constexpr float CLOSE_RANGE_THRESHOLD = 20.0f;	// Bossまでの距離に置いて近いと判断する.
+static constexpr float CLOSE_RANGE_THRESHOLD = 10.0f;	// Bossまでの距離に置いて近いと判断する.
 
 
 static float g_DebugAnimSpeed0 = 10.f;
 static float g_DebugAnimSpeed1 = 2.8f;
 static float g_DebugMaxTime = 3.067f;
-static float g_DebugComboStartTime = 1.2f; // 受付開始（例：踏み込み終わりのタイミング）
+static float g_DebugComboStartTime = 0.5f; // 受付開始（例：踏み込み終わりのタイミング）
 static float g_DebugComboEndTime = 2.5f; // 受付終了（例：アニメーション終了の少し前）
 
 namespace PlayerState {
@@ -53,6 +53,9 @@ void AttackCombo_0::Enter()
 	m_pOwner->SetAnimTime(0.0);
 	m_pOwner->SetAnimSpeed(g_DebugAnimSpeed0); // デバッグ値を使用
 	m_pOwner->ChangeAnim(Player::eAnim::Attack_0);
+
+	// 当たり判定を有効化.
+	m_pOwner->SetAttackColliderActive(true);
 
 	// 距離算出用座標.
 	DirectX::XMFLOAT3 target_pos = m_pOwner->m_TargetPos;
@@ -117,16 +120,9 @@ void AttackCombo_0::Update()
 	}
 
 	// 何も入力がなくアニメーションが終わった時,Idleステートに変える.
-	if (m_pOwner->IsAnimEnd(Player::eAnim::Attack_0))
+	if (m_currentTime >= m_pOwner->GetAnimPeriod(static_cast<int>(Player::eAnim::Attack_0)))
 	{
-		if (m_isComboAccepted) {
-			// コンボが受け付けられていれば、次のステート（AttackCombo_1など）へ
-			// m_pOwner->ChangeState(PlayerState::eID::AttackCombo_1); 
-			Log::GetInstance().Info("", "次のコンボへ遷移します");
-		}
-		else {
-			m_pOwner->ChangeState(PlayerState::eID::Idle);
-		}
+		m_pOwner->ChangeState(PlayerState::eID::Idle);
 	}
 #if 0
 
@@ -158,7 +154,7 @@ void AttackCombo_0::Update()
 	ImGui::End();
 #endif
 
-#if 1
+#if 0
 
 	// --- ImGui デバッグメニュー ---
 	ImGui::Begin("AttackCombo_0 Debug");
@@ -194,18 +190,18 @@ void AttackCombo_0::LateUpdate()
 	Combat::LateUpdate();
 
 	// 経過時間を加算.
-	float actual_anim_speed = MyMath::IsNearlyEqual(m_pOwner->m_AnimSpeed, 0.0) ? g_DebugAnimSpeed1 : m_pOwner->m_AnimSpeed;
+	float actual_anim_speed = MyMath::IsNearlyEqual(m_pOwner->m_AnimSpeed, 0.0) ? g_DebugAnimSpeed1 : static_cast<float>(m_pOwner->m_AnimSpeed);
 	float delta_time = actual_anim_speed * m_pOwner->GetDelta();
 	m_currentTime += delta_time;
 
-	// アニメーション,踏み込み開始秒数.
-	float STEP_IN_START_TIME = 1.2f;
-	if (m_currentTime > STEP_IN_START_TIME)
-	{
-		m_AnimSpeedChangedTrigger->CheckAndTrigger(
-			[this]() { return m_pOwner->SetAnimSpeed(0.f); },
-			[&]() { return false; });
-	}
+	//// アニメーション,踏み込み開始秒数.
+	//float STEP_IN_START_TIME = 1.2f;
+	//if (m_currentTime > STEP_IN_START_TIME)
+	//{
+	//	m_AnimSpeedChangedTrigger->CheckAndTrigger(
+	//		[this]() { return m_pOwner->SetAnimSpeed(0.f); },
+	//		[&]() { return false; });
+	//}
 
 	// 移動量の算出.
 	float movement_speed = m_Distance / m_MaxTime;
@@ -232,6 +228,8 @@ void AttackCombo_0::Exit()
 {
 	Combat::Exit();
 	m_MoveVec = {};
+	// 当たり判定を無効化.
+	m_pOwner->SetAttackColliderActive(false);
 }
 
 } // PlayerState.

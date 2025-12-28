@@ -36,6 +36,8 @@ BossSlashState::~BossSlashState()
 
 void BossSlashState::Enter()
 {
+	// 当たり判定を有効化.
+	m_pOwner->SetAttackColliderActive(true);
 	m_currentTimer = 0.0f;
 	m_Attacktime = 0.0f;
 
@@ -62,7 +64,7 @@ void BossSlashState::Enter()
 
 
 	//アニメーションの速度.
-	m_pOwner->SetAnimSpeed(0.06);
+	m_pOwner->SetAnimSpeed(30.0);
 	//斬るアニメーションの再生.
 	m_pOwner->ChangeAnim(Boss::enBossAnim::Slash);
 
@@ -74,6 +76,9 @@ void BossSlashState::Update()
 	switch (m_List)
 	{
 	case BossSlashState::enList::none:
+
+		// 当たり判定を有効化.
+		m_pOwner->SetAttackColliderActive(true);
 		m_List = enList::SlashAttack;
 		break;
 	case BossSlashState::enList::SlashAttack:
@@ -103,7 +108,8 @@ void BossSlashState::Draw()
 }
 
 void BossSlashState::Exit()
-{
+{	// 当たり判定を無効化.
+	m_pOwner->SetAttackColliderActive(false);
 }
 
 void BossSlashState::BossAttack()

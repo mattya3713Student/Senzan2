@@ -41,13 +41,18 @@ Player::Player()
     , m_NextStateID     ( PlayerState::eID::None )
     , m_IsStateChangeRequest    ( false )
     , m_MoveVec         ( { 0.f,0.f,0.f } )
+    , m_Combo           ( 0 )
+    , m_CurrentUltValue ( 0.0f )
+    , m_MaxUltValue     ( 10000.0f )
     , m_IsKnockBack     ( false )
     , m_KnockBackVec    ( { 0.f,0.f,0.f } )
     , m_KnockBackPower  ( 0.f )
-    , m_RunMoveSpeed    ( 50.f )
-    , m_IsJustDodgeTiming( false )
-    , m_HP              ( 100.0f )
     , m_IsDead          ( false )
+    , m_RunMoveSpeed    ( 50.f )
+    , m_IsSuccessParry  ( false )
+    , m_pAttackCollider ( nullptr )
+    , m_IsJustDodgeTiming( false )
+    , m_TargetPos        ( { 0.f,0.f,0.f } )
 {
     // ステートの初期化.
     InitializeStateRefMap();
@@ -64,8 +69,13 @@ Player::Player()
     DirectX::XMFLOAT3 scale = { 3.f, 3.f, 3.f };
     m_spTransform->SetScale(scale);
 
+    m_MaxHP = 100.f;
+    m_HP = m_MaxHP;
+
     // 被ダメの追加.
     std::unique_ptr<CapsuleCollider> damage_collider = std::make_unique<CapsuleCollider>(m_spTransform);
+
+    m_pDamageCollider = damage_collider.get();
 
     damage_collider->SetColor(Color::eColor::Yellow);
     damage_collider->SetHeight(2.0f);
@@ -74,7 +84,22 @@ Player::Player()
     damage_collider->SetMyMask(eCollisionGroup::Player_Damage);
     damage_collider->SetTarGetTargetMask(eCollisionGroup::Enemy_Attack);
 
-    //m_upColliders->AddCollider(std::move(damage_collider));
+    m_upColliders->AddCollider(std::move(damage_collider));
+
+    // パリィの追加.
+    std::unique_ptr<CapsuleCollider> parry_collider = std::make_unique<CapsuleCollider>(m_spTransform);
+
+    m_pParryCollider = parry_collider.get();
+
+    parry_collider->SetActive(false);
+    parry_collider->SetColor(Color::eColor::Green);
+    parry_collider->SetHeight(2.0f);
+    parry_collider->SetRadius(0.5f);
+    parry_collider->SetPositionOffset(0.f, 1.5f, 0.f);
+    parry_collider->SetMyMask(eCollisionGroup::Player_Parry);
+    parry_collider->SetTarGetTargetMask(eCollisionGroup::Enemy_Attack);
+
+    m_upColliders->AddCollider(std::move(parry_collider));
 
     // ジャスト回避の追加.
     std::unique_ptr<CapsuleCollider> justdodge_collider = std::make_unique<CapsuleCollider>(m_spTransform);
@@ -86,7 +111,35 @@ Player::Player()
     justdodge_collider->SetMyMask(eCollisionGroup::Player_JustDodge);
     justdodge_collider->SetTarGetTargetMask(eCollisionGroup::Enemy_Attack);
 
-    //m_upColliders->AddCollider(std::move(justdodge_collider));
+    m_upColliders->AddCollider(std::move(justdodge_collider));
+
+    // 押し戻しの追加.
+    std::unique_ptr<CapsuleCollider> pressCollider = std::make_unique<CapsuleCollider>(m_spTransform);
+
+    pressCollider->SetColor(Color::eColor::Cyan);
+    pressCollider->SetHeight(3.0f);
+    pressCollider->SetRadius(1.0f);
+    pressCollider->SetPositionOffset(0.f, 1.5f, 0.f);
+    pressCollider->SetMyMask(eCollisionGroup::Press);
+    pressCollider->SetTarGetTargetMask(eCollisionGroup::Press);
+
+    m_upColliders->AddCollider(std::move(pressCollider));
+
+    // 攻撃の追加.
+    std::unique_ptr<CapsuleCollider> attackCollider = std::make_unique<CapsuleCollider>(m_spTransform);
+
+    m_pAttackCollider = attackCollider.get();
+
+    attackCollider->SetActive(false);
+    attackCollider->SetColor(Color::eColor::Red);
+    attackCollider->SetAttackAmount(10.0f);
+    attackCollider->SetHeight(3.0f);
+    attackCollider->SetRadius(1.0f);
+    attackCollider->SetPositionOffset(0.f, 1.5f, 2.f);
+    attackCollider->SetMyMask(eCollisionGroup::Player_Attack);
+    attackCollider->SetTarGetTargetMask(eCollisionGroup::Enemy_Damage);
+
+    m_upColliders->AddCollider(std::move(attackCollider));
 
     CollisionDetector::GetInstance().RegisterCollider(*m_upColliders);
 
@@ -102,6 +155,8 @@ Player::~Player()
 void Player::Update()
 {
     Character::Update();
+
+    m_IsSuccessParry = false;
 
     // ステート遷移のチェック.
     if (m_NextStateID != PlayerState::eID::None)
@@ -132,6 +187,7 @@ void Player::LateUpdate()
     HandleCollisionResponse();
 
     // 衝突イベント処理を実行
+    HandleParryDetection();
     HandleDamageDetection();
     HandleAttackDetection();
     HandleDodgeDetection();
@@ -148,11 +204,6 @@ void Player::Draw()
     m_spTransform->SetRotationY(GetRotation().y - D3DXToRadian(180.0f));
 }
 
-float Player::GetHp() const noexcept
-{
-    return m_HP;
-}
-
 // ノック中か.
 bool Player::IsKnockBack() const noexcept
 {
@@ -163,6 +214,11 @@ bool Player::IsKnockBack() const noexcept
 bool Player::IsDead() const noexcept
 {
     return m_IsDead;
+}
+
+bool Player::IsParry() const noexcept
+{
+    return m_IsSuccessParry;
 }
 
 // ポーズ中か.
@@ -249,18 +305,20 @@ void Player::HandleDamageDetection()
             if ((other_group & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None)
             {
                 // 既にスタン中や無敵時間であれば処理を中断
-                if (IsKnockBack() || IsDead()) { continue; }
+                if (IsKnockBack() || IsDead() || IsDead()) { continue; }
+
+                m_Combo = 0;
 
                 // ダメージを適用 
-                // ApplyDamage(info.DamageAmount);
+                ApplyDamage(info.AttackAmount);
 
                 m_KnockBackVec = info.Normal;
-                m_KnockBackPower = 10.f;
+                m_KnockBackPower = 100.f;
 
                 // 状態をノックバックに遷移させる
                 ChangeState(PlayerState::eID::KnockBack);
 
-				CameraManager::GetInstance().ShakeCamera(2.5f, 4.5f); // カメラを少し揺らす.
+				CameraManager::GetInstance().ShakeCamera(0.5f, 4.5f); // カメラを少し揺らす.
 
                 // 1フレームに1回.
                 return;
@@ -271,6 +329,37 @@ void Player::HandleDamageDetection()
 
 void Player::HandleAttackDetection()
 {
+    if (!m_upColliders) return;
+
+    const auto& internal_colliders = m_upColliders->GetInternalColliders();
+
+    for (const auto& collider_ptr : internal_colliders)
+    {
+        const ColliderBase* current_collider = collider_ptr.get();
+
+        if ((current_collider->GetMyMask() & eCollisionGroup::Player_Attack) == eCollisionGroup::None) {
+            continue;
+        }
+
+        for (const CollisionInfo& info : current_collider->GetCollisionEvents())
+        {
+            if (!info.IsHit) continue;
+            const ColliderBase* otherCollider = info.ColliderB;
+            if (!otherCollider) { continue; }
+
+            eCollisionGroup other_group = otherCollider->GetMyMask();
+
+            if ((other_group & eCollisionGroup::Enemy_Damage) != eCollisionGroup::None)
+            {
+                ++m_Combo;
+                m_CurrentUltValue += static_cast<float>(m_Combo) * 0.0f;
+                SetAttackColliderActive(false);
+
+                // 一フレーム1回.
+                return;
+            }
+        }
+    }
 }
 
 void Player::HandleDodgeDetection()
@@ -294,7 +383,43 @@ void Player::HandleDodgeDetection()
             if (!otherCollider) { continue; }
 
             // MEMO : EnemyAttackに触れたとき.
-            m_IsJustDodgeTiming = true;
+            m_IsJustDodgeTiming = true;;
+            m_CurrentUltValue += static_cast<float>(m_Combo) * 0.0f;
+        }
+    }
+}
+
+void Player::HandleParryDetection()
+{
+    if (!m_upColliders) return;
+
+    const auto& internal_colliders = m_upColliders->GetInternalColliders();
+
+    for (const auto& collider_ptr : internal_colliders)
+    {
+        const ColliderBase* current_collider = collider_ptr.get();
+
+        if ((current_collider->GetMyMask() & eCollisionGroup::Player_Parry) == eCollisionGroup::None) {
+            continue;
+        }
+
+        for (const CollisionInfo& info : current_collider->GetCollisionEvents())
+        {
+            if (!info.IsHit) continue;
+            const ColliderBase* otherCollider = info.ColliderB;
+            if (!otherCollider) { continue; }
+
+            eCollisionGroup other_group = otherCollider->GetMyMask();
+
+            if ((other_group & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None)
+            {
+                SoundManager::GetInstance().Play("Parry");
+                m_IsSuccessParry = true;
+                
+                m_CurrentUltValue += static_cast<float>(m_Combo) * 0.0f;
+                // 一フレーム1回.
+                return;
+            }
         }
     }
 }

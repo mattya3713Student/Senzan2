@@ -14,7 +14,7 @@ static constexpr float CLOSE_RANGE_THRESHOLD = 20.0f;	// Boss‚Ü‚Å‚Ì‹——£‚É’u‚¢‚Ä‹
 // ƒfƒoƒbƒO—p‚É’l‚ð˜M‚ê‚é‚æ‚¤‚É static •Ï”‚È‚Ç‚ÅŠÇ—i‚Ü‚½‚ÍƒNƒ‰ƒXƒƒ“ƒo‚É’Ç‰Áj
 static float g_1DebugAnimSpeed0 = 3.4f;
 static float g_1DebugMaxTime = 2.3f;
-static float g_1DebugComboStartTime = 1.8f; // Žó•tŠJŽni—áF“¥‚Ýž‚ÝI‚í‚è‚Ìƒ^ƒCƒ~ƒ“ƒOj
+static float g_1DebugComboStartTime = 1.0f; // Žó•tŠJŽni—áF“¥‚Ýž‚ÝI‚í‚è‚Ìƒ^ƒCƒ~ƒ“ƒOj
 static float g_1DebugComboEndTime = 3.8f; // Žó•tI—¹i—áFƒAƒjƒ[ƒVƒ‡ƒ“I—¹‚Ì­‚µ‘Oj
 
 namespace PlayerState {
@@ -49,6 +49,9 @@ AttackCombo_1::AttackCombo_1(Player* owner)
 		m_pOwner->SetAnimTime(0.0);
 		m_pOwner->SetAnimSpeed(g_1DebugAnimSpeed0); // ƒfƒoƒbƒO’l‚ðŽg—p
 		m_pOwner->ChangeAnim(Player::eAnim::Attack_1);
+
+		// “–‚½‚è”»’è‚ð—LŒø‰».
+		m_pOwner->SetAttackColliderActive(true);
 
 		// ‹——£ŽZo—pÀ•W.
 		DirectX::XMFLOAT3 target_pos = m_pOwner->m_TargetPos;
@@ -108,7 +111,7 @@ AttackCombo_1::AttackCombo_1(Player* owner)
 			}
 		}
 
-#if 1
+#if 0
 		// --- ImGui ƒfƒoƒbƒOƒƒjƒ…[ (AttackCombo_1ê—p) ---
 		ImGui::Begin("AttackCombo_1 Debug"); // © 1‚É•ÏX
 
@@ -178,7 +181,7 @@ AttackCombo_1::AttackCombo_1(Player* owner)
 		Combat::LateUpdate();
 
 		// Œo‰ßŽžŠÔ‚ð‰ÁŽZ.
-		float actual_anim_speed = m_pOwner->m_AnimSpeed;
+		float actual_anim_speed = static_cast<float>(m_pOwner->m_AnimSpeed);
 		float delta_time = actual_anim_speed * m_pOwner->GetDelta();
 		m_currentTime += delta_time;
 
@@ -207,5 +210,7 @@ AttackCombo_1::AttackCombo_1(Player* owner)
 	{
 		Combat::Exit();
 		m_MoveVec = {};
+		// “–‚½‚è”»’è‚ð–³Œø‰».
+		m_pOwner->SetAttackColliderActive(false);
 	}
 } // PlayerState.

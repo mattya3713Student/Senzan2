@@ -38,12 +38,10 @@ public:
 private:
 	float m_Radius; // 半径.
 
-#if _DEBUG
 public:
 
 	// デバッグ描画用設定.
 	void SetDebugInfo() override;
-#endif // _DEBUG.
 
 };
 

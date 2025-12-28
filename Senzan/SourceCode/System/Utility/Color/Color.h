@@ -4,12 +4,17 @@
 namespace ColorPreset
 {
 	// Alphaアニメーション用.
-	const DirectX::XMFLOAT3 Selected = DirectX::XMFLOAT3(0.07, 0.66, 1.0);
+	const DirectX::XMFLOAT3 Selected	= { 0.07f, 0.66f, 1.0f };
 
 	// 固定.
-	const DirectX::XMFLOAT4 UnActive = DirectX::XMFLOAT4(0,0,0,0.5);
-
-
+	const DirectX::XMFLOAT4 UnActive	= { 0.0f, 0.0f, 0.0f, 0.5f };
+	const DirectX::XMFLOAT4 TitleCyan	= { 0.1f, 0.6f, 0.896f, 1.0f };
+	const DirectX::XMFLOAT4 Green		= { 0.0f, 0.9f, 0.2f, 1.0f };
+	const DirectX::XMFLOAT4 WarmYellow	= { 1.0f, 0.75f, 0.2f, 1.0f };
+	const DirectX::XMFLOAT4 Invisible	= { 0.0f, 0.0f, 0.0f, 0.0f };
+	const DirectX::XMFLOAT4 White		= { 1.0f, 1.0f, 1.0f, 1.0f };
+	const DirectX::XMFLOAT4 LightGray	= { 0.8f, 0.8f, 0.8f, 1.0f };
+	const DirectX::XMFLOAT4 Black		= { 0.0f, 0.0f, 0.0f, 1.0f };
 }
 
 namespace ColorUtil {

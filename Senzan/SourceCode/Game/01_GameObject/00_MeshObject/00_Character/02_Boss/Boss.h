@@ -101,6 +101,7 @@ public:
 	~Boss() override;
 
 	void Update() override;
+	void LateUpdate() override;
 	void Draw() override;
 
 	void Init();
@@ -135,6 +136,12 @@ protected:
 	// 衝突_回避.
 	void HandleDodgeDetection() override;
 
+	// 衝突_回避.
+	void HandleParryDetection();
+
+
+	// 攻撃判定のActive
+	inline void SetAttackColliderActive(bool Active) const noexcept { m_pAttackCollider->SetActive(Active); }
 
 protected:
 	//ステートマシンのメンバ変数.
@@ -150,6 +157,7 @@ protected:
 
 	D3DXVECTOR3 m_vCurrentMoveVelocity;
 
+	ColliderBase* m_pAttackCollider;	// 攻撃判定.
 
 	float deleta_time;
 
