@@ -8,13 +8,10 @@ namespace BossState
     BossMove::BossMove(Boss* pOwner)
         : BossMovement(pOwner)
         , m_Phase(MovePhase::Start)
-        , m_Angle(0.0f)
-        , m_StrafeSpeed(0.8f)
-        , m_RotationAngle(0.0f)
-        , m_RotationSpeed(0.5f)
-        , m_rotationDirection(1.0f)
         , m_BaseAngle(0.0f)
         , m_Timer(0.0f)
+        , m_StrafeFrequency(1.5f)
+        , m_StrafeAmplitude(DirectX::XM_PIDIV2)
     {
     }
 
@@ -24,10 +21,7 @@ namespace BossState
 
     void BossMove::Enter()
     {
-        // 初期状態のリセット
         m_Timer = 0.0f;
-        m_RotationAngle = 0.0f;
-        m_rotationDirection = 1.0f;
         m_Phase = MovePhase::Start;
 
         if (m_pOwner) {
@@ -41,23 +35,20 @@ namespace BossState
         using namespace DirectX;
         if (!m_pOwner) return;
 
+        // 共通：プレイヤーを向く処理（基底クラスの関数と仮定）
         RotateToPlayer();
 
         float deltaTime = m_pOwner->GetDelta();
-
-        // 1. 座標情報の取得
         XMFLOAT3 bossPosF = m_pOwner->GetPosition();
         XMFLOAT3 playerPosF = m_pOwner->GetTargetPos();
 
         XMVECTOR vBossPos = XMLoadFloat3(&bossPosF);
         XMVECTOR vTargetPos = XMLoadFloat3(&playerPosF);
 
-        // プレイヤーへの方向と距離計算（Y軸無視）
         XMVECTOR vToPlayer = XMVectorSubtract(vTargetPos, vBossPos);
         vToPlayer = XMVectorSetY(vToPlayer, 0.0f);
         float distance = XMVectorGetX(XMVector3Length(vToPlayer));
 
-        // 2. フェーズ別移動ロジック
         switch (m_Phase)
         {
         case MovePhase::Start:
@@ -69,7 +60,6 @@ namespace BossState
 
         case MovePhase::Run:
         {
-            // 直進接近
             XMVECTOR vDir = XMVector3Normalize(vToPlayer);
             vBossPos = XMVectorAdd(vBossPos, XMVectorScale(vDir, APPROACH_SPEED * deltaTime));
 
@@ -81,28 +71,26 @@ namespace BossState
         break;
 
         case MovePhase::Stop:
-            // 止まる動作を待ってから回り込み開始
             if (m_pOwner->IsAnimEnd(Boss::enBossAnim::RunToIdol)) {
                 m_Phase = MovePhase::Strafe;
-                // 開始時のプレイヤーから見たボスの角度を保存
+                // 開始時のプレイヤーから見たボスの位置を角度として保持
                 XMVECTOR vDirFromPlayer = XMVectorSubtract(vBossPos, vTargetPos);
                 m_BaseAngle = atan2f(XMVectorGetX(vDirFromPlayer), XMVectorGetZ(vDirFromPlayer));
-                m_RotationAngle = 0.0f;
+                m_Timer = 0.0f; // サイン波を中央（0）から開始
             }
             break;
 
         case MovePhase::Strafe:
         {
-            // 理想の角度更新 (往復運動)
-            m_RotationAngle += static_cast<float>(m_RotationSpeed) * deltaTime * m_rotationDirection;
-            const float MAX_SWAY = XM_PIDIV4; // 45度
-            if (fabsf(m_RotationAngle) > MAX_SWAY) {
-                m_rotationDirection *= -1.0f;
-                m_RotationAngle = std::clamp(m_RotationAngle, -MAX_SWAY, MAX_SWAY);
-            }
+            // 1. 時間を進める
+            m_Timer += deltaTime * m_StrafeFrequency;
 
-            // 理想の座標計算
-            float finalAngle = m_BaseAngle + m_RotationAngle;
+            // 2. 理想の角度を計算 (sin関数で -1.0 ～ 1.0 の間を往復)
+            // 振幅(Amplitude)をかけることで、移動する角度の幅を決定
+            float currentSwayAngle = sinf(m_Timer) * m_StrafeAmplitude;
+
+            // 3. 理想の座標を計算
+            float finalAngle = m_BaseAngle + currentSwayAngle;
             XMVECTOR vOffset = XMVectorSet(
                 sinf(finalAngle) * STRAFE_RANGE,
                 0.0f,
@@ -111,17 +99,20 @@ namespace BossState
             );
             XMVECTOR vIdealPos = XMVectorAdd(vTargetPos, vOffset);
 
-            // 補間による滑らかな追尾 (TRACKING_DELAY)
+            // 4. 補間による追従
+            // TRACKING_DELAYを大きく設定しているため、高速移動でも端まで届く
             float lerpFactor = TRACKING_DELAY * deltaTime;
             if (lerpFactor > 1.0f) lerpFactor = 1.0f;
             vBossPos = XMVectorLerp(vBossPos, vIdealPos, lerpFactor);
 
-            // アニメーション更新
+            // 5. アニメーション判定 (サイン波の微分であるcos波で向きを判断)
             m_pOwner->SetAnimSpeed(STRAFE_ANIM_SPEED);
-            if (m_rotationDirection > 0)
+            if (cosf(m_Timer) > 0) {
                 m_pOwner->ChangeAnim(Boss::enBossAnim::LeftMove);
-            else
+            }
+            else {
                 m_pOwner->ChangeAnim(Boss::enBossAnim::RightMove);
+            }
         }
         break;
         }
@@ -129,7 +120,7 @@ namespace BossState
         // 座標の適用
         XMFLOAT3 finalPos;
         XMStoreFloat3(&finalPos, vBossPos);
-        finalPos.y = bossPosF.y; // 高さは維持
+        finalPos.y = bossPosF.y;
         m_pOwner->SetPosition(finalPos);
     }
 
@@ -138,16 +129,13 @@ namespace BossState
         using namespace DirectX;
         if (!m_pOwner) return;
 
-        // 3. プレイヤー注視の完全修正
-        // Updateで動いた後の最新位置から向きを計算
         XMFLOAT3 currentPos = m_pOwner->GetPosition();
         XMFLOAT3 targetPos = m_pOwner->GetTargetPos();
 
         float dx = targetPos.x - currentPos.x;
         float dz = targetPos.z - currentPos.z;
 
-        // モデルが正面を向くように XM_PI(180度) を加算
-        // これでも逆を向く場合は、加算を消すか角度を調整してください
+        // プレイヤーを正面に捉える計算
         float angle = atan2f(-dx, -dz) + XM_PI;
         m_pOwner->SetRotationY(angle);
     }
