@@ -12,8 +12,6 @@ namespace BossState
         , m_Timer           (0.0f)
         , m_StrafeFrequency (1.5f)
         , m_StrafeAmplitude (DirectX::XM_PIDIV2)
-
-        , m_RotationAngle   (0.0f)
     {
     }
 
@@ -42,12 +40,13 @@ namespace BossState
 
         // 共通：プレイヤーを向く処理（基底クラスの関数と仮定）
         RotateToPlayer();
-
+        //デルタタイムの取得.
         float deltaTime = m_pOwner->GetDelta();
-        DirectX::XMFLOAT3 bossPosF = m_pOwner->GetPosition();
+
+        DirectX::XMFLOAT3 BossPos_XF = m_pOwner->GetPosition();
         DirectX::XMFLOAT3 playerPosF = m_pOwner->GetTargetPos();
 
-        DirectX::XMVECTOR vBossPos = DirectX::XMLoadFloat3(&bossPosF);
+        DirectX::XMVECTOR vBossPos = DirectX::XMLoadFloat3(&BossPos_XF);
         DirectX::XMVECTOR vTargetPos = DirectX::XMLoadFloat3(&playerPosF);
 
         DirectX::XMVECTOR vToPlayer = DirectX::XMVectorSubtract(vTargetPos, vBossPos);
@@ -125,7 +124,7 @@ namespace BossState
         // 座標の適用
         DirectX::XMFLOAT3 finalPos;
         DirectX::XMStoreFloat3(&finalPos, vBossPos);
-        finalPos.y = bossPosF.y;
+        finalPos.y = BossPos_XF.y;
         m_pOwner->SetPosition(finalPos);
     }
 
