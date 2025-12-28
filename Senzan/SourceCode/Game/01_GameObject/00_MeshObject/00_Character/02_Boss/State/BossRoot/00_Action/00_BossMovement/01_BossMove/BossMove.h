@@ -30,15 +30,15 @@ namespace BossState
         constexpr BossState::enID GetStateID() const override;
 
     private:
-        MovePhase m_Phase = MovePhase::Start;
+        MovePhase m_Phase;
 
         // --- 調整用変数 ---
-        float m_BaseAngle = 0.0f;       // Strafe開始時の基準角度
-        float m_Timer = 0.0f;           // 経過時間（サイン波用）
+        float m_BaseAngle;       // Strafe開始時の基準角度
+        float m_Timer;           // 経過時間（サイン波用）
 
         // 【新】この2つで動きをコントロールします
-        float m_StrafeFrequency = 1.5f; // 往復の速さ（テンポ）。値を大きくすると速く往復します。
-        float m_StrafeAmplitude = DirectX::XM_PIDIV2; // 移動する幅。現在は90度（左右45度ずつ）。
+        float m_StrafeFrequency; // 往復の速さ（テンポ）。値を大きくすると速く往復します。
+        float m_StrafeAmplitude; // 移動する幅。現在は90度（左右45度ずつ）。
 
         // 定数
         static constexpr float STRAFE_RANGE = 20.0f;   // プレイヤーからの距離
@@ -50,6 +50,6 @@ namespace BossState
         static constexpr float TRACKING_DELAY = 15.0f;
 
         // 古い変数は混乱を防ぐため削除（または未使用）
-        float m_RotationAngle = 0.0f;
+        float m_RotationAngle;
     };
 }
