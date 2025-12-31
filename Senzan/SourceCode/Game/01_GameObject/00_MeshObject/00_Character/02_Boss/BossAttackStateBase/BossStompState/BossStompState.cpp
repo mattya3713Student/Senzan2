@@ -31,8 +31,8 @@ void BossStompState::Enter()
 	if (pStompCollider) {
 		pStompCollider->SetActive(true);             // 表示・判定をON
 		pStompCollider->SetColor(Color::eColor::Magenta); // 目立つ色（マゼンタ等）に変更
-		pStompCollider->SetRadius(15.0f);            // 溜め中は少し小さめ
-		pStompCollider->SetHeight(5.0f);
+		pStompCollider->SetRadius(50.0f);            // 溜め中は少し小さめ
+		pStompCollider->SetHeight(15.0f);
 	}
 
 
