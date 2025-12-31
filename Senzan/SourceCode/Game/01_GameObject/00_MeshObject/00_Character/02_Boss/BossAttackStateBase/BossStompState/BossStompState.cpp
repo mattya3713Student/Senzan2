@@ -26,6 +26,15 @@ void BossStompState::Enter()
 {
 	// 当たり判定を有効化.
 	m_pOwner->SetAttackColliderActive(true);
+	// 踏みつけ用コライダーの取得
+	auto* pStompCollider = m_pOwner->GetStompCollider();
+	if (pStompCollider) {
+		pStompCollider->SetActive(true);             // 表示・判定をON
+		pStompCollider->SetColor(Color::eColor::Magenta); // 目立つ色（マゼンタ等）に変更
+		pStompCollider->SetRadius(15.0f);            // 溜め中は少し小さめ
+		pStompCollider->SetHeight(5.0f);
+	}
+
 
 	// 最初は動かさない（Y=0のまま）
 	m_Velocity = { 0.0f, 0.0f, 0.0f };
@@ -48,41 +57,45 @@ void BossStompState::Enter()
 	// 溜めアニメーション開始
 	m_pOwner->SetAnimSpeed(14.0); // 速度は元の14.0に戻しました
 	m_pOwner->ChangeAnim(Boss::enBossAnim::Special_0);
+
 }
 
 void BossStompState::Update()
 {
+	auto* pStompCollider = m_pOwner->GetStompCollider();
+
 	switch (m_List)
 	{
 	case BossStompState::enAttack::None:
-		// 【修正】Special_0の間は何もしない（移動計算を呼ばない）
-
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Special_0))
 		{
-			// Special_1 に切り替わる瞬間に、ボスの位置を空中にセット
 			m_pOwner->SetPositionY(m_JumpPower);
-			m_Velocity.y = 0.0f; // 落下開始時の速度をリセット
-
 			m_pOwner->ChangeAnim(Boss::enBossAnim::Special_1);
 			m_List = enAttack::Stomp;
+
+			// 落下開始時に攻撃判定を大きくする
+			if (pStompCollider) {
+				pStompCollider->SetRadius(30.0f);
+				pStompCollider->SetAttackAmount(15.0f); // ダメージ設定
+			}
 		}
 		break;
 
 	case BossStompState::enAttack::Stomp:
-		// 【落下中のみ】物理計算を回して下に下げる
 		BossAttack();
 
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Special_1))
 		{
 			m_pOwner->SetPositionY(0.0f);
-			m_Velocity.y = 0.0f;
-			m_GroundedFrag = true;
-
 			m_pOwner->ChangeAnim(Boss::enBossAnim::SpecialToIdol);
 			m_List = enAttack::CoolTime;
+
+			// 着地したので判定を消す、または色を変える
+			if (pStompCollider) {
+				pStompCollider->SetActive(false);
+			}
 		}
 		break;
-
 	case BossStompState::enAttack::CoolTime:
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::SpecialToIdol))
 		{
