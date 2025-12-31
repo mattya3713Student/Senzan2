@@ -38,6 +38,15 @@ void BossSlashState::Enter()
 {
 	// 当たり判定を有効化.
 	m_pOwner->SetAttackColliderActive(true);
+
+	auto* attackColl = m_pOwner->m_pAttackCollider;
+	if (attackColl) {
+		attackColl->SetRadius(15.0f);        // 斬撃の横幅
+		attackColl->SetHeight(40.0f);        // 斬撃の長さ
+		// 攻撃判定をボスの少し前方に配置する
+		attackColl->SetPositionOffset(0.0f, 10.0f, -30.0f);
+	}
+
 	m_currentTimer = 0.0f;
 	m_Attacktime = 0.0f;
 
@@ -73,27 +82,40 @@ void BossSlashState::Enter()
 
 void BossSlashState::Update()
 {
+	// Bossクラスから、あらかじめ設定しておいた斬撃用判定を取得
+	auto* pSlashCollider = m_pOwner->GetSlashCollider();
+
 	switch (m_List)
 	{
 	case BossSlashState::enList::none:
+		// 1. 斬撃アニメーション開始に合わせて判定を有効化
+		if (pSlashCollider) {
+			pSlashCollider->SetActive(true);
+		}
 
-		// 当たり判定を有効化.
-		m_pOwner->SetAttackColliderActive(true);
 		m_List = enList::SlashAttack;
 		break;
+
 	case BossSlashState::enList::SlashAttack:
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Slash))
 		{
+			// 2. 攻撃アニメーションが終わったので、判定を無効化する
+			if (pSlashCollider) {
+				pSlashCollider->SetActive(false);
+			}
+
 			m_pOwner->ChangeAnim(Boss::enBossAnim::SlashToIdol);
 			m_List = enList::SlashIdol;
 		}
 		break;
+
 	case BossSlashState::enList::SlashIdol:
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::SlashToIdol))
 		{
 			m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
 		}
 		break;
+
 	default:
 		break;
 	}

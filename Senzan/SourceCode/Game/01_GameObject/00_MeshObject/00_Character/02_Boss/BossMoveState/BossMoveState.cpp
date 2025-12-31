@@ -167,7 +167,7 @@ void BossMoveState::Update()
 	// --------------------------------------------------------
 	// 4. 攻撃判定
 	// --------------------------------------------------------
-	constexpr float AttackDelay = 10.0f;
+	constexpr float AttackDelay = 1.0f;
 	if (m_Timer >= AttackDelay)
 	{
 		float dist = XMVectorGetX(XMVector3Length(vLookAt));
@@ -175,23 +175,23 @@ void BossMoveState::Update()
 
 		if (dist < 15.0f) {
 			candidates = {
-				[this]() { return std::make_unique<BossSlashState>(m_pOwner); },
-				[this]() { return std::make_unique<BossChargeState>(m_pOwner); },
+				//[this]() { return std::make_unique<BossSlashState>(m_pOwner); },
+				//[this]() { return std::make_unique<BossChargeState>(m_pOwner); },
 				[this]() { return std::make_unique<BossStompState>(m_pOwner); }
 			};
 		}
-		else if (dist < 40.0f) {
-			candidates = {
-				[this]() { return std::make_unique<BossThrowingState>(m_pOwner); },
-				[this]() { return std::make_unique<BossShoutState>(m_pOwner); }
-			};
-		}
-		else {
-			candidates = {
-				[this]() { return std::make_unique<BossSpecialState>(m_pOwner); },
-				[this]() { return std::make_unique<BossLaserState>(m_pOwner); }
-			};
-		}
+		//else if (dist < 40.0f) {
+		//	candidates = {
+		//		[this]() { return std::make_unique<BossThrowingState>(m_pOwner); },
+		//		[this]() { return std::make_unique<BossShoutState>(m_pOwner); }
+		//	};
+		//}
+		//else {
+		//	candidates = {
+		//		[this]() { return std::make_unique<BossSpecialState>(m_pOwner); },
+		//		[this]() { return std::make_unique<BossLaserState>(m_pOwner); }
+		//	};
+		//}
 
 		if (!candidates.empty())
 		{
