@@ -177,7 +177,9 @@ void BossMoveState::Update()
 			candidates = {
 				//[this]() { return std::make_unique<BossSlashState>(m_pOwner); },
 				//[this]() { return std::make_unique<BossChargeState>(m_pOwner); },
-				[this]() { return std::make_unique<BossStompState>(m_pOwner); }
+				//[this]() { return std::make_unique<BossStompState>(m_pOwner); }
+				[this]() { return std::make_unique<BossShoutState>(m_pOwner); }
+
 			};
 		}
 		//else if (dist < 40.0f) {

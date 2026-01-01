@@ -23,6 +23,10 @@ BossShoutState::~BossShoutState()
 
 void BossShoutState::Enter()
 {
+
+    if (auto* shoutCol = m_pOwner->GetShoutCollider()) {
+        shoutCol->SetActive(true);
+    }
     // 当たり判定を有効化.
     m_pOwner->SetAttackColliderActive(true);
     //ボスの向きを設定.
@@ -52,15 +56,13 @@ void BossShoutState::Enter()
 
 void BossShoutState::Update()
 {
-
     switch (m_List)
     {
     case BossShoutState::enShout::none:
-
-        // 当たり判定を有効化.
-        m_pOwner->SetAttackColliderActive(true);
+        // Enterで有効化しているため、ここではステート遷移のみ
         m_List = enShout::Shout;
         break;
+
     case BossShoutState::enShout::Shout:
         if (m_pOwner->IsAnimEnd(Boss::enBossAnim::LaserCharge))
         {
@@ -69,24 +71,31 @@ void BossShoutState::Update()
             m_List = enShout::ShoutTime;
         }
         break;
+
     case BossShoutState::enShout::ShoutTime:
         if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Laser))
         {
             m_pOwner->SetAnimSpeed(15.0);
             m_pOwner->ChangeAnim(Boss::enBossAnim::LaserEnd);
             m_List = enShout::ShoutToIdol;
+
+            // ★ 叫び終わったタイミングで早めに判定を消したい場合はここでSetActive(false)
+            if (auto* shoutCol = m_pOwner->GetShoutCollider()) {
+                shoutCol->SetActive(false);
+            }
         }
         break;
+
     case BossShoutState::enShout::ShoutToIdol:
         if (m_pOwner->IsAnimEnd(Boss::enBossAnim::LaserEnd))
         {
             m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
         }
         break;
+
     default:
         break;
     }
-
 }
 
 void BossShoutState::LateUpdate()
@@ -95,7 +104,6 @@ void BossShoutState::LateUpdate()
 
 void BossShoutState::Draw()
 {
-    BoneDraw();
 }
 
 void BossShoutState::Exit()

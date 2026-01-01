@@ -146,6 +146,7 @@ protected:
 	//“–‚½‚è”»’è‚ðŽæ“¾‚·‚é.
 	ColliderBase* GetSlashCollider() const;
 	ColliderBase* GetStompCollider() const;
+	ColliderBase* GetShoutCollider() const;
 
 	void UpdateSlashColliderTransform();
 
@@ -172,4 +173,5 @@ protected:
 
 	ColliderBase* m_pSlashCollider;
 	ColliderBase* m_pStompCollider;
+	ColliderBase* m_pShoutCollider;
 };

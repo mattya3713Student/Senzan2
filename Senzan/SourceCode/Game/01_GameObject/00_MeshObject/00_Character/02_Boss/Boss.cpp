@@ -45,6 +45,8 @@ Boss::Boss()
 	, m_pSlashCollider(nullptr)
 
 	, m_pStompCollider(nullptr)
+
+	, m_pShoutCollider(nullptr)
 {
 	AttachMesh(MeshManager::GetInstance().GetSkinMesh("boss"));
 
@@ -166,16 +168,19 @@ Boss::Boss()
 	// 叫び攻撃の当たり判定.
 	std::unique_ptr<CapsuleCollider> Shout_collider = std::make_unique<CapsuleCollider>(m_spTransform);
 
+	m_pShoutCollider = Shout_collider.get(); // ★ポインタを保存
+
 	Shout_collider->SetColor(Color::eColor::White);
 	Shout_collider->SetHeight(75.0f);
 	Shout_collider->SetRadius(50.0f);
 	Shout_collider->SetPositionOffset(0.f, 1.5f, 0.f);
 	Shout_collider->SetAttackAmount(10.f);
-	Shout_collider->SetMyMask(eCollisionGroup::Enemy_Damage);
+	Shout_collider->SetMyMask(eCollisionGroup::Enemy_Damage); // ※攻撃判定ならEnemy_Attackの方が良いかもしれません
 	Shout_collider->SetTarGetTargetMask(eCollisionGroup::Player_Attack);
 
-	m_upColliders->AddCollider(std::move(Shout_collider));
+	m_pShoutCollider->SetActive(false); // ★最初はOFFにしておく
 
+	m_upColliders->AddCollider(std::move(Shout_collider));
 
 
 	CollisionDetector::GetInstance().RegisterCollider(*m_upColliders);
@@ -432,6 +437,11 @@ ColliderBase* Boss::GetSlashCollider() const
 ColliderBase* Boss::GetStompCollider() const
 {
 	return m_pStompCollider;
+}
+
+ColliderBase* Boss::GetShoutCollider() const
+{
+	return m_pShoutCollider;
 }
 
 void Boss::UpdateSlashColliderTransform()
