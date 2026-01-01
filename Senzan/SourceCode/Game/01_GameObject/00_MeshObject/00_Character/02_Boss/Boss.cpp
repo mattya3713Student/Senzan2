@@ -163,6 +163,18 @@ Boss::Boss()
 
 	m_upColliders->AddCollider(std::move(stompCol));
 
+	// 叫び攻撃の当たり判定.
+	std::unique_ptr<CapsuleCollider> Shout_collider = std::make_unique<CapsuleCollider>(m_spTransform);
+
+	Shout_collider->SetColor(Color::eColor::White);
+	Shout_collider->SetHeight(75.0f);
+	Shout_collider->SetRadius(50.0f);
+	Shout_collider->SetPositionOffset(0.f, 1.5f, 0.f);
+	Shout_collider->SetAttackAmount(10.f);
+	Shout_collider->SetMyMask(eCollisionGroup::Enemy_Damage);
+	Shout_collider->SetTarGetTargetMask(eCollisionGroup::Player_Attack);
+
+	m_upColliders->AddCollider(std::move(Shout_collider));
 
 
 
