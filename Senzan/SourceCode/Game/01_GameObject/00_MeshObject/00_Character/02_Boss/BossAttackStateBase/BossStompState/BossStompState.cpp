@@ -92,6 +92,7 @@ void BossStompState::Update()
 				pStompCollider->SetActive(false);
 			}
 		}
+
 		break;
 	case BossStompState::enAttack::CoolTime:
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::SpecialToIdol))
