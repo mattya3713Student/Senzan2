@@ -436,3 +436,46 @@ FodyWeavers.xsd
 /Generated/
 /GeneratedRefs/
 /*.generated
+
+# -----------------------------
+# AI / automation generated files
+# -----------------------------
+# Git hooks or helper hooks created by automation tools (may be added by scripts/pre-commit installers)
+.githooks/
+
+# GitHub Copilot / AI assistant caches and temporary files
+.copilot/
+.copilot-*/
+*.copilot.*
+
+# Tool-generated caches or temporary AI tooling directories
+tools/.cache/
+tools/.ai/
+
+# Temporary files created by AI-assisted IDE integrations
+*.copilot.tmp
+*.copilot-temp
+
+# If some AI tooling writes logs or diagnostic files, ignore common names
+ai.log
+ai-debug.log
+
+# -----------------------------
+# AI generated files output location
+# -----------------------------
+# All AI/assistant generated files should be written under this directory tree.
+# By default we ignore everything generated under 'tools/ai/generated/'.
+# Note: files that are already tracked by git are NOT affected by .gitignore.
+# If you want to stop tracking an already-tracked AI file, run:
+#   git rm --cached <path/to/file>
+
+/tools/ai/generated/
+/tools/ai/*.log
+/tools/ai/*.tmp
+
+# keep a marker so the directory can be created and optionally committed
+!tools/ai/.gitkeep
+
+# If you need to explicitly allow a specific generated file to be tracked,
+# add a negate rule here, for example:
+# !tools/ai/generated/important.json
