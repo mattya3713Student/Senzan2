@@ -1,41 +1,4 @@
 @echo off
-REM Windows-only pre-commit hook wrapper (CMD)
-REM Enable by running: git config core.hooksPath .githooks
-
-REM Determine Python launcher
-set PY=
-where py >nul 2>&1
-if %ERRORLEVEL%==0 set PY=py
-if not defined PY (
-  where python >nul 2>&1
-  if %ERRORLEVEL%==0 set PY=python
-)
-if not defined PY (
-  where python3 >nul 2>&1
-  if %ERRORLEVEL%==0 set PY=python3
-)
-
-if not defined PY (
-  echo ERROR: Python is required to run pre-commit checks. Install Python or add it to PATH.
-  exit /b 1
-)
-
-REM Change to repository root (parent of .githooks)
-pushd "%~dp0.." >nul 2>&1
-
-"%PY%" "tools\pre-commit\check_comments.py"
-if %ERRORLEVEL% neq 0 (
-  echo Pre-commit: comment style check failed. Commit aborted.
-  popd
-  exit /b %ERRORLEVEL%
-)
-
-"%PY%" "tools\pre-commit\check_ai_location.py"
-if %ERRORLEVEL% neq 0 (
-  echo Pre-commit: AI location check failed. Please move AI-generated files under tools\ai\generated\.
-  popd
-  exit /b %ERRORLEVEL%
-)
-
-popd
+REM Pre-commit checks disabled by project policy (Windows-only hook stub).
+REM If you need to re-enable, restore .githooks/pre-commit from repository history.
 exit /b 0

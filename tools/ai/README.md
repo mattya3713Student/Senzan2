@@ -1,9 +1,9 @@
 # tools/ai
 
-This directory is the designated location for AI / assistant generated files.
+This directory is legacy. Per project policy, GitHub Copilot or other AI tools should place generated files under `docs/ai-generated/`.
 
 Guidelines:
-- Any automated tools or AI assistants must write generated outputs under `tools/ai/generated/`.
+- AI-generated outputs should be written under `docs/ai-generated/`.
 - Do not commit generated outputs unless they are required for the build and cannot be reproduced.
 - If you need a generated file to be tracked, add an explicit negate rule to `.gitignore` and commit only the specific file.
 

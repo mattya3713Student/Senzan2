@@ -2,7 +2,7 @@
 import sys
 import subprocess
 
-# Ensure any AI-generated files are under tools/ai/generated/
+# Ensure any AI-generated files are under docs/ai-generated/
 try:
     result = subprocess.run(["git","diff","--cached","--name-only"], capture_output=True, text=True, check=True)
     files = [f.strip() for f in result.stdout.splitlines() if f.strip()]
@@ -12,14 +12,16 @@ except Exception as e:
 
 violations = []
 for f in files:
-    if any(part.startswith('tools/ai') for part in f.split('/')):
+    # allow if under docs/ai-generated
+    if f.startswith('docs/ai-generated') or f.startswith('docs\\ai-generated'):
         continue
     # if file name or path looks AI-ish
-    if 'copilot' in f or '.copilot' in f or 'ai.log' in f or 'ai-debug.log' in f:
+    lf = f.lower()
+    if 'copilot' in lf or '.copilot' in lf or 'ai.log' in lf or 'ai-debug.log' in lf:
         violations.append(f)
 
 if violations:
-    print('AI-generated files must live under tools/ai/generated/ or be explicitly allowed:')
+    print('AI-generated files must live under docs/ai-generated/ or be explicitly allowed:')
     for v in violations:
         print(' -', v)
     sys.exit(1)
