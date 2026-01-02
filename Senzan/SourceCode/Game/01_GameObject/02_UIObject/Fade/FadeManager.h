@@ -36,6 +36,11 @@ public: // Getter、Setter.
 	****************************************/
 	const bool IsFadeCompleted(const Fade::FadeType type) const;
 
+	/****************************************
+	* @brief フェードが完了瞬間の判定.
+	****************************************/
+	const bool IsFadeJustCompleted(const Fade::FadeType type) const;
+
 private:
 	std::unique_ptr<Fade> m_pFade;
 };

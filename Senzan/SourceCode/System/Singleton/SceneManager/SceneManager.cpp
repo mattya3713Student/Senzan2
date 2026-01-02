@@ -69,7 +69,7 @@ void SceneManager::Update()
 	SceneManager& pI = GetInstance();
 	pI.m_pScene->Update();
 	pI.m_pScene->LateUpdate();
-	
+
 #if _DEBUG
 	ImGui::Begin("Scene");
 	ImGui::Text(pI.GetSceneName(pI.m_CurrentSceneID));
@@ -89,27 +89,36 @@ void SceneManager::Update()
 
 	ImGui::End();
 #endif // _DEBUG
+
+	if (FadeManager::GetInstance().IsFadeCompleted(Fade::FadeType::FadeOut)) 
+	{
+		pI.MakeScene(pI.m_NextScene);
+	}
+
+
+	FadeManager::GetInstance().Update();
 }
 
 void SceneManager::Draw()
 {
 	SceneManager& pI = GetInstance();
 	pI.m_pScene->Draw();
+	FadeManager::GetInstance().Draw();
 }
 
 void SceneManager::LoadScene(eList Scene)
 {
 	SceneManager& pI = GetInstance();
-	pI.m_pScene.reset();
+	pI.m_NextScene = Scene;
 
-	//シーン作成.
-	pI.MakeScene(Scene);
-	pI.m_pScene->Create();
+	FadeManager::GetInstance().StartFade(Fade::FadeType::FadeOut);
 }
 
 //シーン作成.
 void SceneManager::MakeScene(eList Scene)
 {
+	m_pScene.reset();
+
 #if _DEBUG
 	Time::GetInstance().SetWorldTimeScale(1.0f);
 	m_CurrentSceneID = Scene;
@@ -149,4 +158,6 @@ void SceneManager::MakeScene(eList Scene)
 		default:
 			break;
 	}
+	m_pScene->Create();
+	FadeManager::GetInstance().StartFade(Fade::FadeType::FadeIn);
 }

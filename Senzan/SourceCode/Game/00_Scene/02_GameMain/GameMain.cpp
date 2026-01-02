@@ -23,7 +23,6 @@
 
 #include <algorithm> // std::min のために必要
 
-#include "ImGui/CImGuiManager.h"
 
 // コンストラクタ.
 GameMain::GameMain()
@@ -80,25 +79,6 @@ void GameMain::Update()
 
 	m_upUI->Update();
 
-
-	ImGui::Begin("Performans Monitor");
-
-	float fps = ImGui::GetIO().Framerate;
-	float ms = 1000.0f / fps;
-
-	ImGui::Text("Average: %.1f FPS(%.3f ms /frame)", fps, ms);
-	if (fps < 50.0f) {
-		ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Warning:Low FPS!");
-	}
-	else {
-		ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Status:Stable");
-	}
-	TotalTime += Time::GetInstance().GetDeltaTime();
-	ImGui::Text("TotalTime%.1f", TotalTime);
-	ImGui::Text("WorldTime%.1f", Time::GetInstance().GetWorldTimeScale());
-	ImGui::Text("DeltTime%.1f", Time::GetInstance().GetDeltaTime());
-	ImGui::Separator();
-	ImGui::End();
 }
 
 void GameMain::LateUpdate()

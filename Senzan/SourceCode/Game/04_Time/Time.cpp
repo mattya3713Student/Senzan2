@@ -57,18 +57,14 @@ void Time::MaintainFPS()
     Time& pI = GetInstance();
     auto now = std::chrono::high_resolution_clock::now();
 
-    // Update冒頭からの経過時間を計算
     float elapsed = std::chrono::duration<float>(now - pI.m_PreviousTime).count();
 
     if (elapsed < pI.m_TargetFrameTime)
     {
-        // ターゲット(16.6ms)に足りない分だけ寝る
         auto sleepTime = pI.m_TargetFrameTime - elapsed;
         std::this_thread::sleep_for(std::chrono::duration<float>(sleepTime));
     }
 
-    // 3. 【重要】スリープが終わった「今」を基準点に上書きする
-    // これをしないと、次のUpdateで「スリープした時間」が計測に含まれず、値が狂います
     pI.m_PreviousTime = std::chrono::high_resolution_clock::now();
 }
 

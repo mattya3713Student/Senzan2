@@ -73,6 +73,7 @@ private:
 
 private:
 	std::unique_ptr<SceneBase>		m_pScene;
+	eList m_NextScene;
 	Buffer* m_pBuffer;		// 次シーンへインスタンスを入れるバッファー.
 
 #if _DEBUG

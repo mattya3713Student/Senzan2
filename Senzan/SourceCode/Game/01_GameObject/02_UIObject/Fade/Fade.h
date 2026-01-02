@@ -36,10 +36,17 @@ public: // Getter、Setter.
 	* @param type：終了判定をするフェードの種類.
 	****************************************/
 	const bool IsFadeCompleted(const FadeType type) const;
+	
+	
+	/****************************************
+	* @brief フェードが完了瞬間の判定.
+	****************************************/
+	const bool IsFadeJustCompleted(const FadeType type) const;
 
 private:
 	FadeType m_LastFadeType;// 最後に使用したフェードの種類.
 	float m_AlphaSpeed;		// α値の減算速度.
 	bool m_IsStartFade;		// フェードを開始するか.	
 	bool m_IsFadeCompleted;	// フェードが完了したか.
+	bool m_IsFadeJustCompleted;
 };
