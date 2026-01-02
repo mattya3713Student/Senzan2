@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Git hook wrapper to validate comment headers on staged files.
+# Enable by running: git config core.hooksPath .githooks
+
+# Find Python executable
+if command -v python3 >/dev/null 2>&1; then
+  PYTHON=python3
+elif command -v python >/dev/null 2>&1; then
+  PYTHON=python
+else
+  echo "ERROR: Python is required to run pre-commit checks."
+  exit 1
+fi
+
+$PYTHON tools/pre-commit/check_comments.py
+STATUS=$?
+if [ $STATUS -ne 0 ]; then
+  echo "Pre-commit: comment style check failed. Commit aborted."
+  exit $STATUS
+fi
+
+exit 0
