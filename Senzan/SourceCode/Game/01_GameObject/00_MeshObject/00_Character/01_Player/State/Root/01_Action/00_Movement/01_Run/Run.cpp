@@ -12,7 +12,7 @@
 #include "System/Singleton/Debug/Log/DebugLog.h"
 
 
-static constexpr double RUN_ANIM_SPEED = 7.0;
+static constexpr double RUN_ANIM_SPEED = 3.0;
 
 namespace PlayerState {
 Run::Run(Player* owner)
@@ -59,7 +59,6 @@ void Run::LateUpdate()
     Movement::LateUpdate(); 
     
     m_pOwner->AddPosition(m_pOwner->m_MoveVec.x, 0.f, m_pOwner->m_MoveVec.y);
-
 }
 
 void Run::Draw()

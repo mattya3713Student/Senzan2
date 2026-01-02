@@ -87,7 +87,7 @@ void BossSlashState::Update()
 	switch (m_List)
 	{
 	case BossSlashState::enList::none:
-		if (pSlashCollider)
+		if (pSlashCollider) 
 		{
 			pSlashCollider->SetActive(true);
 		}

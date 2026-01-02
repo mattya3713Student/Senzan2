@@ -9,8 +9,8 @@ namespace {
 	static constexpr float CAMERA_SPEED = 1.0f;
 	static constexpr float NEAR_CLIP = 1.0f;
 	static constexpr float FAR_CLIP = FLT_MAX;
-	static constexpr float FOV_ANGLE_RAD = DirectX::XMConvertToRadians(65.0f);
-	static constexpr float ASPECT = static_cast<float>(WND_W) / static_cast<float>(WND_H);
+	static constexpr float FOV_ANGLE_RAD = DirectX::XMConvertToRadians(50.0f);
+	static constexpr float ASPECT = WND_WF / WND_HF;
 }
 
 CameraBase::CameraBase()

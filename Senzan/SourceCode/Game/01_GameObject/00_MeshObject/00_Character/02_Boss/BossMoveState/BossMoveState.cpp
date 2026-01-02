@@ -176,13 +176,12 @@ void BossMoveState::Update()
 		if (dist < 15.0f) {
 			candidates = {
 				//[this]() { return std::make_unique<BossSlashState>(m_pOwner); },
-				[this]() { return std::make_unique<BossChargeState>(m_pOwner); },
+				//[this]() { return std::make_unique<BossChargeState>(m_pOwner); },
 				//[this]() { return std::make_unique<BossStompState>(m_pOwner); }
-				//[this]() { return std::make_unique<BossShoutState>(m_pOwner); }
+				[this]() { return std::make_unique<BossShoutState>(m_pOwner); }
 
 			};
 		}
-
 		//else if (dist < 40.0f) {
 		//	candidates = {
 		//		[this]() { return std::make_unique<BossThrowingState>(m_pOwner); },

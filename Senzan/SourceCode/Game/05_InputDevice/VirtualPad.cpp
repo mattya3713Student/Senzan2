@@ -1,32 +1,38 @@
 #include "VirtualPad.h"
 #include <iostream> 
-#include <cmath> // std::sqrt, std::min, std::max ‚É•K—v
+#include <cmath> // std::sqrt, std::min, std::max ã«å¿…è¦
+
+/**********************************************************************************
+* @author    : æ·µè„‡ æœªæ¥.
+* @date      : 2026/01/02.
+* @brief     : VirtualPad å…¥åŠ›ãƒ©ãƒƒãƒ‘ãƒ¼å®Ÿè£…ãƒ•ã‚¡ã‚¤ãƒ«.
+**********************************************************************************/
 
 // --------------------------------------------------------------------------------
-// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 // --------------------------------------------------------------------------------
 
 VirtualPad::VirtualPad()
 {
-    // ƒRƒ“ƒXƒgƒ‰ƒNƒ^‚ÅƒL[ƒoƒCƒ“ƒh‚ğ‰Šú‰»
+    // ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã§ã‚­ãƒ¼ãƒã‚¤ãƒ³ãƒ‰ã‚’åˆæœŸåŒ–
     SetupDefaultBindings();
 }
 
 // --------------------------------------------------------------------------------
-// ƒvƒ‰ƒCƒx[ƒg ƒeƒ“ƒvƒŒ[ƒgƒwƒ‹ƒp[‚ÌÀ‘• (checkActionState)
+// ãƒ—ãƒ©ã‚¤ãƒ™ãƒ¼ãƒˆ ãƒ†ãƒ³ãƒ—ãƒ¬ãƒ¼ãƒˆãƒ˜ãƒ«ãƒ‘ãƒ¼ã®å®Ÿè£… (checkActionState)
 // --------------------------------------------------------------------------------
 
-// ƒeƒ“ƒvƒŒ[ƒgŠÖ”‚Íƒwƒbƒ_[‚ÉƒCƒ“ƒ‰ƒCƒ““WŠJ‚·‚é‚Ì‚ª—‘z‚Å‚·‚ªA‚±‚±‚Å‚Í.cpp‚É‹Lq
+// ãƒ†ãƒ³ãƒ—ãƒ¬ãƒ¼ãƒˆé–¢æ•°ã¯ãƒ˜ãƒƒãƒ€ãƒ¼ã«ã‚¤ãƒ³ãƒ©ã‚¤ãƒ³å±•é–‹ã™ã‚‹ã®ãŒç†æƒ³ã§ã™ãŒã€ã“ã“ã§ã¯.cppã«è¨˜è¿°
 template <typename KeyCheckFunc, typename ButtonCheckFunc>
 bool VirtualPad::checkActionState(eGameAction action,
     KeyCheckFunc&& keyCheck,
     ButtonCheckFunc&& buttonCheck) const
 {
-    // ƒAƒNƒVƒ‡ƒ“‚ÌƒoƒCƒ“ƒfƒBƒ“ƒO‚ğæ“¾.
+    // ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã®ãƒã‚¤ãƒ³ãƒ‡ã‚£ãƒ³ã‚°ã‚’å–å¾—.
     auto it = m_KeyMap.find(action);
     if (it == m_KeyMap.end() || it->second.Type != eActionType::Button)
     {
-        // ²ƒAƒNƒVƒ‡ƒ“‚ªŠÔˆá‚Á‚Ä“n‚³‚ê‚½ê‡‚ÌƒƒO (Debug::Warning ‚ª’è‹`‚³‚ê‚Ä‚¢‚é‘O’ñ)
+        // è»¸ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ãŒé–“é•ã£ã¦æ¸¡ã•ã‚ŒãŸå ´åˆã®ãƒ­ã‚° (Debug::Warning ãŒå®šç¾©ã•ã‚Œã¦ã„ã‚‹å‰æ)
         // if (it != m_KeyMap.end() && it->second.type == eActionType::Axis) { Debug::Warning("Button check called for Axis action."); }
         return false;
     }
@@ -52,7 +58,7 @@ bool VirtualPad::checkActionState(eGameAction action,
                 }
                 break;
 
-                // ƒRƒ“ƒgƒ[ƒ‰[ƒgƒŠƒK[²‚ğƒ{ƒ^ƒ“‚Æ‚µ‚Äˆµ‚¤ê‡‚Ì“Áê‚ÈƒP[ƒX.
+                // ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼ãƒˆãƒªã‚¬ãƒ¼è»¸ã‚’ãƒœã‚¿ãƒ³ã¨ã—ã¦æ‰±ã†å ´åˆã®ç‰¹æ®Šãªã‚±ãƒ¼ã‚¹.
             case InputSource::eSourceType::ControllerTriggerAxis:
             {
                 Input& input = Input::GetInstance();
@@ -64,7 +70,7 @@ bool VirtualPad::checkActionState(eGameAction action,
                     triggerValue = input.GetRTrigger();
                 }
 
-                // ƒgƒŠƒK[‚ªè‡’l (0.1f) ˆÈã‚Å‚ ‚ê‚Î‰Ÿ‚³‚ê‚Ä‚¢‚é‚Æ”»’è.
+                // ãƒˆãƒªã‚¬ãƒ¼ãŒé–¾å€¤ (0.1f) ä»¥ä¸Šã§ã‚ã‚Œã°æŠ¼ã•ã‚Œã¦ã„ã‚‹ã¨åˆ¤å®š.
                 if (triggerValue >= 0.1f) return true;
                 break;
             }
@@ -77,7 +83,7 @@ bool VirtualPad::checkActionState(eGameAction action,
     return false;
 }
 
-// ‰Ÿ‚³‚ê‘±‚¯‚Ä‚¢‚é‚©.
+// æŠ¼ã•ã‚Œç¶šã‘ã¦ã„ã‚‹ã‹.
 bool VirtualPad::IsActionPress(eGameAction action) const
 {
     Input& input = Input::GetInstance();
@@ -95,14 +101,14 @@ bool VirtualPad::IsActionPress(eGameAction action) const
     return checkActionState(action, keyCheck, buttonCheck);
 }
 
-// ‰Ÿ‚³‚ê‚½uŠÔ‚©.
+// æŠ¼ã•ã‚ŒãŸç¬é–“ã‹.
 bool VirtualPad::IsActionDown(eGameAction action, float inputBufferTime) const
 {
     Input& input = Input::GetInstance();
 
     // KeyBorad/MouseButton.
     auto keyCheck = [&input](const int& code) {
-        // TODO : inputBufferTime “ü‚ê‚é‚È‚ç‚±‚±‚É’Ç‰Á.
+        // TODO : inputBufferTime å…¥ã‚Œã‚‹ãªã‚‰ã“ã“ã«è¿½åŠ .
         return input.IsKeyDown(code);
         };
 
@@ -114,7 +120,7 @@ bool VirtualPad::IsActionDown(eGameAction action, float inputBufferTime) const
     return checkActionState(action, keyCheck, buttonCheck);
 }
 
-// —£‚³‚ê‚½uŠÔ‚©.
+// é›¢ã•ã‚ŒãŸç¬é–“ã‹.
 bool VirtualPad::IsActionUp(eGameAction action) const
 {
     Input& input = Input::GetInstance();
@@ -132,7 +138,7 @@ bool VirtualPad::IsActionUp(eGameAction action) const
     return checkActionState(action, keyCheck, buttonCheck);
 }
 
-// ²ƒAƒNƒVƒ‡ƒ“‚Ì‡Œv’l‚ğæ“¾.
+// è»¸ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã®åˆè¨ˆå€¤ã‚’å–å¾—.
 float VirtualPad::GetSingleAxisValue(eGameAction componentAction) const
 {
     auto it = m_KeyMap.find(componentAction);
@@ -152,7 +158,6 @@ float VirtualPad::GetSingleAxisValue(eGameAction componentAction) const
         switch (source.Type)
         {
             case InputSource::eSourceType::KeyBorad:
-                // ƒL[ƒ{[ƒh“ü—Í: ‰Ÿ‚³‚ê‚Ä‚¢‚ê‚Î1.0f‚»‚¤‚Å‚È‚¯‚ê‚Î1.0f‚ğ’l‚Æ‚·‚é
                 if (input.IsKeyRepeat(source.KeyCode))
                 {
                     value = 1.0f;
@@ -161,10 +166,8 @@ float VirtualPad::GetSingleAxisValue(eGameAction componentAction) const
 
             case InputSource::eSourceType::ControllerStickAxis:
             case InputSource::eSourceType::ControllerTriggerAxis:
-                // ƒRƒ“ƒgƒ[ƒ‰[ƒXƒeƒBƒbƒN/ƒgƒŠƒK[‚Ì²“ü—Í.
                 if (source.StickTarget == InputSource::eStickTarget::Left)
                 {
-                    // Move_Axis_X/Camera_X ‚Ìê‡ x, Move_Axis_Y/Camera_Y ‚Ìê‡ y ‚ğæ“¾
                     value = (componentAction == eGameAction::Move_Axis_X || componentAction == eGameAction::Camera_X) ?
                         input.GetLStickDirection().x : input.GetLStickDirection().y;
                 }
@@ -184,12 +187,6 @@ float VirtualPad::GetSingleAxisValue(eGameAction componentAction) const
                 break;
 
             case InputSource::eSourceType::MouseMove:
-
-                DirectX::XMFLOAT2 currentMousePos = Input::GetClientCursorPosition();
-                DirectX::XMVECTOR mousePosXM = XMLoadFloat2(&currentMousePos);
-                DirectX::XMFLOAT2 oldMousePos = Input::GetPastClientCursorPosition();
-
-                // ƒ}ƒEƒXˆÚ“®—Ê.
                 if (componentAction == eGameAction::Camera_X)
                 {
                     value = input.GetClientCursorDelta().x;
@@ -199,24 +196,24 @@ float VirtualPad::GetSingleAxisValue(eGameAction componentAction) const
                     value = input.GetClientCursorDelta().y;
                 }
                 break;
+
             default:
                 continue;
         }
 
-        // “ü—Í’l‚É”{—¦‚ğ‚©‚¯‚Ä‡Œv‚É‰Á‚¦‚é.
         total_value += value * source.Scale;
     }
 
-    // ²‚Ì’l‚ÌÅ‘å’l‚ğ 1.0f ‚É§ŒÀ (ƒL[ƒ{[ƒh“ü—Í‚Ì‡¬‚È‚Ç‚Å”­¶‚·‚é‰Â”\«‚ª‚ ‚é‚½‚ß)
+    // è»¸ã®å€¤ã®æœ€å¤§å€¤ã‚’ 1.0f ã«åˆ¶é™
     return std::min(1.0f, std::max(-1.0f, total_value));
 }
 
-//  •¡‡²æ“¾.
+//  è¤‡åˆè»¸å–å¾—.
 DirectX::XMFLOAT2 VirtualPad::GetAxisInput(eGameAxisAction axisType) const
 {
     DirectX::XMFLOAT2 result = { 0.0f, 0.0f };
 
-    // ‚»‚ê‚¼‚ê‚ÌAxis‚ğæ“¾.
+    // ãã‚Œãã‚Œã®Axisã‚’å–å¾—.
     if (axisType == eGameAxisAction::Move)
     {
         result.x = GetSingleAxisValue(eGameAction::Move_Axis_X);
@@ -232,7 +229,7 @@ DirectX::XMFLOAT2 VirtualPad::GetAxisInput(eGameAxisAction axisType) const
         return { 0.0f, 0.0f };
     }
 
-    // ³‹K‰».
+    // æ­£è¦åŒ–.
     float lengthSq = result.x * result.x + result.y * result.y;
 
     if (lengthSq > 1.0f)
@@ -245,7 +242,7 @@ DirectX::XMFLOAT2 VirtualPad::GetAxisInput(eGameAxisAction axisType) const
     return result;
 }
 
-// ƒfƒtƒHƒ‹ƒgƒoƒCƒ“ƒfƒBƒ“ƒO.
+// ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆãƒã‚¤ãƒ³ãƒ‡ã‚£ãƒ³ã‚°.
 void VirtualPad::SetupDefaultBindings()
 {
     using EKey = XInput::Key;
@@ -254,7 +251,7 @@ void VirtualPad::SetupDefaultBindings()
     using ETarget = InputSource::eStickTarget;
     using Action = eGameAction;
 
-    // MoveForward: 'W' ‚Ü‚½‚Í ¶ƒXƒeƒBƒbƒNã (ƒXƒeƒBƒbƒN•ûŒü).
+    // MoveForward: 'W' ã¾ãŸã¯ å·¦ã‚¹ãƒ†ã‚£ãƒƒã‚¯ä¸Š (ã‚¹ãƒ†ã‚£ãƒƒã‚¯æ–¹å‘).
     m_KeyMap[Action::MoveForward] = {
         eActionType::Button,
         {
@@ -263,7 +260,7 @@ void VirtualPad::SetupDefaultBindings()
         }
     };
 
-    // MoveBackward: 'S' ‚Ü‚½‚Í ¶ƒXƒeƒBƒbƒN‰º.
+    // MoveBackward: 'S' ã¾ãŸã¯ å·¦ã‚¹ãƒ†ã‚£ãƒƒã‚¯ä¸‹.
     m_KeyMap[Action::MoveBackward] = {
         eActionType::Button,
         {
@@ -272,7 +269,7 @@ void VirtualPad::SetupDefaultBindings()
         }
     };
 
-    // MoveRight: 'D' ‚Ü‚½‚Í ‰E–îˆóƒL[ ‚Ü‚½‚Í ¶ƒXƒeƒBƒbƒN‰E.
+    // MoveRight: 'D' ã¾ãŸã¯ å³çŸ¢å°ã‚­ãƒ¼ ã¾ãŸã¯ å·¦ã‚¹ãƒ†ã‚£ãƒƒã‚¯å³.
     m_KeyMap[Action::MoveRight] = {
         eActionType::Button,
         {
@@ -282,7 +279,7 @@ void VirtualPad::SetupDefaultBindings()
         }
     };
 
-    // MoveLeft: 'A' ‚Ü‚½‚Í ¶–îˆóƒL[ ‚Ü‚½‚Í ¶ƒXƒeƒBƒbƒN¶ (’Ç‰Á).
+    // MoveLeft: 'A' ã¾ãŸã¯ å·¦çŸ¢å°ã‚­ãƒ¼ ã¾ãŸã¯ å·¦ã‚¹ãƒ†ã‚£ãƒƒã‚¯å·¦ (è¿½åŠ ).
     m_KeyMap[Action::MoveLeft] = {
         eActionType::Button,
         {
@@ -293,7 +290,7 @@ void VirtualPad::SetupDefaultBindings()
     };
 
 
-    // Jump: ƒXƒy[ƒX ‚Ü‚½‚Í Aƒ{ƒ^ƒ“.
+    // Jump: ã‚¹ãƒšãƒ¼ã‚¹ ã¾ãŸã¯ Aãƒœã‚¿ãƒ³.
     m_KeyMap[Action::Cancel] = {
         eActionType::Button,
         {
@@ -302,7 +299,7 @@ void VirtualPad::SetupDefaultBindings()
         }
     };
 
-    // Attack: ƒ}ƒEƒX¶ƒ{ƒ^ƒ“ ‚Ü‚½‚Í ‰EƒgƒŠƒK[ (²“ü—Í‚¾‚ª‚±‚±‚Å‚Í˜_—“ü—Í‚Æ‚µ‚Äˆµ‚¤).
+    // Attack: ãƒã‚¦ã‚¹å·¦ãƒœã‚¿ãƒ³ ã¾ãŸã¯ å³ãƒˆãƒªã‚¬ãƒ¼ (è»¸å…¥åŠ›ã ãŒã“ã“ã§ã¯è«–ç†å…¥åŠ›ã¨ã—ã¦æ‰±ã†).
     m_KeyMap[Action::Attack] = {
         eActionType::Button,
         {
@@ -350,52 +347,53 @@ void VirtualPad::SetupDefaultBindings()
         }
     };
 
-    // ----- [ Axis Actions: ²“ü—Í‚Ì“à•”ƒRƒ“ƒ|[ƒlƒ“ƒg ] -----
+    // ----- [ Axis Actions: è»¸å…¥åŠ›ã®å†…éƒ¨ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆ ] -----
 
-    // yMove Axis Xz: ¶ƒXƒeƒBƒbƒNX²‚Ì¶‚Ì’l‚ÆƒL[ƒ{[ƒhA/D‚ğ‡¬.
+    // ã€Move Axis Xã€‘: å·¦ã‚¹ãƒ†ã‚£ãƒƒã‚¯Xè»¸ã®ç”Ÿã®å€¤ã¨ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰A/Dã‚’åˆæˆ.
     m_KeyMap[Action::Move_Axis_X] = {
         eActionType::Axis,
         {
-            // ¶ƒXƒeƒBƒbƒNX²
+            // å·¦ã‚¹ãƒ†ã‚£ãƒƒã‚¯Xè»¸
             { ESource::ControllerStickAxis, 0, EKey::None, EStickState::Right, ETarget::Left, 1.0f },
-            // ƒL[ƒ{[ƒh 'D' (³•ûŒü)
+            // ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ 'D' (æ­£æ–¹å‘)
             { ESource::KeyBorad, 'D', EKey::None, EStickState::None, ETarget::None, 1.0f },
-            // ƒL[ƒ{[ƒh 'A' (•‰•ûŒü)
+            // ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ 'A' (è² æ–¹å‘)
             { ESource::KeyBorad, 'A', EKey::None, EStickState::None, ETarget::None, -1.0f },
         }
     };
 
-    // yMove Axis Yz: ¶ƒXƒeƒBƒbƒNY²‚Ì¶‚Ì’l‚ÆƒL[ƒ{[ƒhW/S‚ğ‡¬.
+    // ã€Move Axis Yã€‘: å·¦ã‚¹ãƒ†ã‚£ãƒƒã‚¯Yè»¸ã®ç”Ÿã®å€¤ã¨ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰W/Sã‚’åˆæˆ.
     m_KeyMap[Action::Move_Axis_Y] = {
         eActionType::Axis,
         {
-            // ¶ƒXƒeƒBƒbƒNY² (‘O•û/Œã•û)
+            // å·¦ã‚¹ãƒ†ã‚£ãƒƒã‚¯Yè»¸ (å‰æ–¹/å¾Œæ–¹)
             { ESource::ControllerStickAxis, 0, EKey::None, EStickState::Up, ETarget::Left, 1.0f },
-            // ƒL[ƒ{[ƒh 'W' (³•ûŒü)
+            // ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ 'W' (æ­£æ–¹å‘)
             { ESource::KeyBorad, 'W', EKey::None, EStickState::None, ETarget::None, 1.0f },
-            // ƒL[ƒ{[ƒh 'S' (•‰•ûŒü)
+            // ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ 'S' (è² æ–¹å‘)
             { ESource::KeyBorad, 'S', EKey::None, EStickState::None, ETarget::None, -1.0f },
         }
     };
     
-    // yCamera Axis Xz: ‰EƒXƒeƒBƒbƒNX²‚Æƒ}ƒEƒXˆÚ“®X²‚ğ‡¬.
+    // ã€Camera Axis Xã€‘: å³ã‚¹ãƒ†ã‚£ãƒƒã‚¯Xè»¸ã¨ãƒã‚¦ã‚¹ç§»å‹•Xè»¸ã‚’åˆæˆ.
     m_KeyMap[Action::Camera_X] = {
         eActionType::Axis,
         {
             { ESource::ControllerStickAxis, 0, EKey::None, EStickState::Right, ETarget::Right, 1.0f },
-            // ƒ}ƒEƒXˆÚ“®X² (Š´“x’²®‚Ì‚½‚ß‚ÌƒXƒP[ƒ‹)
+            // ãƒã‚¦ã‚¹ç§»å‹•Xè»¸ (æ„Ÿåº¦èª¿æ•´ã®ãŸã‚ã®ã‚¹ã‚±ãƒ¼ãƒ«)
             { ESource::MouseMove, 0, EKey::None, EStickState::None, ETarget::None, 0.5f }
         }
     };
 
-    // yCamera Axis Yz: ‰EƒXƒeƒBƒbƒNY²‚Æƒ}ƒEƒXˆÚ“®Y²‚ğ‡¬ (Y²‚Í”½“]).
+    // ã€Camera Axis Yã€‘: å³ã‚¹ãƒ†ã‚£ãƒƒã‚¯Yè»¸ã¨ãƒã‚¦ã‚¹ç§»å‹•Yè»¸ã‚’åˆæˆ (Yè»¸ã¯åè»¢).
     m_KeyMap[Action::Camera_Y] = {
         eActionType::Axis,
         {
-            // ‰EƒXƒeƒBƒbƒNY² (ƒJƒƒ‰‚Å‚Í’Êí”½“])
+            // å³ã‚¹ãƒ†ã‚£ãƒƒã‚¯Yè»¸ (ã‚«ãƒ¡ãƒ©ã§ã¯é€šå¸¸åè»¢)
             { ESource::ControllerStickAxis, 0, EKey::None, EStickState::Up, ETarget::Right, -1.0f },
-            // ƒ}ƒEƒXˆÚ“®Y² (”½“]‚³‚¹‚ÄƒXƒP[ƒ‹‚ğİ’è)
+            // ãƒã‚¦ã‚¹ç§»å‹•Yè»¸ (åè»¢ã•ã›ã¦ã‚¹ã‚±ãƒ¼ãƒ«ã‚’è¨­å®š)
             { ESource::MouseMove, 0, EKey::None, EStickState::None, ETarget::None, -0.5f }
         }
     };
 }
+

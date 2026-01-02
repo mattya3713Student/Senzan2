@@ -169,6 +169,7 @@
     <None Include="SourceCode\System\Utility\Math\Easing\Easing.inl" />
     <None Include="SourceCode\System\Utility\Math\Math.inl" />
     <None Include="SourceCode\System\Utility\String\FilePath\FilePath.inl" />
+    <None Include="tools\add_author_header.py" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Data\Shader\PMX\Pixel.hlsl">

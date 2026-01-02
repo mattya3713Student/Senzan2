@@ -4,9 +4,9 @@
 
 
 /**********************************************************************************
-* @author    : •£˜e –¢—ˆ.
+* @author    : æ·µè„‡ æœªæ¥.
 * @date      : 2025/10/5.
-* @brief     : ƒQ[ƒ€“à‚ÌŠÔ‚Ì§Œä.
+* @brief     : ã‚²ãƒ¼ãƒ å†…ã®æ™‚é–“ã®åˆ¶å¾¡.
 * @pattern   : Singleton.
 **********************************************************************************/
 
@@ -18,47 +18,49 @@ public:
 public:
 	~Time();
 
-	// ƒtƒŒ[ƒ€ŠÔ‚ÌŒo‰ßŠÔ‚ğXV.
+	// ãƒ•ãƒ¬ãƒ¼ãƒ é–“ã®çµŒéæ™‚é–“ã‚’æ›´æ–°.
 	void Update();
 
-	// FPS‚ğˆÛ‚·‚é‚½‚ß‚Ìˆ—.
+	// FPSã‚’ç¶­æŒã™ã‚‹ãŸã‚ã®å‡¦ç†.
 	void MaintainFPS();
 
-	// ƒfƒ‹ƒ^ƒ^ƒCƒ€‚ğæ“¾.s
+	// ãƒ‡ãƒ«ã‚¿ã‚¿ã‚¤ãƒ ã‚’å–å¾—.s
 	const float GetDeltaTime() const;
 
 	float GetNowTime();
 	float GetWorldTimeScale() const;
 
 	/*************************************************************
-	* @brief	ƒ[ƒ‹ƒh‚ÌŠÔ‚Ì—¬‚ê‚ğ•ÏX‚·‚é.
-	* @param[in]	NewTimeScale	FV‚µ‚¢ŠÔƒXƒP[ƒ‹‚Ì’l(—á: 0.5f ‚Å”¼•ª‚Ì‘¬‚³A2.0f ‚Å”{‘¬).
+	* @brief	ãƒ¯ãƒ¼ãƒ«ãƒ‰ã®æ™‚é–“ã®æµã‚Œã‚’å¤‰æ›´ã™ã‚‹.
+	* @param[in]	NewTimeScale	ï¼šæ–°ã—ã„æ™‚é–“ã‚¹ã‚±ãƒ¼ãƒ«ã®å€¤(ä¾‹: 0.5f ã§åŠåˆ†ã®é€Ÿã•ã€2.0f ã§å€é€Ÿ).
 	* ************************************************************/
 	void SetWorldTimeScale(float NewTimeScale);
 
 	/*************************************************************
-	* @brief	ƒ[ƒ‹ƒh‚ÌŠÔ‚Ì—¬‚ê‚ğ•ÏX‚·‚é.
-	* @param[in]	NewTimeScale	FV‚µ‚¢ŠÔƒXƒP[ƒ‹‚Ì’l(—á: 0.5f ‚Å”¼•ª‚Ì‘¬‚³A2.0f ‚Å”{‘¬).
-	* @param[in]	DurationSeconds	FNewTimeScale ‚ğ“K—p‚·‚é‘±ŠÔ(•b). 0ˆÈ‰º‚Ìê‡‚Í‘¦À‚É–ß‚é.
+	* @brief	ãƒ¯ãƒ¼ãƒ«ãƒ‰ã®æ™‚é–“ã®æµã‚Œã‚’å¤‰æ›´ã™ã‚‹.
+	* @param[in]	NewTimeScale	ï¼šæ–°ã—ã„æ™‚é–“ã‚¹ã‚±ãƒ¼ãƒ«ã®å€¤(ä¾‹: 0.5f ã§åŠåˆ†ã®é€Ÿã•ã€2.0f ã§å€é€Ÿ).
+	* @param[in]	DurationSeconds	ï¼šNewTimeScale ã‚’é©ç”¨ã™ã‚‹æŒç¶šæ™‚é–“(ç§’). 0ä»¥ä¸‹ã®å ´åˆã¯å³åº§ã«æˆ»ã‚‹.
 	* ************************************************************/
 	void SetWorldTimeScale(float NewTimeScale, float DurationSeconds);
 
 private:
+    bool IsReadyForNextFrame();
+private:
 	Time();
 
-	// ¶¬‚âƒRƒs[‚ğíœ.
+	// ç”Ÿæˆã‚„ã‚³ãƒ”ãƒ¼ã‚’å‰Šé™¤.
 	Time(const Time& rhs)				= delete;
 	Time& operator = (const Time& rhs)	= delete;
 private:
 
-	std::chrono::time_point<std::chrono::high_resolution_clock> m_PreviousTime;	// ‘OƒtƒŒ[ƒ€‚ÌŠÔ.
+	std::chrono::time_point<std::chrono::high_resolution_clock> m_PreviousTime;	// å‰ãƒ•ãƒ¬ãƒ¼ãƒ ã®æ™‚é–“.
 
-	float m_TargetFrameTime;// –Ú•WƒtƒŒ[ƒ€ŠÔ(•b).
-	float m_DeltaTime;		// ƒtƒŒ[ƒ€ŠÔ‚ÌŠÔ·.
+	float m_TargetFrameTime;// ç›®æ¨™ãƒ•ãƒ¬ãƒ¼ãƒ æ™‚é–“(ç§’).
+	float m_DeltaTime;		// ãƒ•ãƒ¬ãƒ¼ãƒ é–“ã®æ™‚é–“å·®.
 
-	float m_WorldTimeScale;	// ŠÔ‚ÌÚ“x(’Êí1f, 2f‚Å“ñ”{‚ÌÚ“x‚Å“®‚­).
+	float m_WorldTimeScale;	// æ™‚é–“ã®å°ºåº¦(é€šå¸¸1f, 2fã§äºŒå€ã®å°ºåº¦ã§å‹•ã).
 
-	float m_OriginalTimeScale;		// ˆê•ÏX‘O‚ÌŒ³‚ÌŠÔƒXƒP[ƒ‹ (1.0f‚È‚Ç).
-	float m_TimeScaleRestoreTime;	// ŠÔƒXƒP[ƒ‹‚ğŒ³‚É–ß‚·â‘Î.
+	float m_OriginalTimeScale;		// ä¸€æ™‚å¤‰æ›´å‰ã®å…ƒã®æ™‚é–“ã‚¹ã‚±ãƒ¼ãƒ« (1.0fãªã©).
+	float m_TimeScaleRestoreTime;	// æ™‚é–“ã‚¹ã‚±ãƒ¼ãƒ«ã‚’å…ƒã«æˆ»ã™çµ¶å¯¾æ™‚åˆ».
 
 };

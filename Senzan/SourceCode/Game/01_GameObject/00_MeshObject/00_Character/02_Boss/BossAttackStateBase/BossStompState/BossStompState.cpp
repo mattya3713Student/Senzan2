@@ -8,8 +8,8 @@ BossStompState::BossStompState(Boss* owner)
 	, m_pIdol()
 	, m_List(enAttack::None)
 	, m_Velocity(0.0f, 0.0f, 0.0f)
-	, m_JumpPower(5.0f)
-	, m_Gravity(1.5f)
+	, m_JumpPower(5.0f)     
+	, m_Gravity(1.5f)      
 	, m_JumpFrag(false)
 	, m_GroundedFrag(true)
 	, m_Timer(0.0f)
@@ -28,8 +28,8 @@ void BossStompState::Enter()
 	m_pOwner->SetAttackColliderActive(true);
 	auto* pStompCollider = m_pOwner->GetStompCollider();
 	if (pStompCollider) {
-		pStompCollider->SetActive(true);
-		pStompCollider->SetColor(Color::eColor::Magenta);
+		pStompCollider->SetActive(true);            
+		pStompCollider->SetColor(Color::eColor::Magenta); 
 		pStompCollider->SetRadius(30.0f);
 		pStompCollider->SetHeight(15.0f);
 	}
@@ -87,7 +87,7 @@ void BossStompState::Update()
 			m_pOwner->ChangeAnim(Boss::enBossAnim::SpecialToIdol);
 			m_List = enAttack::CoolTime;
 
-			if (pStompCollider)
+			if (pStompCollider) 
 			{
 				pStompCollider->SetActive(false);
 			}

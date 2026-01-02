@@ -150,7 +150,6 @@ protected:
 	ColliderBase* GetStompCollider() const;
 	//叫び攻撃.
 	ColliderBase* GetShoutCollider() const;
-
 	//通常攻撃(ボーンの位置設定).
 	void UpdateSlashColliderTransform();
 	//ジャンプ(ボーンの位置設定).
@@ -180,5 +179,3 @@ protected:
 	ColliderBase* m_pStompCollider;
 	ColliderBase* m_pShoutCollider;
 };
-
-
