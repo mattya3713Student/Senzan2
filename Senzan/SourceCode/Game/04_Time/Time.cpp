@@ -12,7 +12,7 @@ Time::Time()
     , m_OriginalTimeScale   ( 1.0f )
     , m_TimeScaleRestoreTime( 0.0f )
 {
-    m_TargetFrameTime   = 1.0f / TAEGET_FPS; 
+    m_TargetFrameTime   = 1.0f / TAEGET_FPS;
     m_PreviousTime      = std::chrono::high_resolution_clock::now();
 }
 
@@ -27,6 +27,10 @@ void Time::Update()
     auto currentTime = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float> elapsed = currentTime - m_PreviousTime;
     m_DeltaTime = elapsed.count();
+
+    // デルタタイム制限.
+    if (m_DeltaTime > 0.1f) { m_DeltaTime = m_TargetFrameTime; }
+
     m_PreviousTime = currentTime;
 
     // 時間スケールの復帰.
@@ -39,12 +43,20 @@ void Time::Update()
             m_WorldTimeScale = m_OriginalTimeScale;
             m_TimeScaleRestoreTime = 0.0f;
         }
-
-        Log::GetInstance().Info("あ", nowTime - m_TimeScaleRestoreTime);
     }
 
     // 時間スケールを適用.
-    m_DeltaTime *= m_WorldTimeScale; 
+    m_DeltaTime *= m_WorldTimeScale;
+}
+
+// FPSを維持するために待機が必要かチェックする
+bool Time::IsReadyForNextFrame()
+{
+    auto now = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<float> elapsed = now - m_PreviousTime;
+
+    // 目標とするフレーム時間に達していれば true
+    return elapsed.count() >= m_TargetFrameTime;
 }
 
 // FPSを維持するための処理.
@@ -93,7 +105,7 @@ float Time::GetWorldTimeScale() const
 void Time::SetWorldTimeScale(float NewTimeScale)
 {
     m_WorldTimeScale = NewTimeScale;
-    m_TimeScaleRestoreTime = 0.0f; 
+    m_TimeScaleRestoreTime = 0.0f;
 }
 
 // ワールドの時間の流れを一時的に変更する.
