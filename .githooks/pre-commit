@@ -1,4 +1,0 @@
-@echo off
-REM Pre-commit checks disabled by project policy (Windows-only hook stub).
-REM If you need to re-enable, restore .githooks/pre-commit from repository history.
-exit /b 0
