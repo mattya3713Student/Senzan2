@@ -443,6 +443,9 @@ FodyWeavers.xsd
 # Git hooks or helper hooks created by automation tools (may be added by scripts/pre-commit installers)
 .githooks/
 
+# Allow committed hook scripts
+!.githooks/
+
 # GitHub Copilot / AI assistant caches and temporary files
 .copilot/
 .copilot-*/
