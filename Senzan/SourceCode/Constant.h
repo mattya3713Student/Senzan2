@@ -1,25 +1,28 @@
 #pragma once
 #include <DirectXMath.h>
 //=================================================
-//	’è”.
+//	å®šæ•°.
 //=================================================
-static constexpr int	WND_W = 1920;		// ƒEƒBƒ“ƒhƒE‚Ì•.
-static constexpr float	WND_WF = 1920.f;	// ƒEƒBƒ“ƒhƒE‚Ì•.
-static constexpr int	WND_H = 1080;		// ƒEƒBƒ“ƒhƒE‚Ì‚‚³.
-static constexpr float	WND_HF = 1080.f;	// ƒEƒBƒ“ƒhƒE‚Ì‚‚³.
-static constexpr int	FPS = 60;		// ƒtƒŒ[ƒ€ƒŒ[ƒg.
+
+static constexpr int	WND_W = 1280;		// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®å¹….
+static constexpr float	WND_WF = 1280.f;	// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®å¹….
+static constexpr int	WND_H = 720;		// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®é«˜ã•.
+static constexpr float	WND_HF = 720.f;	// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®é«˜ã•.
+static constexpr int	FPS = 60;		// ãƒ•ãƒ¬ãƒ¼ãƒ ãƒ¬ãƒ¼ãƒˆ.
 static constexpr float  EPSILON_E3 = 1e-3f;	// 0.001f		
 static constexpr float  EPSILON_E4 = 1e-4f;	// 0.0001f		
 static constexpr float  EPSILON_E5 = 1e-5f;	// 0.00001f		
 static constexpr float  EPSILON_E6 = 1e-6f;	// 0.000001f	
-static constexpr float  EPSILON_E7 = 1e-7f;	// 0.0000001f	
+static constexpr float  EPSILON_E7 = 1e-7f;	// 0.0000001f
 
-static constexpr float STICK_THRESHOLD = 0.15f; // “ü—Í‚Ìè‡’l.
+static constexpr float  M_PI_F = 3.1415926535f; // å††å‘¨ç‡.
+
+static constexpr float STICK_THRESHOLD = 0.15f; // å…¥åŠ›ã®é–¾å€¤.
 
 
-// ’PˆÊƒxƒNƒgƒ‹.
+// å˜ä½ãƒ™ã‚¯ãƒˆãƒ«.
 namespace Axis {
-    // XMFLOAT3 ‚ÍÃ“I‰Šú‰»qƒŠƒXƒg‚Å‰Šú‰»‰Â”\
+    // XMFLOAT3 ã¯é™çš„åˆæœŸåŒ–å­ãƒªã‚¹ãƒˆã§åˆæœŸåŒ–å¯èƒ½
     static const DirectX::XMFLOAT3 ZERO = { 0.0f, 0.0f, 0.0f };
     static const DirectX::XMFLOAT3 UP = { 0.0f, 1.0f, 0.0f };
     static const DirectX::XMFLOAT3 DOWN = { 0.0f, -1.0f, 0.0f };
@@ -28,7 +31,7 @@ namespace Axis {
     static const DirectX::XMFLOAT3 FORWARD = { 0.0f, 0.0f, 1.0f };
     static const DirectX::XMFLOAT3 BACK = { 0.0f, 0.0f, -1.0f };
 
-    // XMFLOAT4‚©‚çƒ[ƒh‚·‚é‚±‚Æ‚ÅASIMDƒŒƒWƒXƒ^‚É³‚µ‚¢’l‚ªİ’è‚³‚ê‚é.
+    // XMFLOAT4ã‹ã‚‰ãƒ­ãƒ¼ãƒ‰ã™ã‚‹ã“ã¨ã§ã€SIMDãƒ¬ã‚¸ã‚¹ã‚¿ã«æ­£ã—ã„å€¤ãŒè¨­å®šã•ã‚Œã‚‹.
     static const DirectX::XMVECTOR ZERO_VECTOR  = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
     static const DirectX::XMVECTOR UP_VECTOR    = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
     static const DirectX::XMVECTOR DOWN_VECTOR  = DirectX::XMVectorSet(0.0f, -1.0f, 0.0f, 0.0f);
@@ -38,19 +41,19 @@ namespace Axis {
     static const DirectX::XMVECTOR BACK_VECTOR  = DirectX::XMVectorSet(0.0f, 0.0f, -1.0f, 0.0f);
 }
 
-// FŒn‚Ì’è‹`.
+// è‰²ç³»ã®å®šç¾©.
 namespace Color {
 
-// RGB‚Ì’è‹`.
+// RGBã®å®šç¾©.
 enum class eColor
 {
     Red = 0,
     Green,
     Blue,
     Yellow,
-    Cyan,   // …F
-    Magenta, // ƒ}ƒ[ƒ“ƒ^
-    Gray,   // ŠDF
+    Cyan,   // æ°´è‰²
+    Magenta, // ãƒã‚¼ãƒ³ã‚¿
+    Gray,   // ç°è‰²
     Black,
     White,
 };

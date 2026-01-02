@@ -1,24 +1,9 @@
 ﻿#include "String.h"
+#include <Windows.h>
+
 namespace MyString 
 {
-	// 値を文字列に変換する.
-	template<typename T>
-	std::string ToString(const T& value)
-	{
-		std::stringstream ss;
-		ss << value << "," << typeid(T).name() << ";";
-		return ss.str();
-	}
-
-	// 文字列から値を戻す.
-	template<typename T>
-	T FromString(const std::string& str)
-	{
-		std::stringstream ss(str);
-		T value;
-		ss >> value;
-		return value;
-	}
+	// Note: template implementations moved to header to avoid linkage issues.
 
 	// 特定の行の値を取り出す.
 	std::string ExtractAmount(const std::string& str)
@@ -29,10 +14,9 @@ namespace MyString
 
 		// ','までの値部分とその後の型部分を分割.
 		if (std::getline(iss, valueStr, ',') && std::getline(iss, typeStr, ';')) {
-			// 改行を取り除く必要がある場合はここで行う.
-			if (typeStr.back() == '\n') {
+			// Trim possible trailing newline or spaces.
+			while (!typeStr.empty() && (typeStr.back() == '\n' || typeStr.back() == '\r' || typeStr.back() == ' '))
 				typeStr.pop_back();
-			}
 
 			// 型がfloatの場合、小数点第一位までを文字列として返す.
 			if (typeStr == "float") {
@@ -46,7 +30,6 @@ namespace MyString
 
 			// 型がboolの場合真偽値を文字列として返す.
 			if (typeStr == "bool") {
-				// "true"または"1"の場合にtrueと判断
 				if (valueStr == "true" || valueStr == "1") {
 					return "true";
 				}
@@ -64,19 +47,15 @@ namespace MyString
 	// 特定の行を取り出す.
 	std::string ExtractLine(const std::string& str, int Line)
 	{
-		// UI情報を文字列としてistringstreamに読み込む.
 		std::istringstream iss(str);
-
-		// 指定された行まで読み飛ばす.
 		std::string line;
 		for (int i = 0; i <= Line; ++i)
 		{
 			if (!std::getline(iss, line))
 			{
-				return ""; // 行が見つからない場合は空文字列を返す.
+				return "";
 			}
 		}
-
 		return line;
 	}
 
@@ -84,156 +63,91 @@ namespace MyString
 	float Stof(std::string str)
 	{
 		try {
-			// std::stof を使って文字列から浮動小数点数に変換.
-			return std::stof(str); 
+			return std::stof(str);
 		}
-	
-		// TODO : 例外処理を作る.
-		catch (const std::invalid_argument& e) {
-			// 無効な引数が渡された場合の例外処理.
-			std::cerr << "引数無効だぜ: " << e.what() << std::endl;
+		catch (const std::exception& e) {
+			std::cerr << "Stof conversion failed: " << e.what() << std::endl;
 		}
-		catch (const std::out_of_range& e) {
-			std::cerr << "数値が範囲外だぜ: " << e.what() << std::endl;
-		}
-		// エラーが発生した場合はデフォルトで 0.0 を返す.
 		return 0.0f;
 	}
 
-	// 文字列をfloatへ変換.
+	// 文字列をboolへ変換.
 	bool Stob(std::string str)
 	{
-		try {
-			// 文字列がtrueか1ならtrueを返す.
-			if (str == "true" || str == "1") {
-				return true;
-			}
-			else {
-				return false;
-			}
-		}
-
-		// TODO : 例外処理を作る.
-		catch (const std::invalid_argument& e) {
-			// 無効な引数が渡された場合の例外処理.
-			std::cerr << "引数無効だぜ: " << e.what() << std::endl;
-		}
-		catch (const std::out_of_range& e) {
-			std::cerr << "数値が範囲外だぜ: " << e.what() << std::endl;
-		}
-		// エラーが発生した場合はデフォルトで 0.0 を返す.
-		return 0.0f;
+		if (str == "true" || str == "1") return true;
+		return false;
 	}
-	
+
 	std::string UTF16ToUTF8(const std::u16string& UTF16)
 	{
-		// 変換後のバッファサイズを取得.
-		int Size = WideCharToMultiByte(CP_THREAD_ACP, 0, reinterpret_cast<const wchar_t*>(UTF16.data()),
-			static_cast<int>(UTF16.size()), nullptr, 0, nullptr, nullptr);
-
-		if (Size == 0) {
-			// 変換に失敗した場合のエラーハンドリング.
-			DWORD error = GetLastError();
-			std::cerr << "WideCharToMultiByte failed with error: " << error << std::endl;
-
-			// 失敗した場合は空の文字列を返す.
-			return std::string();
-		}
-
-		// 変換結果を格納するバッファを用意.
-		std::string UTF8Buf(Size, 0);
-
-		// 実際に変換を行う.
-		if (WideCharToMultiByte(CP_THREAD_ACP, 0, reinterpret_cast<const wchar_t*>(UTF16.data()),
-			static_cast<int>(UTF16.size()), &UTF8Buf[0], Size, nullptr, nullptr) == 0) {
-
-			// 再度エラーハンドリング.
-			DWORD error = GetLastError();
-			std::cerr << "WideCharToMultiByte failed with error: " << error << std::endl;
-
-			// 失敗した場合は空の文字列を返す.
-			return std::string();
-		}
-
-		return UTF8Buf;
+		if (UTF16.empty()) return std::string();
+		// Convert UTF-16 (char16_t) to UTF-8 via WideChar APIs by first converting to wchar_t buffer.
+		int wideCount = MultiByteToWideChar(CP_UTF8, 0, "", 0, nullptr, 0); // dummy to satisfy signatures (not used)
+		// reinterpret_cast from char16_t* to wchar_t* is not portable; convert via wstring
+		std::wstring tmp;
+		tmp.resize(UTF16.size());
+		for (size_t i = 0; i < UTF16.size(); ++i) tmp[i] = static_cast<wchar_t>(UTF16[i]);
+		int sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, tmp.c_str(), static_cast<int>(tmp.size()), nullptr, 0, nullptr, nullptr);
+		if (sizeNeeded == 0) return std::string();
+		std::string out(sizeNeeded, '\0');
+		WideCharToMultiByte(CP_UTF8, 0, tmp.c_str(), static_cast<int>(tmp.size()), &out[0], sizeNeeded, nullptr, nullptr);
+		return out;
 	}
 
 	std::u16string UTF8ToUTF16(const std::string& UTF8)
 	{
-
-		// 変換後のバッファサイズを取得.
-		int Size = MultiByteToWideChar(CP_THREAD_ACP, 0, UTF8.c_str(), static_cast<int>(UTF8.size()), nullptr, 0);
-
-		if (Size == 0) {
-			// 変換に失敗した場合のエラーハンドリング.
-			DWORD error = GetLastError();
-			std::cerr << "MultiByteToWideChar failed with error: " << error << std::endl;
-
-			// 失敗した場合は空の文字列を返す.
-			return std::u16string();
-		}
-
-		// 変換結果を格納するバッファを用意.
-		std::u16string UTF16Buf(Size, 0);
-
-		// 実際に変換を行う.
-		int result = MultiByteToWideChar(CP_THREAD_ACP, 0, UTF8.c_str(), static_cast<int>(UTF8.size()),
-			reinterpret_cast<wchar_t*>(&UTF16Buf[0]), Size);
-
-		if (result == 0) {
-			// 再度エラーハンドリング.
-			DWORD error = GetLastError();
-			std::cerr << "MultiByteToWideChar failed with error: " << error << std::endl;
-
-			// 失敗した場合は空の文字列を返す.
-			return std::u16string();
-		}
-
-		return UTF16Buf;
+		if (UTF8.empty()) return std::u16string();
+		int wideSize = MultiByteToWideChar(CP_UTF8, 0, UTF8.c_str(), static_cast<int>(UTF8.size()), nullptr, 0);
+		if (wideSize == 0) return std::u16string();
+		std::wstring tmp(wideSize, L'\0');
+		MultiByteToWideChar(CP_UTF8, 0, UTF8.c_str(), static_cast<int>(UTF8.size()), &tmp[0], wideSize);
+		std::u16string out(tmp.size(), u'\0');
+		for (size_t i = 0; i < tmp.size(); ++i) out[i] = static_cast<char16_t>(tmp[i]);
+		return out;
 	}
 
-	std::wstring MyString::CovertToWString(const std::string& str, UINT codePage)
+	std::wstring CovertToWString(const std::string& str, UINT codePage)
 	{
+		if (str.empty()) return std::wstring();
 		int wlen = MultiByteToWideChar(codePage, 0, str.c_str(), -1, nullptr, 0);
 		if (wlen == 0) { return L""; }
 
 		std::wstring wstr(wlen, 0);
 		MultiByteToWideChar(codePage, 0, str.c_str(), -1, &wstr[0], wlen);
 
+		// MultiByteToWideChar includes null terminator in count; remove it for std::wstring correctness
+		if (!wstr.empty() && wstr.back() == L'\0') wstr.pop_back();
 		return wstr;
 	}
 
-	std::string MyString::ConvertFromWString(const std::wstring& wstr, UINT codePage)
+	std::string ConvertFromWString(const std::wstring& wstr, UINT codePage)
 	{
+		if (wstr.empty()) return std::string();
 		int len = WideCharToMultiByte(codePage, 0, wstr.c_str(), -1, nullptr, 0, nullptr, nullptr);
-		if (len == 0) { return ""; }
+		if (len == 0) { return std::string(); }
 
 		std::string output(len, 0);
 		WideCharToMultiByte(codePage, 0, wstr.c_str(), -1, &output[0], len, nullptr, nullptr);
-
+		if (!output.empty() && output.back() == '\0') output.pop_back();
 		return output;
 	}
 
-	std::string MyString::ConvertEncodeing(const std::string& str, UINT fromCodePage, UINT toCodePage)
+	std::string ConvertEncodeing(const std::string& str, UINT fromCodePage, UINT toCodePage)
 	{
 		return ConvertFromWString(CovertToWString(str, fromCodePage), toCodePage);
 	}
 
-	std::wstring MyString::ConvertEncodeing(const std::wstring& wstr, UINT toCodePage)
+	std::wstring ConvertEncodeing(const std::wstring& wstr, UINT toCodePage)
 	{
-		return StringToWString(ConvertFromWString(wstr, toCodePage));
+		return CovertToWString(ConvertFromWString(wstr, toCodePage), CP_UTF8);
 	}
 
-	//------------------------------------------------------------------------------------------------.
-
-	const std::wstring MyString::StringToWString(const std::string& str)
+	const std::wstring StringToWString(const std::string& str)
 	{
 		return CovertToWString(str, CP_ACP);
 	}
 
-	//------------------------------------------------------------------------------------------------.
-
-	const std::string MyString::WStringToString(const std::wstring& wstr)
+	const std::string WStringToString(const std::wstring& wstr)
 	{
 		return ConvertFromWString(wstr, CP_UTF8);
 	}
