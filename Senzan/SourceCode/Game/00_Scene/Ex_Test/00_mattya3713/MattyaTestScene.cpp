@@ -100,7 +100,7 @@ void MattyaTestScene::Update()
 
 	ImGui::Text("Average: %.1f FPS (%.3f ms/frame)", fps, ms);
 
-	// ó‘Ô‚É‰‚¶‚½Œx•\¦
+	// 2. ó‘Ô‚É‰‚¶‚½Œx•\¦
 	if (fps < 50.0f) {
 		ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Warning: Low FPS!");
 	}

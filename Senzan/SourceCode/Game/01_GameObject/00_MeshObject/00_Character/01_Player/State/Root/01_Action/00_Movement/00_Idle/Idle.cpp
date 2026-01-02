@@ -14,12 +14,11 @@ Idle::Idle(Player* owner)
 	: Movement(owner)
 {
 }
-
 Idle::~Idle()
 {
 }
 
-// IDã®å–å¾—.
+// ID‚ÌŽæ“¾.
 constexpr PlayerState::eID Idle::GetStateID() const
 {
 	return PlayerState::eID::Idle;
@@ -36,10 +35,14 @@ void Idle::Enter()
 
 void Idle::Update()
 {
-	// å…¥åŠ›ã‚’å–å¾—.
+	// “ü—Í‚ðŽæ“¾.
 	DirectX::XMFLOAT2 input_vec = VirtualPad::GetInstance().GetAxisInput(VirtualPad::eGameAxisAction::Move);
 
-	// å…¥åŠ›ãŒã‚ã‚Œã°ç§»å‹•.
+	// ˆÚ“®ƒxƒNƒgƒ‹‚ðŒ¸­‚³‚¹‚é.
+	bool is_x_move = MyMath::DecreaseToValue(m_pOwner->m_MoveVec.x, 0.f, m_pOwner->m_MoveVecDeceleration * m_pOwner->GetDelta() * 0.01f);
+	bool is_z_move = MyMath::DecreaseToValue(m_pOwner->m_MoveVec.y, 0.f, m_pOwner->m_MoveVecDeceleration * m_pOwner->GetDelta() * 0.01f);
+
+	// “ü—Í‚ª‚ ‚ê‚ÎˆÚ“®.
 	if (!MyMath::IsVector2NearlyZero(input_vec, 0.f)) {
 		m_pOwner->ChangeState(eID::Run);
 		return;

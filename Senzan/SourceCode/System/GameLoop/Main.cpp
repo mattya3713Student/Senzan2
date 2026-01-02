@@ -130,6 +130,8 @@ void Main::Draw()
 
     // 画面に表示.
     DirectX11::GetInstance().Present();
+
+
 }
 
 // 解放処理.

@@ -143,6 +143,7 @@ protected:
 	// UŒ‚”»’è‚ÌActive
 	inline void SetAttackColliderActive(bool Active) const noexcept { m_pAttackCollider->SetActive(Active); }
 
+
 	//“–‚½‚è”»’è‚ğæ“¾‚·‚é.
 	//’ÊíUŒ‚.
 	ColliderBase* GetSlashCollider() const;
