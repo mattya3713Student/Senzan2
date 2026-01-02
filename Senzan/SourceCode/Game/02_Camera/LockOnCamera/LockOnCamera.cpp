@@ -4,12 +4,6 @@
 #include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/Boss.h"
 #include "Game/04_Time/Time.h"
 
-/**********************************************************************************
-* @author    : 淵脇 未来.
-* @date      : 2026/01/02.
-* @brief     : ロックオンカメラの実装ファイル.
-**********************************************************************************/
-
 static constexpr float FOLLOW_SPEED = 0.004f;
 static constexpr float HEIGHT_OFFSET = 5.0f;
 static constexpr float LOOK_OFFSET = 4.5f;
