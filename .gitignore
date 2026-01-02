@@ -472,13 +472,6 @@ ai-debug.log
 # If you want to stop tracking an already-tracked AI file, run:
 #   git rm --cached <path/to/file>
 
-/tools/ai/generated/
-/tools/ai/*.log
-/tools/ai/*.tmp
-
-# keep a marker so the directory can be created and optionally committed
-!tools/ai/.gitkeep
-
-# If you need to explicitly allow a specific generated file to be tracked,
-# add a negate rule here, for example:
-# !tools/ai/generated/important.json
+/docs/ai-generated/
+/docs/ai-generated/*
+!docs/ai-generated/.gitkeep
