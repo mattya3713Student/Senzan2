@@ -19,4 +19,12 @@ if [ $STATUS -ne 0 ]; then
   exit $STATUS
 fi
 
+# Run AI location check
+$PYTHON tools/pre-commit/check_ai_location.py
+STATUS=$?
+if [ $STATUS -ne 0 ]; then
+  echo "Pre-commit: AI location check failed. Please move AI-generated files under tools/ai/generated/."
+  exit $STATUS
+fi
+
 exit 0
