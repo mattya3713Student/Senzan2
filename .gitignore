@@ -424,3 +424,15 @@ FodyWeavers.xsd
 *.msp
 
 .idea/
+
+## 追記: リポジトリルートに誤って存在する可能性のあるファイル／ディレクトリを無視
+/config
+/description
+/HEAD
+/hooks/
+/info/
+
+# 自動生成ファイルをまとめるディレクトリ（ツール側で出力先をここに統一してください）
+/Generated/
+/GeneratedRefs/
+/*.generated
