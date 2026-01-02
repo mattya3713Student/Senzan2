@@ -24,8 +24,8 @@ void Title::Initialize()
 
 void Title::Create()
 {
-	SoundManager::GetInstance().Play("Sunlight—zË‚µ", true);
-	SoundManager::GetInstance().SetVolume("Sunlight—zË‚µ", 8000);
+	SoundManager::GetInstance().Play("Sunlighté™½å°„ã—", true);
+	SoundManager::GetInstance().SetVolume("Sunlighté™½å°„ã—", 8000);
 }
 
 void Title::Update()
