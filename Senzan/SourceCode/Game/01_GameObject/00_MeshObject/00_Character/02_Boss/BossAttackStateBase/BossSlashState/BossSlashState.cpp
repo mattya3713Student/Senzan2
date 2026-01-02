@@ -18,6 +18,8 @@ constexpr static float AnimSlashToIdolTime	= 30.0f;
 BossSlashState::BossSlashState(Boss* owner)
 	: BossAttackStateBase(owner)
 
+	, m_StartPos {}
+
 	, m_pIdol()
 
 	, m_pTransform(std::make_shared<Transform>())
@@ -41,9 +43,8 @@ void BossSlashState::Enter()
 
 	auto* attackColl = m_pOwner->m_pAttackCollider;
 	if (attackColl) {
-		attackColl->SetRadius(15.0f);        // 斬撃の横幅
-		attackColl->SetHeight(40.0f);        // 斬撃の長さ
-		// 攻撃判定をボスの少し前方に配置する
+		attackColl->SetRadius(15.0f);      
+		attackColl->SetHeight(40.0f);
 		attackColl->SetPositionOffset(0.0f, 10.0f, -30.0f);
 	}
 
@@ -70,8 +71,6 @@ void BossSlashState::Enter()
 	//初期位置を保存.
 	DirectX::XMStoreFloat3(&m_StartPos, BossPosXM);
 
-
-
 	//アニメーションの速度.
 	m_pOwner->SetAnimSpeed(30.0);
 	//斬るアニメーションの再生.
@@ -88,8 +87,8 @@ void BossSlashState::Update()
 	switch (m_List)
 	{
 	case BossSlashState::enList::none:
-		// 1. 斬撃アニメーション開始に合わせて判定を有効化
-		if (pSlashCollider) {
+		if (pSlashCollider) 
+		{
 			pSlashCollider->SetActive(true);
 		}
 
@@ -99,8 +98,8 @@ void BossSlashState::Update()
 	case BossSlashState::enList::SlashAttack:
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Slash))
 		{
-			// 2. 攻撃アニメーションが終わったので、判定を無効化する
-			if (pSlashCollider) {
+			if (pSlashCollider)
+			{
 				pSlashCollider->SetActive(false);
 			}
 

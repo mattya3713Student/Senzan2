@@ -24,11 +24,14 @@ BossShoutState::~BossShoutState()
 void BossShoutState::Enter()
 {
 
-    if (auto* shoutCol = m_pOwner->GetShoutCollider()) {
+    if (auto* shoutCol = m_pOwner->GetShoutCollider()) 
+    {
         shoutCol->SetActive(true);
     }
+
     // 当たり判定を有効化.
     m_pOwner->SetAttackColliderActive(true);
+
     //ボスの向きを設定.
     const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
     DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&BossPosF);
@@ -59,7 +62,6 @@ void BossShoutState::Update()
     switch (m_List)
     {
     case BossShoutState::enShout::none:
-        // Enterで有効化しているため、ここではステート遷移のみ
         m_List = enShout::Shout;
         break;
 
@@ -79,8 +81,8 @@ void BossShoutState::Update()
             m_pOwner->ChangeAnim(Boss::enBossAnim::LaserEnd);
             m_List = enShout::ShoutToIdol;
 
-            // ★ 叫び終わったタイミングで早めに判定を消したい場合はここでSetActive(false)
-            if (auto* shoutCol = m_pOwner->GetShoutCollider()) {
+            if (auto* shoutCol = m_pOwner->GetShoutCollider()) 
+            {
                 shoutCol->SetActive(false);
             }
         }
@@ -110,38 +112,6 @@ void BossShoutState::Exit()
 {	// 当たり判定を無効化.
     m_pOwner->SetAttackColliderActive(false);
   
-}
-
-void BossShoutState::BoneDraw()
-{
-    if (m_pOwner->GetAttachMesh().expired()) return;
-
-    std::shared_ptr<SkinMesh> staticMesh = std::dynamic_pointer_cast<SkinMesh>(m_pOwner->GetAttachMesh().lock());
-    if (!staticMesh) return;
-
-    const std::string TargetBoneName = "Bone002";
-
-    DirectX::XMFLOAT3 BonePos{};
-    if (staticMesh->GetPosFromBone(TargetBoneName.c_str(), &BonePos))
-    {
-        DirectX::XMFLOAT3 ForWard = m_pOwner->GetTransform()->GetForward();
-
-        float OffSetDist = 0.0f;
-
-        DirectX::XMVECTOR FwdVec = DirectX::XMVector3Normalize(DirectX::XMLoadFloat3(&ForWard));
-
-        DirectX::XMVECTOR BoneVec = DirectX::XMLoadFloat3(&BonePos);
-        DirectX::XMVECTOR OffSetPos = DirectX::XMVectorAdd(BoneVec, DirectX::XMVectorScale(FwdVec, OffSetDist));
-
-        DirectX::XMStoreFloat3(&BonePos, OffSetPos);
-        BonePos.y = 2.5f;
-
-        m_pOwner->GetTransform()->SetPosition(BonePos);
-    }
-    else return;
-
-  //  m_pColl->Draw(transform);
-
 }
 
 void BossShoutState::BossAttack()
