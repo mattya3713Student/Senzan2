@@ -1,30 +1,41 @@
-#!/usr/bin/env bash
-# Git hook wrapper to validate comment headers on staged files.
-# Enable by running: git config core.hooksPath .githooks
+@echo off
+REM Windows-only pre-commit hook wrapper (CMD)
+REM Enable by running: git config core.hooksPath .githooks
 
-# Find Python executable
-if command -v python3 >/dev/null 2>&1; then
-  PYTHON=python3
-elif command -v python >/dev/null 2>&1; then
-  PYTHON=python
-else
-  echo "ERROR: Python is required to run pre-commit checks."
-  exit 1
-fi
+REM Determine Python launcher
+set PY=
+where py >nul 2>&1
+if %ERRORLEVEL%==0 set PY=py
+if not defined PY (
+  where python >nul 2>&1
+  if %ERRORLEVEL%==0 set PY=python
+)
+if not defined PY (
+  where python3 >nul 2>&1
+  if %ERRORLEVEL%==0 set PY=python3
+)
 
-$PYTHON tools/pre-commit/check_comments.py
-STATUS=$?
-if [ $STATUS -ne 0 ]; then
-  echo "Pre-commit: comment style check failed. Commit aborted."
-  exit $STATUS
-fi
+if not defined PY (
+  echo ERROR: Python is required to run pre-commit checks. Install Python or add it to PATH.
+  exit /b 1
+)
 
-# Run AI location check
-$PYTHON tools/pre-commit/check_ai_location.py
-STATUS=$?
-if [ $STATUS -ne 0 ]; then
-  echo "Pre-commit: AI location check failed. Please move AI-generated files under tools/ai/generated/."
-  exit $STATUS
-fi
+REM Change to repository root (parent of .githooks)
+pushd "%~dp0.." >nul 2>&1
 
-exit 0
+"%PY%" "tools\pre-commit\check_comments.py"
+if %ERRORLEVEL% neq 0 (
+  echo Pre-commit: comment style check failed. Commit aborted.
+  popd
+  exit /b %ERRORLEVEL%
+)
+
+"%PY%" "tools\pre-commit\check_ai_location.py"
+if %ERRORLEVEL% neq 0 (
+  echo Pre-commit: AI location check failed. Please move AI-generated files under tools\ai\generated\.
+  popd
+  exit /b %ERRORLEVEL%
+)
+
+popd
+exit /b 0
