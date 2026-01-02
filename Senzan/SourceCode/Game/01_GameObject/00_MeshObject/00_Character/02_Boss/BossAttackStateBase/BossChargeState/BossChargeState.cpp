@@ -5,8 +5,8 @@
 #include "Game//04_Time//Time.h"
 
 BossChargeState::BossChargeState(Boss* owner)
-	: BossAttackStateBase		(owner)
-	, m_ChargeSlash				()
+	: BossAttackStateBase(owner)
+	, m_ChargeSlash()
 {
 }
 
@@ -18,6 +18,7 @@ void BossChargeState::Enter()
 {
 	// “–‚½‚è”»’è‚ð—LŒø‰».
 	m_pOwner->SetAttackColliderActive(true);
+
 	m_pOwner->SetAnimSpeed(25.0);
 	m_pOwner->ChangeAnim(Boss::enBossAnim::Charge);
 }
@@ -46,3 +47,5 @@ void BossChargeState::Exit()
 void BossChargeState::BossAttack()
 {
 }
+
+

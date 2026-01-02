@@ -31,59 +31,80 @@ void BossChargeSlashState::Enter()
 {
 	m_currentTimer = 0.0f;
 
-	// 当たり判定を有効化.
+	// --- 追加：当たり判定のパラメータ設定 ---
 	m_pOwner->SetAttackColliderActive(true);
+	auto* attackColl = m_pOwner->m_pAttackCollider;
+	if (attackColl) {
+		// チャージ斬りなので、通常の斬撃より少し大きく設定する例
+		attackColl->SetRadius(20.0f);
+		attackColl->SetHeight(45.0f);
+		attackColl->SetPositionOffset(0.0f, 10.0f, -35.0f);
+	}
+	// ---------------------------------------
 
-	//ボスの向きを設定.
+	// ボスの向きを設定
 	const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
 	DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&BossPosF);
 
 	const DirectX::XMFLOAT3 PlayerPosF = m_pOwner->m_PlayerPos;
 	DirectX::XMVECTOR PlayerPosXM = DirectX::XMLoadFloat3(&PlayerPosF);
 
-	//XMVectorSubtract: 引数の左から右を引く関数.
 	DirectX::XMVECTOR Direction = DirectX::XMVectorSubtract(PlayerPosXM, BossPosXM);
-	//X,Z方向の平面の方向ベクトル.
 	Direction = DirectX::XMVectorSetY(Direction, 0.0f);
 
-	//Y軸回転角度を計算し、ボスをプレイヤーに向かせる.
 	float dx = DirectX::XMVectorGetX(Direction);
 	float dz = DirectX::XMVectorGetZ(Direction);
 	float angle_radian = std::atan2f(-dx, -dz);
 	m_pOwner->SetRotationY(angle_radian);
 
-	//初期位置を保存.
 	DirectX::XMStoreFloat3(&m_StartPos, BossPosXM);
 
-	//アニメーション速度.
 	m_pOwner->SetAnimSpeed(25.0);
-	//ため斬りアニメーションの再生.
 	m_pOwner->ChangeAnim(Boss::enBossAnim::ChargeAttack);
 }
 
 void BossChargeSlashState::Update()
 {
+	// Bossクラスから斬撃用判定を取得
+	auto* pSlashCollider = m_pOwner->GetSlashCollider();
+
 	switch (m_List)
 	{
 	case BossChargeSlashState::enChargeSlashAnim::none:
+		// --- 追加：攻撃開始時に判定を有効化 ---
+		if (pSlashCollider)
+		{
+			pSlashCollider->SetActive(true);
+		}
 		m_List = enChargeSlashAnim::Charge;
 		break;
+
 	case BossChargeSlashState::enChargeSlashAnim::Charge:
+		// チャージ攻撃アニメーションが終了したら
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::ChargeAttack))
 		{
+			// --- 追加：攻撃が終わったので判定を無効化 ---
+			if (pSlashCollider)
+			{
+				pSlashCollider->SetActive(false);
+			}
+
 			m_pOwner->ChangeAnim(Boss::enBossAnim::ChargeToIdol);
 			m_List = enChargeSlashAnim::ChargeSlash;
 		}
 		break;
+
 	case BossChargeSlashState::enChargeSlashAnim::ChargeSlash:
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::ChargeToIdol))
 		{
 			m_List = enChargeSlashAnim::ChargeSlashToIdol;
 		}
 		break;
+
 	case BossChargeSlashState::enChargeSlashAnim::ChargeSlashToIdol:
 		m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
 		break;
+
 	default:
 		break;
 	}

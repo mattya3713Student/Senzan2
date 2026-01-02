@@ -30,8 +30,6 @@ public:
 	void Draw() override;
 	void Exit() override;
 
-	void BoneDraw();
-
 private:
 	void BossAttack() override;
 private:
