@@ -43,7 +43,7 @@ foreach ($f in $toProcess) {
     git mv -f -- "$src" "$dest"
     if ($LASTEXITCODE -ne 0) {
         Write-Warning "git mv failed for $src -> $dest; attempting filesystem move."
-        try { Move-Item -Force -Path $src -Destination $dest } catch { Write-Error "Failed to move $src: $_"; continue }
+        try { Move-Item -Force -Path $src -Destination $dest } catch { Write-Error ("Failed to move {0}: {1}" -f $src, $_); continue }
         # If we moved by filesystem, remove from index
         git rm --cached -- "$src" 2>$null
     }
