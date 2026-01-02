@@ -41,6 +41,12 @@ Boss::Boss()
 	, m_vCurrentMoveVelocity(0.f, 0.f, 0.f)
 	, deleta_time(0.f)
 	, m_HitPoint(0.0f)
+
+	, m_pSlashCollider(nullptr)
+
+	, m_pStompCollider(nullptr)
+
+	, m_pShoutCollider(nullptr)
 {
 	AttachMesh(MeshManager::GetInstance().GetSkinMesh("boss"));
 
@@ -71,16 +77,13 @@ Boss::Boss()
 	attackCollider->SetActive(false);
 	attackCollider->SetColor(Color::eColor::Red);
 	attackCollider->SetAttackAmount(5.0f);
-	attackCollider->SetHeight(30.0f);
-	attackCollider->SetRadius(10.0f);
-	attackCollider->SetPositionOffset(0.f, 1.5f, -20.f);
+	attackCollider->SetHeight(0.0);
+	attackCollider->SetRadius(0.0);
+	attackCollider->SetPositionOffset(0.f, -50.0f, -20.f);
 	attackCollider->SetMyMask(eCollisionGroup::Enemy_Attack);
 	attackCollider->SetTarGetTargetMask(eCollisionGroup::Player_Damage | eCollisionGroup::Player_Dodge | eCollisionGroup::Player_JustDodge | eCollisionGroup::Player_Parry);
 
 	m_upColliders->AddCollider(std::move(attackCollider));
-
-	//攻撃動作の確認用のために書いている.
-	//m_State->ChangeState(std::make_shared<BossStompState>(this));
 
 	//ボスの最大体力.
 	m_HitPoint = HP_Max;
@@ -114,6 +117,56 @@ Boss::Boss()
 
 	m_upColliders->AddCollider(std::move(press_collider));
 
+	//通常攻撃の当たり判定作成.
+	auto slashCol = std::make_unique<CapsuleCollider>(m_spTransform);
+
+	m_pSlashCollider = slashCol.get();
+
+	m_pSlashCollider->SetMyMask(eCollisionGroup::Enemy_Attack);
+	m_pSlashCollider->SetTarGetTargetMask(eCollisionGroup::Player_Damage	);
+
+	m_pSlashCollider->SetAttackAmount(10.0f); 
+	m_pSlashCollider->SetRadius(15.0f);         
+	m_pSlashCollider->SetHeight(40.0f);         
+	m_pSlashCollider->SetPositionOffset(0.0f, 10.0f, -30.0f); 
+
+	m_pSlashCollider->SetActive(false);
+	m_pSlashCollider->SetColor(Color::eColor::Red);
+
+	m_upColliders->AddCollider(std::move(slashCol));
+
+	auto stompCol = std::make_unique<CapsuleCollider>(m_spTransform);
+
+	m_pStompCollider = stompCol.get();
+
+	m_pStompCollider->SetMyMask(eCollisionGroup::Enemy_Attack);
+	m_pStompCollider->SetTarGetTargetMask(eCollisionGroup::Player_Damage );
+
+	m_pStompCollider->SetAttackAmount(5.0f);
+	m_pStompCollider->SetRadius(30.0f);
+	m_pStompCollider->SetHeight(15.0f);
+
+	m_pStompCollider->SetActive(false);
+	m_pStompCollider->SetColor(Color::eColor::Gray);
+
+	m_upColliders->AddCollider(std::move(stompCol));
+
+	std::unique_ptr<CapsuleCollider> Shout_collider = std::make_unique<CapsuleCollider>(m_spTransform);
+
+	m_pShoutCollider = Shout_collider.get(); 
+
+	Shout_collider->SetColor(Color::eColor::White);
+	Shout_collider->SetHeight(75.0f);
+	Shout_collider->SetRadius(50.0f);
+	Shout_collider->SetPositionOffset(0.f, 1.5f, 0.f);
+	Shout_collider->SetAttackAmount(10.f);
+	Shout_collider->SetMyMask(eCollisionGroup::Enemy_Attack); 
+	Shout_collider->SetTarGetTargetMask(eCollisionGroup::Player_Attack);
+
+	m_pShoutCollider->SetActive(false);
+	m_upColliders->AddCollider(std::move(Shout_collider));
+
+
 	CollisionDetector::GetInstance().RegisterCollider(*m_upColliders);
 }
 
@@ -145,6 +198,9 @@ void Boss::LateUpdate()
 	if (!m_State) {
 		return;
 	}
+
+	UpdateSlashColliderTransform();
+	UpdateStompColliderTransform();
 
 	// ステートマシーンの最終更新を実行.
 	m_State->LateUpdate();
@@ -354,5 +410,78 @@ void Boss::HandleParryDetection()
 				return;
 			}
 		}
+	}
+}
+
+ColliderBase* Boss::GetSlashCollider() const
+{
+	return m_pSlashCollider;
+}
+
+ColliderBase* Boss::GetStompCollider() const
+{
+	return m_pStompCollider;
+}
+
+ColliderBase* Boss::GetShoutCollider() const
+{
+	return m_pShoutCollider;
+}
+
+void Boss::UpdateSlashColliderTransform()
+{
+	if (GetAttachMesh().expired() || !m_pSlashCollider) return;
+	auto skinMesh = std::dynamic_pointer_cast<SkinMesh>(GetAttachMesh().lock());
+	if (!skinMesh) return;
+
+	//ボーンの位置を命名.
+	const std::string targetBoneName = "boss_Hand_R";
+	DirectX::XMMATRIX bone_local_matrix;
+	if (!skinMesh->GetMatrixFromBone(targetBoneName.c_str(), &bone_local_matrix)) return;
+
+	DirectX::XMMATRIX boss_world_matrix = m_spTransform->GetWorldMatrix();
+
+	DirectX::XMMATRIX bone_world_matrix = bone_local_matrix * boss_world_matrix;
+
+	DirectX::XMVECTOR v_final_pos, v_final_quat, v_final_scale;
+	DirectX::XMMatrixDecompose(&v_final_scale, &v_final_quat, &v_final_pos, bone_world_matrix);
+
+	DirectX::XMVECTOR b_pos, b_quat, b_scale;
+	DirectX::XMMatrixDecompose(&b_scale, &b_quat, &b_pos, boss_world_matrix);
+
+	DirectX::XMVECTOR relative_pos = DirectX::XMVectorSubtract(v_final_pos, b_pos);
+	DirectX::XMVECTOR relative_quat = DirectX::XMQuaternionMultiply(v_final_quat, DirectX::XMQuaternionInverse(b_quat));
+
+	DirectX::XMFLOAT3 f_relative_pos;
+	DirectX::XMStoreFloat3(&f_relative_pos, relative_pos);
+
+	m_pSlashCollider->SetPositionOffset(f_relative_pos.x, f_relative_pos.y, f_relative_pos.z);
+}
+
+void Boss::UpdateStompColliderTransform()
+{
+	if (GetAttachMesh().expired() || !m_pStompCollider) return;
+	auto skinMesh = std::dynamic_pointer_cast<SkinMesh>(GetAttachMesh().lock());
+	if (!skinMesh) return;
+
+	//ボーンの名前を命名.
+	const std::string TargetBoneName = "boss_pSphere28";
+
+	DirectX::XMFLOAT3 boneWorldPos{};
+	if (skinMesh->GetPosFromBone(TargetBoneName.c_str(), &boneWorldPos))
+	{
+		DirectX::XMMATRIX bossWorldMatrix = m_spTransform->GetWorldMatrix();
+
+		DirectX::XMVECTOR bossPosVec = bossWorldMatrix.r[3];
+
+		DirectX::XMFLOAT3 bossWorldPos;
+		DirectX::XMStoreFloat3(&bossWorldPos, bossPosVec);
+
+		//表示位置の計算.
+		float offsetX = boneWorldPos.x - bossWorldPos.x;
+		float offsetY = boneWorldPos.y - bossWorldPos.y;
+		float offsetZ = boneWorldPos.z - bossWorldPos.z;
+
+		m_pStompCollider->SetPositionOffset(offsetX, offsetY, offsetZ);
 	}
 }

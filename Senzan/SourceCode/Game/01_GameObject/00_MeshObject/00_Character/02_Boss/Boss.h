@@ -143,6 +143,17 @@ protected:
 	// 攻撃判定のActive
 	inline void SetAttackColliderActive(bool Active) const noexcept { m_pAttackCollider->SetActive(Active); }
 
+	//当たり判定を取得する.
+	//通常攻撃.
+	ColliderBase* GetSlashCollider() const;
+	//ジャンプ攻撃.
+	ColliderBase* GetStompCollider() const;
+	//叫び攻撃.
+	ColliderBase* GetShoutCollider() const;
+	//通常攻撃(ボーンの位置設定).
+	void UpdateSlashColliderTransform();
+	//ジャンプ(ボーンの位置設定).
+	void UpdateStompColliderTransform();
 protected:
 	//ステートマシンのメンバ変数.
 	std::unique_ptr<StateMachine<Boss>> m_State;
@@ -163,4 +174,8 @@ protected:
 
 	float m_HitPoint;
 
+	//当たり判定のメンバ変数.
+	ColliderBase* m_pSlashCollider;
+	ColliderBase* m_pStompCollider;
+	ColliderBase* m_pShoutCollider;
 };
