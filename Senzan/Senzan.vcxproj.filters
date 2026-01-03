@@ -120,7 +120,7 @@
     <ClCompile Include="SourceCode\System\Singleton\ImGui\CImGuiManager.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossDeadState\BossDeadState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossThrowingState\BossThrowingState.cpp" />
-    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\03_SnowBall\SnowBall.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\03_SnowBall\SnowBall.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossChargeState\BossChargeState.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\CollisionDetector\CollisionDetector.cpp" />
     <ClCompile Include="SourceCode\Game\00_Scene\Ex_Test\03_UIEditor\UIEditor.cpp" />
@@ -131,7 +131,7 @@
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UITitle\UITitle.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UIGameMain\UIGameMain.cpp" />
     <ClCompile Include="SourceCode\Game\02_Camera\LockOnCamera\LockOnCamera.cpp" />
-    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\03_BackGround\BackGround.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\04_BackGround\BackGround.cpp" />
     <ClCompile Include="SourceCode\Game\00_Scene\Ex_Test\10_mattya3713_Parry\MattyaTestScene_Parry.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\Select\Select.cpp" />
     <ClCompile Include="SourceCode\Resource\Effect\EffectResource.cpp" />
@@ -272,7 +272,7 @@
     <ClInclude Include="SourceCode\System\Singleton\ImGui\CImGuiManager.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossDeadState\BossDeadState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossThrowingState\BossThrowingState.h" />
-    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\03_SnowBall\SnowBall.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\03_SnowBall\SnowBall.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossChargeState\BossChargeState.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\CollisionInfo.h" />
     <ClInclude Include="SourceCode\System\Singleton\CollisionDetector\CollisionDetector.h" />
@@ -283,7 +283,7 @@
     <ClInclude Include="SourceCode\Game\03_Collision\Sprite\SpriteCollider.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\UIGameMain\UIGameMain.h" />
     <ClInclude Include="SourceCode\Game\02_Camera\LockOnCamera\LockOnCamera.h" />
-    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\03_BackGround\BackGround.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\04_BackGround\BackGround.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\Ex_Test\10_mattya3713_Parry\MattyaTestScene_Parry.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\Select\Select.h" />
     <ClInclude Include="SourceCode\Resource\Effect\EffectResource.h" />

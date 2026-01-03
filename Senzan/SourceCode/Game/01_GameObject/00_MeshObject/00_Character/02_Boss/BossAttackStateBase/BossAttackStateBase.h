@@ -1,13 +1,13 @@
-#pragma once
+ï»¿#pragma once
 
 #include "System//Utility//StateMachine//StateBase.h"
 #include "Game\03_Collision\00_Core\01_Capsule\CapsuleCollider.h"
 
 /*****************************************************************
-*	ƒ{ƒX‚ÌUŒ‚ƒx[ƒXƒNƒ‰ƒX(Šî’êƒNƒ‰ƒX).
+*	ãƒœã‚¹ã®æ”»æ’ƒãƒ™ãƒ¼ã‚¹ã‚¯ãƒ©ã‚¹(åŸºåº•ã‚¯ãƒ©ã‚¹).
 **/
 
-//‘O•ûéŒ¾.
+//å‰æ–¹å®£è¨€.
 class Boss;
 class Time;
 
@@ -19,44 +19,44 @@ public:
 	BossAttackStateBase(Boss* owner);
 	virtual ~BossAttackStateBase() = default;
 
-	//Å‰‚É“ü‚é.
+	//æœ€åˆã«å…¥ã‚‹.
 	virtual void Enter() override {};
-	//“®ì.
+	//å‹•ä½œ.
 	virtual void Update() override {};
-	//‚©‚©‚È‚­‚Ä‚¢‚¢.
+	//ã‹ã‹ãªãã¦ã„ã„.
 	virtual void LateUpdate() override {};
-	//•`‰æ.
+	//æç”».
 	virtual void Draw() override {};
-	//I‚í‚é‚Æ‚«‚Éˆê‰ñ‚¾‚¯“ü‚é.
+	//çµ‚ã‚ã‚‹ã¨ãã«ä¸€å›ã ã‘å…¥ã‚‹.
 	virtual void Exit() override {};
 
-	//UŒ‚‚ğÀs‚³‚¹‚éŠÖ”.
+	//æ”»æ’ƒã‚’å®Ÿè¡Œã•ã›ã‚‹é–¢æ•°.
 	virtual void BossAttack() {};
 
-	// ƒpƒŠƒB[—pŠÖ”.
+	// ãƒ‘ãƒªã‚£ãƒ¼ç”¨é–¢æ•°.
 	//virtual bool CanBeParried() const { return m_canBeParried; }
 
 	virtual void ParryTime() {};
 
 protected:
-	//ƒƒ“ƒo•Ï”‚ğì¬.
-	//UŒ‚ŠJn‚©‚ç‚ÌŒo‰ßŠÔæ“¾
+	//ãƒ¡ãƒ³ãƒå¤‰æ•°ã‚’ä½œæˆ.
+	//æ”»æ’ƒé–‹å§‹ã‹ã‚‰ã®çµŒéæ™‚é–“å–å¾—
 	float m_Attacktime;
-	//ƒ_ƒ[ƒW‚ğˆê“x—^‚¦‚½‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒO.
+	//ãƒ€ãƒ¡ãƒ¼ã‚¸ã‚’ä¸€åº¦ä¸ãˆãŸã‹ã©ã†ã‹ã®ãƒ•ãƒ©ã‚°.
 	//bool m_isDamageDealt; 
-	//ƒpƒŠƒB[‰Â”\‚©‚Ç‚¤‚©.
+	//ãƒ‘ãƒªã‚£ãƒ¼å¯èƒ½ã‹ã©ã†ã‹.
 	//bool m_canBeParried;       
 	// 
 
-	//ƒAƒjƒ[ƒVƒ‡ƒ“‚É•K—v‚Èƒƒ“ƒo•Ï”‚ğİ’è‚µ‚Ä‚¢‚é.
-	DirectX::XMFLOAT3			m_BonePos;	// ƒ{[ƒ“À•W.
+	//ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã«å¿…è¦ãªãƒ¡ãƒ³ãƒå¤‰æ•°ã‚’è¨­å®šã—ã¦ã„ã‚‹.
+	DirectX::XMFLOAT3			m_BonePos;	// ãƒœãƒ¼ãƒ³åº§æ¨™.
 
 	LPD3DXANIMATIONCONTROLLER   AnimCtrl;
 
 	std::shared_ptr<Transform> m_pTransform;
 
 	float m_currentTimer;
-	static constexpr float m_currentAnimSpeed = 0.001;
+	static constexpr float m_currentAnimSpeed = 0.001f;
 
 
 
