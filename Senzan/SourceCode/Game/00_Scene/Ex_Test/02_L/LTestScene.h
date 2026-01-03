@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../../00_Base/SceneBase.h"
 
@@ -14,10 +14,10 @@ class BackGround;
 
 #include <vector>
 
-#include "00_MeshObject//03_SnowBall//SnowBall.h"
+#include "00_MeshObject/00_Character/03_SnowBall/SnowBall.h"
 
 /*********************************************
-*	ƒQ[ƒ€ƒƒCƒ“‰æ‘œƒNƒ‰ƒX.
+*	ã‚²ãƒ¼ãƒ ãƒ¡ã‚¤ãƒ³ç”»åƒã‚¯ãƒ©ã‚¹.
 **/
 
 class LTestScene
@@ -37,8 +37,8 @@ public:
 
 private:
 
-	std::shared_ptr<DirectionLight>		m_pLight;			// ƒ‰ƒCƒg
-	std::shared_ptr<CameraBase>			m_pCamera;			// ƒJƒƒ‰.
+	std::shared_ptr<DirectionLight>		m_pLight;			// ãƒ©ã‚¤ãƒˆ
+	std::shared_ptr<CameraBase>			m_pCamera;			// ã‚«ãƒ¡ãƒ©.
 
 	std::unique_ptr<Ground>		m_pGround;
 
@@ -48,12 +48,12 @@ private:
 	std::shared_ptr<Transform> m_ptransform;
 
 
-	float m_Radius; // ”¼Œa.
-	float m_Height;	// ‚‚³.
+	float m_Radius; // åŠå¾„.
+	float m_Height;	// é«˜ã•.
 
-	//á‹Ê•\¦—p‚ÌƒNƒ‰ƒX.
+	//é›ªç‰è¡¨ç¤ºç”¨ã®ã‚¯ãƒ©ã‚¹.
 	std::shared_ptr<SnowBall> m_pSnowBall;
 
-	//SkyBox•\¦—p.
+	//SkyBoxè¡¨ç¤ºç”¨.
 	std::unique_ptr<BackGround> m_pSkyBox;
 };

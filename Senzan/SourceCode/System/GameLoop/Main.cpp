@@ -79,12 +79,11 @@ void Main::Crate()
 // 更新処理.
 void Main::Update()
 {
-    // ImGuiの新しいフレームを開始する (描画の前に)
+    // ImGuiの新しいフレームを開始する (描画の前に).
     CImGuiManager::NewFrameSetting();
 
-    Time::GetInstance().Update();
-
-	SceneManager::GetInstance().Update();
+    // シーンの更新.
+    SceneManager::GetInstance().Update();
 
     // マウスホイールのスクロール方向を初期化.
     Input::SetWheelDirection(0);
@@ -138,39 +137,60 @@ void Main::Release()
 }
 
 // メッセージループ.
-
 void Main::Loop()
 {
-	if (FAILED(LoadData())) return;
+    // ゲームの構築.
+    if (FAILED(LoadData())) {
+        return;
+    }
 
-	// ロード完了待ち（ここは今のままでOK）
-	while (!m_pResourceLoader->IsLoadCompletion())
-	{
-		m_pResourceLoader->Update();
-		m_pResourceLoader->Draw();
-	}
+    // タイマ精度を向上させる
+    timeBeginPeriod(1);
 
-	Crate();
+    // 読み込み完了待ち処理
+    DWORD lastTime = timeGetTime(); // 前のフレームの時間.
+    const float loadUpdateInterval = 1.0f / 60.0f; // 読み込み更新の間隔 (60FPS目安).
+    float accumulatedTime = 0.0f;
 
-	MSG msg = {};
-	while (msg.message != WM_QUIT)
-	{
-		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-		else
-		{
-			Time::GetInstance().Update();
-			Update();
-			Draw();
-			// FPSの可変設定を追加するなら必要.
-			// MainLoop内でのFPS制御でなく、このUpdateのみを回す.
-			// 動作が不安定なのでとりあえず展示の環境で調整できるようになるまで放置.
-			//Time::GetInstance().MaintainFPS();
-		}
-	}
+    while (!m_pResourceLoader->IsLoadCompletion()) {
+        DWORD currentTime = timeGetTime();                 // 現在の時間を取得.
+        float deltaTime = (currentTime - lastTime) / 1000.0f; // ミリ秒から秒に変換.
+        lastTime = currentTime;                            // 前の時間を更新.
+
+        accumulatedTime += deltaTime;
+        if (accumulatedTime >= loadUpdateInterval) {
+            accumulatedTime = 0.0f; // タイマーをリセット.
+
+            // データ読み込み.
+            m_pResourceLoader->Update();
+            m_pResourceLoader->Draw();
+        }
+    }
+
+    // データの読み込みが終わったらゲームを構築.
+    Crate();
+
+    MSG msg = {};
+    while (msg.message != WM_QUIT) {
+        if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+            continue;
+        }
+
+        // DeltaTime の更新は Timeクラス が責務.
+        Time::GetInstance().Update();
+
+        // ゲーム更新と描画.
+        Update();
+        Draw();
+
+        // フレームレート維持.
+        Time::GetInstance().MaintainFPS();
+    }
+
+    // タイマ設定を戻す.
+    timeEndPeriod(1);
 }
 
 // ウィンドウ初期化関数.
@@ -243,6 +263,12 @@ LRESULT CALLBACK Main::MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
         case WM_DESTROY:
             PostQuitMessage(0);
             break;
+        case WM_ACTIVATEAPP:
+            // アプリがアクティブになったときにタイマーをリセットして大きなデルタを防止.
+            if (wParam != 0) {
+                Time::GetInstance().ResetOnResume();
+            }
+            break;
 
         default:
             return DefWindowProc(hWnd, uMsg, wParam, lParam);
@@ -258,14 +284,14 @@ void Main::IsExitGame()
     constexpr int Esc = VK_ESCAPE;
     bool wasEscPressed = !Input::IsKeyPress(Esc);
 
-    float currentTime = Time::GetInstance().GetNowTime(); // 現在のゲーム内時刻を取得
+    float currentTime = Time::GetInstance().GetNowTime(); // 現在のゲーム内時刻を取得.
 
-    if (Input::IsKeyDown(Esc)) // Escキーが押された瞬間
+    if (Input::IsKeyDown(Esc)) // Escキーが押された瞬間.
     {
-        // 1. 前回からの経過時間を計算
+        // 前回からの経過時間を計算
         float elapsedTime = currentTime - m_LastEscPressTime;
 
-        // 2. ダブルタップの判定
+        // ダブルタップの判定.
         if (elapsedTime < DOUBLE_TAP_TIME_THRESHOLD)
         {
             if (MessageBox(m_hWnd, _T("ゲームを終了しますか？"), _T("警告"), MB_YESNO) == IDYES) {
@@ -275,7 +301,7 @@ void Main::IsExitGame()
         }
         else
         {
-            // 3. シングルタップとみなし、次回判定のために時刻を更新
+            // シングルタップとみなし、次回判定のために時刻を更新.
             m_LastEscPressTime = currentTime;
         }
     }

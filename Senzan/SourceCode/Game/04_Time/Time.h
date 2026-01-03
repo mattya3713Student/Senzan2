@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "System/Singleton/SingletonTemplate.h"
 #include <chrono>
 
@@ -43,6 +43,10 @@ public:
 	* ************************************************************/
 	void SetWorldTimeScale(float NewTimeScale, float DurationSeconds);
 
+	// アプリが非アクティブから復帰したときに呼ぶ。タイマーの基準をリセットして
+	// 大きなデルタが流れ込むのを防ぐ。
+	void ResetOnResume();
+
 private:
     bool IsReadyForNextFrame();
 private:
@@ -53,7 +57,8 @@ private:
 	Time& operator = (const Time& rhs)	= delete;
 private:
 
-	std::chrono::time_point<std::chrono::high_resolution_clock> m_PreviousTime;	// 前フレームの時間.
+	// use steady_clock for monotonic timing
+	std::chrono::time_point<std::chrono::steady_clock> m_PreviousTime;	// 前フレームの時間.
 
 	float m_TargetFrameTime;// 目標フレーム時間(秒).
 	float m_DeltaTime;		// フレーム間の時間差.

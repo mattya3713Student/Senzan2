@@ -1,4 +1,4 @@
-#include "GameMain.h"
+﻿#include "GameMain.h"
 
 #include "Game/01_GameObject/00_MeshObject/00_Character/00_Ground/Ground.h"	// 地面Static.
 
@@ -112,7 +112,5 @@ void GameMain::Draw()
 
 HRESULT GameMain::LoadData()
 {
-	// ここで実際のロード処理を行うか、Create()に集約されているのであればE_NOTIMPLのままでもよい
-	// 現在のGameMainではCreate()でほとんどのInit/Load処理が行われているようです
 	return S_OK; // 成功を返す
 }

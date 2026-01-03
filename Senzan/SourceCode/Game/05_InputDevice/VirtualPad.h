@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "Game/05_InputDevice/Input.h"
 #include "System/Singleton/SingletonTemplate.h"
 

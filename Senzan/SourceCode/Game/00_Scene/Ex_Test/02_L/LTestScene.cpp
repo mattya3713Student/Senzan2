@@ -1,4 +1,4 @@
-#include "LTestScene.h"
+ï»¿#include "LTestScene.h"
 
 #include "Game/05_InputDevice/Input.h"
 #include "Game/05_InputDevice/VirtualPad.h" 
@@ -12,7 +12,7 @@
 #include "Graphic/Light/DirectionLight/DirectionLight.h"
 #include "Graphic/Light/LightManager.h"
 
-#include "Game/01_GameObject/00_MeshObject/00_Character/00_Ground/Ground.h"	// ’n–ÊStatic.
+#include "Game/01_GameObject/00_MeshObject/00_Character/00_Ground/Ground.h"	// åœ°é¢Static.
 
 #include "Game//01_GameObject//00_MeshObject//00_Character//02_Boss//Boss.h"
 #include "Game//01_GameObject//00_MeshObject//00_Character//01_Player//Player.h"
@@ -24,16 +24,16 @@
 
 #include "System/Singleton/SceneManager/SceneManager.h"
 
-#include "00_MeshObject/03_SnowBall/SnowBall.h"
+#include "00_MeshObject/00_Character/03_SnowBall/SnowBall.h"
 
-#include "00_MeshObject/00_Character/03_BackGround/BackGround.h"
-
-
-
-#include <algorithm> // std::min ‚Ì‚½‚ß‚É•K—v
+#include "00_MeshObject/00_Character/04_BackGround/BackGround.h"
 
 
-// ƒRƒ“ƒXƒgƒ‰ƒNƒ^.
+
+#include <algorithm> // std::min ã®ãŸã‚ã«å¿…è¦
+
+
+// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿.
 LTestScene::LTestScene()
 	: SceneBase()
 	, m_pCamera()
@@ -48,21 +48,21 @@ LTestScene::LTestScene()
 	Initialize();
 }
 
-// ƒfƒXƒgƒ‰ƒNƒ^.
+// ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿.
 LTestScene::~LTestScene()
 {
 }
 
 void LTestScene::Initialize()
 {
-	// ƒJƒƒ‰İ’è.
+	// ã‚«ãƒ¡ãƒ©è¨­å®š.
 	m_pCamera = std::make_shared<PlayerThirdPersonCamera>(*m_pPlayer.get());
 	m_pCamera->SetPosition(DirectX::XMFLOAT3(0.0f, 5.0f, -30.0f));
 	m_pCamera->SetPosition(DirectX::XMFLOAT3(0.0f, 5.0f, -5.0f));
 	m_pCamera->SetLook(DirectX::XMFLOAT3(0.0f, 2.0f, 5.0f));
 	CameraManager::GetInstance().SetCamera(m_pCamera);
 
-	// ƒ‰ƒCƒgİ’è.
+	// ãƒ©ã‚¤ãƒˆè¨­å®š.
 	m_pLight->SetDirection(DirectX::XMFLOAT3(1.5f, 1.f, -1.f));
 	LightManager::AttachDirectionLight(m_pLight);
 
@@ -110,6 +110,6 @@ void LTestScene::Draw()
 
 HRESULT LTestScene::LoadData()
 {
-	// ‚±‚Ìƒƒ\ƒbƒh‚Í¡‰ñ‚Íg‚¢‚Ü‚¹‚ñ‚ªASceneBase‚Ì‹K’è’Ê‚èS_OK‚ğ•Ô‚µ‚Ü‚·B
+	// ã“ã®ãƒ¡ã‚½ãƒƒãƒ‰ã¯ä»Šå›ã¯ä½¿ã„ã¾ã›ã‚“ãŒã€SceneBaseã®è¦å®šé€šã‚ŠS_OKã‚’è¿”ã—ã¾ã™ã€‚
 	return S_OK;
 }
