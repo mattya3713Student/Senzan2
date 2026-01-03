@@ -82,10 +82,9 @@ void Main::Update()
     // ImGuiの新しいフレームを開始する (描画の前に)
     CImGuiManager::NewFrameSetting();
 
-    Time::GetInstance().Update();
-    Time::GetInstance().MaintainFPS();
+    // Time の更新はループ側で行う（フレーム制御を一元化）
 
-	SceneManager::GetInstance().Update();
+    SceneManager::GetInstance().Update();
 
     // マウスホイールのスクロール方向を初期化.
     Input::SetWheelDirection(0);
@@ -142,16 +141,15 @@ void Main::Release()
 
 void Main::Loop()
 {
-
     // ゲームの構築.
     if (FAILED(LoadData())) {
         return;
     }
 
-    float rate = 0.0f;   // フレームレート制御用.
-    DWORD syncOld = timeGetTime();
-    DWORD syncNow;
-    // 読み込みが完了していなければ処理しない.
+    // タイマ精度を向上させる
+    timeBeginPeriod(1);
+
+    // 読み込み完了待ち処理
     DWORD lastTime = timeGetTime(); // 前のフレームの時間.
     const float loadUpdateInterval = 1.0f / 60.0f; // 読み込み更新の間隔 (60FPS目安).
     float accumulatedTime = 0.0f;
@@ -176,18 +174,25 @@ void Main::Loop()
 
     MSG msg = {};
     while (msg.message != WM_QUIT) {
-        syncNow = timeGetTime();
-
         if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
             TranslateMessage(&msg);
             DispatchMessage(&msg);
+            continue;
         }
-        else if (syncNow - syncOld >= rate) {
-            syncOld = syncNow;
-            Update();
-            Draw();
-        }
+
+        // Time の更新は Loop が責務
+        Time::GetInstance().Update();
+
+        // ゲーム更新と描画
+        Update();
+        Draw();
+
+        // フレームレート維持
+        Time::GetInstance().MaintainFPS();
     }
+
+    // タイマ設定を戻す
+    timeEndPeriod(1);
 }
 
 // ウィンドウ初期化関数.
@@ -259,6 +264,12 @@ LRESULT CALLBACK Main::MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
             // ウィンドウが破棄されるとき.
         case WM_DESTROY:
             PostQuitMessage(0);
+            break;
+        case WM_ACTIVATEAPP:
+            // アプリがアクティブになったときにタイマーをリセットして大きなデルタを防止
+            if (wParam != 0) {
+                Time::GetInstance().ResetOnResume();
+            }
             break;
 
         default:
