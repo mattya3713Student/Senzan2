@@ -180,18 +180,18 @@ void Main::Loop()
             continue;
         }
 
-        // Time の更新は Loop が責務
+        // Time の更新は Loop が責務.
         Time::GetInstance().Update();
 
-        // ゲーム更新と描画
+        // ゲーム更新と描画.
         Update();
         Draw();
 
-        // フレームレート維持
+        // フレームレート維持.
         Time::GetInstance().MaintainFPS();
     }
 
-    // タイマ設定を戻す
+    // タイマ設定を戻す.
     timeEndPeriod(1);
 }
 
@@ -266,7 +266,7 @@ LRESULT CALLBACK Main::MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
             PostQuitMessage(0);
             break;
         case WM_ACTIVATEAPP:
-            // アプリがアクティブになったときにタイマーをリセットして大きなデルタを防止
+            // アプリがアクティブになったときにタイマーをリセットして大きなデルタを防止.
             if (wParam != 0) {
                 Time::GetInstance().ResetOnResume();
             }
@@ -286,14 +286,14 @@ void Main::IsExitGame()
     constexpr int Esc = VK_ESCAPE;
     bool wasEscPressed = !Input::IsKeyPress(Esc);
 
-    float currentTime = Time::GetInstance().GetNowTime(); // 現在のゲーム内時刻を取得
+    float currentTime = Time::GetInstance().GetNowTime(); // 現在のゲーム内時刻を取得.
 
-    if (Input::IsKeyDown(Esc)) // Escキーが押された瞬間
+    if (Input::IsKeyDown(Esc)) // Escキーが押された瞬間.
     {
-        // 1. 前回からの経過時間を計算
+        // 前回からの経過時間を計算
         float elapsedTime = currentTime - m_LastEscPressTime;
 
-        // 2. ダブルタップの判定
+        // ダブルタップの判定.
         if (elapsedTime < DOUBLE_TAP_TIME_THRESHOLD)
         {
             if (MessageBox(m_hWnd, _T("ゲームを終了しますか？"), _T("警告"), MB_YESNO) == IDYES) {
@@ -303,7 +303,7 @@ void Main::IsExitGame()
         }
         else
         {
-            // 3. シングルタップとみなし、次回判定のために時刻を更新
+            // シングルタップとみなし、次回判定のために時刻を更新.
             m_LastEscPressTime = currentTime;
         }
     }
