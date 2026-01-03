@@ -23,15 +23,15 @@ Time::~Time()
 // フレーム間の経過時間を更新.
 void Time::Update()
 {
-    // デルタタイム計算.
+    // 1. 【実測】前回のフレーム終了(スリープ後)から「今」までの時間を測る
     auto currentTime = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float> elapsed = currentTime - m_PreviousTime;
+
+    // 2. これが「今のフレームレート」に基づいた純粋な1フレームの時間
     m_DeltaTime = elapsed.count();
 
-    // デルタタイム制限.
-    if (m_DeltaTime > 0.1f) { m_DeltaTime = m_TargetFrameTime; }
-
-    m_PreviousTime = currentTime;
+    // スパイク対策：PCのガクつきで1秒とか飛んだ時に、キャラがワープしないように制限
+    if (m_DeltaTime > 0.1f) m_DeltaTime = m_TargetFrameTime;
 
     // 時間スケールの復帰.
     if (m_TimeScaleRestoreTime > 0.0f)
@@ -63,18 +63,23 @@ bool Time::IsReadyForNextFrame()
 void Time::MaintainFPS()
 {
     Time& pI = GetInstance();
+    auto now = std::chrono::high_resolution_clock::now();
 
-    if (pI.m_DeltaTime < pI.m_TargetFrameTime)
+    float elapsed = std::chrono::duration<float>(now - pI.m_PreviousTime).count();
+
+    if (elapsed < pI.m_TargetFrameTime)
     {
-        auto sleepTime = pI.m_TargetFrameTime - pI.m_DeltaTime;
+        auto sleepTime = pI.m_TargetFrameTime - elapsed;
         std::this_thread::sleep_for(std::chrono::duration<float>(sleepTime));
     }
+
+    pI.m_PreviousTime = std::chrono::high_resolution_clock::now();
 }
 
 // デルタタイムを取得.
 const float Time::GetDeltaTime() const
 {
-    return m_DeltaTime;
+    return m_DeltaTime * m_WorldTimeScale;
 }
 
 // 現在時刻を取得.

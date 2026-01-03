@@ -39,4 +39,8 @@ private:
 	std::unique_ptr<Ground>		m_pGround;
 
 	std::shared_ptr<UIObject> m_TestSprite;
+
+	DirectX::XMFLOAT3 effekpos;
+	float m_Timer;
+	float m_Interval;
 };

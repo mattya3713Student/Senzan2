@@ -1,4 +1,4 @@
-﻿#include "GameMain.h"
+#include "GameMain.h"
 
 #include "Game/01_GameObject/00_MeshObject/00_Character/00_Ground/Ground.h"	// 地面Static.
 
@@ -22,6 +22,7 @@
 #include "SceneManager/SceneManager.h"
 
 #include <algorithm> // std::min のために必要
+
 
 // コンストラクタ.
 GameMain::GameMain()
@@ -76,6 +77,7 @@ void GameMain::Update()
  	m_upUI->SetPlayerUlt(m_upPlayer->GetMaxUltValue(), m_upPlayer->GetUltValue());
 
 	m_upUI->Update();
+
 }
 
 void GameMain::LateUpdate()
