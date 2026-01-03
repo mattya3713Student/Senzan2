@@ -8,9 +8,10 @@ Fade::Fade()
     , m_AlphaSpeed      ( 0.03f )    
     , m_IsStartFade     ( false )        
     , m_IsFadeCompleted ( false )
+	, m_IsFadeJustCompleted	( false )
 {
     // フェード画像を接続.
-    AttachSprite(SpriteManager::GetSprite2D("White"));
+    AttachSprite(SpriteManager::GetSprite2D("Black"));
 }
 
 //-------------------------------------------------------------------------.
@@ -30,12 +31,14 @@ void Fade::Update()
     m_Color.w += m_LastFadeType == FadeType::FadeIn ? -m_AlphaSpeed : m_AlphaSpeed;
 
     // α値をクランプし、フェード完了設定.
-    if (m_Color.w >= 1.0f || m_Color.w <= 0.0f)
-    {
-        m_Color.w = std::clamp(m_Color.w, 0.0f, 1.0f);
-        m_IsStartFade       = false;
-        m_IsFadeCompleted   = true;
-    }
+	if ((m_LastFadeType == FadeType::FadeIn && m_Color.w <= 0.0f) ||
+		(m_LastFadeType == FadeType::FadeOut && m_Color.w >= 1.0f))
+	{
+		m_Color.w = std::clamp(m_Color.w, 0.0f, 1.0f);
+		m_IsStartFade = false;
+		m_IsFadeCompleted = true;
+		m_IsFadeJustCompleted = true;
+	}
 
     UIObject::Update();
 }
@@ -62,7 +65,7 @@ void Fade::StartFade(const FadeType type)
 
     // FadeInなら0.0f開始.
     // FadeOutなら1.0f開始.
-    m_Color.w = type == FadeType::FadeIn ? 0.0f : 1.0f;
+	m_Color.w = type == FadeType::FadeIn ? 1.0f : 0.0f;
 }
 
 const bool Fade::IsFading() const
@@ -76,4 +79,11 @@ const bool Fade::IsFading() const
 const bool Fade::IsFadeCompleted(const FadeType type) const
 {
     return m_IsFadeCompleted && m_LastFadeType == type;
+}
+
+//-------------------------------------------------------------------------.
+
+const bool Fade::IsFadeJustCompleted(const FadeType type) const
+{
+	return m_IsFadeJustCompleted && m_LastFadeType == type;
 }

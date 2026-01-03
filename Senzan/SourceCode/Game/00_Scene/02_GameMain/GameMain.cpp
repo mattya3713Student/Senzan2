@@ -23,6 +23,7 @@
 
 #include <algorithm> // std::min のために必要
 
+
 // コンストラクタ.
 GameMain::GameMain()
 	: SceneBase		()
@@ -31,6 +32,7 @@ GameMain::GameMain()
 	, m_upBoss		(std::make_unique<Boss>())
 	, m_upPlayer	(std::make_unique<Player>())
 	, m_upUI		(std::make_shared<UIGameMain>())
+	, TotalTime		(0.0f)
 {
 	Initialize();
 }
@@ -76,6 +78,7 @@ void GameMain::Update()
  	m_upUI->SetPlayerUlt(m_upPlayer->GetMaxUltValue(), m_upPlayer->GetUltValue());
 
 	m_upUI->Update();
+
 }
 
 void GameMain::LateUpdate()

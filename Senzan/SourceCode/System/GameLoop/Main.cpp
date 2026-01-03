@@ -83,7 +83,6 @@ void Main::Update()
     CImGuiManager::NewFrameSetting();
 
     Time::GetInstance().Update();
-    Time::GetInstance().MaintainFPS();
 
 	SceneManager::GetInstance().Update();
 
@@ -142,52 +141,36 @@ void Main::Release()
 
 void Main::Loop()
 {
+	if (FAILED(LoadData())) return;
 
-    // ゲームの構築.
-    if (FAILED(LoadData())) {
-        return;
-    }
+	// ロード完了待ち（ここは今のままでOK）
+	while (!m_pResourceLoader->IsLoadCompletion())
+	{
+		m_pResourceLoader->Update();
+		m_pResourceLoader->Draw();
+	}
 
-    float rate = 0.0f;   // フレームレート制御用.
-    DWORD syncOld = timeGetTime();
-    DWORD syncNow;
-    // 読み込みが完了していなければ処理しない.
-    DWORD lastTime = timeGetTime(); // 前のフレームの時間.
-    const float loadUpdateInterval = 1.0f / 60.0f; // 読み込み更新の間隔 (60FPS目安).
-    float accumulatedTime = 0.0f;
+	Crate();
 
-    while (!m_pResourceLoader->IsLoadCompletion()) {
-        DWORD currentTime = timeGetTime();                 // 現在の時間を取得.
-        float deltaTime = (currentTime - lastTime) / 1000.0f; // ミリ秒から秒に変換.
-        lastTime = currentTime;                            // 前の時間を更新.
-
-        accumulatedTime += deltaTime;
-        if (accumulatedTime >= loadUpdateInterval) {
-            accumulatedTime = 0.0f; // タイマーをリセット.
-
-            // データ読み込み.
-            m_pResourceLoader->Update();
-            m_pResourceLoader->Draw();
-        }
-    }
-
-    // データの読み込みが終わったらゲームを構築.
-    Crate();
-
-    MSG msg = {};
-    while (msg.message != WM_QUIT) {
-        syncNow = timeGetTime();
-
-        if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
-        else if (syncNow - syncOld >= rate) {
-            syncOld = syncNow;
-            Update();
-            Draw();
-        }
-    }
+	MSG msg = {};
+	while (msg.message != WM_QUIT)
+	{
+		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+		else
+		{
+			Time::GetInstance().Update();
+			Update();
+			Draw();
+			// FPSの可変設定を追加するなら必要.
+			// MainLoop内でのFPS制御でなく、このUpdateのみを回す.
+			// 動作が不安定なのでとりあえず展示の環境で調整できるようになるまで放置.
+			//Time::GetInstance().MaintainFPS();
+		}
+	}
 }
 
 // ウィンドウ初期化関数.

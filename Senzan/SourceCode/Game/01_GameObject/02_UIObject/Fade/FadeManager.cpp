@@ -34,3 +34,8 @@ const bool FadeManager::IsFadeCompleted(const Fade::FadeType type) const
 {
     return m_pFade->IsFadeCompleted(type);
 }
+
+const bool FadeManager::IsFadeJustCompleted(Fade::FadeType type) const
+{
+	return m_pFade->IsFadeJustCompleted(type);
+}
