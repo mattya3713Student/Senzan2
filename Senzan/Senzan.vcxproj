@@ -117,7 +117,7 @@
       <LanguageStandard>stdcpp23</LanguageStandard>
       <AdditionalIncludeDirectories>SourceCode;SourceCode\Ggraphic;SourceCode\Resource;SourceCode\System;SourceCode\System\GameLoop;SourceCode\System\Singleton;SourceCode\System\Utility;SourceCode\Game\Scene;SourceCode\Game\01_GameObject;Data;Data/Library/Effekseer/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
       <EnableModules>true</EnableModules>
       <BuildStlModules>true</BuildStlModules>
@@ -144,7 +144,7 @@
       <LanguageStandard>stdcpp23</LanguageStandard>
       <AdditionalIncludeDirectories>SourceCode;SourceCode\Ggraphic;SourceCode\Resource;SourceCode\System;SourceCode\System\GameLoop;SourceCode\System\Singleton;SourceCode\System\Utility;SourceCode\Game\Scene;SourceCode\Game\01_GameObject;Data;Data/Library/Effekseer/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
       <EnableModules>true</EnableModules>
       <BuildStlModules>true</BuildStlModules>

@@ -10,8 +10,15 @@
 #include "Graphic/Light/LightManager.h"
 
 #include "Game/01_GameObject/00_MeshObject/00_Character/00_Ground/Ground.h"	// 地面Static.
+#include "Singleton/ResourceManager/EffectManager/EffekseerManager.h"
+
+#include "ImGui/CImGuiManager.h"
 
 #include <algorithm> // std::min のために必要
+
+namespace {
+	::Effekseer::Handle m_EffectHandle = -1;
+}
 
 // コンストラクタ.
 MemeuTestScene::MemeuTestScene()
@@ -19,6 +26,8 @@ MemeuTestScene::MemeuTestScene()
 	, m_pCamera(std::make_shared<ThirdPersonCamera>())
 	, m_pLight(std::make_shared<DirectionLight>())
 	, m_TestSprite(std::make_shared<UIObject>())
+	, m_Timer		(0.f)
+	, m_Interval	(180.f*Time::GetInstance().GetDeltaTime())
 {
 	Initialize();
 }
@@ -52,6 +61,32 @@ void MemeuTestScene::Update()
 {
 	m_pGround->Update();
 
+	// ----- エフェクト繰り返し処理 -----
+	
+
+	ImGui::Begin("effectpos");
+	ImGui::DragFloat3("pos",&effekpos.x);
+	ImGui::End();
+
+
+	// 時間加算
+	m_Timer += Time::GetInstance().GetDeltaTime();
+
+	// 一定時間ごとに再生
+	if (m_Timer >= m_Interval)
+	{
+		m_Timer = 0.f;
+
+		auto effect = EffectResource::GetResource("test");
+
+		m_EffectHandle =
+			EffekseerManager::GetInstance().GetManager()
+			->Play(effect, effekpos.x, effekpos.y, effekpos.z);
+
+	}
+
+	EffekseerManager::GetInstance().UpdateHandle(m_EffectHandle);
+	
 }
 
 void MemeuTestScene::LateUpdate()
@@ -67,6 +102,7 @@ void MemeuTestScene::Draw()
 	m_pGround->DrawDepth();
 	Shadow::End();
 	m_pGround->Draw();
+	EffekseerManager::GetInstance().RenderHandle(m_EffectHandle, m_pCamera.get());
 }
 
 HRESULT MemeuTestScene::LoadData()

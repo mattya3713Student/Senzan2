@@ -32,8 +32,8 @@ bool ResourceManager::LoadSounds()
 
 bool ResourceManager::LoadEffects()
 {
-	/*if (EffectResource::GetInstance().Create()	== false) { return false; }
-	if (EffectResource::GetInstance().LoadData()	== false) { return false; }*/
+	if (EffectResource::GetInstance().Create()	== false) { return false; }
+	if (EffectResource::GetInstance().LoadData()	== false) { return false; }
 	
 	return true;
 }
