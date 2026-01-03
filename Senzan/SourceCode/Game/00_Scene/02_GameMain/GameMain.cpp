@@ -32,6 +32,7 @@ GameMain::GameMain()
 	, m_upBoss		(std::make_unique<Boss>())
 	, m_upPlayer	(std::make_unique<Player>())
 	, m_upUI		(std::make_shared<UIGameMain>())
+	, TotalTime		(0.0f)
 {
 	Initialize();
 }

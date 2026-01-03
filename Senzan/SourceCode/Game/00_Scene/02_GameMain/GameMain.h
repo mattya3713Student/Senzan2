@@ -44,4 +44,5 @@ private:
 	std::unique_ptr<Player>		m_upPlayer;
 
 	std::shared_ptr<UIGameMain>	m_upUI;
+	float TotalTime;
 };
