@@ -2,8 +2,8 @@
 root = true
 
 [*]
-# 文字コードをUTF-8に設定（文字化け防止）
-charset = utf-8
+# 文字コードをUTF-8 (BOM付き) に設定（文字化け防止）
+charset = utf-8-bom
 # 改行コードをWindows標準のCRLFに設定（Visual Studioとの互換性）
 end_of_line = crlf
 # ファイルの末尾に空行を入れる
@@ -20,4 +20,4 @@ indent_size = 4
 
 [*.{sln,vcxproj,vcxproj.filters}]
 # ソリューションファイルやプロジェクトファイルは、ツールによってShift-JISを要求される場合があるため、
-# 必要に応じて個別に設定を残しますが、基本はcharsetを指定しないか、システムに従わせます。
+# 必要に応じて個別に設定を残しますが、基本はcharsetを指定しないか、システムに従わせます.
