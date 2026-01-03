@@ -8,15 +8,56 @@
 #include <unordered_set>
 #include <locale>
 #include <codecvt>
+#include <typeinfo>
 
 namespace MyString {
+	// Helper to provide human-readable type names for ToString.
+	template<typename T>
+	inline const char* TypeName() { return typeid(T).name(); }
+	template<>
+	inline const char* TypeName<float>() { return "float"; }
+	template<>
+	inline const char* TypeName<bool>() { return "bool"; }
+	template<>
+	inline const char* TypeName<int>() { return "int"; }
+	template<>
+	inline const char* TypeName<double>() { return "double"; }
+	template<>
+	inline const char* TypeName<std::string>() { return "string"; }
+	template<>
+	inline const char* TypeName<std::wstring>() { return "wstring"; }
+
 	// 値を文字列に変換する.
 	template<typename T>
-	std::string ToString(const T& value);
+	std::string ToString(const T& value)
+	{
+		std::ostringstream ss;
+		// Append value and a readable type tag so ExtractAmount can parse it.
+		if constexpr (std::is_same_v<T, bool>) {
+			ss << (value ? "true" : "false");
+		} else {
+			ss << value;
+		}
+		ss << "," << TypeName<T>() << ";";
+		return ss.str();
+	}
 
 	// 文字列から値を戻す.
 	template<typename T>
-	T FromString(const std::string& str);
+	T FromString(const std::string& str)
+	{
+		std::istringstream ss(str);
+		T value{};
+		if constexpr (std::is_same_v<T, bool>) {
+			std::string token;
+			ss >> token;
+			if (token == "true" || token == "1") return true;
+			return false;
+		} else {
+			ss >> value;
+			return value;
+		}
+	}
 
 	// 特定の行の値を取り出す.
 	std::string ExtractAmount(const std::string& str);
