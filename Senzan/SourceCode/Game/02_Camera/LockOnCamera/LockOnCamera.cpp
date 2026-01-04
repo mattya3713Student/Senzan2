@@ -1,10 +1,10 @@
-#include "LockOnCamera.h"
+﻿#include "LockOnCamera.h"
 
 #include "Game/01_GameObject/00_MeshObject/00_Character/01_Player/Player.h"
 #include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/Boss.h"
 #include "Game/04_Time/Time.h"
 
-static constexpr float FOLLOW_SPEED = 0.004f;
+static constexpr float FOLLOW_SPEED = 5.0f;
 static constexpr float HEIGHT_OFFSET = 5.0f;
 static constexpr float LOOK_OFFSET = 4.5f;
 
@@ -23,54 +23,51 @@ void LockOnCamera::Update()
 	const auto& player = m_rPlayer.get();
 	const auto& target = m_rTarget.get();
 
-	// 1. 各座標を取得.
-	DirectX::XMVECTOR vPlayerPos = DirectX::XMLoadFloat3(&player.GetPosition());
-	DirectX::XMVECTOR vBossPos = DirectX::XMLoadFloat3(&target.GetPosition());
+	// 座標を取得.
+	DirectX::XMVECTOR v_player_pos = DirectX::XMLoadFloat3(&player.GetPosition());
+	DirectX::XMVECTOR v_boss_pos = DirectX::XMLoadFloat3(&target.GetPosition());
 
-	// 2. プレイヤーとボスの距離を算出（高さ調整や安定化に使用）.
-	DirectX::XMVECTOR vDiffPB = DirectX::XMVectorSubtract(vPlayerPos, vBossPos);
-	float distToBoss = DirectX::XMVectorGetX(DirectX::XMVector3Length(vDiffPB));
+	// プレイヤーとボスの距離.
+	DirectX::XMVECTOR v_diff_distance = DirectX::XMVectorSubtract(v_player_pos, v_boss_pos);
+	float diff_distance = DirectX::XMVectorGetX(DirectX::XMVector3Length(v_diff_distance));
 
-	// --- 改善点1: 至近距離でのガクつき防止 ---
 	// 距離が近すぎるとき、方向ベクトルの計算を安定させる.
-	DirectX::XMVECTOR vToPlayerDir;
-	if (distToBoss < 0.1f) {
-		DirectX::XMFLOAT3 playerForward = player.GetTransform()->GetForward();
-		// XMFLOAT3をXMVECTORにロードしてから計算.
-		vToPlayerDir = DirectX::XMVectorScale(DirectX::XMLoadFloat3(&playerForward), -1.0f);
+	DirectX::XMVECTOR v_to_player_direction;
+	if (diff_distance < 0.1f) {
+		DirectX::XMFLOAT3 player_forward = player.GetTransform()->GetForward();
+        v_to_player_direction = DirectX::XMVectorScale(DirectX::XMLoadFloat3(&player_forward), -1.0f);
 	}
 	else {
-		vToPlayerDir = DirectX::XMVector3Normalize(DirectX::XMVectorSetY(vDiffPB, 0.0f));
+        v_to_player_direction = DirectX::XMVector3Normalize(DirectX::XMVectorSetY(v_diff_distance, 0.0f));
 	}
 
-	// --- 改善点2: 注視点を「ボスとプレイヤーの間」に設定 ---
-	// これによりボスが画面中央に固定されすぎず、自分も映りやすくなる.
-	// 割合 (0.7f) を変えると、ボス寄りかプレイヤー寄りか調整可能.
-	float lookLerp = 0.7f;
-	DirectX::XMVECTOR vMidPoint = DirectX::XMVectorLerp(vPlayerPos, vBossPos, lookLerp);
-	vMidPoint = DirectX::XMVectorAdd(vMidPoint, DirectX::XMVectorSet(0.0f, LOOK_OFFSET, 0.0f, 0.0f));
+    // 注視点を ボスとプレイヤーの間 に設定.
+    // MEMO : look_lerpをconstexprに
+	float look_lerp = 0.7f;
+	DirectX::XMVECTOR v_mid_point = DirectX::XMVectorLerp(v_player_pos, v_boss_pos, look_lerp);
+    v_mid_point = DirectX::XMVectorAdd(v_mid_point, DirectX::XMVectorSet(0.0f, LOOK_OFFSET, 0.0f, 0.0f));
 
-	// --- 改善点3: 近接時のカメラ高補正 ---
-	// 近づくほど少しカメラを高くし、見下ろす角度を強くすることでキャラ被りを防ぐ.
-	float heightScaling = (1.0f / (distToBoss + 1.0f)) * 2.0f; // 近いほど加算値が増える.
-	float finalHeight = HEIGHT_OFFSET + heightScaling;
+	// 近接時のカメラ高補正.
+	float height_scaling = (1.0f / (diff_distance + 1.0f)) * 2.0f;
+	float final_height = HEIGHT_OFFSET + height_scaling;
 
-	// 3. 理想のカメラ位置を計算.
-	DirectX::XMVECTOR vIdealPos = DirectX::XMVectorAdd(vPlayerPos, DirectX::XMVectorScale(vToPlayerDir, m_Distance));
-	vIdealPos = DirectX::XMVectorAdd(vIdealPos, DirectX::XMVectorSet(0.0f, finalHeight, 0.0f, 0.0f));
+	// 理想のカメラ位置.
+	DirectX::XMVECTOR v_ideal_pos = DirectX::XMVectorAdd(v_player_pos, DirectX::XMVectorScale(v_to_player_direction, m_Distance));
+    v_ideal_pos = DirectX::XMVectorAdd(v_ideal_pos, DirectX::XMVectorSet(0.0f, final_height, 0.0f, 0.0f));
 
-	// 4. 現在の位置から理想の位置へ線形補間 (Lerp).
-	DirectX::XMVECTOR vCurrentPos = DirectX::XMLoadFloat3(&m_spTransform.Position);
-	float dt = Time::GetInstance().GetDeltaTime(); // プロジェクトのタイム取得APIを使う.
-	float lerpFactor = std::clamp(FOLLOW_SPEED * dt, 0.0f, 1.0f);
-	DirectX::XMVECTOR vNextPos = DirectX::XMVectorLerp(vCurrentPos, vIdealPos, lerpFactor);
+	// 現在の位置から理想の位置へ線形補間.
+	DirectX::XMVECTOR v_current_pos = DirectX::XMLoadFloat3(&m_spTransform.Position);
+	float delta_time = Time::GetInstance().GetDeltaTime(); 
+	float lerpFactor = std::clamp(FOLLOW_SPEED * delta_time, 0.0f, 1.0f);
+	DirectX::XMVECTOR vNextPos = DirectX::XMVectorLerp(v_current_pos, v_ideal_pos, lerpFactor);
 	DirectX::XMStoreFloat3(&m_spTransform.Position, vNextPos);
 
-	// 5. 注視点の適用（デッドゾーン計算を入れる場合はここで行う）.
-	DirectX::XMStoreFloat3(&m_LookPos, vMidPoint);
+	// 注視点の適用.
+    // TODO : デッドゾーン計算.
+	DirectX::XMStoreFloat3(&m_LookPos, v_mid_point);
 
-	// --- 以下、前方ベクトル・右方ベクトル・行列更新（共通） ---
-	DirectX::XMVECTOR vForward = DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(vMidPoint, vNextPos));
+	// ベクトル,行列更新.
+	DirectX::XMVECTOR vForward = DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(v_mid_point, vNextPos));
 	DirectX::XMStoreFloat3(&m_ForwardVec, vForward);
 
 	DirectX::XMVECTOR vUp = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);

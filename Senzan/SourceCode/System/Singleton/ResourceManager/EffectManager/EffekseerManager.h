@@ -9,8 +9,17 @@
 
 #include "../../SingletonTemplate.h"
 
+// Suppress warnings coming from third-party Effekseer headers when compiling with MSVC.
+#ifdef _MSC_VER
+#pragma warning(push, 0)
+#endif
+
 #include "../../../../../Data/Library/Effekseer/include/Effekseer.h"
 #include "../../../../../Data/Library/Effekseer/include/EffekseerRendererDX11.h"
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #ifdef _DEBUG
 #pragma comment( lib, "Effekseerd.lib" )
@@ -22,9 +31,6 @@
 
 class CameraBase;
 
-/******************************************************************
-*	EffekseerManager.
-******************************************************************/
 class EffekseerManager final
 	: public Singleton<EffekseerManager>
 {
@@ -89,6 +95,6 @@ private:
 	void Initialize();
 
 private:
-	::Effekseer::ManagerRef				m_pManager; // マネージャー.
-	EffekseerRendererDX11::RendererRef	m_pRenderer;	// レンダラ.
+	::Effekseer::ManagerRef			m_pManager; // マネージャー.
+	EffekseerRendererDX11::RendererRef	m_pRenderer; 	// レンダラ.
 };

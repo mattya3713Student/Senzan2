@@ -12,13 +12,9 @@ INT WINAPI WinMain(
 	_In_ INT nCmdShow)
 {
 #ifdef _DEBUG
-	// ----------------------------------------------------
-	// 【コンソール有効化の追加】
-	// ----------------------------------------------------
-	//AllocConsole();
-	//freopen_s(reinterpret_cast<FILE**>(stdout), "CONOUT$", "w", stdout);
-	//freopen_s(reinterpret_cast<FILE**>(stderr), "CONOUT$", "w", stderr);
-	// ----------------------------------------------------
+	AllocConsole();
+	freopen_s(reinterpret_cast<FILE**>(stdout), "CONOUT$", "w", stdout);
+	freopen_s(reinterpret_cast<FILE**>(stderr), "CONOUT$", "w", stderr);
 #endif
 	// メモリリーク検出
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
@@ -42,11 +38,7 @@ INT WINAPI WinMain(
 
 	}
 #ifdef _DEBUG
-	// ----------------------------------------------------
-	// 【コンソール解放の追加】
-	// ----------------------------------------------------
-	//FreeConsole();
-	// ----------------------------------------------------
+	FreeConsole();
 #endif
 	return 0;
 }

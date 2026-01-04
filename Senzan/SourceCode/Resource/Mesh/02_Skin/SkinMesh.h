@@ -1,69 +1,69 @@
-/***************************************************************************************************
+ï»¿/***************************************************************************************************
 *	SkinMeshCode Version 2.40
 *	LastUpdate	: 2024/06/14.
 **/
 #pragma once
-//Œx‚É‚Â‚¢‚Ä‚ÌƒR[ƒh•ªÍ‚ğ–³Œø‚É‚·‚éB4005FÄ’è‹`.
+//è­¦å‘Šã«ã¤ã„ã¦ã®ã‚³ãƒ¼ãƒ‰åˆ†æã‚’ç„¡åŠ¹ã«ã™ã‚‹ã€‚4005ï¼šå†å®šç¾©.
 #pragma warning( disable : 4005 )
 
 #include "SkinMeshParser.h"
 #include "../MeshBase.h"
 
-//‘O•ûéŒ¾.
+//å‰æ–¹å®£è¨€.
 class DirectX9;
 class DirectX11;
-class CameraBase;		// ƒJƒƒ‰ƒNƒ‰ƒX(•`‰æ‚É•K—v‚Èî•ñ‚ğ‚Á‚Ä‚­‚é).
+class CameraBase;		// ã‚«ãƒ¡ãƒ©ã‚¯ãƒ©ã‚¹(æç”»ã«å¿…è¦ãªæƒ…å ±ã‚’æŒã£ã¦ãã‚‹).
 
 /**************************************************
-*	ƒXƒLƒ“ƒƒbƒVƒ…ƒNƒ‰ƒX
+*	ã‚¹ã‚­ãƒ³ãƒ¡ãƒƒã‚·ãƒ¥ã‚¯ãƒ©ã‚¹
 **/
 class SkinMesh final
 	: public MeshBase
 {
 public:
 
-	//ƒ{[ƒ“’PˆÊ.
+	//ãƒœãƒ¼ãƒ³å˜ä½.
 	struct CBUFFER_PER_BONES
 	{
-		// yC³zD3DXMATRIX ‚ğ XMMATRIX ‚É•ÏX
+		// ã€ä¿®æ­£ã€‘D3DXMATRIX ã‚’ XMMATRIX ã«å¤‰æ›´
 		DirectX::XMMATRIX mBone[D3DXPARSER::MAX_BONES];
 
 		CBUFFER_PER_BONES()
 		{
-			// yC³zXMMatrixIdentity ‚Å‰Šú‰»
+			// ã€ä¿®æ­£ã€‘XMMatrixIdentity ã§åˆæœŸåŒ–
 			DirectX::XMMATRIX Identity = DirectX::XMMatrixIdentity();
 			for (int i = 0; i < D3DXPARSER::MAX_BONES; i++)
 			{
-				// XMMATRIX ‚Í’ÊíA‰Šú‰»‚É XMStoreFloat4x4 ‚È‚Ç‚ğg—p‚·‚é‚ªA
-				// C++‚Ì\‘¢‘Ì‰Šú‰»‚Æ‚µ‚Ä XMMATRIX ‚ğ’¼Ú‘ã“ü
+				// XMMATRIX ã¯é€šå¸¸ã€åˆæœŸåŒ–ã« XMStoreFloat4x4 ãªã©ã‚’ä½¿ç”¨ã™ã‚‹ãŒã€
+				// C++ã®æ§‹é€ ä½“åˆæœŸåŒ–ã¨ã—ã¦ XMMATRIX ã‚’ç›´æ¥ä»£å…¥
 				mBone[i] = Identity;
 			}
 		}
 	};
 
-	// ’¸“_\‘¢‘Ì. (•ÏX‚È‚µ)
+	// é ‚ç‚¹æ§‹é€ ä½“. (å¤‰æ›´ãªã—)
 	struct SKIN_VERTEX
 		: public VERTEX
 	{
-		UINT BoneIndex[4];		//ƒ{[ƒ“ ”Ô†.
-		float BoneWeight[4];	//ƒ{[ƒ“ d‚İ.		
+		UINT BoneIndex[4];		//ãƒœãƒ¼ãƒ³ ç•ªå·.
+		float BoneWeight[4];	//ãƒœãƒ¼ãƒ³ é‡ã¿.		
 	};
 public:
-	SkinMesh();	//ƒRƒ“ƒXƒgƒ‰ƒNƒ^.
-	~SkinMesh();	//ƒfƒXƒgƒ‰ƒNƒ^.
+	SkinMesh();	//ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿.
+	~SkinMesh();	//ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿.
 
-	// ‰Šú‰»ˆ—. (•ÏX‚È‚µ)
+	// åˆæœŸåŒ–å‡¦ç†. (å¤‰æ›´ãªã—)
 	HRESULT Init(std::string FileName, const std::string& Name)override;
 
-	//‰ğ•úŠÖ”. (•ÏX‚È‚µ)
+	//è§£æ”¾é–¢æ•°. (å¤‰æ›´ãªã—)
 	HRESULT Release();
 
-	//•`‰æŠÖ”. (•ÏX‚È‚µ)
+	//æç”»é–¢æ•°. (å¤‰æ›´ãªã—)
 	void Render(const LPD3DXANIMATIONCONTROLLER pAC);
-	// [“x•`‰æ—p. (•ÏX‚È‚µ)
+	// æ·±åº¦æç”»ç”¨. (å¤‰æ›´ãªã—)
 	void RenderDepth(const LPD3DXANIMATIONCONTROLLER pAC);
 
-	// ... ƒAƒjƒ[ƒVƒ‡ƒ“‘¬“xEŠÔŠÖ˜A‚ÌŠÖ” (•ÏX‚È‚µ) ...
+	// ... ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³é€Ÿåº¦ãƒ»æ™‚é–“é–¢é€£ã®é–¢æ•° (å¤‰æ›´ãªã—) ...
 	double GetAnimSpeed() { return m_AnimSpeed; }
 	void SetAnimSpeed(double Speed) { m_AnimSpeed = Speed; }
 	double GetAnimTime() { return m_AnimTime; }
@@ -74,15 +74,12 @@ public:
 	double GetAnimPeriod(int Index);
 	int GetAnimMax(LPD3DXANIMATIONCONTROLLER pAC = nullptr);
 
-	//w’è‚µ‚½ƒ{[ƒ“î•ñ(À•WEs—ñ)‚ğæ“¾‚·‚éŠÖ”.
-	// yC³zD3DXMATRIX ‚ğ XMMATRIX ‚É•ÏX
+	//æŒ‡å®šã—ãŸãƒœãƒ¼ãƒ³æƒ…å ±(åº§æ¨™ãƒ»è¡Œåˆ—)ã‚’å–å¾—ã™ã‚‹é–¢æ•°.
 	bool GetMatrixFromBone(LPCSTR BoneName, DirectX::XMMATRIX* pOutMat);
-	// yC³zD3DXVECTOR3 ‚ğ XMFLOAT3 ‚É•ÏX (XMVECTOR ‚Ìƒ|ƒCƒ“ƒ^“n‚µ‚Í”ğ‚¯‚é‚½‚ß)
 	bool GetPosFromBone(LPCSTR BoneName, DirectX::XMFLOAT3* pOutPos);
-	// yC³zD3DXVECTOR3 ‚ğ XMFLOAT3 ‚É•ÏX
 	bool GetDeviaPosFromBone(LPCSTR BoneName, DirectX::XMFLOAT3* pOutPos, DirectX::XMFLOAT3 SpecifiedPos = { 0.0f, 0.0f, 0.0f });
 private:
-	// ... ƒ[ƒhEì¬ŠÖ˜A‚Ì private ŠÖ” (“üo—Í‚ÌŒ^‚Í D3DX ‚Ì‚Ü‚ÜˆÛ) ...
+	// ... ãƒ­ãƒ¼ãƒ‰ãƒ»ä½œæˆé–¢é€£ã® private é–¢æ•° (å…¥å‡ºåŠ›ã®å‹ã¯ D3DX ã®ã¾ã¾ç¶­æŒ) ...
 	HRESULT LoadXMesh(std::string FileName);
 	HRESULT CreateShader();
 	HRESULT CreateIndexBuffer(DWORD Size, int* pIndex, ID3D11Buffer** ppIndexBuffer);
@@ -92,7 +89,7 @@ private:
 	void BuildAllMesh(D3DXFRAME* pFrame);
 	HRESULT ReadSkinInfo(MYMESHCONTAINER* pContainer, SKIN_VERTEX* pVB, SKIN_PARTS_MESH* pParts);
 
-	// yC³zD3DXMATRIX ‚ğ XMMATRIX ‚É•ÏX
+	// ã€ä¿®æ­£ã€‘D3DXMATRIX ã‚’ XMMATRIX ã«å¤‰æ›´
 	DirectX::XMMATRIX GetCurrentPoseMatrix(SKIN_PARTS_MESH* pParts, int Index);
 
 	void SetNewPoseMatrices(SKIN_PARTS_MESH* pParts, int Frame, MYMESHCONTAINER* pContainer);
@@ -113,17 +110,17 @@ private:
 	HRESULT DestroyAppMeshFromD3DXMesh(LPD3DXFRAME p);
 	void ConvertCharaMultiByteToUnicode(WCHAR* Dest, size_t DestArraySize, const CHAR* str);
 private:
-	ID3D11Buffer* m_pCBufferPerBone;		//ƒRƒ“ƒXƒ^ƒ“ƒgƒoƒbƒtƒ@(ƒ{[ƒ“–ˆ).
+	ID3D11Buffer* m_pCBufferPerBone;		//ã‚³ãƒ³ã‚¹ã‚¿ãƒ³ãƒˆãƒãƒƒãƒ•ã‚¡(ãƒœãƒ¼ãƒ³æ¯).
 
 	DirectX::XMMATRIX	m_mView;
 	DirectX::XMMATRIX	m_mProj;
 	DirectX::XMFLOAT3	m_CamPos;
 
-	// ƒAƒjƒ[ƒVƒ‡ƒ“‘¬“x.
+	// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³é€Ÿåº¦.
 	double m_AnimSpeed;
 	double m_AnimTime;
 
-	D3DXPARSER* m_pD3dxMesh;	// ƒƒbƒVƒ…. (•ÏX‚È‚µ)
-	TCHAR		m_FilePath[256];	// Xƒtƒ@ƒCƒ‹‚ÌƒpƒX. (•ÏX‚È‚µ)
-	int			m_Frame;			// ƒAƒjƒ[ƒVƒ‡ƒ“ƒtƒŒ[ƒ€. (•ÏX‚È‚µ)
+	D3DXPARSER* m_pD3dxMesh;	// ãƒ¡ãƒƒã‚·ãƒ¥. (å¤‰æ›´ãªã—)
+	TCHAR		m_FilePath[256];	// Xãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ‘ã‚¹. (å¤‰æ›´ãªã—)
+	int			m_Frame;			// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãƒ•ãƒ¬ãƒ¼ãƒ . (å¤‰æ›´ãªã—)
 };

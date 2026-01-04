@@ -1,10 +1,8 @@
-#include "VirtualPad.h"
+﻿#include "VirtualPad.h"
 #include <iostream> 
-#include <cmath> // std::sqrt, std::min, std::max に必要
+#include <cmath>
 
-// --------------------------------------------------------------------------------
-// コンストラクタ
-// --------------------------------------------------------------------------------
+#include "System/Singleton/Debug/Log/DebugLog.h"
 
 VirtualPad::VirtualPad()
 {
@@ -12,13 +10,8 @@ VirtualPad::VirtualPad()
     SetupDefaultBindings();
 }
 
-// --------------------------------------------------------------------------------
-// プライベート テンプレートヘルパーの実装 (checkActionState)
-// --------------------------------------------------------------------------------
-
-// テンプレート関数はヘッダーにインライン展開するのが理想ですが、ここでは.cppに記述
 template <typename KeyCheckFunc, typename ButtonCheckFunc>
-bool VirtualPad::checkActionState(eGameAction action,
+bool VirtualPad::CheckActionState(eGameAction action,
     KeyCheckFunc&& keyCheck,
     ButtonCheckFunc&& buttonCheck) const
 {
@@ -26,8 +19,8 @@ bool VirtualPad::checkActionState(eGameAction action,
     auto it = m_KeyMap.find(action);
     if (it == m_KeyMap.end() || it->second.Type != eActionType::Button)
     {
-        // 軸アクションが間違って渡された場合のログ (Debug::Warning が定義されている前提)
-        // if (it != m_KeyMap.end() && it->second.type == eActionType::Axis) { Debug::Warning("Button check called for Axis action."); }
+        // 軸アクションが間違って渡された場合のログ.
+        if (it != m_KeyMap.end() && it->second.Type == eActionType::Axis) { Log::GetInstance().Warning("Warning", "Button check called for Axis action."); }
         return false;
     }
 
@@ -92,7 +85,7 @@ bool VirtualPad::IsActionPress(eGameAction action) const
         return input.IsButtonRepeat(key);
         };
 
-    return checkActionState(action, keyCheck, buttonCheck);
+    return CheckActionState(action, keyCheck, buttonCheck);
 }
 
 // 押された瞬間か.
@@ -111,7 +104,7 @@ bool VirtualPad::IsActionDown(eGameAction action, float inputBufferTime) const
         return input.IsButtonDown(key);
         };
 
-    return checkActionState(action, keyCheck, buttonCheck);
+    return CheckActionState(action, keyCheck, buttonCheck);
 }
 
 // 離された瞬間か.
@@ -129,7 +122,7 @@ bool VirtualPad::IsActionUp(eGameAction action) const
         return input.IsButtonUp(key);
         };
 
-    return checkActionState(action, keyCheck, buttonCheck);
+    return CheckActionState(action, keyCheck, buttonCheck);
 }
 
 // 軸アクションの合計値を取得.

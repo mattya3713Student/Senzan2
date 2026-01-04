@@ -121,7 +121,7 @@ void Time::SetWorldTimeScale(float NewTimeScale)
 // ワールドの時間の流れを一時的に変更する.
 void Time::SetWorldTimeScale(float NewTimeScale, float DurationSeconds)
 {
-    // 一時的な変更の場合は現在の值を保存してから適用
+    // 一時的な変更の場合は現在の值を保存してから適用.
     m_OriginalTimeScale = m_WorldTimeScale;
     m_WorldTimeScale = NewTimeScale;
 

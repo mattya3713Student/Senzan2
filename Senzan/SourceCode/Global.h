@@ -67,6 +67,7 @@
 #include "System/Singleton/Debug/Log/DebugLog.h"	// シングルトンテンプレト.	
 
 #define _DEBUG 1
+#define _SOUND_STOP 1
 
 #if _DEBUG
 #include <dxgidebug.h>	// メモリリークの検出.

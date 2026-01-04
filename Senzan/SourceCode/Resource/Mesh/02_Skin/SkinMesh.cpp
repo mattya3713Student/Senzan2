@@ -1173,9 +1173,6 @@ int SkinMesh::GetAnimMax(LPD3DXANIMATIONCONTROLLER pAC)
 	return -1;
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------
-
-// 【修正】pOutMatの型をD3DXMATRIX*からDirectX::XMMATRIX*に変更
 bool SkinMesh::GetMatrixFromBone(
 	LPCSTR sBoneName, DirectX::XMMATRIX* pOutMat)
 {
@@ -1187,9 +1184,6 @@ bool SkinMesh::GetMatrixFromBone(
 	return false;
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------
-
-// 【修正】pOutPosの型をD3DXVECTOR3*からDirectX::XMFLOAT3*に変更
 bool SkinMesh::GetPosFromBone(
 	LPCSTR sBoneName, DirectX::XMFLOAT3* pOutPos)
 {

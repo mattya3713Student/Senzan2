@@ -125,21 +125,30 @@ Player::Player()
 
     m_upColliders->AddCollider(std::move(pressCollider));
 
-    // 攻撃の追加.
-    std::unique_ptr<CapsuleCollider> attackCollider = std::make_unique<CapsuleCollider>(m_spTransform);
+    // 攻撃の追加: ColliderSpec を利用して共通のファクトリでコライダー作成
+    {
+        ColliderSpec spec;
+        spec.Radius = 1.0f;
+        spec.Height = 3.0f;
+        spec.Offset = {0.f, 1.5f, 2.f};
+        spec.AttackAmount = 10.0f;
+        spec.MyMask = static_cast<uint32_t>(eCollisionGroup::Player_Attack);
+        spec.TargetMask = static_cast<uint32_t>(eCollisionGroup::Enemy_Damage);
+        spec.DebugColor = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
+        spec.Active = false;
 
-    m_pAttackCollider = attackCollider.get();
+        std::unordered_map<Character::AttackTypeId, std::vector<ColliderSpec>> defs;
+        defs[static_cast<Character::AttackTypeId>(Player::AttackType::Normal)] = { spec };
+        // create and register
+        CreateAttackCollidersFromDefs(defs);
 
-    attackCollider->SetActive(false);
-    attackCollider->SetColor(Color::eColor::Red);
-    attackCollider->SetAttackAmount(10.0f);
-    attackCollider->SetHeight(3.0f);
-    attackCollider->SetRadius(1.0f);
-    attackCollider->SetPositionOffset(0.f, 1.5f, 2.f);
-    attackCollider->SetMyMask(eCollisionGroup::Player_Attack);
-    attackCollider->SetTarGetTargetMask(eCollisionGroup::Enemy_Damage);
-
-    m_upColliders->AddCollider(std::move(attackCollider));
+        // cache pointer for existing scheduler/usage
+        auto it = m_AttackColliders.find(static_cast<Character::AttackTypeId>(Player::AttackType::Normal));
+        if (it != m_AttackColliders.end() && !it->second.empty())
+        {
+            m_pAttackCollider = it->second.front();
+        }
+    }
 
     CollisionDetector::GetInstance().RegisterCollider(*m_upColliders);
 

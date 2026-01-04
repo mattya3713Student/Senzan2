@@ -1,4 +1,4 @@
-#include "SoundManager.h"
+ï»¿#include "SoundManager.h"
 #include <filesystem>
 #include <algorithm>
 
@@ -21,7 +21,7 @@ bool SoundManager::LoadSounds(HWND hWnd) {
 }
 
 bool SoundManager::LoadAllInternal(HWND hWnd) {
-    // ƒCƒ“ƒ^[ƒtƒF[ƒX¶¬
+    // ã‚¤ãƒ³ã‚¿ãƒ¼ãƒ•ã‚§ãƒ¼ã‚¹ç”Ÿæˆ
     if (FAILED(DirectSoundCreate8(NULL, &m_lpSoundInterface, NULL))) return false;
     if (FAILED(m_lpSoundInterface->SetCooperativeLevel(hWnd, DSSCL_NORMAL))) return false;
 
@@ -49,6 +49,11 @@ bool SoundManager::LoadAllInternal(HWND hWnd) {
 
 void SoundManager::Play(const std::string& name, bool isLoop) {
     auto& sounds = GetInstance().m_pDxSounds;
+
+#if _SOUND_STOP
+    return;
+#endif
+
     if (sounds.count(name)) sounds[name]->Play(isLoop);
 }
 

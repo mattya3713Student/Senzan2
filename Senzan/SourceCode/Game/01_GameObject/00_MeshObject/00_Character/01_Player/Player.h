@@ -74,6 +74,19 @@ class Player
 		Dead,
 	};
 
+    // 攻撃タイプの列挙.
+    enum class AttackType : uint8_t
+    {
+        Special,
+        Throwing,
+        Charge,
+        Normal,
+        Jump,
+        Stomp,
+        Laser,
+        Shout,
+    };
+
 	// 定数.
 protected:
 

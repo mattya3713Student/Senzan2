@@ -1,4 +1,4 @@
-#include "AttackCombo_0.h"
+ï»¿#include "AttackCombo_0.h"
 
 #include "Game/01_GameObject/00_MeshObject/00_Character/01_Player/Player.h"
 #include "Game/05_InputDevice/VirtualPad.h"
@@ -7,17 +7,17 @@
 #include "System/Singleton/ImGui/CImGuiManager.h"
 
 
-// UŒ‚ŠJn‚Ü‚Å‚Ì‘¬“x.
+// æ”»æ’ƒé–‹å§‹ã¾ã§ã®é€Ÿåº¦.
 static constexpr double AttackCombo_0_ANIM_SPEED_0 = 0.04; 
 
-static constexpr float CLOSE_RANGE_THRESHOLD = 10.0f;	// Boss‚Ü‚Å‚Ì‹——£‚É’u‚¢‚Ä‹ß‚¢‚Æ”»’f‚·‚é.
+static constexpr float CLOSE_RANGE_THRESHOLD = 10.0f;	// Bossã¾ã§ã®è·é›¢ã«ç½®ã„ã¦è¿‘ã„ã¨åˆ¤æ–­ã™ã‚‹.
 
 
 static float g_DebugAnimSpeed0 = 10.f;
 static float g_DebugAnimSpeed1 = 2.8f;
 static float g_DebugMaxTime = 3.067f;
-static float g_DebugComboStartTime = 0.5f; // ó•tŠJni—áF“¥‚İ‚İI‚í‚è‚Ìƒ^ƒCƒ~ƒ“ƒOj
-static float g_DebugComboEndTime = 2.5f; // ó•tI—¹i—áFƒAƒjƒ[ƒVƒ‡ƒ“I—¹‚Ì­‚µ‘Oj
+static float g_DebugComboStartTime = 0.5f; // å—ä»˜é–‹å§‹ï¼ˆä¾‹ï¼šè¸ã¿è¾¼ã¿çµ‚ã‚ã‚Šã®ã‚¿ã‚¤ãƒŸãƒ³ã‚°ï¼‰
+static float g_DebugComboEndTime = 2.5f; // å—ä»˜çµ‚äº†ï¼ˆä¾‹ï¼šã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³çµ‚äº†ã®å°‘ã—å‰ï¼‰
 
 namespace PlayerState {
 AttackCombo_0::AttackCombo_0(Player* owner)
@@ -31,7 +31,7 @@ AttackCombo_0::~AttackCombo_0()
 {
 }
 
-// ID‚Ìæ“¾.
+// IDã®å–å¾—.
 constexpr PlayerState::eID AttackCombo_0::GetStateID() const
 {
 	return PlayerState::eID::DodgeExecute;
@@ -41,23 +41,25 @@ void AttackCombo_0::Enter()
 {
 	Combat::Enter();
 
-	m_isComboAccepted = false; // ƒtƒ‰ƒO‚ğƒŠƒZƒbƒg.
-	m_currentTime = 0.0f;      // ŠÔ‚ğƒŠƒZƒbƒg.
+	m_isComboAccepted = false; // ãƒ•ãƒ©ã‚°ã‚’ãƒªã‚»ãƒƒãƒˆ.
+	m_currentTime = 0.0f;      // æ™‚é–“ã‚’ãƒªã‚»ãƒƒãƒˆ.
 	m_MaxTime = 3.067f;
 
-	// ƒAƒjƒ[ƒVƒ‡ƒ“İ’è.
+	// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³è¨­å®š.
 	m_MaxTime = g_DebugMaxTime;
 
-	// ƒAƒjƒ[ƒVƒ‡ƒ“İ’è.
+	// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³è¨­å®š.
 	m_pOwner->SetIsLoop(false);
 	m_pOwner->SetAnimTime(0.0);
-	m_pOwner->SetAnimSpeed(g_DebugAnimSpeed0); // ƒfƒoƒbƒO’l‚ğg—p
+	m_pOwner->SetAnimSpeed(g_DebugAnimSpeed0); // ãƒ‡ãƒãƒƒã‚°å€¤ã‚’ä½¿ç”¨
 	m_pOwner->ChangeAnim(Player::eAnim::Attack_0);
 
-	// “–‚½‚è”»’è‚ğ—LŒø‰».
-	m_pOwner->SetAttackColliderActive(true);
+	// å½“ãŸã‚Šåˆ¤å®šã‚’æœ‰åŠ¹åŒ–.
+	// ã‚¹ã‚±ã‚¸ãƒ¥ãƒ¼ãƒ«ã§æœ‰åŠ¹åŒ–ï¼ˆé…å»¶/æŒç¶šã‚’ã‚µãƒ³ãƒ—ãƒ«è¨­å®šï¼‰
+	// 0ç§’é…å»¶ã§0.12ç§’ã ã‘æœ‰åŠ¹ã«ã™ã‚‹ä¾‹ã€‚
+	m_pOwner->ScheduleAttackCollider(static_cast<Character::AttackTypeId>(Player::AttackType::Normal), 0, 0.0f, 0.12f);
 
-	// ‹——£Zo—pÀ•W.
+	// è·é›¢ç®—å‡ºç”¨åº§æ¨™.
 	DirectX::XMFLOAT3 target_pos = m_pOwner->m_TargetPos;
 	DirectX::XMVECTOR v_target_pos = DirectX::XMLoadFloat3(&target_pos);
 	v_target_pos = DirectX::XMVectorSetY(v_target_pos, 0.f);
@@ -65,7 +67,7 @@ void AttackCombo_0::Enter()
 	DirectX::XMVECTOR v_player_pos = DirectX::XMLoadFloat3(&player_pos);
 	v_player_pos = DirectX::XMVectorSetY(v_player_pos, 0.f);
 
-	// ‹——£Zo.
+	// è·é›¢ç®—å‡º.
 	DirectX::XMVECTOR v_Lenght = {};
 	DirectX::XMFLOAT3 diff_vec = {};
 	DirectX::XMVECTOR v_diff_vec = DirectX::XMVectorSubtract(v_target_pos, v_player_pos);
@@ -74,26 +76,27 @@ void AttackCombo_0::Enter()
 	v_diff_vec = DirectX::XMVector3Normalize(v_diff_vec);
 	DirectX::XMStoreFloat3(&diff_vec, v_diff_vec);
 
-	// “G‚Ì•ûŒü‚ğŒü‚­.
+    // æ•µã®æ–¹å‘ã‚’å‘ã.
+    m_pOwner->m_MoveVec = diff_vec;
 	m_pOwner->GetTransform()->RotateToDirection(diff_vec);
 
-	// “ü—Í‚ğæ“¾.
+	// å…¥åŠ›ã‚’å–å¾—.
 	DirectX::XMFLOAT2 input_vec = VirtualPad::GetInstance().GetAxisInput(VirtualPad::eGameAxisAction::Move);
  
-	// ‹——£‚É‚æ‚Á‚Ä‹ß‚Ã‚­.
+	// è·é›¢ã«ã‚ˆã£ã¦è¿‘ã¥ã.
 	if (m_Distance < CLOSE_RANGE_THRESHOLD)
 	{
-		// ‹ß‚¢‚È‚ç­‚µ.
+		// è¿‘ã„ãªã‚‰å°‘ã—.
 		DirectX::XMVECTOR v_small_move = DirectX::XMVectorScale(v_diff_vec, 0.1f);
 		DirectX::XMStoreFloat3(&m_MoveVec, v_small_move);
-		Log::GetInstance().Info("", "‹ß‚¢");
+		Log::GetInstance().Info("", "è¿‘ã„");
 	}
 	else
 	{
-		// ‰“‚¢Š‚Â“ü—Í‚ª‚ ‚ê‚Î“G‚Öƒ_ƒbƒVƒ…!.
+		// é ã„ä¸”ã¤å…¥åŠ›ãŒã‚ã‚Œã°æ•µã¸ãƒ€ãƒƒã‚·ãƒ¥!.
 		if (!MyMath::IsVector2NearlyZero(input_vec, 0.f)) {
 			m_MoveVec = diff_vec;
-			Log::GetInstance().Info("", "‰“‚¢");
+			Log::GetInstance().Info("", "é ã„");
 		}
 	}
 }
@@ -106,8 +109,8 @@ void AttackCombo_0::Update()
 	{
 		m_pOwner->ChangeState(PlayerState::eID::Idle);
 	}
-	// --- æs“ü—Í‚Ì”»’è ---
-	// w’è‚³‚ê‚½ŠÔ“à‚ÉUŒ‚ƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚½‚©”»’è
+	// --- å…ˆè¡Œå…¥åŠ›ã®åˆ¤å®š ---
+	// æŒ‡å®šã•ã‚ŒãŸæ™‚é–“å†…ã«æ”»æ’ƒãƒœã‚¿ãƒ³ãŒæŠ¼ã•ã‚ŒãŸã‹åˆ¤å®š
 	if (m_currentTime >= g_DebugComboStartTime && m_currentTime <= g_DebugComboEndTime)
 	{
 		if (VirtualPad::GetInstance().IsActionDown(VirtualPad::eGameAction::Attack))
@@ -119,17 +122,17 @@ void AttackCombo_0::Update()
 		}
 	}
 
-	// ‰½‚à“ü—Í‚ª‚È‚­ƒAƒjƒ[ƒVƒ‡ƒ“‚ªI‚í‚Á‚½,IdleƒXƒe[ƒg‚É•Ï‚¦‚é.
+	// ä½•ã‚‚å…¥åŠ›ãŒãªãã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãŒçµ‚ã‚ã£ãŸæ™‚,Idleã‚¹ãƒ†ãƒ¼ãƒˆã«å¤‰ãˆã‚‹.
 	if (m_currentTime >= m_pOwner->GetAnimPeriod(static_cast<int>(Player::eAnim::Attack_0)))
 	{
 		m_pOwner->ChangeState(PlayerState::eID::Idle);
 	}
 #if 0
 
-	// --- ImGui ƒfƒoƒbƒOƒƒjƒ…[ ---
+	// --- ImGui ãƒ‡ãƒãƒƒã‚°ãƒ¡ãƒ‹ãƒ¥ãƒ¼ ---
 	ImGui::Begin("AttackCombo_0 Debug");
 
-	// ŠÔ‚Æó•tó‘Ô‚Ì‰Â‹‰»
+	// æ™‚é–“ã¨å—ä»˜çŠ¶æ…‹ã®å¯è¦–åŒ–
 	ImGui::Text("Time: %.3f / %.3f", m_currentTime, m_MaxTime);
 	bool isInsideWindow = (m_currentTime >= g_DebugComboStartTime && m_currentTime <= g_DebugComboEndTime);
 
@@ -140,7 +143,7 @@ void AttackCombo_0::Update()
 		ImGui::TextColored(ImVec4(1, 0, 0, 1), "WINDOW: CLOSED");
 	}
 
-	// æs“ü—Íƒtƒ‰ƒO‚Ìó‘Ô‚ğ•\¦
+	// å…ˆè¡Œå…¥åŠ›ãƒ•ãƒ©ã‚°ã®çŠ¶æ…‹ã‚’è¡¨ç¤º
 	ImGui::Checkbox("Combo Accepted", &m_isComboAccepted);
 
 	ImGui::Separator();
@@ -148,7 +151,7 @@ void AttackCombo_0::Update()
 	ImGui::SliderFloat("Combo Start (sec)", &g_DebugComboStartTime, 0.0f, g_DebugMaxTime);
 	ImGui::SliderFloat("Combo End (sec)", &g_DebugComboEndTime, 0.0f, g_DebugMaxTime);
 
-	// ... Šù‘¶‚ÌƒfƒoƒbƒO€–Ú ...
+	// ... æ—¢å­˜ã®ãƒ‡ãƒãƒƒã‚°é …ç›® ...
 	if (ImGui::Button("Reset & Execute Again")) { this->Enter(); }
 
 	ImGui::End();
@@ -156,10 +159,10 @@ void AttackCombo_0::Update()
 
 #if 0
 
-	// --- ImGui ƒfƒoƒbƒOƒƒjƒ…[ ---
+	// --- ImGui ãƒ‡ãƒãƒƒã‚°ãƒ¡ãƒ‹ãƒ¥ãƒ¼ ---
 	ImGui::Begin("AttackCombo_0 Debug");
 
-	// ŠÔ‚Æó•tó‘Ô‚Ì‰Â‹‰»
+	// æ™‚é–“ã¨å—ä»˜çŠ¶æ…‹ã®å¯è¦–åŒ–
 	ImGui::Text("Time: %.3f / %.3f", m_currentTime, m_MaxTime);
 	bool isInsideWindow = (m_currentTime >= g_DebugComboStartTime && m_currentTime <= g_DebugComboEndTime);
 
@@ -170,7 +173,7 @@ void AttackCombo_0::Update()
 		ImGui::TextColored(ImVec4(1, 0, 0, 1), "WINDOW: CLOSED");
 	}
 
-	// æs“ü—Íƒtƒ‰ƒO‚Ìó‘Ô‚ğ•\¦
+	// å…ˆè¡Œå…¥åŠ›ãƒ•ãƒ©ã‚°ã®çŠ¶æ…‹ã‚’è¡¨ç¤º
 	ImGui::Checkbox("Combo Accepted", &m_isComboAccepted);
 
 	ImGui::Separator();
@@ -178,7 +181,7 @@ void AttackCombo_0::Update()
 	ImGui::SliderFloat("Combo Start (sec)", &g_DebugComboStartTime, 0.0f, g_DebugMaxTime);
 	ImGui::SliderFloat("Combo End (sec)", &g_DebugComboEndTime, 0.0f, g_DebugMaxTime);
 
-	// ... Šù‘¶‚ÌƒfƒoƒbƒO€–Ú ...
+	// ... æ—¢å­˜ã®ãƒ‡ãƒãƒƒã‚°é …ç›® ...
 	if (ImGui::Button("Reset & Execute Again")) { this->Enter(); }
 
 	ImGui::End();
@@ -189,12 +192,12 @@ void AttackCombo_0::LateUpdate()
 {
 	Combat::LateUpdate();
 
-	// Œo‰ßŠÔ‚ğ‰ÁZ.
+	// çµŒéæ™‚é–“ã‚’åŠ ç®—.
 	float actual_anim_speed = MyMath::IsNearlyEqual(m_pOwner->m_AnimSpeed, 0.0) ? g_DebugAnimSpeed1 : static_cast<float>(m_pOwner->m_AnimSpeed);
 	float delta_time = actual_anim_speed * m_pOwner->GetDelta();
 	m_currentTime += delta_time;
 
-	//// ƒAƒjƒ[ƒVƒ‡ƒ“,“¥‚İ‚İŠJn•b”.
+	//// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³,è¸ã¿è¾¼ã¿é–‹å§‹ç§’æ•°.
 	//float STEP_IN_START_TIME = 1.2f;
 	//if (m_currentTime > STEP_IN_START_TIME)
 	//{
@@ -203,14 +206,14 @@ void AttackCombo_0::LateUpdate()
 	//		[&]() { return false; });
 	//}
 
-	// ˆÚ“®—Ê‚ÌZo.
+	// ç§»å‹•é‡ã®ç®—å‡º.
 	float movement_speed = m_Distance / m_MaxTime;
 	float move_amount = movement_speed * delta_time;
 
-	// ˆÚ“®•ûŒü.
+	// ç§»å‹•æ–¹å‘.
 	DirectX::XMFLOAT3 moveDirection = { m_MoveVec.x, 0.0f, m_MoveVec.z };
 
-	// ˆÚ“®—Ê‰ÁZ.
+	// ç§»å‹•é‡åŠ ç®—.
 	DirectX::XMFLOAT3 movement = {};
 	movement.x = moveDirection.x * move_amount;
 	movement.y = 0.f;
@@ -228,8 +231,9 @@ void AttackCombo_0::Exit()
 {
 	Combat::Exit();
 	m_MoveVec = {};
-	// “–‚½‚è”»’è‚ğ–³Œø‰».
+	// å½“ãŸã‚Šåˆ¤å®šã‚’ç„¡åŠ¹åŒ–.
 	m_pOwner->SetAttackColliderActive(false);
 }
 
 } // PlayerState.
+

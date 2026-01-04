@@ -11,9 +11,9 @@
 #include "Graphic/Light/DirectionLight/DirectionLight.h"
 #include "Graphic/Light/LightManager.h"
 
-#include "Game/01_GameObject/00_MeshObject/00_Character/00_Ground/Ground.h"	// 地面Static.
-#include "Game/01_GameObject/00_MeshObject/00_Character/01_Player/Player.h"	// プレイヤー.
-#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/Boss.h"	// ボス.
+#include "Game/01_GameObject/00_MeshObject/00_Character/00_Ground/Ground.h" 	// 地面Static.
+#include "Game/01_GameObject/00_MeshObject/00_Character/01_Player/Player.h" 	// プレイヤー.
+#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/Boss.h" 	// ボス.
 
 #include "Game/03_Collision/00_Core/ColliderBase.h"	
 #include "Game/03_Collision/00_Core/01_Capsule/CapsuleCollider.h"
@@ -27,6 +27,22 @@
 #include "System/Singleton/ImGui/CImGuiManager.h"
 
 #include "SceneManager/SceneManager.h"
+
+#if _DEBUG
+// Boss state headers for debug state switching UI
+#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossIdolState/BossIdolState.h"
+#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossMoveState/BossMoveState.h"
+#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossStompState/BossStompState.h"
+#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossSlashState/BossSlashState.h"
+#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossChargeSlashState/BossChargeSlashState.h"
+#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossShoutState/BossShoutState.h"
+#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossSpecialState/BossSpecialState.h"
+#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossLaserState/BossLaserState.h"
+#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossDeadState/BossDeadState.h"
+#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossChargeState/BossChargeState.h"
+#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossThrowingState/BossThrowingState.h"
+
+#endif
 
 // コンストラクタ.
 MattyaTestScene::MattyaTestScene()
@@ -123,6 +139,37 @@ void MattyaTestScene::Update()
 	m_upUI->SetPlayerUlt(m_upPlayer->GetMaxUltValue(), m_upPlayer->GetUltValue());
 
 	m_upUI->Update();
+
+#if _DEBUG
+	// Boss debug UI: state switching + collider toggles
+	ImGui::Begin("Boss Debug");
+
+	ImGui::Text("Change Boss State:");
+	if (ImGui::Button("Idol")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_upBoss.get())); }
+	ImGui::SameLine();
+	if (ImGui::Button("Move")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossMoveState>(m_upBoss.get())); }
+	if (ImGui::Button("Stomp")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossStompState>(m_upBoss.get())); }
+	ImGui::SameLine();
+	if (ImGui::Button("Slash")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossSlashState>(m_upBoss.get())); }
+	if (ImGui::Button("ChargeSlash")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossChargeSlashState>(m_upBoss.get())); }
+	ImGui::SameLine();
+	if (ImGui::Button("Shout")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossShoutState>(m_upBoss.get())); }
+	if (ImGui::Button("Special")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossSpecialState>(m_upBoss.get())); }
+	ImGui::SameLine();
+	if (ImGui::Button("Laser")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossLaserState>(m_upBoss.get())); }
+	if (ImGui::Button("Charge")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossChargeState>(m_upBoss.get())); }
+	ImGui::SameLine();
+	if (ImGui::Button("Throwing")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossThrowingState>(m_upBoss.get())); }
+	if (ImGui::Button("Dead")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossDeadState>(m_upBoss.get())); }
+
+	ImGui::Separator();
+	ImGui::Text("Boss Info:");
+	ImGui::Text("HP: %.1f / %.1f", m_upBoss->GetHP(), m_upBoss->GetMaxHP());
+	ImGui::Text("State Ptr: %p", (void*)m_upBoss->GetStateMachine()->m_pCurrentState.get());
+
+	ImGui::End();
+#endif
+
 }
 
 void MattyaTestScene::LateUpdate()

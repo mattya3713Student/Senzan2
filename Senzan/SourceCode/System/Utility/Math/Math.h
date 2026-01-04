@@ -1,47 +1,51 @@
-#pragma once
+ï»¿#pragma once
 #include "Constant.h"
 #include <cmath>
 #include <DirectXMath.h>
 
 namespace MyMath {
 
-	// float‚È‚Ç‚Ì!=‚ğ‹ß—’l”äŠr‚·‚é.
+	// floatãªã©ã®!=ã‚’è¿‘ä¼¼å€¤æ¯”è¼ƒã™ã‚‹.
 	template <typename T>
 	inline bool IsNearlyEqual(T a, T b, T epsilon = EPSILON_E4) noexcept
 	{
-		// a‚Æb‚Ì·‚Ìâ‘Î’l‚ªA‹–—eŒë·ˆÈ“à‚Å‚ ‚ê‚Îtrue.
+		// aã¨bã®å·®ã®çµ¶å¯¾å€¤ãŒã€è¨±å®¹èª¤å·®ä»¥å†…ã§ã‚ã‚Œã°true.
 		return std::abs(a - b) <= epsilon;
 	}
 
-	// 2DƒxƒNƒgƒ‹‚ªƒ[ƒ‚É‹ß‚¢‚©‚ğƒ`ƒFƒbƒN.
-	inline bool IsVector2NearlyZero(const DirectX::XMFLOAT2& a, float b)
+	// 2Dãƒ™ã‚¯ãƒˆãƒ«ãŒã‚¼ãƒ­ã«è¿‘ã„ã‹ã‚’ãƒã‚§ãƒƒã‚¯.
+	inline bool IsVector2NearlyZero(const DirectX::XMFLOAT2& a, float b, float epsilon = EPSILON_E4)
 	{
-		return IsNearlyEqual(a.x, b) && IsNearlyEqual(a.y, b);
+		return IsNearlyEqual(a.x, b, epsilon)
+            && IsNearlyEqual(a.y, b, epsilon);
 	}
 
-	// 3DƒxƒNƒgƒ‹‚ªƒ[ƒ‚É‹ß‚¢‚©‚ğƒ`ƒFƒbƒN.
-	inline bool IsVector3NearlyZero(const DirectX::XMFLOAT3& a, float b)
+	// 3Dãƒ™ã‚¯ãƒˆãƒ«ãŒã‚¼ãƒ­ã«è¿‘ã„ã‹ã‚’ãƒã‚§ãƒƒã‚¯.
+	// ç¬¬äºŒå¼•æ•°ã§è¨±å®¹èª¤å·®(epsilon)ã‚’æŒ‡å®šã§ãã‚‹ã‚ˆã†ã«ã™ã‚‹ã€‚
+	inline bool IsVector3NearlyZero(const DirectX::XMFLOAT3& a, float b, float epsilon = EPSILON_E4)
 	{
-		return IsNearlyEqual(a.x, b) && IsNearlyEqual(a.y, b) && IsNearlyEqual(a.z, b);
+		return IsNearlyEqual(a.x, b, epsilon)
+            && IsNearlyEqual(a.y, b, epsilon)
+            && IsNearlyEqual(a.z, b, epsilon);
 	}
 
 	inline float NormalizeAngleDegrees(float angle);
 
 	/*************************************************************
-	* @brief	3DƒxƒNƒgƒ‹‚ğ…•½¬•ª(XZ)‚Ì‚İ‚Å³‹K‰»‚µA2DƒxƒNƒgƒ‹‚Æ‚µ‚Ä•Ô‚·B
-	* @return	³‹K‰»‚³‚ê‚½2DƒxƒNƒgƒ‹ (DirectX::XMFLOAT2)B
-	* @param[in]	vec	F³‹K‰»‚µ‚½‚¢3DƒxƒNƒgƒ‹B
+	* @brief	3Dãƒ™ã‚¯ãƒˆãƒ«ã‚’æ°´å¹³æˆåˆ†(XZ)ã®ã¿ã§æ­£è¦åŒ–ã—ã€2Dãƒ™ã‚¯ãƒˆãƒ«ã¨ã—ã¦è¿”ã™ã€‚
+	* @return	æ­£è¦åŒ–ã•ã‚ŒãŸ2Dãƒ™ã‚¯ãƒˆãƒ« (DirectX::XMFLOAT2)ã€‚
+	* @param[in]	vec	ï¼šæ­£è¦åŒ–ã—ãŸã„3Dãƒ™ã‚¯ãƒˆãƒ«ã€‚
 	* ************************************************************/
 	inline DirectX::XMFLOAT2 NormalizeVector3To2D(const DirectX::XMFLOAT3& vec)
 	{
-		// X, Z ¬•ª‚Ì’·‚³‚Ì“ñæ‚ğŒvZ.
+		// X, Z æˆåˆ†ã®é•·ã•ã®äºŒä¹—ã‚’è¨ˆç®—.
 		float lengthSq = vec.x * vec.x + vec.z * vec.z;
 
-		// ’·‚³iL2ƒmƒ‹ƒ€j‚ğŒvZ.
+		// é•·ã•ï¼ˆL2ãƒãƒ«ãƒ ï¼‰ã‚’è¨ˆç®—.
 		float length = std::sqrt(lengthSq);
 
-		// ’·‚³‚ª0‚Å‚È‚¯‚ê‚Î³‹K‰»‚µA‚»‚¤‚Å‚È‚¯‚ê‚Îƒ[ƒƒxƒNƒgƒ‹‚ğ•Ô‚·.
-		if (length > EPSILON_E4) // ƒ[ƒœZ‚ğ”ğ‚¯‚é‚½‚ß‚Ì”÷¬’lƒ`ƒFƒbƒN.
+		// é•·ã•ãŒ0ã§ãªã‘ã‚Œã°æ­£è¦åŒ–ã—ã€ãã†ã§ãªã‘ã‚Œã°ã‚¼ãƒ­ãƒ™ã‚¯ãƒˆãƒ«ã‚’è¿”ã™.
+		if (length > EPSILON_E4) // ã‚¼ãƒ­é™¤ç®—ã‚’é¿ã‘ã‚‹ãŸã‚ã®å¾®å°å€¤ãƒã‚§ãƒƒã‚¯.
 		{
 			return DirectX::XMFLOAT2(vec.x / length, vec.z / length);
 		}
@@ -49,11 +53,11 @@ namespace MyMath {
 	}
 
 	/*************************************************************
-	* @brief	’l‚ğŒ¸­(‘‰Á)‚³‚¹‚é.
-	* @return	’†‰›’l‚É‚È‚Á‚½‚©‚Ç‚¤‚©.	
-	* @param[inout] Value	F‘Œ¸‚³‚¹‚½‚¢’l.
-	* @param[in]	Median	F’†‰›’l.
-	* @param[in]	Amount	F‘Œ¸‚³‚¹‚é—Ê.
+	* @brief	å€¤ã‚’æ¸›å°‘(å¢—åŠ )ã•ã›ã‚‹.
+	* @return	ä¸­å¤®å€¤ã«ãªã£ãŸã‹ã©ã†ã‹.	
+	* @param[inout] Value	ï¼šå¢—æ¸›ã•ã›ãŸã„å€¤.
+	* @param[in] 	Median	ï¼šä¸­å¤®å€¤.
+	* @param[in] 	Amount	ï¼šå¢—æ¸›ã•ã›ã‚‹é‡.
 	* ************************************************************/
 	template<typename T>
 	inline bool DecreaseToValue(T& Value, T Median, T Amount) noexcept
@@ -76,8 +80,8 @@ namespace MyMath {
 	}
 
 	/*************************************************************
-	* @brief ƒ[ƒ‹ƒh‚ğƒXƒNƒŠ[ƒ“À•W‚É•ÏŠ·‚µ‚Ä•Ô‚·.
-	* @param[in]	worldPos	Fƒ[ƒ‹ƒhÀ•W.
+	* @brief ãƒ¯ãƒ¼ãƒ«ãƒ‰ã‚’ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ã«å¤‰æ›ã—ã¦è¿”ã™.
+	* @param[in]	worldPos	ï¼šãƒ¯ãƒ¼ãƒ«ãƒ‰åº§æ¨™.
 	* ************************************************************/
 	const DirectX::XMFLOAT2 ConvertWorldPosToScreenPos(
 		const DirectX::XMMATRIX& view,
@@ -85,8 +89,8 @@ namespace MyMath {
 		const DirectX::XMFLOAT3& worldPos);
 
 	/*************************************************************
-	* @brief ƒXƒNƒŠ[ƒ“À•W‚ğƒ[ƒ‹ƒhÀ•W‚É•ÏŠ·‚µ‚Ä•Ô‚·.
-	* @param[in]	screenPos	FƒXƒNƒŠ[ƒ“À•W.
+	* @brief ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ã‚’ãƒ¯ãƒ¼ãƒ«ãƒ‰åº§æ¨™ã«å¤‰æ›ã—ã¦è¿”ã™.
+	* @param[in]	screenPos	ï¼šã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™.
 	* ************************************************************/
 	const DirectX::XMFLOAT3 ConvertScreenPosToWorldPos(
 		const DirectX::XMMATRIX& view,
@@ -94,11 +98,11 @@ namespace MyMath {
 		const DirectX::XMFLOAT3& screenPos);
 
 	/*************************************************************
-	* @brief –Ú•W‚ÌÀ•W‚ÉŒü‚©‚Á‚Ä‰ñ“]‚·‚é’l‚ğŒvZ‚µ‚Ä•Ô‚·.
-	* @param[in]	currentPosition	FŒ»İÀ•W.
-	* @param[in]	targetPosition	F–Ú•WÀ•W.
-	* @param[out]	outQuaternion	FŒ»İ‚ÌƒNƒH[ƒ^ƒjƒIƒ“.
-	* @param[in]	speed			F•âŠÔ‘¬“x.
+	* @brief ç›®æ¨™ã®åº§æ¨™ã«å‘ã‹ã£ã¦å›è»¢ã™ã‚‹å€¤ã‚’è¨ˆç®—ã—ã¦è¿”ã™.
+	* @param[in]	currentPosition	ï¼šç¾åœ¨åº§æ¨™.
+	* @param[in]	targetPosition	ï¼šç›®æ¨™åº§æ¨™.
+	* @param[out]	outQuaternion	ï¼šç¾åœ¨ã®ã‚¯ã‚©ãƒ¼ã‚¿ãƒ‹ã‚ªãƒ³.
+	* @param[in]	speed			ï¼šè£œé–“é€Ÿåº¦.
 	*************************************************************/
 	void CalcLookAtRotation(
 		const DirectX::XMFLOAT3& currentPosition,
@@ -107,10 +111,10 @@ namespace MyMath {
 		const float& speed = 0.1f);
 
 	/*************************************************************
-	* @brief –Ú•W‚Ì•ûŒü‚ÉŒü‚©‚Á‚Ä‰ñ“]‚·‚éƒNƒH[ƒ^ƒjƒIƒ“‚ğŒvZ‚·‚é.
-	* @param[in]	targetDirection	F–Ú•W‚Ì•ûŒü.
-	* @param[out]	outQuaternion	FŒ»İ‚ÌƒNƒH[ƒ^ƒjƒIƒ“.
-	* @param[in]	speed			F•âŠÔ‘¬“x.
+	* @brief ç›®æ¨™ã®æ–¹å‘ã«å‘ã‹ã£ã¦å›è»¢ã™ã‚‹ã‚¯ã‚©ãƒ¼ã‚¿ãƒ‹ã‚ªãƒ³ã‚’è¨ˆç®—ã™ã‚‹.
+	* @param[in]	targetDirection	ï¼šç›®æ¨™ã®æ–¹å‘.
+	* @param[out]	outQuaternion	ï¼šç¾åœ¨ã®ã‚¯ã‚©ãƒ¼ã‚¿ãƒ‹ã‚ªãƒ³.
+	* @param[in]	speed			ï¼šè£œé–“é€Ÿåº¦.
 	*************************************************************/
 	void CalcLookAtRotation(
 		const DirectX::XMFLOAT3& targetDirection,

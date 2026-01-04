@@ -142,7 +142,7 @@ private:
     * @tparam ButtonCheckFunc ボタン判定関数オブジェクト
     **********************************************************/
     template <typename KeyCheckFunc, typename ButtonCheckFunc>
-    bool checkActionState(eGameAction action,
+    bool CheckActionState(eGameAction action,
         KeyCheckFunc&& keyCheck,
         ButtonCheckFunc&& buttonCheck) const;
 
