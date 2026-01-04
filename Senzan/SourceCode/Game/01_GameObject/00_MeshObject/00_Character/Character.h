@@ -103,7 +103,6 @@ protected:
 	float m_HP;         // 現在HP.
 
 	std::vector<ScheduledCollider> m_ScheduledColliders; // スケジュール一覧.
-
 	std::unordered_map<AttackTypeId, std::vector<ColliderBase*>> m_AttackColliders;   // 派生クラスが利用できるコライダーポインタ.
 };
 

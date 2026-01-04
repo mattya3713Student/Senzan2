@@ -1,4 +1,4 @@
-#include "BossShoutState.h"
+ï»¿#include "BossShoutState.h"
 
 #include "Game//04_Time//Time.h"
 #include "Game//01_GameObject//00_MeshObject//00_Character//02_Boss//Boss.h"
@@ -29,10 +29,10 @@ void BossShoutState::Enter()
         shoutCol->SetActive(true);
     }
 
-    // “–‚½‚è”»’è‚ð—LŒø‰».
-    m_pOwner->SetAttackColliderActive(true);
+    // enable shout-type colliders
+    m_pOwner->SetAttackCollidersActive(Boss::AttackType::Shout, true);
 
-    //ƒ{ƒX‚ÌŒü‚«‚ðÝ’è.
+    // set rotation toward player
     const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
     DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&BossPosF);
 
@@ -40,19 +40,15 @@ void BossShoutState::Enter()
     DirectX::XMVECTOR PlayerPosXM = DirectX::XMLoadFloat3(&PlayerPosF);
 
     DirectX::XMVECTOR Direction = DirectX::XMVectorSubtract(PlayerPosXM, BossPosXM);
-    //X,Z•½–Ê‚Ì•ûŒü.
     Direction = DirectX::XMVectorSetY(Direction, 0.0f);
 
-    //YŽ²‰ñ“]Šp“x‚ðŒvŽZ‚µAƒ{ƒX‚ðƒvƒŒƒCƒ„[‚ÉŒü‚©‚¹‚é.
     float dx = DirectX::XMVectorGetX(Direction);
     float dz = DirectX::XMVectorGetZ(Direction);
     float angle_radian = std::atan2f(-dx, -dz);
     m_pOwner->SetRotationY(angle_radian);
 
-    //‰ŠúˆÊ’u‚ð•Û‘¶.
     DirectX::XMStoreFloat3(&m_StartPos, BossPosXM);
 
-    //ƒAƒjƒ[ƒVƒ‡ƒ“‘¬“x.
     m_pOwner->SetAnimSpeed(15.0);
     m_pOwner->ChangeAnim(Boss::enBossAnim::LaserCharge);
 }
@@ -109,9 +105,8 @@ void BossShoutState::Draw()
 }
 
 void BossShoutState::Exit()
-{	// “–‚½‚è”»’è‚ð–³Œø‰».
-    m_pOwner->SetAttackColliderActive(false);
-  
+{    
+    m_pOwner->SetAttackCollidersActive(Boss::AttackType::Shout, false);
 }
 
 void BossShoutState::BossAttack()

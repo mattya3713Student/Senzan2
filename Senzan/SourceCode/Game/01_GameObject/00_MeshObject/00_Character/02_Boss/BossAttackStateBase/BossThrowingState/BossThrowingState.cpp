@@ -20,6 +20,9 @@ BossThrowingState::~BossThrowingState()
 
 void BossThrowingState::Enter()
 {
+	// set bone to track for throw (hand)
+	m_pOwner->SetSlashBoneName("boss_Hand_R");
+
 	// プレイヤーの方を向く
 	DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
 	DirectX::XMFLOAT3 PlayerPosF = m_pOwner->m_PlayerPos;
@@ -118,6 +121,9 @@ void BossThrowingState::Exit()
 {
 	// 当たり判定を無効化.
 	m_pOwner->SetAttackColliderActive(false);
+
+	// clear bone tracking
+	m_pOwner->SetSlashBoneName("");
 }
 
 void BossThrowingState::ParryTime()

@@ -25,7 +25,7 @@ BossStompState::~BossStompState()
 void BossStompState::Enter()
 {
 	// 当たり判定を有効化.
-	m_pOwner->SetAttackColliderActive(true);
+	m_pOwner->SetAttackCollidersActive(Boss::AttackType::Stomp, true);
 	auto* pStompCollider = m_pOwner->GetStompCollider();
 	if (pStompCollider) {
 		pStompCollider->SetActive(true);            
@@ -120,7 +120,7 @@ void BossStompState::Exit()
 	m_pOwner->SetPositionY(0.0f);
 
 	// 当たり判定を無効化.
-	m_pOwner->SetAttackColliderActive(false);
+	m_pOwner->SetAttackCollidersActive(Boss::AttackType::Stomp, false);
 }
 
 void BossStompState::BossAttack()

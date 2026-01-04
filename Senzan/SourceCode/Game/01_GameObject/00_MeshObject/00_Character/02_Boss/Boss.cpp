@@ -42,10 +42,7 @@ Boss::Boss()
     , m_vCurrentMoveVelocity(0.f, 0.f, 0.f)
     , deleta_time(0.f)
     , m_HitPoint(0.0f)
-
-    , m_pShoutCollider(nullptr)
-    , m_pSlashBoneMatrix(nullptr)
-    , m_pStompBoneMatrix(nullptr)
+    , m_CurrentAttackType(AttackType::Normal)
 {
     AttachMesh(MeshManager::GetInstance().GetSkinMesh("boss"));
 
@@ -107,30 +104,21 @@ Boss::Boss()
 
     // Keep composite registered to global detector.
     CollisionDetector::GetInstance().RegisterCollider(*m_upColliders);
-
-    // After creating colliders for each type in constructor, also fill legacy vectors for existing transform update code
-    for (auto& kv : m_AttackColliders)
-    {
-        Character::AttackTypeId type = kv.first;
-        auto& vec = kv.second;
-        if (type == static_cast<Character::AttackTypeId>(AttackType::Normal) || type == static_cast<Character::AttackTypeId>(AttackType::Charge) || type == static_cast<Character::AttackTypeId>(AttackType::Special) || type == static_cast<Character::AttackTypeId>(AttackType::Throwing))
-        {
-            for (ColliderBase* c : vec) m_vSlashColliders.push_back(c);
-        }
-        else if (type == static_cast<Character::AttackTypeId>(AttackType::Jump) || type == static_cast<Character::AttackTypeId>(AttackType::Stomp))
-        {
-            for (ColliderBase* c : vec) m_vStompColliders.push_back(c);
-        }
-        else if (type == static_cast<Character::AttackTypeId>(AttackType::Shout) || type == static_cast<Character::AttackTypeId>(AttackType::Laser))
-        {
-            if (!vec.empty()) m_pShoutCollider = vec.front();
-        }
-    }
 }
 
 Boss::~Boss()
 {
     CollisionDetector::GetInstance().UnregisterCollider(*m_upColliders);
+}
+
+void Boss::SetSlashBoneName(const std::string& name)
+{
+    m_slashBoneName = name;
+}
+
+void Boss::SetStompBoneName(const std::string& name)
+{
+    m_stompBoneName = name;
 }
 
 void Boss::SetAttackCollidersActive(AttackType type, bool active)
@@ -152,6 +140,12 @@ void Boss::SetAttackColliderActive(AttackType type, size_t index, bool active)
     if (index >= it->second.size()) return;
     ColliderBase* col = it->second[index];
     if (col) col->SetActive(active);
+}
+
+void Boss::SetAttackColliderActive(bool active)
+{
+    // Backwards compatibility: toggle colliders for current attack type
+    SetAttackCollidersActive(m_CurrentAttackType, active);
 }
 
 void Boss::Update()
@@ -176,6 +170,45 @@ void Boss::LateUpdate()
 
     if (!m_State) {
         return;
+    }
+
+    // Update cached bone matrices once per frame if names provided
+    if (!m_slashBoneName.empty())
+    {
+        auto sp = GetAttachMesh().lock();
+        auto skin = std::dynamic_pointer_cast<SkinMesh>(sp);
+        if (skin)
+        {
+            DirectX::XMMATRIX m;
+            if (skin->GetMatrixFromBone(m_slashBoneName.c_str(), &m))
+            {
+                m_slashBoneMatrix = m;
+                m_hasSlashBoneMatrix = true;
+            }
+            else
+            {
+                m_hasSlashBoneMatrix = false;
+            }
+        }
+    }
+
+    if (!m_stompBoneName.empty())
+    {
+        auto sp = GetAttachMesh().lock();
+        auto skin = std::dynamic_pointer_cast<SkinMesh>(sp);
+        if (skin)
+        {
+            DirectX::XMMATRIX m;
+            if (skin->GetMatrixFromBone(m_stompBoneName.c_str(), &m))
+            {
+                m_stompBoneMatrix = m;
+                m_hasStompBoneMatrix = true;
+            }
+            else
+            {
+                m_hasStompBoneMatrix = false;
+            }
+        }
     }
 
     UpdateSlashColliderTransform();
@@ -310,7 +343,8 @@ void Boss::HandleAttackDetection()
 
             if ((other_group & eCollisionGroup::Player_Damage) != eCollisionGroup::None)
             {
-                SetAttackColliderActive(false);
+                // disable all colliders belonging to current attack type
+                SetAttackCollidersActive(m_CurrentAttackType, false);
 
                 // 1フレームに1回.
                 return;
@@ -383,7 +417,8 @@ void Boss::HandleParryDetection()
                     return;
                 }
 
-                m_pAttackCollider->SetActive(false);
+                // disable all colliders of current attack type
+                SetAttackCollidersActive(m_CurrentAttackType, false);
 
                 // 一フレーム1回.
                 return;
@@ -395,16 +430,31 @@ void Boss::HandleParryDetection()
 // UpdateSlashColliderTransform: set offsets for all slash colliders
 void Boss::UpdateSlashColliderTransform()
 {
-    if (GetAttachMesh().expired() || m_vSlashColliders.empty()) return;
+    if (GetAttachMesh().expired()) return;
     auto skinMesh = std::dynamic_pointer_cast<SkinMesh>(GetAttachMesh().lock());
     if (!skinMesh) return;
+
+    // gather slash-related colliders (Normal, Charge, Special, Throwing)
+    std::vector<ColliderBase*> slashColls;
+    auto appendType = [&](AttackType t){
+        auto it = m_AttackColliders.find(static_cast<Character::AttackTypeId>(t));
+        if (it != m_AttackColliders.end()) {
+            for (ColliderBase* c : it->second) if (c) slashColls.push_back(c);
+        }
+    };
+    appendType(AttackType::Normal);
+    appendType(AttackType::Charge);
+    appendType(AttackType::Special);
+    appendType(AttackType::Throwing);
+
+    if (slashColls.empty()) return;
 
     DirectX::XMMATRIX bone_local_matrix;
     bool haveLocal = false;
 
-    if (m_pSlashBoneMatrix)
+    if (m_hasSlashBoneMatrix)
     {
-        bone_local_matrix = *m_pSlashBoneMatrix;
+        bone_local_matrix = m_slashBoneMatrix;
         haveLocal = true;
     }
     else
@@ -427,10 +477,9 @@ void Boss::UpdateSlashColliderTransform()
     DirectX::XMFLOAT3 f_relative_pos;
     DirectX::XMStoreFloat3(&f_relative_pos, relative_pos);
 
-    // Apply same base offset but allow each collider to have its own additional offset if needed.
-    for (size_t i = 0; i < m_vSlashColliders.size(); ++i)
+    for (size_t i = 0; i < slashColls.size(); ++i)
     {
-        ColliderBase* col = m_vSlashColliders[i];
+        ColliderBase* col = slashColls[i];
         if (!col) continue;
         float extraY = static_cast<float>(i) * 5.0f;
         float extraZ = static_cast<float>(i) * -5.0f;
@@ -440,16 +489,29 @@ void Boss::UpdateSlashColliderTransform()
 
 void Boss::UpdateStompColliderTransform()
 {
-    if (GetAttachMesh().expired() || m_vStompColliders.empty()) return;
+    if (GetAttachMesh().expired()) return;
     auto skinMesh = std::dynamic_pointer_cast<SkinMesh>(GetAttachMesh().lock());
     if (!skinMesh) return;
+
+    // gather stomp-related colliders (Jump, Stomp)
+    std::vector<ColliderBase*> stompColls;
+    auto appendType = [&](AttackType t){
+        auto it = m_AttackColliders.find(static_cast<Character::AttackTypeId>(t));
+        if (it != m_AttackColliders.end()) {
+            for (ColliderBase* c : it->second) if (c) stompColls.push_back(c);
+        }
+    };
+    appendType(AttackType::Jump);
+    appendType(AttackType::Stomp);
+
+    if (stompColls.empty()) return;
 
     DirectX::XMMATRIX bone_local_matrix;
     bool haveLocal = false;
 
-    if (m_pStompBoneMatrix)
+    if (m_hasStompBoneMatrix)
     {
-        bone_local_matrix = *m_pStompBoneMatrix;
+        bone_local_matrix = m_stompBoneMatrix;
         haveLocal = true;
     }
 
@@ -468,9 +530,9 @@ void Boss::UpdateStompColliderTransform()
         DirectX::XMFLOAT3 f_relative_pos;
         DirectX::XMStoreFloat3(&f_relative_pos, relative_pos);
 
-        for (size_t i = 0; i < m_vStompColliders.size(); ++i)
+        for (size_t i = 0; i < stompColls.size(); ++i)
         {
-            ColliderBase* col = m_vStompColliders[i];
+            ColliderBase* col = stompColls[i];
             if (!col) continue;
             col->SetPositionOffset(f_relative_pos.x, f_relative_pos.y, f_relative_pos.z);
         }
@@ -491,27 +553,44 @@ void Boss::UpdateStompColliderTransform()
         float offsetY = boneWorldPos.y - bossWorldPos.y;
         float offsetZ = boneWorldPos.z - bossWorldPos.z;
 
-        for (size_t i = 0; i < m_vStompColliders.size(); ++i)
+        for (size_t i = 0; i < stompColls.size(); ++i)
         {
-            ColliderBase* col = m_vStompColliders[i];
+            ColliderBase* col = stompColls[i];
             if (!col) continue;
             col->SetPositionOffset(offsetX, offsetY, offsetZ);
         }
     }
 }
 
-// Update other functions to use vectors where appropriate (Getters etc.)
+// Update other functions to use m_AttackColliders where appropriate
 ColliderBase* Boss::GetSlashCollider() const
 {
-    return m_vSlashColliders.empty() ? nullptr : m_vSlashColliders.front();
+    // return first available from (Normal, Charge, Special, Throwing)
+    const AttackType types[] = { AttackType::Normal, AttackType::Charge, AttackType::Special, AttackType::Throwing };
+    for (AttackType t : types)
+    {
+        auto it = m_AttackColliders.find(static_cast<Character::AttackTypeId>(t));
+        if (it != m_AttackColliders.end() && !it->second.empty()) return it->second.front();
+    }
+    return nullptr;
 }
 
 ColliderBase* Boss::GetStompCollider() const
 {
-    return m_vStompColliders.empty() ? nullptr : m_vStompColliders.front();
+    const AttackType types[] = { AttackType::Jump, AttackType::Stomp };
+    for (AttackType t : types)
+    {
+        auto it = m_AttackColliders.find(static_cast<Character::AttackTypeId>(t));
+        if (it != m_AttackColliders.end() && !it->second.empty()) return it->second.front();
+    }
+    return nullptr;
 }
 
 ColliderBase* Boss::GetShoutCollider() const
 {
-    return m_pShoutCollider;
+    auto it = m_AttackColliders.find(static_cast<Character::AttackTypeId>(AttackType::Shout));
+    if (it != m_AttackColliders.end() && !it->second.empty()) return it->second.front();
+    it = m_AttackColliders.find(static_cast<Character::AttackTypeId>(AttackType::Laser));
+    if (it != m_AttackColliders.end() && !it->second.empty()) return it->second.front();
+    return nullptr;
 }

@@ -31,8 +31,11 @@ void BossChargeSlashState::Enter()
 {
 	m_currentTimer = 0.0f;
 
-	// 当たり判定を有効化.
-	m_pOwner->SetAttackColliderActive(true);
+	// set bone to track for slash
+	m_pOwner->SetSlashBoneName("boss_Hand_R");
+
+	// 当たり判定を有効化. (use Normal-type slash colliders)
+	m_pOwner->SetAttackCollidersActive(Boss::AttackType::Normal, true);
 
 	//ボスの向きを設定.
 	const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
@@ -100,7 +103,10 @@ void BossChargeSlashState::Draw()
 void BossChargeSlashState::Exit()
 {
 	// 当たり判定を無効化.
-	m_pOwner->SetAttackColliderActive(false);
+	m_pOwner->SetAttackCollidersActive(Boss::AttackType::Normal, false);
+
+	// clear bone tracking
+	m_pOwner->SetSlashBoneName("");
 }
 
 void BossChargeSlashState::BoneDraw()

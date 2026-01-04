@@ -38,10 +38,14 @@ BossSlashState::~BossSlashState()
 
 void BossSlashState::Enter()
 {
-	// 当たり判定を有効化.
-	m_pOwner->SetAttackColliderActive(true);
+	// set bone to track for slash
+	m_pOwner->SetSlashBoneName("boss_Hand_R");
 
-	auto* attackColl = m_pOwner->m_pAttackCollider;
+	// 当たり判定を有効化: enable slash-related colliders
+	m_pOwner->SetAttackCollidersActive(Boss::AttackType::Normal, true);
+
+	// configure first slash collider if present
+	auto* attackColl = m_pOwner->GetSlashCollider();
 	if (attackColl) {
 		attackColl->SetRadius(15.0f);      
 		attackColl->SetHeight(40.0f);
@@ -129,10 +133,15 @@ void BossSlashState::Draw()
 }
 
 void BossSlashState::Exit()
-{	// 当たり判定を無効化.
-	m_pOwner->SetAttackColliderActive(false);
+{    
+	// 当たり判定を無効化: disable slash-related colliders
+	m_pOwner->SetAttackCollidersActive(Boss::AttackType::Normal, false);
+
+	// clear bone tracking
+	m_pOwner->SetSlashBoneName("");
 }
 
 void BossSlashState::BossAttack()
 {
 }
+
