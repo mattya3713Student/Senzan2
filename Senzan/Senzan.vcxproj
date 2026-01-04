@@ -229,6 +229,8 @@
     <ClCompile Include="Data\ImGui\Library\imgui_impl_win32.cpp" />
     <ClCompile Include="Data\ImGui\Library\imgui_tables.cpp" />
     <ClCompile Include="Data\ImGui\Library\imgui_widgets.cpp" />
+    <ClCompile Include="Senzan\SourceCode\System\Singleton\Debug\AnimationTuningManager\AnimationTuningManager.cpp" />
+    <ClCompile Include="Senzan\SourceCode\System\Singleton\Debug\AnimationTuningManager\DebugTuningPanel.cpp" />
     <ClCompile Include="SourceCode\Game\00_Scene\00_Base\SceneBase.cpp" />
     <ClCompile Include="SourceCode\Game\00_Scene\01_Title\Title.cpp" />
     <ClCompile Include="SourceCode\Game\00_Scene\02_GameMain\GameMain.cpp" />
@@ -338,6 +340,8 @@
     <ClCompile Include="SourceCode\System\GameLoop\Main.cpp" />
     <ClCompile Include="SourceCode\System\GameLoop\WinMain.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\BossAttackManager\BossAttackManager.cpp" />
+    <ClCompile Include="SourceCode\System\Singleton\Debug\AnimationTuningManager\AnimationTuningManager.cpp" />
+    <ClCompile Include="SourceCode\System\Singleton\Debug\AnimationTuningManager\DebugTuningPanel.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\Debug\CollisionVisualizer\CollisionVisualizer.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\ImGui\CImGuiManager.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\ResourceManager\EffectManager\EffekseerManager.cpp" />
@@ -365,6 +369,7 @@
     <ClInclude Include="Data\ImGui\Library\imstb_rectpack.h" />
     <ClInclude Include="Data\ImGui\Library\imstb_textedit.h" />
     <ClInclude Include="Data\ImGui\Library\imstb_truetype.h" />
+    <ClInclude Include="Senzan\SourceCode\System\Singleton\Debug\AnimationTuningManager\AnimationTuningManager.h" />
     <ClInclude Include="SourceCode\Constant.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\Select\Select.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\UIGameMain\UIGameMain.h" />
@@ -380,6 +385,7 @@
     <ClInclude Include="SourceCode\Game\03_Collision\Sprite\SpriteCollider.h" />
     <ClInclude Include="SourceCode\Resource\Effect\EffectResource.h" />
     <ClInclude Include="SourceCode\Resource\Sound\DirectSound.h" />
+    <ClInclude Include="SourceCode\System\Singleton\Debug\AnimationTuningManager\AnimationTuningManager.h" />
     <ClInclude Include="SourceCode\System\Singleton\ResourceManager\EffectManager\EffekseerManager.h" />
     <ClInclude Include="SourceCode\System\Singleton\ResourceManager\SoundManager\SoundManager.h" />
     <ClInclude Include="SourceCode\System\Utility\EnumFlags\EnumFlags.h" />
