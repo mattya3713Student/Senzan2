@@ -17,7 +17,7 @@ BossChargeState::~BossChargeState()
 void BossChargeState::Enter()
 {
 	m_pOwner->SetAttackCollidersActive(Boss::AttackType::Charge, true);
-	m_pOwner->SetAnimSpeed(25.0);
+	m_pOwner->SetAnimSpeed(1.0);
 	m_pOwner->ChangeAnim(Boss::enBossAnim::Charge);
 }
 

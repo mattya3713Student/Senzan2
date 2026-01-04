@@ -39,7 +39,7 @@ BossSlashState::~BossSlashState()
 void BossSlashState::Enter()
 {
 	// set bone to track for slash
-	m_pOwner->SetSlashBoneName("boss_Hand_R");
+	TrackSlashBone("boss_Hand_R");
 
 	// 当たり判定を有効化: enable slash-related colliders
 	m_pOwner->SetAttackCollidersActive(Boss::AttackType::Normal, true);
@@ -76,7 +76,7 @@ void BossSlashState::Enter()
 	DirectX::XMStoreFloat3(&m_StartPos, BossPosXM);
 
 	//アニメーションの速度.
-	m_pOwner->SetAnimSpeed(30.0);
+	m_pOwner->SetAnimSpeed(1.0);
 	//斬るアニメーションの再生.
 	m_pOwner->ChangeAnim(Boss::enBossAnim::Slash);
 
@@ -138,7 +138,7 @@ void BossSlashState::Exit()
 	m_pOwner->SetAttackCollidersActive(Boss::AttackType::Normal, false);
 
 	// clear bone tracking
-	m_pOwner->SetSlashBoneName("");
+	UntrackSlashBone();
 }
 
 void BossSlashState::BossAttack()

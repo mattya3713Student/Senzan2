@@ -33,7 +33,7 @@ void BossThrowingState::Enter()
 	m_pOwner->SetRotationY(angle_radian);
 
 	// アニメーション開始
-	m_pOwner->SetAnimSpeed(10.0);
+	m_pOwner->SetAnimSpeed(1.0);
 	m_pOwner->ChangeAnim(Boss::enBossAnim::LaserCharge); // 投擲用の溜め
 
 	m_IsLaunched = false;
@@ -132,11 +132,11 @@ void BossThrowingState::ParryTime()
 	switch (m_Parry)
 	{
 	case enParry::Flinch:
-		m_pOwner->SetAnimSpeed(30.0);
+		m_pOwner->SetAnimSpeed(1.0);
 		m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchParis);
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::FlinchParis))
 		{
-			m_pOwner->SetAnimSpeed(30.0);
+			m_pOwner->SetAnimSpeed(1.0);
 			m_pOwner->ChangeAnim(Boss::enBossAnim::Flinch);
 			m_Parry = enParry::FlinchTimer;
 		}
@@ -144,7 +144,7 @@ void BossThrowingState::ParryTime()
 	case enParry::FlinchTimer:
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Flinch))
 		{
-			m_pOwner->SetAnimSpeed(15.0);
+			m_pOwner->SetAnimSpeed(1.0);
 			m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchToIdol);
 			m_Parry = enParry::FlinchToIdol;
 		}

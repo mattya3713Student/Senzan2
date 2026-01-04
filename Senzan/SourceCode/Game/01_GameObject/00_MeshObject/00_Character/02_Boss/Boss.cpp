@@ -40,8 +40,6 @@ Boss::Boss()
     , m_TurnSpeed(0.1f)
     , m_MoveSpeed(0.3f)
     , m_vCurrentMoveVelocity(0.f, 0.f, 0.f)
-    , deleta_time(0.f)
-    , m_HitPoint(0.0f)
     , m_CurrentAttackType(AttackType::Normal)
 {
     AttachMesh(MeshManager::GetInstance().GetSkinMesh("boss"));
@@ -265,8 +263,8 @@ void Boss::Hit()
 
     //いったんこの10ダメだけにしておく.
     //最後はTenをBaseにして+や-を使用する感じになると思っている.
-    m_HitPoint -= ten;
-    if (m_HitPoint <= 0.0f)
+    m_HP -= ten;
+    if (m_HP <= 0.0f)
     {
         //死んだときにDeadStateclassに入る.
         m_State->ChangeState(std::make_shared<BossDeadState>(this));

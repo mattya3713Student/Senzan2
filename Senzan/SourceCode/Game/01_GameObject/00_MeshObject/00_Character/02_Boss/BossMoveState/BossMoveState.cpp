@@ -12,7 +12,7 @@
 #include <algorithm>
 #include <random>
 
-static constexpr double Move_Run_AnimSpeed = 50.0;
+static constexpr double Move_Run_AnimSpeed = 1.0;
 
 BossMoveState::BossMoveState(Boss* owner)
 	: StateBase<Boss>(owner)
@@ -144,8 +144,7 @@ void BossMoveState::Update()
 		m_pOwner->SetPosition(finalPosF);
 
 		// --- 4. アニメーション速度の調整 ---
-		// 【調整】20.0 -> 12.0 (移動が遅いので足踏みもゆっくりにする)
-		m_pOwner->SetAnimSpeed(12.0);
+		m_pOwner->SetAnimSpeed(1.0);
 		if (m_rotationDirection > 0)
 			m_pOwner->ChangeAnim(Boss::enBossAnim::LeftMove);
 		else
@@ -175,25 +174,10 @@ void BossMoveState::Update()
 
 		if (dist < 15.0f) {
 			candidates = {
-				//[this]() { return std::make_unique<BossSlashState>(m_pOwner); },
-				//[this]() { return std::make_unique<BossChargeState>(m_pOwner); },
-				//[this]() { return std::make_unique<BossStompState>(m_pOwner); }
 				[this]() { return std::make_unique<BossShoutState>(m_pOwner); }
 
 			};
 		}
-		//else if (dist < 40.0f) {
-		//	candidates = {
-		//		[this]() { return std::make_unique<BossThrowingState>(m_pOwner); },
-		//		[this]() { return std::make_unique<BossShoutState>(m_pOwner); }
-		//	};
-		//}
-		//else {
-		//	candidates = {
-		//		[this]() { return std::make_unique<BossSpecialState>(m_pOwner); },
-		//		[this]() { return std::make_unique<BossLaserState>(m_pOwner); }
-		//	};
-		//}
 
 		if (!candidates.empty())
 		{
@@ -223,3 +207,4 @@ void BossMoveState::SetInitialAngle(float angle)
 {
 	m_RotationAngle = angle;
 }
+
