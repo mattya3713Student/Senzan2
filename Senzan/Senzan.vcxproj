@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+ï»¿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -164,7 +164,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="Data\Shader\PMX\Header.hlsli" />
-    <None Include="SourceCode\Resource\Effect\git”FŽ¯—pƒtƒHƒ‹ƒ_" />
+    <None Include="SourceCode\Resource\Effect\gitï¿½Fï¿½ï¿½ï¿½pï¿½tï¿½Hï¿½ï¿½ï¿½_" />
     <None Include="SourceCode\System\Utility\Assert\Assert.inl" />
     <None Include="SourceCode\System\Utility\Math\Easing\Easing.inl" />
     <None Include="SourceCode\System\Utility\Math\Math.inl" />
@@ -229,8 +229,6 @@
     <ClCompile Include="Data\ImGui\Library\imgui_impl_win32.cpp" />
     <ClCompile Include="Data\ImGui\Library\imgui_tables.cpp" />
     <ClCompile Include="Data\ImGui\Library\imgui_widgets.cpp" />
-    <ClCompile Include="SourceCode\\System\\Singleton\\Debug\\AnimationTuningManager\\AnimationTuningManager.cpp" />
-    <ClCompile Include="SourceCode\\System\\Singleton\\Debug\\AnimationTuningManager\\DebugTuningPanel.cpp" />
     <ClCompile Include="SourceCode\Game\00_Scene\00_Base\SceneBase.cpp" />
     <ClCompile Include="SourceCode\Game\00_Scene\01_Title\Title.cpp" />
     <ClCompile Include="SourceCode\Game\00_Scene\02_GameMain\GameMain.cpp" />
@@ -369,7 +367,7 @@
     <ClInclude Include="Data\ImGui\Library\imstb_rectpack.h" />
     <ClInclude Include="Data\ImGui\Library\imstb_textedit.h" />
     <ClInclude Include="Data\ImGui\Library\imstb_truetype.h" />
-    <ClInclude Include="SourceCode\\System\\Singleton\\Debug\\AnimationTuningManager\\AnimationTuningManager.h" />
+    <ClInclude Include="SourceCode\System\Singleton\Debug\AnimationTuningManager\AnimationTuningManager.h" />
     <ClInclude Include="SourceCode\Constant.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\Select\Select.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\UIGameMain\UIGameMain.h" />
