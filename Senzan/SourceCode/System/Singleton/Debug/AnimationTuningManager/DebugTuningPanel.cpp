@@ -1,5 +1,6 @@
 ﻿#include "AnimationTuningManager.h"
-#include "imgui.h"
+#include "System/Singleton/ImGui/CImGuiManager.h"
+
 #include <string>
 #include <vector>
 
@@ -33,7 +34,7 @@ void RenderDebugTuningPanel(AnimationTuningManager& manager)
         {
             if (ImGui::Button("Add Collider"))
             {
-                ColliderSpec c{};
+                AnimationColliderSpec c{};
                 c.name = "Collider";
                 c.offset[0] = c.offset[1] = c.offset[2] = 0.0f;
                 c.radius = 1.0f;
@@ -47,7 +48,7 @@ void RenderDebugTuningPanel(AnimationTuningManager& manager)
 
         for (size_t i = 0; i < tuning->colliders.size(); ++i)
         {
-            ColliderSpec& c = tuning->colliders[i];
+            AnimationColliderSpec& c = tuning->colliders[i];
             ImGui::PushID((int)i);
             char buf[64];
             std::snprintf(buf, sizeof(buf), "%s_%zu", c.name.c_str(), i);

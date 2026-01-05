@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "SceneBase.h"
+#include "../00_Scene/00_Base/SceneBase.h"
 #include <memory>
 
 class Player;
@@ -9,8 +9,10 @@ class Ground;
 class UIGameMain;
 class CapsuleCollider;
 class DirectionLight;
+class LockOnCamera; // forward declaration
 
-class AnimationTuningScene : public SceneBase
+class AnimationTuningScene
+    : public SceneBase
 {
 public:
     AnimationTuningScene();
@@ -21,7 +23,7 @@ public:
     void Update() override;
     void LateUpdate() override;
     void Draw() override;
-    HRESULT LoadData() override;
+    HRESULT LoadData();
 
 private:
     std::shared_ptr<LockOnCamera> m_pCamera;
