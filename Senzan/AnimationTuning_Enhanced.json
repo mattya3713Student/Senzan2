@@ -1,0 +1,90 @@
+﻿{
+  "version": 2,
+  "entities": {
+    "Player": {
+      "entityType": "Player",
+      "resourceName": "player",
+      "currentDebugState": "Default",
+      "enableDebugMode": true,
+      "states": {
+        "Default": {
+          "animSpeed": 1.0,
+          "loop": false,
+          "animationIndex": 0,
+          "debugLoop": false,
+          "debugLoopStartTime": 0.0,
+          "debugLoopEndTime": 1.0,
+          "colliders": [
+            {
+              "name": "Player_Attack_Main",
+              "offset": [0.0, 1.5, 2.0],
+              "radius": 0.8,
+              "height": 2.5,
+              "activeWindow": [0.2, 0.28],
+              "attackAmount": 10.0,
+              "myMask": 1,
+              "myMaskNames": ["Player_Attack"],
+              "targetMask": 128,
+              "targetMaskNames": ["Enemy_Damage"],
+              "debugColor": [1.0, 0.2, 0.2, 1.0],
+              "active": true,
+              "delaySeconds": 0.0,
+              "durationSeconds": 0.12
+            }
+          ]
+        }
+      }
+    },
+
+    "Boss": {
+      "entityType": "Boss",
+      "resourceName": "boss",
+      "currentDebugState": "Default",
+      "enableDebugMode": false,
+      "states": {
+        "Default": {
+          "animSpeed": 1.0,
+          "loop": false,
+          "animationIndex": 0,
+          "debugLoop": false,
+          "debugLoopStartTime": 0.0,
+          "debugLoopEndTime": 1.0,
+          "colliders": [
+            {
+              "name": "Boss_Swipe",
+              "offset": [0.0, 2.0, -5.0],
+              "radius": 2.0,
+              "height": 4.0,
+              "activeWindow": [0.35, 0.5],
+              "attackAmount": 20.0,
+              "myMask": 32,
+              "myMaskNames": ["Enemy_Attack"],
+              "targetMask": 2,
+              "targetMaskNames": ["Player_Damage"],
+              "debugColor": [0.8, 0.4, 0.1, 1.0],
+              "active": true,
+              "delaySeconds": 0.0,
+              "durationSeconds": 0.2
+            },
+            {
+              "name": "Boss_Stomp",
+              "offset": [0.0, 0.5, 0.0],
+              "radius": 3.0,
+              "height": 1.0,
+              "activeWindow": [0.6, 0.75],
+              "attackAmount": 30.0,
+              "myMask": 32,
+              "myMaskNames": ["Enemy_Attack"],
+              "targetMask": 2,
+              "targetMaskNames": ["Player_Damage"],
+              "debugColor": [0.5, 0.1, 0.9, 1.0],
+              "active": true,
+              "delaySeconds": 0.1,
+              "durationSeconds": 0.25
+            }
+          ]
+        }
+      }
+    }
+  }
+}

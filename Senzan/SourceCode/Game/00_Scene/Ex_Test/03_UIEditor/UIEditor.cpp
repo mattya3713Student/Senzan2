@@ -181,7 +181,7 @@ void UIEditor::SelectSceneLoad(const std::string& sceneName)
 		// スプライト取得.
 		std::shared_ptr<Sprite2D> Sprite = SpriteManager::GetSprite2D(GetBaseName(imageName));
 		if (!Sprite) {
-			MessageBoxA(NULL, ("スプライトが見つかりません: " + imageName).c_str(), "Error", MB_OK);
+			MessageBoxA(NULL, (std::string(IMGUI_JP("スプライトが見つかりません: ")) + imageName).c_str(), IMGUI_JP("Error"), MB_OK);
 			continue;
 		}
 

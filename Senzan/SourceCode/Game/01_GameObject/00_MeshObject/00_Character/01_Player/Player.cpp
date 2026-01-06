@@ -1,30 +1,30 @@
 ﻿#include "Player.h"
-#include "System/Utility/StateMachine/StateMachine.h"	
+#include "System/Utility/StateMachine/StateMachine.h"
 
-#include "State/PlayerStateID.h"	
-#include "State/PlayerStateBase.h"	
+#include "State/PlayerStateID.h"
+#include "State/PlayerStateBase.h"
 
-#include "State/Root/Root.h"	
+#include "State/Root/Root.h"
 
-#include "State/Root/00_System/System.h"	
-#include "State/Root/00_System/00_Pause/Pause.h"	
-#include "State/Root/00_System/01_KnockBack/KnockBack.h"	
-#include "State/Root/00_System/02_Dead/Dead.h"	
-#include "State/Root/00_System/03_SpecialAttack/SpecialAttack.h"	
+#include "State/Root/00_System/System.h"
+#include "State/Root/00_System/00_Pause/Pause.h"
+#include "State/Root/00_System/01_KnockBack/KnockBack.h"
+#include "State/Root/00_System/02_Dead/Dead.h"
+#include "State/Root/00_System/03_SpecialAttack/SpecialAttack.h"
 
-#include "State/Root/01_Action/Action.h"	
-#include "State/Root/01_Action/00_Movement/Movement.h"	
-#include "State/Root/01_Action/00_Movement/00_Idle/Idle.h"	
-#include "State/Root/01_Action/00_Movement/01_Run/Run.h"	
+#include "State/Root/01_Action/Action.h"
+#include "State/Root/01_Action/00_Movement/Movement.h"
+#include "State/Root/01_Action/00_Movement/00_Idle/Idle.h"
+#include "State/Root/01_Action/00_Movement/01_Run/Run.h"
 
-#include "State/Root/01_Action/01_Combat/Combat.h"	
-#include "State/Root/01_Action/01_Combat/00_AttackCombo_0/AttackCombo_0.h"	
-#include "State/Root/01_Action/01_Combat/01_AttackCombo_1/AttackCombo_1.h"	
+#include "State/Root/01_Action/01_Combat/Combat.h"
+#include "State/Root/01_Action/01_Combat/00_AttackCombo_0/AttackCombo_0.h"
+#include "State/Root/01_Action/01_Combat/01_AttackCombo_1/AttackCombo_1.h"
 #include "State/Root/01_Action/01_Combat/02_AttackCombo_2/AttackCombo_2.h"
 
-#include "State/Root/01_Action/02_Dodge/Dodge.h"	
-#include "State/Root/01_Action/02_Dodge/00_DodgeExecute/DodgeExecute.h"	
-#include "State/Root/01_Action/02_Dodge/01_JustDodge/JustDodge.h"	
+#include "State/Root/01_Action/02_Dodge/Dodge.h"
+#include "State/Root/01_Action/02_Dodge/00_DodgeExecute/DodgeExecute.h"
+#include "State/Root/01_Action/02_Dodge/01_JustDodge/JustDodge.h"
 
 #include "Game/03_Collision/00_Core/01_Capsule/CapsuleCollider.h"
 #include "Game/03_Collision/00_Core/Ex_CompositeCollider/CompositeCollider.h"
@@ -34,9 +34,12 @@
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
 #include "System/Singleton/CameraManager/CameraManager.h"
 
-Player::Player()    
-	: Character         ()
-	, m_RootState       ( std::make_unique<PlayerState::Root>(this) )
+// Include for initial repeat animation state (visual only)
+#include "Game/01_GameObject/00_MeshObject/00_Character/State/RepeatAnimationState.h"
+
+Player::Player()
+	: Character		()
+	, m_RootState		( std::make_unique<PlayerState::Root>(this) )
     , m_StateRefMap     ( )
     , m_NextStateID     ( PlayerState::eID::None )
     , m_IsStateChangeRequest    ( false )
@@ -52,7 +55,7 @@ Player::Player()
     , m_IsSuccessParry  ( false )
     , m_pAttackCollider ( nullptr )
     , m_IsJustDodgeTiming( false )
-    , m_TargetPos        ( { 0.f,0.f,0.f } )
+    , m_TargetPos        ( { 0.f, 0.f, 0.f } )
 {
     // ステートの初期化.
     InitializeStateRefMap();
@@ -140,11 +143,11 @@ Player::Player()
         std::unordered_map<Character::AttackTypeId, std::vector<ColliderSpec>> defs;
         defs[static_cast<Character::AttackTypeId>(Player::AttackType::Normal)] = { spec };
         // create and register
-        CreateAttackCollidersFromDefs(defs);
+        CreateCollidersFromDefs(defs);
 
         // cache pointer for existing scheduler/usage
-        auto it = m_AttackColliders.find(static_cast<Character::AttackTypeId>(Player::AttackType::Normal));
-        if (it != m_AttackColliders.end() && !it->second.empty())
+        auto it = m_Colliders.find(static_cast<Character::AttackTypeId>(Player::AttackType::Normal));
+        if (it != m_Colliders.end() && !it->second.empty())
         {
             m_pAttackCollider = it->second.front();
         }
@@ -154,6 +157,12 @@ Player::Player()
 
     // 各ステートの初期化.
     m_RootState.get()->Enter();
+
+    // 簡易: 初期アニメを繰り返しで表示（FSMはRootのまま）
+    {
+        RepeatAnimationState<Player> temp(this, "Idle", static_cast<int>(Player::eAnim::Idle), 1.0f);
+        temp.Enter();
+    }
 }
 
 Player::~Player()
@@ -362,7 +371,7 @@ void Player::HandleAttackDetection()
             {
                 ++m_Combo;
                 m_CurrentUltValue += static_cast<float>(m_Combo) * 0.0f;
-                SetAttackColliderActive(false);
+                SetColliderActive(static_cast<Character::AttackTypeId>(Player::AttackType::Normal), 0, false);
 
                 // 一フレーム1回.
                 return;

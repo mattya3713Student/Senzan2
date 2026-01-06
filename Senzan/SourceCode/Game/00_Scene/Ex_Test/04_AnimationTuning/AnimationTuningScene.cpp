@@ -82,6 +82,8 @@ void AnimationTuningScene::Initialize()
         | eCollisionGroup::Player_JustDodge);
 
     CollisionDetector::GetInstance().RegisterCollider(*m_TestAttackCollision);
+
+    AnimationTuningManager::GetInstance().SetEnabled(true);
 }
 
 void AnimationTuningScene::Create()
@@ -113,36 +115,8 @@ void AnimationTuningScene::Update()
 
     m_upUI->Update();
 
-#if _DEBUG
-    ImGui::Begin("Boss Debug");
-    ImGui::Text("Change Boss State:");
-    if (ImGui::Button("Idol")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_upBoss.get())); }
-    ImGui::SameLine();
-    if (ImGui::Button("Move")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossMoveState>(m_upBoss.get())); }
-    if (ImGui::Button("Stomp")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossStompState>(m_upBoss.get())); }
-    ImGui::SameLine();
-    if (ImGui::Button("Slash")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossSlashState>(m_upBoss.get())); }
-    if (ImGui::Button("ChargeSlash")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossChargeSlashState>(m_upBoss.get())); }
-    ImGui::SameLine();
-    if (ImGui::Button("Shout")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossShoutState>(m_upBoss.get())); }
-    if (ImGui::Button("Special")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossSpecialState>(m_upBoss.get())); }
-    ImGui::SameLine();
-    if (ImGui::Button("Laser")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossLaserState>(m_upBoss.get())); }
-    if (ImGui::Button("Charge")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossChargeState>(m_upBoss.get())); }
-    ImGui::SameLine();
-    if (ImGui::Button("Throwing")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossThrowingState>(m_upBoss.get())); }
-    if (ImGui::Button("Dead")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossDeadState>(m_upBoss.get())); }
-
-    ImGui::Separator();
-    ImGui::Text("Boss Info:");
-    ImGui::Text("HP: %.1f / %.1f", m_upBoss->GetHP(), m_upBoss->GetMaxHP());
-    ImGui::Text("State Ptr: %p", (void*)m_upBoss->GetStateMachine()->m_pCurrentState.get());
-
-    ImGui::End();
-#endif
-
     // Draw Debug Tuning panel via manager
-    AnimationTuningManager::GetInstance().UpdateImGui();
+    AnimationTuningManager::GetInstance().UpdateImGui(m_upPlayer.get(), m_upBoss.get());
 }
 
 void AnimationTuningScene::LateUpdate()

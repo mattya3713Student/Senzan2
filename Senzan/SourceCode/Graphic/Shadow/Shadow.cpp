@@ -5,8 +5,9 @@
 namespace
 {
 	// デプスシャドウのサイズ.
-	static constexpr int DEPSH_W = 4096 * 2;
-	static constexpr int DEPSH_H = 4096 * 2;
+	// 大きすぎると毎フレームの深度レンダリングが重くなるため適度に抑える。
+	static constexpr int DEPSH_W = 4096; // was 4096 * 2 (8192)
+	static constexpr int DEPSH_H = 4096; // was 4096 * 2 (8192)
 }
 
 Shadow::Shadow()
@@ -47,7 +48,7 @@ void Shadow::Begin()
 	DirectX11::GetInstance().GetContext()->RSSetViewports(1, &vp);
 
 	// レンダーターゲットをクリア.
-	RenderTargetManager::GetInstance().ClearRenderTarget("ShadowMap");	
+	RenderTargetManager::GetInstance().ClearRenderTarget("ShadowMap");
 
 	// 描画先を深度マップに変更.
 	RenderTargetManager::GetInstance().SetRenderTargets("ShadowMap");

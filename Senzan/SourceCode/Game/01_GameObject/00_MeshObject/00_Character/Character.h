@@ -5,6 +5,7 @@
 #include <cstdint>
 
 #include "Game/03_Collision/00_Core/ColliderBase.h"
+#include "Game/03_Collision/00_Core/ColliderSpec.h"
 
 class CompositeCollider;
 class ColliderBase;
@@ -34,34 +35,56 @@ public:
 
 	/**********************************************************
 	* @brief                : 指定したコライダーを遅延付きで有効化スケジュールする.
-	* @param[in] type       : 攻撃タイプ(派生側で意味づけする).
-	* @param[in] index      : 攻撃タイプ内のコライダーインデックス.
+	* @param[in] type       : カテゴリ(派生側で意味づけする).
+	* @param[in] index      : カテゴリ内のコライダーインデックス.
 	* @param[in] delay      : 有効化までの遅延秒.
 	* @param[in] duration   : 有効化継続時間（秒）.
 	**********************************************************/
-	void ScheduleAttackCollider(AttackTypeId type, size_t index, float delay, float duration);
+	void ScheduleCollider(AttackTypeId type, size_t index, float delay, float duration);
 
 	/**********************************************************
 	* @brief                : 指定したスケジュールをキャンセルする.
-	* @param[in] type       : 攻撃タイプ.
+	* @param[in] type       : カテゴリ.
 	* @param[in] index      : コライダーインデックス.
 	**********************************************************/
 	void CancelScheduledCollider(AttackTypeId type, size_t index);
 
 	/**********************************************************
-	* @brief                : 指定攻撃タイプの全コライダーを即時有効/無効化する.
-	* @param[in] type       : 攻撃タイプ.
+	* @brief                : 指定カテゴリの全コライダーを即時有効/無効化する.
+	* @param[in] type       : カテゴリ.
 	* @param[in] active     : true=有効化, false=無効化.
 	**********************************************************/
-	void SetAttackCollidersActive(AttackTypeId type, bool active);
+	void SetCollidersActive(AttackTypeId type, bool active);
 
 	/**********************************************************
-	* @brief                : 指定攻撃タイプの単一コライダーを即時有効/無効化する.
-	* @param[in] type       : 攻撃タイプ.
+	* @brief                : 指定カテゴリの単一コライダーを即時有効/無効化する.
+	* @param[in] type       : カテゴリ.
 	* @param[in] index      : コライダーインデックス.
 	* @param[in] active     : true=有効化, false=無効化.
 	**********************************************************/
-	void SetAttackColliderActive(AttackTypeId type, size_t index, bool active);
+	void SetColliderActive(AttackTypeId type, size_t index, bool active);
+
+	// 外部ツールからコライダー定義を追加するための公開ラッパー
+	void AddCollidersFromDefsPublic(const std::unordered_map<AttackTypeId, std::vector<struct ColliderSpec>>& defs)
+	{
+		// 保守性のため protected 実装へフォワード
+		CreateCollidersFromDefs(defs);
+	}
+
+	// 指定カテゴリのコライダー数を取得
+	size_t GetColliderCount(AttackTypeId type) const;
+
+	// -----------------------------------------------------------------
+	// 旧 API 互換ラッパー (既存コードの呼び出しを壊さないため)
+	// -----------------------------------------------------------------
+	// 既存コードは ScheduleAttackCollider 等を呼んでいるため、新 API へ転送する。
+	inline void ScheduleAttackCollider(AttackTypeId type, size_t index, float delay, float duration) { ScheduleCollider(type, index, delay, duration); }
+	inline void CancelScheduledAttackCollider(AttackTypeId type, size_t index) { CancelScheduledCollider(type, index); }
+	inline void SetAttackCollidersActive(AttackTypeId type, bool active) { SetCollidersActive(type, active); }
+	inline void SetAttackColliderActive(AttackTypeId type, size_t index, bool active) { SetColliderActive(type, index, active); }
+	inline void AddAttackCollidersFromDefsPublic(const std::unordered_map<AttackTypeId, std::vector<struct ColliderSpec>>& defs) { CreateCollidersFromDefs(defs); }
+	inline size_t GetAttackColliderCount(AttackTypeId type) const { return GetColliderCount(type); }
+	// -----------------------------------------------------------------
 
 protected:
 
@@ -84,7 +107,7 @@ protected:
 	// スケジュール情報.
 	struct ScheduledCollider
 	{
-        AttackTypeId Type;  // 攻撃タイプID.
+        AttackTypeId Type;  // カテゴリID.
 		size_t Index;     // コライダーインデックス.
 		float Delay;      // 遅延秒.
 		float Duration;   // 有効時間.
@@ -93,16 +116,17 @@ protected:
 	};
 
 protected:
-    // コライダー定義から攻撃コライダーを生成する.
-	void CreateAttackCollidersFromDefs(const std::unordered_map<AttackTypeId, std::vector<ColliderSpec>>& defs);
+	// コライダー定義からコライダーを生成する.
+	void CreateCollidersFromDefs(const std::unordered_map<AttackTypeId, std::vector<struct ColliderSpec>>& defs);
 
 protected:
-	std::unique_ptr<CompositeCollider>	m_upColliders;	// 衝突コンテナ.
+	std::unique_ptr<CompositeCollider>	m_upColliders; 	// 衝突コンテナ.
 
 	float m_MaxHP;      // 最大HP.
 	float m_HP;         // 現在HP.
 
 	std::vector<ScheduledCollider> m_ScheduledColliders; // スケジュール一覧.
-	std::unordered_map<AttackTypeId, std::vector<ColliderBase*>> m_AttackColliders;   // 派生クラスが利用できるコライダーポインタ.
+	// 派生クラスが利用できるカテゴリ分けされたコライダーポインタ.
+	std::unordered_map<AttackTypeId, std::vector<ColliderBase*>> m_Colliders;   // 担当: 淵脇 未来.
 };
 

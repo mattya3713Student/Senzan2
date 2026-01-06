@@ -1,7 +1,5 @@
 ﻿#include "SceneManager.h"
 
-#include "Graphic/DirectX/DirectX9/DirectX9.h"
-#include "Graphic/DirectX/DirectX11/DirectX11.h"
 #include "02_UIObject/Fade/FadeManager.h"
 
 #include "Game/00_Scene/00_Base/SceneBase.h"
@@ -14,6 +12,7 @@
 #include "Game/00_Scene/Ex_Test/01_memeu1101/MemeuTestScene.h"
 #include "Game/00_Scene/Ex_Test/02_L/LTestScene.h"
 #include "Game/00_Scene/Ex_Test/03_UIEditor/UIEditor.h"
+#include "Game/00_Scene/Ex_Test/04_AnimationTuning/AnimationTuningScene.h"
 
 #if _DEBUG
 #include "ImGui/CImGuiManager.h"
@@ -86,6 +85,7 @@ void SceneManager::Update()
 
 	ImGui::Separator();
 	if (ImGui::Button("UIEditor")) { LoadScene(eList::UIEditor); }
+	if (ImGui::Button("AnimationTuning")) { LoadScene(eList::AnimationTuning); }
 
 	ImGui::End();
 #endif // _DEBUG
@@ -152,6 +152,8 @@ void SceneManager::MakeScene(eList Scene)
 			break;
 		case eList::UIEditor:
 			m_pScene = std::make_unique<UIEditor>();
+		case eList::AnimationTuning:
+			m_pScene = std::make_unique<AnimationTuningScene>();
 			break;
 #endif // _DEBUG
 		case eList::MAX:

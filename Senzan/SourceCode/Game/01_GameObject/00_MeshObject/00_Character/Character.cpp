@@ -28,7 +28,7 @@ void Character::Update()
 
 void Character::LateUpdate()
 {
-    // 毎フレームスケジュールされた攻撃コライダーの状態を更新.
+    // 毎フレームスケジュールされたコライダーの状態を更新.
     UpdateScheduledColliders();
 
     HandleCollisionResponse();
@@ -116,8 +116,8 @@ void Character::ApplyDamage(float damageAmount)
     }
 }
 
-// スケジュールされた攻撃コライダーを登録する.
-void Character::ScheduleAttackCollider(AttackTypeId type, size_t index, float delay, float duration)
+// スケジュールされたコライダーを登録する.
+void Character::ScheduleCollider(AttackTypeId type, size_t index, float delay, float duration)
 {
     // すでに同じスケジュールがある場合は上書き.
     for (auto &s : m_ScheduledColliders)
@@ -155,22 +155,22 @@ void Character::CancelScheduledCollider(AttackTypeId type, size_t index)
     );
 }
 
-// 指定攻撃タイプの全コライダーを有効/無効化する.
-void Character::SetAttackCollidersActive(AttackTypeId type, bool active)
+// 指定カテゴリの全コライダーを有効/無効化する.
+void Character::SetCollidersActive(AttackTypeId type, bool active)
 {
-    auto it = m_AttackColliders.find(type);
-    if (it == m_AttackColliders.end()) return;
+    auto it = m_Colliders.find(type);
+    if (it == m_Colliders.end()) return;
     for (ColliderBase* col : it->second)
     {
         if (col) col->SetActive(active);
     }
 }
 
-// 指定攻撃タイプの単一コライダーを有効/無効化する.
-void Character::SetAttackColliderActive(AttackTypeId type, size_t index, bool active)
+// 指定カテゴリの単一コライダーを有効/無効化する.
+void Character::SetColliderActive(AttackTypeId type, size_t index, bool active)
 {
-    auto it = m_AttackColliders.find(type);
-    if (it == m_AttackColliders.end()) return;
+    auto it = m_Colliders.find(type);
+    if (it == m_Colliders.end()) return;
     if (index >= it->second.size()) return;
     ColliderBase* col = it->second[index];
     if (col) col->SetActive(active);
@@ -191,14 +191,14 @@ void Character::UpdateScheduledColliders()
         // 有効化タイミング.
         if (!s.Active && s.Elapsed >= s.Delay)
         {
-            SetAttackColliderActive(s.Type, s.Index, true);
+            SetColliderActive(s.Type, s.Index, true);
             s.Active = true;
         }
 
         // 無効化タイミング.
         if (s.Active && s.Elapsed >= (s.Delay + s.Duration))
         {
-            SetAttackColliderActive(s.Type, s.Index, false);
+            SetColliderActive(s.Type, s.Index, false);
             s.Active = false;
             needCleanup = true; 
         }
@@ -218,13 +218,24 @@ void Character::UpdateScheduledColliders()
     }
 }
 
-void Character::CreateAttackCollidersFromDefs(const std::unordered_map<AttackTypeId, std::vector<ColliderSpec>>& defs)
+void Character::CreateCollidersFromDefs(const std::unordered_map<AttackTypeId, std::vector<ColliderSpec>>& defs)
 {
     for (const auto& kv : defs)
     {
         AttackTypeId type = kv.first;
         const auto& specs = kv.second;
         std::vector<ColliderBase*> pointers;
+
+        // 既存の同カテゴリコライダーがあれば Composite から除去して重複を避ける
+        auto oldIt = m_Colliders.find(type);
+        if (oldIt != m_Colliders.end())
+        {
+            const std::vector<ColliderBase*>& oldPointers = oldIt->second;
+            if (m_upColliders)
+            {
+                m_upColliders->RemoveCollidersByPointers(oldPointers);
+            }
+        }
 
         for (const auto& spec : specs)
         {
@@ -244,6 +255,13 @@ void Character::CreateAttackCollidersFromDefs(const std::unordered_map<AttackTyp
             m_upColliders->AddCollider(std::move(col));
         }
 
-        m_AttackColliders[type] = std::move(pointers);
+        m_Colliders[type] = std::move(pointers);
     }
+}
+
+size_t Character::GetColliderCount(AttackTypeId type) const
+{
+    auto it = m_Colliders.find(type);
+    if (it == m_Colliders.end()) return 0;
+    return it->second.size();
 }

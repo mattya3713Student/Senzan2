@@ -15,33 +15,29 @@ void CollisionDetector::ExecuteCollisionDetection()
     m_PendingResponses.clear();
 
     // 2. コライダーリストの総当たりチェック
-    for (size_t i = 0; i < m_Colliders.size(); ++i)
+    const size_t n = m_Colliders.size();
+    if (n < 2) return;
+
+    // 事前に必要量を確保して再割り当てを減らす
+    m_PendingResponses.reserve(std::min<size_t>(m_PendingResponses.capacity() + 16, n * 2));
+
+    // アクティブなコライダーのみのインデックスを作る（小さいループの方がキャッシュに優しい）
+    std::vector<ColliderBase*> activeColliders;
+    activeColliders.reserve(n);
+    for (ColliderBase* c : m_Colliders) {
+        if (c && c->GetActive()) activeColliders.push_back(c);
+    }
+
+    const size_t activeCount = activeColliders.size();
+    for (size_t i = 0; i < activeCount; ++i)
     {
-        for (size_t j = i + 1; j < m_Colliders.size(); ++j)
+        // jはi+1から開始
+        for (size_t j = i + 1; j < activeCount; ++j)
         {
-            ColliderBase* colliderA = m_Colliders[i];
-            ColliderBase* colliderB = m_Colliders[j];
+            ColliderBase* colliderA = activeColliders[i];
+            ColliderBase* colliderB = activeColliders[j];
             if (!colliderA || !colliderB) { continue; }
-            if (!colliderA->GetActive() || !colliderB->GetActive()) { continue; }
-#if 0
 
-            eCollisionGroup group_a = colliderA->GetMyMask();
-            eCollisionGroup group_b = colliderB->GetMyMask();
-
-            bool is_pattern1 = (group_a & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None &&
-                (group_b & eCollisionGroup::Player_JustDodge) != eCollisionGroup::None;
-
-            bool is_pattern2 = (group_a & eCollisionGroup::Player_JustDodge) != eCollisionGroup::None &&
-                (group_b & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None;
-
-            // パターン1 または パターン2 の時に実行
-            if (is_pattern1 || is_pattern2)
-            {
-                // 衝突後の処理
-                int i = 0;
-                i++;
-            }
-#endif
             // フィルタの判断と接触の判断.
             CollisionInfo info = colliderA->CheckCollision(*colliderB);
             if (!info.IsHit) { continue; }
@@ -56,10 +52,6 @@ void CollisionDetector::ExecuteCollisionDetection()
 
             // Collider B への情報追加.
             CollisionInfo info_reverse = info;
-
-            // 法線ベクトルを反転.
-            DirectX::XMVECTOR v_normal_reverse = DirectX::XMLoadFloat3(&info.Normal);
-            DirectX::XMStoreFloat3(&info_reverse.Normal, v_normal_reverse);
 
             // ポインタを入れ替え.
             const ColliderBase* temp_collider = info.ColliderA;

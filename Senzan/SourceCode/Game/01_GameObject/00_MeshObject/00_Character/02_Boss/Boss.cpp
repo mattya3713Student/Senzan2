@@ -28,10 +28,13 @@
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
 #include "System/Singleton/CameraManager/CameraManager.h"
 
+// include the RepeatAnimationState template header so we can call Enter() for initial visual loop
+#include "Game/01_GameObject/00_MeshObject/00_Character/State/RepeatAnimationState.h"
+
 
 constexpr float HP_Max = 100.0f;
 
-// Use Character::CreateAttackCollidersFromDefs to create and register colliders
+// Use Character::CreateCollidersFromDefs to create and register colliders
 
 Boss::Boss()
     : Character()
@@ -54,7 +57,14 @@ Boss::Boss()
     m_MaxHP = 100.f;
     m_HP = m_MaxHP;
 
+    // Keep FSM as-is: start with Idol state
     m_State->ChangeState(std::make_shared<BossIdolState>(this));
+
+    // 簡易: 初期アニメを繰り返しで表示（FSMはボスの通常ステートのまま）
+    {
+        RepeatAnimationState<Boss> temp(this, "Idol", static_cast<int>(Boss::enBossAnim::Idol), 1.0f);
+        temp.Enter();
+    }
 
     // sample default specs (use ColliderSpec as spec carrier)
     {
@@ -98,7 +108,7 @@ Boss::Boss()
     }
 
     // Pre-create and register colliders for each attack type into m_upColliders using Character helper
-    CreateAttackCollidersFromDefs(m_AttackColliderDefs);
+    CreateCollidersFromDefs(m_AttackColliderDefs);
 
     // Keep composite registered to global detector.
     CollisionDetector::GetInstance().RegisterCollider(*m_upColliders);
@@ -122,28 +132,19 @@ void Boss::SetStompBoneName(const std::string& name)
 void Boss::SetAttackCollidersActive(AttackType type, bool active)
 {
     Character::AttackTypeId id = static_cast<Character::AttackTypeId>(type);
-    auto it = m_AttackColliders.find(id);
-    if (it == m_AttackColliders.end()) return;
-    for (ColliderBase* col : it->second)
-    {
-        if (col) col->SetActive(active);
-    }
+    SetCollidersActive(id, active);
 }
 
 void Boss::SetAttackColliderActive(AttackType type, size_t index, bool active)
 {
     Character::AttackTypeId id = static_cast<Character::AttackTypeId>(type);
-    auto it = m_AttackColliders.find(id);
-    if (it == m_AttackColliders.end()) return;
-    if (index >= it->second.size()) return;
-    ColliderBase* col = it->second[index];
-    if (col) col->SetActive(active);
+    SetColliderActive(id, index, active);
 }
 
 void Boss::SetAttackColliderActive(bool active)
 {
     // Backwards compatibility: toggle colliders for current attack type
-    SetAttackCollidersActive(m_CurrentAttackType, active);
+    SetCollidersActive(static_cast<Character::AttackTypeId>(m_CurrentAttackType), active);
 }
 
 void Boss::Update()
@@ -342,7 +343,7 @@ void Boss::HandleAttackDetection()
             if ((other_group & eCollisionGroup::Player_Damage) != eCollisionGroup::None)
             {
                 // disable all colliders belonging to current attack type
-                SetAttackCollidersActive(m_CurrentAttackType, false);
+                SetCollidersActive(static_cast<Character::AttackTypeId>(m_CurrentAttackType), false);
 
                 // 1フレームに1回.
                 return;
@@ -416,7 +417,7 @@ void Boss::HandleParryDetection()
                 }
 
                 // disable all colliders of current attack type
-                SetAttackCollidersActive(m_CurrentAttackType, false);
+                SetCollidersActive(static_cast<Character::AttackTypeId>(m_CurrentAttackType), false);
 
                 // 一フレーム1回.
                 return;
@@ -435,8 +436,8 @@ void Boss::UpdateSlashColliderTransform()
     // gather slash-related colliders (Normal, Charge, Special, Throwing)
     std::vector<ColliderBase*> slashColls;
     auto appendType = [&](AttackType t){
-        auto it = m_AttackColliders.find(static_cast<Character::AttackTypeId>(t));
-        if (it != m_AttackColliders.end()) {
+        auto it = m_Colliders.find(static_cast<Character::AttackTypeId>(t));
+        if (it != m_Colliders.end()) {
             for (ColliderBase* c : it->second) if (c) slashColls.push_back(c);
         }
     };
@@ -494,8 +495,8 @@ void Boss::UpdateStompColliderTransform()
     // gather stomp-related colliders (Jump, Stomp)
     std::vector<ColliderBase*> stompColls;
     auto appendType = [&](AttackType t){
-        auto it = m_AttackColliders.find(static_cast<Character::AttackTypeId>(t));
-        if (it != m_AttackColliders.end()) {
+        auto it = m_Colliders.find(static_cast<Character::AttackTypeId>(t));
+        if (it != m_Colliders.end()) {
             for (ColliderBase* c : it->second) if (c) stompColls.push_back(c);
         }
     };
@@ -560,15 +561,15 @@ void Boss::UpdateStompColliderTransform()
     }
 }
 
-// Update other functions to use m_AttackColliders where appropriate
+// Update other functions to use m_Colliders where appropriate
 ColliderBase* Boss::GetSlashCollider() const
 {
     // return first available from (Normal, Charge, Special, Throwing)
     const AttackType types[] = { AttackType::Normal, AttackType::Charge, AttackType::Special, AttackType::Throwing };
     for (AttackType t : types)
     {
-        auto it = m_AttackColliders.find(static_cast<Character::AttackTypeId>(t));
-        if (it != m_AttackColliders.end() && !it->second.empty()) return it->second.front();
+        auto it = m_Colliders.find(static_cast<Character::AttackTypeId>(t));
+        if (it != m_Colliders.end() && !it->second.empty()) return it->second.front();
     }
     return nullptr;
 }
@@ -578,17 +579,17 @@ ColliderBase* Boss::GetStompCollider() const
     const AttackType types[] = { AttackType::Jump, AttackType::Stomp };
     for (AttackType t : types)
     {
-        auto it = m_AttackColliders.find(static_cast<Character::AttackTypeId>(t));
-        if (it != m_AttackColliders.end() && !it->second.empty()) return it->second.front();
+        auto it = m_Colliders.find(static_cast<Character::AttackTypeId>(t));
+        if (it != m_Colliders.end() && !it->second.empty()) return it->second.front();
     }
     return nullptr;
 }
 
 ColliderBase* Boss::GetShoutCollider() const
 {
-    auto it = m_AttackColliders.find(static_cast<Character::AttackTypeId>(AttackType::Shout));
-    if (it != m_AttackColliders.end() && !it->second.empty()) return it->second.front();
-    it = m_AttackColliders.find(static_cast<Character::AttackTypeId>(AttackType::Laser));
-    if (it != m_AttackColliders.end() && !it->second.empty()) return it->second.front();
+    auto it = m_Colliders.find(static_cast<Character::AttackTypeId>(AttackType::Shout));
+    if (it != m_Colliders.end() && !it->second.empty()) return it->second.front();
+    it = m_Colliders.find(static_cast<Character::AttackTypeId>(AttackType::Laser));
+    if (it != m_Colliders.end() && !it->second.empty()) return it->second.front();
     return nullptr;
 }

@@ -27,6 +27,8 @@ enum class eList
 	L, 	
 
 	UIEditor,
+
+	AnimationTuning,
 #endif // _DEBUG
 
 	MAX,
