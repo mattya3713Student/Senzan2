@@ -14,6 +14,8 @@ MeshObject::MeshObject()
 	, m_AnimTimer(0.0)
 	, m_Isloop (false)
 	, m_BonePos()
+	, m_AnimPaused(false)
+	, m_SavedAnimSpeed(0.0)
 {
 }
 
@@ -27,7 +29,7 @@ MeshObject::~MeshObject()
 
 void MeshObject::Update()
 {
-	
+    
 }
 
 void MeshObject::LateUpdate()
@@ -64,6 +66,7 @@ void MeshObject::Draw()
 		m_AnimTimer += m_AnimSpeed * GetDelta();
 		IsLoopAnimTimeSet();
 		m_pAnimCtrl->SetTrackPosition(0, m_AnimTimer);
+        m_pAnimCtrl->AdvanceTime(0.0f, NULL);
 		skinMesh->Render(m_pAnimCtrl);
 	}
 }
@@ -159,19 +162,50 @@ void MeshObject::SetIsShadow(const bool& isShadow)
 // アニメーションの速度を設定.
 void MeshObject::SetAnimSpeed(const double speed)
 {
-	m_AnimSpeed = speed;
+    if (m_AnimPaused)
+    {
+        // store when paused so resume restores correctly
+        m_SavedAnimSpeed = speed;
+    }
+    else
+    {
+        m_AnimSpeed = speed;
+    }
 }
 
 // アニメーションの速度を取得.
 double MeshObject::GetAnimSpeed() const
 {
-    return m_AnimSpeed;
+    return m_AnimPaused ? m_SavedAnimSpeed : m_AnimSpeed;
 }
 
 // 現在のアニメーションインデックスを取得.
 int MeshObject::GetAnimIndex() const
 {
     return m_AnimNo;
+}
+
+// 新: 再生一時停止フラグを設定/取得
+void MeshObject::SetAnimPaused(bool paused)
+{
+    if (paused == m_AnimPaused) return;
+    m_AnimPaused = paused;
+    if (m_AnimPaused)
+    {
+        // save current speed and stop progression
+        m_SavedAnimSpeed = m_AnimSpeed;
+        m_AnimSpeed = 0.0;
+    }
+    else
+    {
+        // restore saved speed
+        m_AnimSpeed = m_SavedAnimSpeed;
+    }
+}
+
+bool MeshObject::IsAnimPaused() const
+{
+    return m_AnimPaused;
 }
 
 // アニメーションのループ設定.
@@ -210,19 +244,32 @@ double MeshObject::GetAnimPeriod(int index) const
 
 void MeshObject::IsLoopAnimTimeSet()
 {
-	// もしループしないなら最終フレームに到達時点でアニメーション固定.
-	if (!m_Isloop) {
-		double EndTime = GetAnimPeriod(m_AnimNo);
-		if (EndTime <= m_AnimTimer) {
-			if (std::shared_ptr<SkinMesh> skinMesh = std::dynamic_pointer_cast<SkinMesh>(m_pMesh.lock()))
-			{
-				while(m_AnimTimer > EndTime)
-					m_AnimTimer -= 0.016;
-				m_pAnimCtrl->SetTrackPosition(0, EndTime);
-				m_AnimSpeed = 0.0;
-			}
-		}
-	}
+    // アニメーションの総時間を取得.
+    double EndTime = GetAnimPeriod(m_AnimNo);
+    if (EndTime <= 0.0) {
+        return;
+    }
+
+    // ループしない場合終端で固定して停止.
+    if (!m_Isloop) {
+        if (m_AnimTimer >= EndTime) {
+            // 再生時間を終端に合わせる.
+            m_AnimTimer = EndTime;
+            m_AnimSpeed = 0.0;
+        }
+    }
+    // ループする場合終端到達で先頭に戻す.
+    else {
+        if (m_AnimTimer >= EndTime) {
+            while (m_AnimTimer >= EndTime) {
+                m_AnimTimer -= EndTime;
+            }
+            // MEMO : 負になる可能性があるため補正.
+            if (m_AnimTimer < 0.0) {
+                m_AnimTimer = 0.0;
+            }
+        }
+    }
 }
 
 //------------------------------------------------------------------------------------.
@@ -243,9 +290,9 @@ HRESULT MeshObject::FindVerticesOnPoly(LPD3DXMESH pMesh, DWORD dwPolyIndex, Dire
 		D3DLOCK_READONLY,
 		reinterpret_cast<VOID**>(&pwPoly));
 
-	BYTE* pbVertices = nullptr;		//頂点(バイト型).
-	FLOAT* pfVertices = nullptr;	//頂点(float型).
-	LPDIRECT3DVERTEXBUFFER9 VB = nullptr;	//頂点バッファ.
+	BYTE* pbVertices = nullptr; 		//頂点(バイト型).
+	FLOAT* pfVertices = nullptr; 	//頂点(float型).
+	LPDIRECT3DVERTEXBUFFER9 VB = nullptr; 	//頂点バッファ.
 
 	//頂点情報の取得.
 	pMesh->GetVertexBuffer(&VB);
@@ -273,9 +320,9 @@ HRESULT MeshObject::FindVerticesOnPoly(LPD3DXMESH pMesh, DWORD dwPolyIndex, Dire
 		pVertices[2].z = pfVertices[2];
 
 		pMesh->UnlockIndexBuffer(); //√ロック解除.
-		VB->Unlock();	//ロック解除.
+		VB->Unlock(); 	//ロック解除.
 	}
-	VB->Release();	//不要になったので解放.
+	VB->Release(); 	//不要になったので解放.
 
 	return S_OK;
 }

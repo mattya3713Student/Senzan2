@@ -92,9 +92,9 @@ void AnimationTuningScene::Update()
     Input::Update();
     m_upGround->Update();
     m_upPlayer->Update();
-    m_upBoss->Update();
+    //m_upBoss->Update();
 
-    m_upUI->SetBossHP(m_upBoss->GetMaxHP(), m_upBoss->GetHP());
+    //m_upUI->SetBossHP(m_upBoss->GetMaxHP(), m_upBoss->GetHP());
     m_upUI->SetCombo(m_upPlayer->GetCombo());
     m_upUI->SetPlayerHP(m_upPlayer->GetMaxHP(), m_upPlayer->GetHP());
     m_upUI->SetPlayerUlt(m_upPlayer->GetMaxUltValue(), m_upPlayer->GetUltValue());
@@ -108,7 +108,7 @@ void AnimationTuningScene::Update()
 void AnimationTuningScene::LateUpdate()
 {
     m_upPlayer->LateUpdate();
-    m_upBoss->LateUpdate();
+   // m_upBoss->LateUpdate();
     CameraManager::GetInstance().LateUpdate();
 
     if (m_upPlayer->GetHP() <= 0.f)
@@ -117,11 +117,11 @@ void AnimationTuningScene::LateUpdate()
         return;
     }
 
-    if (m_upBoss->GetHP() <= 0.f)
-    {
-        SceneManager::GetInstance().LoadScene(eList::Ending);
-        return;
-    }
+    //if (m_upBoss->GetHP() <= 0.f)
+    //{
+    //    SceneManager::GetInstance().LoadScene(eList::Ending);
+    //    return;
+    //}
 
     CollisionDetector::GetInstance().ExecuteCollisionDetection();
 }
@@ -133,7 +133,7 @@ void AnimationTuningScene::Draw()
     Shadow::End();
     m_upGround->Draw();
     m_upPlayer->Draw();
-    m_upBoss->Draw();
+    //m_upBoss->Draw();
 
     m_upUI->Draw();
     CollisionVisualizer::GetInstance().Draw();

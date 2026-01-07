@@ -70,7 +70,11 @@ public: // Getter／Setter.
 
 	// 現在のアニメーション再生時間（秒）を取得
 	double GetAnimTime() const;
-	
+
+	// 新: 再生一時停止フラグを設定/取得
+	void SetAnimPaused(bool paused);
+	bool IsAnimPaused() const;
+
 	// アニメーションを変更するテンプレート.
 	template<typename T>
 	void ChangeAnim(T index_T)
@@ -140,7 +144,11 @@ protected:
 	int					m_AnimNo; 	// アニメ番号.
 	double				m_AnimSpeed; // アニメ再生速度.
 	double				m_AnimTimer; // アニメタイマー (経過時間).
-	bool				m_Isloop; 	// ループフラグ.
+	bool				m_Isloop;     // ループフラグ.
 	DirectX::XMFLOAT3			m_BonePos; // ボーン位置.
+
+    // 新: 一時停止時に保存する実際の速度
+    double                m_SavedAnimSpeed = 1.0;
+    bool                  m_AnimPaused = false;
 };
 

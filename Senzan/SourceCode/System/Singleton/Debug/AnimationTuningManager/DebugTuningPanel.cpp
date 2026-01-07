@@ -154,111 +154,6 @@ void RenderDebugTuningPanel(AnimationTuningManager& manager, MeshObject* player,
     // Always keep currentEntityType in sync with selectedEntity
     currentEntityType = (selectedEntity == 0) ? "Player" : "Boss";
 
-    // Animation playback controls for selected entity
-    {
-        // store previous speeds per-entity pointer so Play can resume
-        static std::unordered_map<MeshObject*, double> s_LastAnimSpeed;
-        // store per-entity selected animation index
-        static std::unordered_map<MeshObject*, int> s_SelectedAnimIndex;
-
-        MeshObject* targetEntity = nullptr;
-        if (selectedEntity == 0 && player) targetEntity = player;
-        if (selectedEntity == 1 && boss) targetEntity = boss;
-
-        ImGui::Separator();
-        ImGui::Text(IMGUI_JP("アニメーション再生コントロール"));
-        if (!targetEntity)
-        {
-            ImGui::TextColored(ImVec4(1,0.5f,0.5f,1), IMGUI_JP("対象エンティティが存在しません"));
-        }
-        else
-        {
-            double curTime = targetEntity->GetAnimTime();
-            double period = targetEntity->GetAnimPeriod(targetEntity->GetAnimIndex());
-            ImGui::Text("%s: %.3fs / %.3fs", IMGUI_JP("現在時間"), curTime, period);
-
-            // Animation selection UI
-            std::shared_ptr<MeshBase> meshBase = targetEntity->GetAttachMesh().lock();
-            int maxAnim = 1;
-            if (meshBase)
-            {
-                std::shared_ptr<SkinMesh> skin = std::dynamic_pointer_cast<SkinMesh>(meshBase);
-                if (skin)
-                {
-                    maxAnim = skin->GetAnimMax();
-                    if (maxAnim < 1) maxAnim = 1;
-                }
-            }
-
-            // Ensure an entry exists with sensible initial value
-            if (s_SelectedAnimIndex.find(targetEntity) == s_SelectedAnimIndex.end())
-            {
-                s_SelectedAnimIndex[targetEntity] = targetEntity->GetAnimIndex();
-            }
-            int& selAnim = s_SelectedAnimIndex[targetEntity];
-            if (selAnim < 0) selAnim = 0;
-            if (selAnim >= maxAnim) selAnim = maxAnim - 1;
-
-            ImGui::Text(IMGUI_JP("アニメを選択"));
-            ImGui::SameLine();
-            // Use per-entity ID to avoid collisions
-            ImGui::PushID(reinterpret_cast<void*>(targetEntity));
-            if (maxAnim > 1)
-            {
-                ImGui::SliderInt(IMGUI_JP("番号"), &selAnim, 0, maxAnim - 1);
-            }
-            else
-            {
-                ImGui::InputInt(IMGUI_JP("番号"), &selAnim);
-            }
-            ImGui::PopID();
-
-            ImGui::SameLine();
-            if (ImGui::Button(IMGUI_JP("適用")))
-            {
-                // Use centralized manager function to change animation so all logic is in one place
-                manager.ApplyAnimationDirect(targetEntity, selAnim, targetEntity->GetAnimSpeed(), true);
-            }
-
-            const double frameStep = 1.0 / 60.0; // single-frame step at 60 FPS
-
-            if (ImGui::Button(IMGUI_JP("一フレーム戻す")))
-            {
-                // pause and step back
-                s_LastAnimSpeed[targetEntity] = targetEntity->GetAnimSpeed();
-                targetEntity->SetAnimSpeed(0.0);
-                double t = targetEntity->GetAnimTime();
-                t -= frameStep;
-                if (t < 0.0) t = 0.0;
-                targetEntity->SetAnimTime(t);
-            }
-            ImGui::SameLine();
-            if (ImGui::Button(IMGUI_JP("再生")))
-            {
-                double resume = 1.0;
-                auto it = s_LastAnimSpeed.find(targetEntity);
-                if (it != s_LastAnimSpeed.end() && it->second > 0.0) resume = it->second;
-                targetEntity->SetAnimSpeed(resume);
-            }
-            ImGui::SameLine();
-            if (ImGui::Button(IMGUI_JP("一時停止")))
-            {
-                s_LastAnimSpeed[targetEntity] = targetEntity->GetAnimSpeed();
-                targetEntity->SetAnimSpeed(0.0);
-            }
-            ImGui::SameLine();
-            if (ImGui::Button(IMGUI_JP("一フレーム進める")))
-            {
-                // pause and step forward
-                s_LastAnimSpeed[targetEntity] = targetEntity->GetAnimSpeed();
-                targetEntity->SetAnimSpeed(0.0);
-                double t = targetEntity->GetAnimTime();
-                t += frameStep;
-                targetEntity->SetAnimTime(t);
-            }
-        }
-    }
-
     // エンティティ調整データ取得
     EntityTuning* entityTuning = manager.GetEntityTuning(currentEntityType);
     if (!entityTuning)
@@ -554,15 +449,19 @@ void RenderDebugTuningPanel(AnimationTuningManager& manager, MeshObject* player,
             }
 
             // ステート選択コンボ
-            ImGui::Combo(IMGUI_JP("編集する状態"), &selectedState, stateListPtrs.data(), static_cast<int>(stateListPtrs.size()));
-
-            if (selectedState >= 0 && selectedState < stateList.size())
+            if (ImGui::Combo(IMGUI_JP("編集する状態"), &selectedState, stateListPtrs.data(), static_cast<int>(stateListPtrs.size())))
             {
-                std::string currentStateName = stateList[selectedState];
-                AnimationStateTuning* currentState = manager.GetAnimationStateTuning(currentEntityType, currentStateName);
+                // Notify manager which state is currently selected for this entity type so debug state can be applied per-frame
+                manager.SetSelectedState(currentEntityType, stateList[selectedState]);
+            }
 
-                if (currentState)
-                {
+             if (selectedState >= 0 && selectedState < stateList.size())
+             {
+                 std::string currentStateName = stateList[selectedState];
+                 AnimationStateTuning* currentState = manager.GetAnimationStateTuning(currentEntityType, currentStateName);
+
+                 if (currentState)
+                 {
                     bool stateDirty = false; // track if UI changed
 
                     ImGui::Separator();
@@ -572,6 +471,78 @@ void RenderDebugTuningPanel(AnimationTuningManager& manager, MeshObject* player,
                     if (ImGui::SliderFloat(IMGUI_JP("アニメ速度"), &currentState->animSpeed, 0.1f, 10.0f, "%.2f")) stateDirty = true;
                     if (ImGui::Checkbox(IMGUI_JP("ループ"), &currentState->loop)) stateDirty = true;
                     if (ImGui::SliderInt(IMGUI_JP("アニメ番号"), &currentState->animationIndex, 0, 20)) stateDirty = true;
+
+                    // playback controls
+                    ImGui::Separator();
+                    ImGui::Text(IMGUI_JP("再生制御"));
+
+                    static bool isPlayingPlayer = false;
+                    static bool isPlayingBoss = false;
+                    bool& isPlaying = (selectedEntity == 0) ? isPlayingPlayer : isPlayingBoss;
+
+                    // determine debug target entity pointer
+                    MeshObject* debugEntity = nullptr;
+                    if (selectedEntity == 0 && player) debugEntity = player;
+                    if (selectedEntity == 1 && boss) debugEntity = boss;
+
+                    // Play/Pause
+                    if (ImGui::Button(isPlaying ? IMGUI_JP("一時停止") : IMGUI_JP("再生")))
+                    {
+                        isPlaying = !isPlaying;
+                        if (debugEntity)
+                        {
+                            if (isPlaying)
+                                debugEntity->SetAnimSpeed(static_cast<double>(currentState->animSpeed));
+                            else
+                                debugEntity->SetAnimSpeed(0.0);
+                        }
+                    }
+
+                    ImGui::SameLine();
+                    // Step backward one frame
+                    if (ImGui::Button(IMGUI_JP("一フレーム戻す")))
+                    {
+                        if (debugEntity)
+                        {
+                            double frameSec = 1.0 / 60.0; // assume 60 FPS frame step
+                            double t = debugEntity->GetAnimTime();
+                            t -= frameSec;
+                            if (t < 0.0) t = 0.0;
+                            debugEntity->SetAnimTime(t);
+                        }
+                    }
+
+                    ImGui::SameLine();
+                    // Step forward one frame
+                    if (ImGui::Button(IMGUI_JP("一フレーム進める")))
+                    {
+                        if (debugEntity)
+                        {
+                            double frameSec = 1.0 / 60.0; // assume 60 FPS frame step
+                            double t = debugEntity->GetAnimTime();
+                            t += frameSec;
+                            // clamp to animation period if available
+                            if (currentState->animationIndex >= 0)
+                            {
+                                double period = debugEntity->GetAnimPeriod(currentState->animationIndex);
+                                if (period > 0.0 && t > period)
+                                {
+                                    // if not looping, clamp to end
+                                    t = period;
+                                }
+                            }
+                            debugEntity->SetAnimTime(t);
+                        }
+                    }
+
+                    ImGui::SameLine();
+                    if (ImGui::Button(IMGUI_JP("リセット")))
+                    {
+                        if (debugEntity)
+                        {
+                            debugEntity->SetAnimTime(0.0);
+                        }
+                    }
 
                     // コライダー管理
                     ImGui::Separator();

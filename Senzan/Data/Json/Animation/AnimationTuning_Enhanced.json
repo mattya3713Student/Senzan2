@@ -6,8 +6,8 @@
       "resourceName": "player",
       "states": {
         "Idle": {
-          "animSpeed": 1.0000,
-          "loop": false,
+          "animSpeed": 2.7300,
+          "loop": true,
           "animationIndex": 0,
           "useEntityDefaultMasks": true,
           "overrideMyMask": 0,

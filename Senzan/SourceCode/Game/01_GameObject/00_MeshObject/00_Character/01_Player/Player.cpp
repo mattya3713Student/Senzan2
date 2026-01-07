@@ -234,6 +234,10 @@ void Player::Draw()
 
     Character::Draw();
 
+    Log::GetInstance().Info("MeshObject::AnimInfo", GetResourceName().c_str());
+    Log::GetInstance().Info("AnimSpeed", m_AnimSpeed);
+    Log::GetInstance().Info("AnimTimer(before)", m_AnimTimer);
+    Log::GetInstance().Info("Delta", GetDelta());
     m_spTransform->SetRotationY(GetRotation().y - D3DXToRadian(180.0f));
 }
 

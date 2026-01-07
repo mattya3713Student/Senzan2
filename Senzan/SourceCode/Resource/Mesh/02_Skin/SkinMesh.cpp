@@ -339,13 +339,6 @@ void SkinMesh::Render(LPD3DXANIMATIONCONTROLLER pAC)
             m_pD3dxMesh->m_pAnimController->AdvanceTime(m_AnimSpeed, nullptr);
         }
     }
-    else
-    {
-        // When an external animation controller is provided (owner owns track position),
-        // do not advance it here to avoid double-advancing and conflicting time sources.
-        // The owner (e.g., MeshObject) is expected to set the track position directly.
-        // No action required.
-    }
   
     D3DXMATRIX m;
     D3DXMatrixIdentity(&m);
