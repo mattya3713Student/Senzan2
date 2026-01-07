@@ -2,6 +2,10 @@
 
 #include "Game/01_GameObject/00_MeshObject/00_Character/Character.h"
 #include "Game/03_Collision/00_Core/ColliderBase.h"
+#include "Game/01_GameObject/00_MeshObject/00_Character/ActionData.h"
+#include "Game/01_GameObject/00_MeshObject/00_Character/RepeatAnimationState.h"
+
+#include <unordered_map>
 
 template<typename FSM_Owner> class StateMachine;
 
@@ -115,10 +119,15 @@ public:
 
 	// ステートの変更.
 	void ChangeState(PlayerState::eID id);
+ 
+ 	std::reference_wrapper<PlayerStateBase> GetStateReference(PlayerState::eID id);
+ 	
+ 	// アクション定義の取得（ステート名とJSONキー一致）
+ 	ActionStateDefinition* GetActionDefinition(const std::string& stateName);
+ 	// アクション定義を適用（アニメ設定とコライダー生成＋スケジュール）
+ 	void ApplyActionDefinition(const ActionStateDefinition& def);
 
-	std::reference_wrapper<PlayerStateBase> GetStateReference(PlayerState::eID id);
-
-private:
+ private:
 
 	// マッピングを初期化.
 	void InitializeStateRefMap();
@@ -132,13 +141,6 @@ private:
 	
 	// 衝突_パリィ.
 	void HandleParryDetection();
-
-protected:
-
-	// 攻撃判定のActive
-	inline void SetAttackColliderActive(bool Active) const noexcept { m_pAttackCollider->SetActive(Active); }
-	inline void SetDamageColliderActive(bool Active) const noexcept { m_pDamageCollider->SetActive(Active); }
-	inline void SetParryColliderActive(bool Active) const noexcept { m_pParryCollider->SetActive(Active); }
 
 protected:
 	std::unique_ptr<PlayerState::Root> m_RootState;	// ステートマシーン.
@@ -160,10 +162,6 @@ protected:
 	float				m_CurrentUltValue;	// 閃値.
 	float				m_MaxUltValue;		// max閃値.
 
-	ColliderBase* m_pDamageCollider;	// 被ダメ判定.
-	ColliderBase* m_pAttackCollider;	// 攻撃判定.
-	ColliderBase* m_pParryCollider;		// パリィ判定.
-
 	//---System関連---.
 	bool				m_IsKnockBack;		// ノックバック中か否か.
 	DirectX::XMFLOAT3	m_KnockBackVec;		// ノックバックのベクトル.
@@ -181,4 +179,12 @@ protected:
 	//---Dodge関連---.
 	bool				m_IsJustDodgeTiming;// ジャスト回避のタイミング.
 
-};
+	// 初期表示用のリピートアニメ状態
+	std::unique_ptr<RepeatAnimationState<Player>> m_pInitialRepeatState;
+ 
+ 	// ステート名をキーにしたアクション定義キャッシュ
+ 	std::unordered_map<std::string, ActionStateDefinition> m_ActionDefinitions;
+ 
+ 	int ResolveAnimIndex(const std::string& animName, int defaultIndex) const;
+ 
+ };

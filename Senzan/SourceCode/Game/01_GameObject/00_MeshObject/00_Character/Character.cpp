@@ -4,6 +4,8 @@
 #include "Game/04_Time/Time.h"
 #include "Game/03_Collision/00_Core/01_Capsule/CapsuleCollider.h"
 #include <algorithm>
+#include "Resource/Mesh/02_Skin/SkinMesh.h"
+#include <DirectXMath.h>
 
 // 押し戻し判定.
 constexpr eCollisionGroup PRESS_GROUP = eCollisionGroup::Press;
@@ -242,8 +244,9 @@ void Character::CreateCollidersFromDefs(const std::unordered_map<AttackTypeId, s
             auto col = std::make_unique<CapsuleCollider>(m_spTransform);
             ColliderBase* raw = col.get();
 
-            col->SetRadius(spec.Radius);
+            // Set height first to ensure radius clamping uses the intended height when both are specified.
             col->SetHeight(spec.Height);
+            col->SetRadius(spec.Radius);
             col->SetPositionOffset(spec.Offset.x, spec.Offset.y, spec.Offset.z);
             col->SetAttackAmount(spec.AttackAmount);
             col->SetMyMask(static_cast<eCollisionGroup>(spec.MyMask));
@@ -264,4 +267,56 @@ size_t Character::GetColliderCount(AttackTypeId type) const
     auto it = m_Colliders.find(type);
     if (it == m_Colliders.end()) return 0;
     return it->second.size();
+}
+
+bool Character::GetBoneWorldPose(const std::string& name, DirectX::XMFLOAT3& outPos, DirectX::XMFLOAT3& outForward) const
+{
+    std::shared_ptr<MeshBase> mesh = GetAttachMesh().lock();
+    if (!mesh) return false;
+
+    std::shared_ptr<SkinMesh> skin = std::dynamic_pointer_cast<SkinMesh>(mesh);
+    if (!skin) return false;
+
+    DirectX::XMMATRIX boneMatrix{};
+    if (!skin->GetMatrixFromBone(name.c_str(), &boneMatrix))
+    {
+        return false;
+    }
+
+    DirectX::XMVECTOR pos = boneMatrix.r[3];
+    DirectX::XMStoreFloat3(&outPos, pos);
+
+    DirectX::XMVECTOR forward = boneMatrix.r[2];
+    forward = DirectX::XMVector3Normalize(forward);
+    if (DirectX::XMVector3Equal(forward, DirectX::XMVectorZero()))
+    {
+        forward = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+    }
+    DirectX::XMStoreFloat3(&outForward, forward);
+    return true;
+}
+
+void Character::SetColliderTransform(AttackTypeId type, size_t index, const DirectX::XMFLOAT3& pos, const DirectX::XMFLOAT3& forward)
+{
+    ColliderBase* collider = GetColliderByIndex(type, index);
+    if (!collider) return;
+
+    const DirectX::XMFLOAT3 ownerPos = GetPosition();
+    DirectX::XMVECTOR vPos = DirectX::XMLoadFloat3(&pos);
+    DirectX::XMVECTOR vOwner = DirectX::XMLoadFloat3(&ownerPos);
+    DirectX::XMVECTOR vOffset = DirectX::XMVectorSubtract(vPos, vOwner);
+    DirectX::XMFLOAT3 offset{};
+    DirectX::XMStoreFloat3(&offset, vOffset);
+    collider->SetPositionOffset(offset);
+
+    // Forward is reserved for future orientation support; currently unused because ColliderBase stores only position offset.
+    (void)forward;
+}
+
+ColliderBase* Character::GetColliderByIndex(AttackTypeId type, size_t index) const
+{
+    auto it = m_Colliders.find(type);
+    if (it == m_Colliders.end()) return nullptr;
+    if (index >= it->second.size()) return nullptr;
+    return it->second[index];
 }

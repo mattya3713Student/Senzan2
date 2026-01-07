@@ -1,6 +1,10 @@
 ﻿#include "Player.h"
 #include "System/Utility/StateMachine/StateMachine.h"
 
+#include <filesystem>
+
+#include "System/Utility/FileManager/FileManager.h"
+
 #include "State/PlayerStateID.h"
 #include "State/PlayerStateBase.h"
 
@@ -35,7 +39,7 @@
 #include "System/Singleton/CameraManager/CameraManager.h"
 
 // Include for initial repeat animation state (visual only)
-#include "Game/01_GameObject/00_MeshObject/00_Character/State/RepeatAnimationState.h"
+#include "Game/01_GameObject/00_MeshObject/00_Character/RepeatAnimationState.h"
 
 Player::Player()
 	: Character		()
@@ -52,8 +56,6 @@ Player::Player()
     , m_KnockBackPower  ( 0.f )
     , m_IsDead          ( false )
     , m_RunMoveSpeed    ( 50.f )
-    , m_IsSuccessParry  ( false )
-    , m_pAttackCollider ( nullptr )
     , m_IsJustDodgeTiming( false )
     , m_TargetPos        ( { 0.f, 0.f, 0.f } )
 {
@@ -75,99 +77,93 @@ Player::Player()
     m_MaxHP = 100.f;
     m_HP = m_MaxHP;
 
-    // 被ダメの追加.
-    std::unique_ptr<CapsuleCollider> damage_collider = std::make_unique<CapsuleCollider>(m_spTransform);
-
-    m_pDamageCollider = damage_collider.get();
-
-    damage_collider->SetColor(Color::eColor::Yellow);
-    damage_collider->SetHeight(2.0f);
-    damage_collider->SetRadius(0.5f);
-    damage_collider->SetPositionOffset(0.f, 1.5f, 0.f);
-    damage_collider->SetMyMask(eCollisionGroup::Player_Damage);
-    damage_collider->SetTarGetTargetMask(eCollisionGroup::Enemy_Attack);
-
-    m_upColliders->AddCollider(std::move(damage_collider));
-
-    // パリィの追加.
-    std::unique_ptr<CapsuleCollider> parry_collider = std::make_unique<CapsuleCollider>(m_spTransform);
-
-    m_pParryCollider = parry_collider.get();
-
-    parry_collider->SetActive(false);
-    parry_collider->SetColor(Color::eColor::Green);
-    parry_collider->SetHeight(2.0f);
-    parry_collider->SetRadius(0.5f);
-    parry_collider->SetPositionOffset(0.f, 1.5f, 0.f);
-    parry_collider->SetMyMask(eCollisionGroup::Player_Parry);
-    parry_collider->SetTarGetTargetMask(eCollisionGroup::Enemy_Attack);
-
-    m_upColliders->AddCollider(std::move(parry_collider));
-
-    // ジャスト回避の追加.
-    std::unique_ptr<CapsuleCollider> justdodge_collider = std::make_unique<CapsuleCollider>(m_spTransform);
-
-    justdodge_collider->SetColor(Color::eColor::Gray);
-    justdodge_collider->SetHeight(45.0f);
-    justdodge_collider->SetRadius(45.0f);
-    justdodge_collider->SetPositionOffset(0.f, 1.5f, 0.f);
-    justdodge_collider->SetMyMask(eCollisionGroup::Player_JustDodge);
-    justdodge_collider->SetTarGetTargetMask(eCollisionGroup::Enemy_Attack);
-
-    m_upColliders->AddCollider(std::move(justdodge_collider));
-
-    // 押し戻しの追加.
-    std::unique_ptr<CapsuleCollider> pressCollider = std::make_unique<CapsuleCollider>(m_spTransform);
-
-    pressCollider->SetColor(Color::eColor::Cyan);
-    pressCollider->SetHeight(3.0f);
-    pressCollider->SetRadius(1.0f);
-    pressCollider->SetPositionOffset(0.f, 1.5f, 0.f);
-    pressCollider->SetMyMask(eCollisionGroup::Press);
-    pressCollider->SetTarGetTargetMask(eCollisionGroup::Press);
-
-    m_upColliders->AddCollider(std::move(pressCollider));
-
-    // 攻撃の追加: ColliderSpec を利用して共通のファクトリでコライダー作成
-    {
-        ColliderSpec spec;
-        spec.Radius = 1.0f;
-        spec.Height = 3.0f;
-        spec.Offset = {0.f, 1.5f, 2.f};
-        spec.AttackAmount = 10.0f;
-        spec.MyMask = static_cast<uint32_t>(eCollisionGroup::Player_Attack);
-        spec.TargetMask = static_cast<uint32_t>(eCollisionGroup::Enemy_Damage);
-        spec.DebugColor = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
-        spec.Active = false;
-
-        std::unordered_map<Character::AttackTypeId, std::vector<ColliderSpec>> defs;
-        defs[static_cast<Character::AttackTypeId>(Player::AttackType::Normal)] = { spec };
-        // create and register
-        CreateCollidersFromDefs(defs);
-
-        // cache pointer for existing scheduler/usage
-        auto it = m_Colliders.find(static_cast<Character::AttackTypeId>(Player::AttackType::Normal));
-        if (it != m_Colliders.end() && !it->second.empty())
-        {
-            m_pAttackCollider = it->second.front();
-        }
-    }
-
     CollisionDetector::GetInstance().RegisterCollider(*m_upColliders);
 
     // 各ステートの初期化.
+    // NOTE: For now we disable running the full state machine and only use the visual initial repeat animation.
+#if 0
+    // Normally we would enter the root state here to enable gameplay states.
     m_RootState.get()->Enter();
+#endif
 
-    // 簡易: 初期アニメを繰り返しで表示（FSMはRootのまま）
-    {
-        RepeatAnimationState<Player> temp(this, "Idle", static_cast<int>(Player::eAnim::Idle), 1.0f);
-        temp.Enter();
-    }
+    // 初期状態をリピートアニメに設定 (visual only)
+    m_pInitialRepeatState = std::make_unique<RepeatAnimationState<Player>>(this, "Idle", static_cast<int>(Player::eAnim::Idle), 1.0f);
+    m_pInitialRepeatState->Enter();
 }
 
 Player::~Player()
 {
     CollisionDetector::GetInstance().UnregisterCollider(*m_upColliders);
+}
+
+ActionStateDefinition* Player::GetActionDefinition(const std::string& stateName)
+{
+    auto it = m_ActionDefinitions.find(stateName);
+    if (it != m_ActionDefinitions.end()) return &it->second;
+
+    std::filesystem::path path = "ActionTimeline_" + stateName + ".json";
+    if (!std::filesystem::exists(path))
+    {
+        return nullptr;
+    }
+
+    auto j = FileManager::JsonLoad(path);
+    if (j.is_null() || !j.is_object()) return nullptr;
+
+    ActionStateDefinition def = j.get<ActionStateDefinition>();
+    if (def.stateName.empty()) def.stateName = stateName;
+    auto& stored = m_ActionDefinitions[stateName];
+    stored = std::move(def);
+    return &stored;
+}
+
+int Player::ResolveAnimIndex(const std::string& animName, int defaultIndex) const
+{
+    std::string lower = animName;
+    std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+    if (lower == "attack_0") return static_cast<int>(Player::eAnim::Attack_0);
+    if (lower == "attack_1") return static_cast<int>(Player::eAnim::Attack_1);
+    if (lower == "attack_2") return static_cast<int>(Player::eAnim::Attack_2);
+    if (lower == "idle") return static_cast<int>(Player::eAnim::Idle);
+    if (lower == "run") return static_cast<int>(Player::eAnim::Run);
+    if (lower == "parry") return static_cast<int>(Player::eAnim::Parry);
+    if (lower == "dodge") return static_cast<int>(Player::eAnim::Dodge);
+    if (lower == "knockback") return static_cast<int>(Player::eAnim::KnockBack);
+    if (lower == "dead") return static_cast<int>(Player::eAnim::Dead);
+    if (lower == "specialattack_0") return static_cast<int>(Player::eAnim::SpecialAttack_0);
+    if (lower == "specialattack_1") return static_cast<int>(Player::eAnim::SpecialAttack_1);
+    if (lower == "specialattack_2") return static_cast<int>(Player::eAnim::SpecialAttack_2);
+    return defaultIndex;
+}
+
+void Player::ApplyActionDefinition(const ActionStateDefinition& def)
+{
+    // アニメ設定
+    int animIndex = ResolveAnimIndex(def.animationName, static_cast<int>(Player::eAnim::Attack_0));
+    SetIsLoop(false);
+    SetAnimTime(0.0);
+    ChangeAnim(animIndex);
+
+    // 既存スケジュールをクリア
+    m_ScheduledColliders.clear();
+
+    // コライダー定義を再構築
+    std::unordered_map<Character::AttackTypeId, std::vector<ColliderSpec>> defs;
+    for (const auto& evt : def.colliderEvents)
+    {
+        ColliderSpec spec = evt.spec;
+        defs[evt.type].push_back(spec);
+    }
+    if (!defs.empty())
+    {
+        CreateCollidersFromDefs(defs);
+    }
+
+    // スケジューリング
+    for (const auto& evt : def.colliderEvents)
+    {
+        ScheduleCollider(evt.type, evt.index, evt.startTime, evt.duration);
+    }
 }
 
 void Player::Update()
@@ -176,16 +172,34 @@ void Player::Update()
 
     m_IsSuccessParry = false;
 
+    // For debugging: only run the visual initial repeat state and skip the normal state machine.
+    if (m_pInitialRepeatState)
+    {
+        m_pInitialRepeatState->Update();
+        return;
+    }
+
+#if 0
+    // Original state-machine flow (disabled for now). Re-enable by changing #if 0 to #if 1 or removing the block.
+    // 初期リピートアニメを優先的に再生（ステート遷移要求が来たら FSM に移行）
+    if (m_pInitialRepeatState && m_NextStateID == PlayerState::eID::None)
+    {
+        m_pInitialRepeatState->Update();
+        return;
+    }
+    m_pInitialRepeatState.reset();
+
     // ステート遷移のチェック.
     if (m_NextStateID != PlayerState::eID::None)
     {
         m_RootState->ChangeState(m_NextStateID);
         m_NextStateID = PlayerState::eID::None;
     }
-	if (!m_RootState) {
-		return;
-	}
-	m_RootState->Update();
+    if (!m_RootState) {
+        return;
+    }
+    m_RootState->Update();
+#endif
 
     m_IsJustDodgeTiming = false;
 }
@@ -194,6 +208,7 @@ void Player::LateUpdate()
 {
     Character::LateUpdate();
 
+#if 0
     if (!m_RootState) {
         return;
     }
@@ -209,7 +224,7 @@ void Player::LateUpdate()
     HandleDamageDetection();
     HandleAttackDetection();
     HandleDodgeDetection();
-
+#endif
 }
 
 void Player::Draw()
@@ -248,8 +263,13 @@ bool Player::IsPaused() const noexcept
 // ステートの変更.
 void Player::ChangeState(PlayerState::eID id)
 {
+#if 0
     m_NextStateID = id;
     //m_RootState.get()->ChangeState(id);
+#else
+    // Disabled while debugging with only visual repeat state active.
+    (void)id;
+#endif
 }
 
 std::reference_wrapper<PlayerStateBase> Player::GetStateReference(PlayerState::eID id)
@@ -300,6 +320,7 @@ void Player::InitializeStateRefMap()
 // 衝突_被ダメージ.
 void Player::HandleDamageDetection()
 {
+#if 0
     if (!m_upColliders) return;
 
     const auto& internal_colliders = m_upColliders->GetInternalColliders();
@@ -336,17 +357,19 @@ void Player::HandleDamageDetection()
                 // 状態をノックバックに遷移させる
                 ChangeState(PlayerState::eID::KnockBack);
 
-				CameraManager::GetInstance().ShakeCamera(0.5f, 4.5f); // カメラを少し揺らす.
+			CameraManager::GetInstance().ShakeCamera(0.5f, 4.5f); // カメラを少し揺らす.
 
                 // 1フレームに1回.
                 return;
             }
         }
     }
+#endif
 }
 
 void Player::HandleAttackDetection()
 {
+#if 0
     if (!m_upColliders) return;
 
     const auto& internal_colliders = m_upColliders->GetInternalColliders();
@@ -378,10 +401,12 @@ void Player::HandleAttackDetection()
             }
         }
     }
+#endif
 }
 
 void Player::HandleDodgeDetection()
 {
+#if 0
     if (!m_upColliders) return;
 
     const auto& internal_colliders = m_upColliders->GetInternalColliders();
@@ -405,10 +430,12 @@ void Player::HandleDodgeDetection()
             m_CurrentUltValue += static_cast<float>(m_Combo) * 0.0f;
         }
     }
+#endif
 }
 
 void Player::HandleParryDetection()
 {
+#if 0
     if (!m_upColliders) return;
 
     const auto& internal_colliders = m_upColliders->GetInternalColliders();
@@ -440,4 +467,5 @@ void Player::HandleParryDetection()
             }
         }
     }
+#endif
 }

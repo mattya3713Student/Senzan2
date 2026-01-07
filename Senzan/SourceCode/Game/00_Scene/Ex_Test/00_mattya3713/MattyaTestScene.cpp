@@ -29,19 +29,7 @@
 #include "SceneManager/SceneManager.h"
 
 #if _DEBUG
-// Boss state headers for debug state switching UI
-#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossIdolState/BossIdolState.h"
-#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossMoveState/BossMoveState.h"
-#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossStompState/BossStompState.h"
-#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossSlashState/BossSlashState.h"
-#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossChargeSlashState/BossChargeSlashState.h"
-#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossShoutState/BossShoutState.h"
-#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossSpecialState/BossSpecialState.h"
-#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossLaserState/BossLaserState.h"
-#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossDeadState/BossDeadState.h"
-#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossChargeState/BossChargeState.h"
-#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossThrowingState/BossThrowingState.h"
-
+// Inline Boss Debug UI removed; centralized control is in DebugTuningPanel
 #endif
 
 // コンストラクタ.
@@ -78,14 +66,6 @@ void MattyaTestScene::Initialize()
 	LightManager::AttachDirectionLight(m_pLight);
 
 	m_upGround = std::make_unique<Ground>();
-
-	//m_TestPressCollision->SetColor(Color::eColor::Cyan);
-	//m_TestPressCollision->SetHeight(60.0f);
-	//m_TestPressCollision->SetRadius(20.0f);
-	//m_TestPressCollision->SetPositionOffset(0.f,1.5f,0.f);
-	//m_TestPressCollision->SetMyMask(eCollisionGroup::Press);
-	//m_TestPressCollision->SetTarGetTargetMask(eCollisionGroup::Press);
-	//CollisionDetector::GetInstance().RegisterCollider(*m_TestPressCollision);
 
 	m_TestAttackCollision->SetColor(Color::eColor::Red);
 	m_TestAttackCollision->SetAttackAmount(50.0f);
@@ -141,33 +121,7 @@ void MattyaTestScene::Update()
 	m_upUI->Update();
 
 #if _DEBUG
-	// Boss debug UI: state switching + collider toggles
-	ImGui::Begin("Boss Debug");
-
-	ImGui::Text("Change Boss State:");
-	if (ImGui::Button("Idol")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_upBoss.get())); }
-	ImGui::SameLine();
-	if (ImGui::Button("Move")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossMoveState>(m_upBoss.get())); }
-	if (ImGui::Button("Stomp")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossStompState>(m_upBoss.get())); }
-	ImGui::SameLine();
-	if (ImGui::Button("Slash")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossSlashState>(m_upBoss.get())); }
-	if (ImGui::Button("ChargeSlash")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossChargeSlashState>(m_upBoss.get())); }
-	ImGui::SameLine();
-	if (ImGui::Button("Shout")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossShoutState>(m_upBoss.get())); }
-	if (ImGui::Button("Special")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossSpecialState>(m_upBoss.get())); }
-	ImGui::SameLine();
-	if (ImGui::Button("Laser")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossLaserState>(m_upBoss.get())); }
-	if (ImGui::Button("Charge")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossChargeState>(m_upBoss.get())); }
-	ImGui::SameLine();
-	if (ImGui::Button("Throwing")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossThrowingState>(m_upBoss.get())); }
-	if (ImGui::Button("Dead")) { m_upBoss->GetStateMachine()->ChangeState(std::make_shared<BossDeadState>(m_upBoss.get())); }
-
-	ImGui::Separator();
-	ImGui::Text("Boss Info:");
-	ImGui::Text("HP: %.1f / %.1f", m_upBoss->GetHP(), m_upBoss->GetMaxHP());
-	ImGui::Text("State Ptr: %p", (void*)m_upBoss->GetStateMachine()->m_pCurrentState.get());
-
-	ImGui::End();
+	// Debug UI moved to DebugTuningPanel. No inline ImGui here.
 #endif
 
 }
@@ -205,8 +159,6 @@ void MattyaTestScene::Draw()
 
 	m_TestPressCollision->SetDebugInfo();
 	m_TestAttackCollision->SetDebugInfo();
-
-	m_TestPressCollision->SetDebugInfo();
 
 	m_upUI->Draw();
 	CollisionVisualizer::GetInstance().Draw();

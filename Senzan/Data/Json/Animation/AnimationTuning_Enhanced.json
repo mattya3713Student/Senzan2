@@ -1,0 +1,449 @@
+{
+  "version": 2,
+  "entities": {
+    "Player": {
+      "entityType": "Player",
+      "resourceName": "player",
+      "states": {
+        "Idle": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": 0,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "Run": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": 1,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "JustDodge": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": 9,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "AttackCombo_0": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": 2,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "AttackCombo_1": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": 2,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "AttackCombo_2": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": 2,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "Parry": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": 8,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "DodgeExecute": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": 9,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "KnockBack": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": 10,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "Dead": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": 11,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "SpecialAttack": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": 2,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "Pause": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": -1,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        }
+      }
+    },
+    "Boss": {
+      "entityType": "Boss",
+      "resourceName": "boss",
+      "states": {
+        "Idol": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": 0,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "IdolToRun": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": 0,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "Dead": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": 16,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "Slash": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": 21,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "Run": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": 2,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "LaserEnd": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": 18,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "RunToIdol": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": 0,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "LeftMove": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": 9,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "RightMove": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": 8,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "SlashToIdol": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": 0,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "Charge": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": 7,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "ChargeAttack": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": 7,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "ChargeToIdol": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": 0,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "LaserCharge": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": 7,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "Laser": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": 18,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "Shout": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": -1,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "Special_0": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": 11,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "Special_1": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": 11,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "SpecialToIdol": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": 0,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "Stomp": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": -1,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "Throwing": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": -1,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "Pause": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": -1,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "KnockBack": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": -1,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        },
+        "SpecialAttack": {
+          "animSpeed": 1.0000,
+          "loop": false,
+          "animationIndex": 11,
+          "useEntityDefaultMasks": true,
+          "overrideMyMask": 0,
+          "overrideTargetMask": 0,
+          "disableDamage": false,
+          "colliders": [
+
+          ]
+        }
+      }
+    }
+  }
+}

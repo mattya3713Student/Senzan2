@@ -320,34 +320,37 @@ HRESULT SkinMesh::CreateIndexBuffer(
 
 void SkinMesh::Render(LPD3DXANIMATIONCONTROLLER pAC)
 {
-	m_mView = CameraManager::GetInstance().GetViewMatrix();
-	m_mProj = CameraManager::GetInstance().GetProjMatrix();
-	m_CamPos = CameraManager::GetInstance().GetPosition();
+    m_mView = CameraManager::GetInstance().GetViewMatrix();
+    m_mProj = CameraManager::GetInstance().GetProjMatrix();
+    m_CamPos = CameraManager::GetInstance().GetPosition();
 
-	//使用するシェーダのセット.
-	m_pContext11->VSSetShader(m_pVertexShader->GetVertexShader(), nullptr, 0);
-	m_pContext11->PSSetShader(m_pPixelShader->GetPixelShader(), nullptr, 0);
+    //使用するシェーダのセット.
+    m_pContext11->VSSetShader(m_pVertexShader->GetVertexShader(), nullptr, 0);
+    m_pContext11->PSSetShader(m_pPixelShader->GetPixelShader(), nullptr, 0);
 
-	//シャドウマップを渡す.
-	auto pShadowMapSRV = RenderTargetManager::GetInstance().GetRenderTarget("ShadowMap").GetShaderResourceView();
-	m_pContext11->PSSetShaderResources(1, 1, &pShadowMapSRV);
+    //シャドウマップを渡す.
+    auto pShadowMapSRV = RenderTargetManager::GetInstance().GetRenderTarget("ShadowMap").GetShaderResourceView();
+    m_pContext11->PSSetShaderResources(1, 1, &pShadowMapSRV);
 
-	if (pAC == nullptr)
-	{
-		if (m_pD3dxMesh->m_pAnimController)
-		{
-			m_pD3dxMesh->m_pAnimController->AdvanceTime(m_AnimSpeed, nullptr);
-		}
-	}
-	else
-	{
-		pAC->AdvanceTime(m_AnimSpeed, nullptr);
-	}
+    if (pAC == nullptr)
+    {
+        if (m_pD3dxMesh->m_pAnimController)
+        {
+            m_pD3dxMesh->m_pAnimController->AdvanceTime(m_AnimSpeed, nullptr);
+        }
+    }
+    else
+    {
+        // When an external animation controller is provided (owner owns track position),
+        // do not advance it here to avoid double-advancing and conflicting time sources.
+        // The owner (e.g., MeshObject) is expected to set the track position directly.
+        // No action required.
+    }
   
-	D3DXMATRIX m;
-	D3DXMatrixIdentity(&m);
-	m_pD3dxMesh->UpdateFrameMatrices(m_pD3dxMesh->m_pFrameRoot, &m);
-	DrawFrame(m_pD3dxMesh->m_pFrameRoot);
+    D3DXMATRIX m;
+    D3DXMatrixIdentity(&m);
+    m_pD3dxMesh->UpdateFrameMatrices(m_pD3dxMesh->m_pFrameRoot, &m);
+    DrawFrame(m_pD3dxMesh->m_pFrameRoot);
 }
 //-------------------------------------------------------------------------------------------------------------------------------------
 
@@ -1337,3 +1340,30 @@ void SkinMesh::ConvertCharaMultiByteToUnicode(
 		str,
 		_TRUNCATE);
 }
+
+bool SkinMesh::GetBoneNames(std::vector<std::string>& outNames) const
+{
+    if (!m_pD3dxMesh || !m_pD3dxMesh->m_pFrameRoot) return false;
+
+    outNames.clear();
+    // iterate mesh frames and collect bone names from parts meshes
+    std::function<void(LPD3DXFRAME)> walk = [&](LPD3DXFRAME f)
+    {
+        if (!f) return;
+        MYFRAME* mf = reinterpret_cast<MYFRAME*>(f);
+        if (mf->pPartsMesh && mf->pPartsMesh->NumBone > 0 && mf->pPartsMesh->pBoneArray)
+        {
+            for (int i = 0; i < mf->pPartsMesh->NumBone; ++i)
+            {
+                const char* name = mf->pPartsMesh->pBoneArray[i].Name;
+                if (name && name[0] != '\0') outNames.emplace_back(name);
+            }
+        }
+        if (f->pFrameSibling) walk(f->pFrameSibling);
+        if (f->pFrameFirstChild) walk(f->pFrameFirstChild);
+    };
+
+    walk(m_pD3dxMesh->m_pFrameRoot);
+    return !outNames.empty();
+}
+

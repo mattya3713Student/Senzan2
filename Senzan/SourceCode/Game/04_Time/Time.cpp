@@ -45,8 +45,8 @@ void Time::Update()
         }
     }
 
-    // 時間スケールを適用.
-    m_DeltaTime *= m_WorldTimeScale;
+    // Note: do NOT multiply m_DeltaTime by world scale here.
+    // Keep m_DeltaTime as raw elapsed seconds. Apply world time scale when requested by callers.
 }
 
 // アプリが復帰したとき時間基準をリセットしてでかいDeltaTimeになるのを防ぐ.
@@ -93,7 +93,8 @@ void Time::MaintainFPS()
 // デルタタイムを取得.
 const float Time::GetDeltaTime() const
 {
-    return m_DeltaTime * m_WorldTimeScale;
+    // Return raw delta time (unscaled). Callers can multiply by world scale if needed.
+    return m_DeltaTime;
 }
 
 // アプリ起動からの時間を取得.
@@ -121,7 +122,7 @@ void Time::SetWorldTimeScale(float NewTimeScale)
 // ワールドの時間の流れを一時的に変更する.
 void Time::SetWorldTimeScale(float NewTimeScale, float DurationSeconds)
 {
-    // 一時的な変更の場合は現在の值を保存してから適用.
+    // 一時的な変更の場合は現在の値を保存してから適用.
     m_OriginalTimeScale = m_WorldTimeScale;
     m_WorldTimeScale = NewTimeScale;
 

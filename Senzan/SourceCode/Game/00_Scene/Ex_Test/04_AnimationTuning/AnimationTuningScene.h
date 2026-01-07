@@ -9,7 +9,7 @@ class Ground;
 class UIGameMain;
 class CapsuleCollider;
 class DirectionLight;
-class LockOnCamera; // forward declaration
+class PlayerThirdPersonCamera; // forward declaration
 
 class AnimationTuningScene
     : public SceneBase
@@ -26,10 +26,9 @@ public:
     HRESULT LoadData();
 
 private:
-    std::shared_ptr<LockOnCamera> m_pCamera;
+    std::shared_ptr<PlayerThirdPersonCamera> m_pCamera;
     std::shared_ptr<DirectionLight> m_pLight;
-    std::unique_ptr<CapsuleCollider> m_TestPressCollision;
-    std::unique_ptr<CapsuleCollider> m_TestAttackCollision;
+
     std::unique_ptr<Player> m_upPlayer;
     std::unique_ptr<Boss> m_upBoss;
     std::unique_ptr<Ground> m_upGround;

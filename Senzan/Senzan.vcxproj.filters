@@ -140,7 +140,8 @@
     <ClCompile Include="SourceCode\System\Singleton\Debug\AnimationTuningManager\AnimationTuningManager.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\Debug\AnimationTuningManager\DebugTuningPanel.cpp" />
     <ClCompile Include="SourceCode\Game\00_Scene\Ex_Test\04_AnimationTuning\AnimationTuningScene.cpp" />
-    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\State\RepeatAnimationState.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\RepeatAnimationState.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\ActionData.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SourceCode\Constant.h" />
@@ -295,7 +296,8 @@
     <ClInclude Include="SourceCode\Game\03_Collision\00_Core\ColliderSpec.h" />
     <ClInclude Include="SourceCode\System\Singleton\Debug\AnimationTuningManager\AnimationTuningManager.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\Ex_Test\04_AnimationTuning\AnimationTuningScene.h" />
-    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\State\RepeatAnimationState.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\RepeatAnimationState.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\ActionData.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Shader\PMX\Header.hlsli" />

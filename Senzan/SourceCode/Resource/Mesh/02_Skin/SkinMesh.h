@@ -78,6 +78,8 @@ public:
 	bool GetMatrixFromBone(LPCSTR BoneName, DirectX::XMMATRIX* pOutMat);
 	bool GetPosFromBone(LPCSTR BoneName, DirectX::XMFLOAT3* pOutPos);
 	bool GetDeviaPosFromBone(LPCSTR BoneName, DirectX::XMFLOAT3* pOutPos, DirectX::XMFLOAT3 SpecifiedPos = { 0.0f, 0.0f, 0.0f });
+	 // Retrieve list of bone names available in the skin mesh. Returns true if any bones were found.
+	bool GetBoneNames(std::vector<std::string>& outNames) const;
 private:
 	// ... ロード・作成関連の private 関数 (入出力の型は D3DX のまま維持) ...
 	HRESULT LoadXMesh(std::string FileName);
@@ -124,3 +126,4 @@ private:
 	TCHAR		m_FilePath[256];	// Xファイルのパス. (変更なし)
 	int			m_Frame;			// アニメーションフレーム. (変更なし)
 };
+

@@ -1,4 +1,4 @@
-#include "MeshObject.h"
+ï»¿#include "MeshObject.h"
 #include "Resource/Mesh/MeshBase.h"
 #include "Resource/Mesh/01_Static/StaticMesh.h"
 #include "Resource/Mesh/02_Skin/SkinMesh.h"
@@ -40,10 +40,10 @@ void MeshObject::Draw()
 {
 	if (!m_IsRenderActive) { return; }
 
-	// ƒƒbƒVƒ…–¢Ú‘±‚Ìê‡A•`‰æ‚µ‚È‚¢.
+	// ãƒ¡ãƒƒã‚·ãƒ¥æœªæ¥ç¶šã®å ´åˆã€æç”»ã—ãªã„.
 	if (m_pMesh.expired()) { return; }
 
-	// •`‰æ’¼‘O‚Å•K—v‚Èî•ñ‚ğMesh–{‘Ì‚É‘—‚é.
+	// æç”»ç›´å‰ã§å¿…è¦ãªæƒ…å ±ã‚’Meshæœ¬ä½“ã«é€ã‚‹.
 	if (auto pMesh = m_pMesh.lock())
 	{
 		pMesh->SetPosition(m_spTransform->Position);
@@ -53,12 +53,12 @@ void MeshObject::Draw()
 		pMesh->SetIsShadow(m_IsShadow);
 	}
 
-	// StaticMesh‚Ì•`‰æ.
+	// StaticMeshæ™‚ã®æç”».
 	if (std::shared_ptr<StaticMesh> staticMesh = std::dynamic_pointer_cast<StaticMesh>(m_pMesh.lock()))
 	{
 		staticMesh->Render();
 	}
-	// SkinMesh‚Ì•`‰æ.
+	// SkinMeshæ™‚ã®æç”».
 	else if (std::shared_ptr<SkinMesh> skinMesh = std::dynamic_pointer_cast<SkinMesh>(m_pMesh.lock()))
 	{
 		m_AnimTimer += m_AnimSpeed * GetDelta();
@@ -74,10 +74,10 @@ void MeshObject::DrawDepth()
 {
 	if (!m_IsRenderActive) { return; }
 
-	// ƒƒbƒVƒ…–¢Ú‘±‚Ìê‡A[“x•`‰æ‚µ‚È‚¢.
+	// ãƒ¡ãƒƒã‚·ãƒ¥æœªæ¥ç¶šã®å ´åˆã€æ·±åº¦æç”»ã—ãªã„.
 	if (m_pMesh.expired()) { return; }
 
-	// •`‰æ’¼‘O‚Å•K—v‚Èî•ñ‚ğMesh–{‘Ì‚É‘—‚é.
+	// æç”»ç›´å‰ã§å¿…è¦ãªæƒ…å ±ã‚’Meshæœ¬ä½“ã«é€ã‚‹.
 	if (auto pMesh = m_pMesh.lock())
 	{
 		pMesh->SetPosition(m_spTransform->Position);
@@ -85,12 +85,12 @@ void MeshObject::DrawDepth()
 		pMesh->SetScale(m_spTransform->Scale);
 	}
 
-	// StaticMesh‚Ì[“x•`‰æ.
+	// StaticMeshæ™‚ã®æ·±åº¦æç”».
 	if (std::shared_ptr<StaticMesh> staticMesh = std::dynamic_pointer_cast<StaticMesh>(m_pMesh.lock()))
 	{
 		staticMesh->RenderDepth();
 	}
-	// SkinMesh‚Ì[“x•`‰æ.
+	// SkinMeshæ™‚ã®æ·±åº¦æç”».
 	else if (std::shared_ptr<SkinMesh> skinMesh = std::dynamic_pointer_cast<SkinMesh>(m_pMesh.lock()))
 	{
 		skinMesh->RenderDepth(m_pAnimCtrl);
@@ -106,22 +106,22 @@ void MeshObject::AttachMesh(const std::shared_ptr<MeshBase>& pMesh)
 
 	m_pMesh = pMesh;
 
-	// Ú‘±ƒƒbƒVƒ…‚ªSkin‚È‚çƒAƒjƒ[ƒVƒ‡ƒ“ƒRƒ“ƒgƒ[ƒ‰[‚ÌƒNƒ[ƒ“‚àì¬‚·‚é.
+	// æ¥ç¶šãƒ¡ãƒƒã‚·ãƒ¥ãŒSkinãªã‚‰ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼ã®ã‚¯ãƒ­ãƒ¼ãƒ³ã‚‚ä½œæˆã™ã‚‹.
 	if (std::shared_ptr<SkinMesh> skinMesh = std::dynamic_pointer_cast<SkinMesh>(pMesh))
 	{
-		//ƒAƒjƒ[ƒVƒ‡ƒ“ƒRƒ“ƒgƒ[ƒ‰‚ğæ“¾.
+		//ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ã‚’å–å¾—.
 		LPD3DXANIMATIONCONTROLLER pAC = skinMesh->GetAnimationController();
 
-		//ƒAƒjƒ[ƒVƒ‡ƒ“ƒRƒ“ƒgƒ[ƒ‰‚ÌƒNƒ[ƒ“‚ğì¬.
+		//ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ã®ã‚¯ãƒ­ãƒ¼ãƒ³ã‚’ä½œæˆ.
 		if (FAILED(
 			pAC->CloneAnimationController(
 			pAC->GetMaxNumAnimationOutputs(),
 			pAC->GetMaxNumAnimationSets(),
 			pAC->GetMaxNumTracks(),
 			pAC->GetMaxNumEvents(),
-			&m_pAnimCtrl)))		//(out)ƒNƒ[ƒ“ì¬æ.
+			&m_pAnimCtrl)))		//(out)ã‚¯ãƒ­ãƒ¼ãƒ³ä½œæˆå…ˆ.
 		{
-			_ASSERT_EXPR(false, L"ƒAƒjƒ[ƒVƒ‡ƒ“ƒRƒ“ƒgƒ[ƒ‰‚ÌƒNƒ[ƒ“ì¬¸”s");
+			_ASSERT_EXPR(false, L"ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ã®ã‚¯ãƒ­ãƒ¼ãƒ³ä½œæˆå¤±æ•—");
 		}
 	}
 }
@@ -156,25 +156,49 @@ void MeshObject::SetIsShadow(const bool& isShadow)
 	m_IsShadow = isShadow;
 }
 
-// ƒAƒjƒ[ƒVƒ‡ƒ“‚Ì‘¬“x‚ğİ’è.
+// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®é€Ÿåº¦ã‚’è¨­å®š.
 void MeshObject::SetAnimSpeed(const double speed)
 {
 	m_AnimSpeed = speed;
 }
 
-// ƒAƒjƒ[ƒVƒ‡ƒ“‚Ìƒ‹[ƒvİ’è.
+// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®é€Ÿåº¦ã‚’å–å¾—.
+double MeshObject::GetAnimSpeed() const
+{
+    return m_AnimSpeed;
+}
+
+// ç¾åœ¨ã®ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚’å–å¾—.
+int MeshObject::GetAnimIndex() const
+{
+    return m_AnimNo;
+}
+
+// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®ãƒ«ãƒ¼ãƒ—è¨­å®š.
 void MeshObject::SetIsLoop(const bool isLoop)
 {
 	m_Isloop = isLoop;
 }
 
-// ƒAƒjƒ[ƒVƒ‡ƒ“ƒ‹[ƒv‚Ìİ’è.
+// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãƒ«ãƒ¼ãƒ—ã®è¨­å®š.
 void MeshObject::SetAnimTime(double StartTime)
 {
 	m_AnimTimer = StartTime;
 }
 
-// ƒAƒjƒ[ƒVƒ‡ƒ“I—¹ŠÔ‚ğæ“¾.
+// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚’åœæ­¢ï¼ˆå†ç”Ÿé€Ÿåº¦ã‚’0ã«ï¼‰
+void MeshObject::StopAnimation()
+{
+	m_AnimSpeed = 0.0;
+}
+
+// ç¾åœ¨ã®ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³å†ç”Ÿæ™‚é–“ã‚’å–å¾—
+double MeshObject::GetAnimTime() const
+{
+	return m_AnimTimer;
+}
+
+// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³çµ‚äº†æ™‚é–“ã‚’å–å¾—.
 double MeshObject::GetAnimPeriod(int index) const
 {
 	if (std::shared_ptr<SkinMesh> skinMesh = std::dynamic_pointer_cast<SkinMesh>(m_pMesh.lock()))
@@ -186,7 +210,7 @@ double MeshObject::GetAnimPeriod(int index) const
 
 void MeshObject::IsLoopAnimTimeSet()
 {
-	// ‚à‚µƒ‹[ƒv‚µ‚È‚¢‚È‚çÅIƒtƒŒ[ƒ€‚É“’B“_‚ÅƒAƒjƒ[ƒVƒ‡ƒ“ŒÅ’è.
+	// ã‚‚ã—ãƒ«ãƒ¼ãƒ—ã—ãªã„ãªã‚‰æœ€çµ‚ãƒ•ãƒ¬ãƒ¼ãƒ ã«åˆ°é”æ™‚ç‚¹ã§ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³å›ºå®š.
 	if (!m_Isloop) {
 		double EndTime = GetAnimPeriod(m_AnimNo);
 		if (EndTime <= m_AnimTimer) {
@@ -205,53 +229,53 @@ void MeshObject::IsLoopAnimTimeSet()
 
 HRESULT MeshObject::FindVerticesOnPoly(LPD3DXMESH pMesh, DWORD dwPolyIndex, DirectX::XMFLOAT3* pVertices)
 {
-	//’¸“_‚²‚Æ‚ÌƒoƒCƒg”‚ğæ“¾.
+	//é ‚ç‚¹ã”ã¨ã®ãƒã‚¤ãƒˆæ•°ã‚’å–å¾—.
 	DWORD dwStride = pMesh->GetNumBytesPerVertex();
-	//’¸“_”‚ğæ“¾.
+	//é ‚ç‚¹æ•°ã‚’å–å¾—.
 	DWORD dwVertexAmt = pMesh->GetNumVertices();
-	//–Ê”‚ğæ“¾.
+	//é¢æ•°ã‚’å–å¾—.
 	DWORD dwPoly = pMesh->GetNumFaces();
 
 	WORD* pwPoly = nullptr;
 
-	//ƒCƒ“ƒfƒbƒNƒXƒoƒbƒtƒ@‚ğƒƒbƒN(“Ç‚İ‚İƒ‚[ƒh).
+	//ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ãƒãƒƒãƒ•ã‚¡ã‚’ãƒ­ãƒƒã‚¯(èª­ã¿è¾¼ã¿ãƒ¢ãƒ¼ãƒ‰).
 	pMesh->LockIndexBuffer(
 		D3DLOCK_READONLY,
 		reinterpret_cast<VOID**>(&pwPoly));
 
-	BYTE* pbVertices = nullptr;		//’¸“_(ƒoƒCƒgŒ^).
-	FLOAT* pfVertices = nullptr;	//’¸“_(floatŒ^).
-	LPDIRECT3DVERTEXBUFFER9 VB = nullptr;	//’¸“_ƒoƒbƒtƒ@.
+	BYTE* pbVertices = nullptr;		//é ‚ç‚¹(ãƒã‚¤ãƒˆå‹).
+	FLOAT* pfVertices = nullptr;	//é ‚ç‚¹(floatå‹).
+	LPDIRECT3DVERTEXBUFFER9 VB = nullptr;	//é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡.
 
-	//’¸“_î•ñ‚Ìæ“¾.
+	//é ‚ç‚¹æƒ…å ±ã®å–å¾—.
 	pMesh->GetVertexBuffer(&VB);
 
-	//’¸“_ƒoƒbƒtƒ@‚ÌƒƒbƒN.
+	//é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡ã®ãƒ­ãƒƒã‚¯.
 	if (SUCCEEDED(
 		VB->Lock(0, 0, reinterpret_cast<VOID**>(&pbVertices), 0)))
 	{
-		//ƒ|ƒŠƒSƒ“‚Ì’¸“_1‚Â–Ú‚ğæ“¾.
+		//ãƒãƒªã‚´ãƒ³ã®é ‚ç‚¹1ã¤ç›®ã‚’å–å¾—.
 		pfVertices = reinterpret_cast<FLOAT*>(&pbVertices[dwStride * pwPoly[dwPolyIndex * 3]]);
 		pVertices[0].x = pfVertices[0];
 		pVertices[0].y = pfVertices[1];
 		pVertices[0].z = pfVertices[2];
 
-		//ƒ|ƒŠƒSƒ“‚Ì’¸“_2‚Â–Ú‚ğæ“¾.
+		//ãƒãƒªã‚´ãƒ³ã®é ‚ç‚¹2ã¤ç›®ã‚’å–å¾—.
 		pfVertices = reinterpret_cast<FLOAT*>(&pbVertices[dwStride * pwPoly[dwPolyIndex * 3 + 1]]);
 		pVertices[1].x = pfVertices[0];
 		pVertices[1].y = pfVertices[1];
 		pVertices[1].z = pfVertices[2];
 
-		//ƒ|ƒŠƒSƒ“‚Ì’¸“_3‚Â–Ú‚ğæ“¾.
+		//ãƒãƒªã‚´ãƒ³ã®é ‚ç‚¹3ã¤ç›®ã‚’å–å¾—.
 		pfVertices = reinterpret_cast<FLOAT*>(&pbVertices[dwStride * pwPoly[dwPolyIndex * 3 + 2]]);
 		pVertices[2].x = pfVertices[0];
 		pVertices[2].y = pfVertices[1];
 		pVertices[2].z = pfVertices[2];
 
-		pMesh->UnlockIndexBuffer(); //ãƒƒbƒN‰ğœ.
-		VB->Unlock();	//ƒƒbƒN‰ğœ.
+		pMesh->UnlockIndexBuffer(); //âˆšãƒ­ãƒƒã‚¯è§£é™¤.
+		VB->Unlock();	//ãƒ­ãƒƒã‚¯è§£é™¤.
 	}
-	VB->Release();	//•s—v‚É‚È‚Á‚½‚Ì‚Å‰ğ•ú.
+	VB->Release();	//ä¸è¦ã«ãªã£ãŸã®ã§è§£æ”¾.
 
 	return S_OK;
 }

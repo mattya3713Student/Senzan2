@@ -5,6 +5,8 @@
 #include "Game/04_Time/Time.h"    
 
 #include "System/Singleton/Debug/Log/DebugLog.h"    
+#include "Game/01_GameObject/00_MeshObject/00_Character/ActionData.h"
+#include "Game/03_Collision/00_Core/01_Capsule/CapsuleCollider.h"
 
 static constexpr float DEFAULT_ROTATION_SPEED = 720.0f;
 
@@ -16,6 +18,71 @@ PlayerStateBase::PlayerStateBase(Player* owner)
 Player* PlayerStateBase::GetPlayer() const
 {
     return m_pOwner;
+}
+
+void PlayerStateBase::SetActionDefinition(const ActionStateDefinition* def)
+{
+    m_ActionDefinition = def;
+    m_ActionElapsed = 0.0f;
+}
+
+void PlayerStateBase::ResetActionTimeline()
+{
+    m_ActionElapsed = 0.0f;
+}
+
+void PlayerStateBase::UpdateActionTimeline(float dt)
+{
+    if (!m_ActionDefinition) return;
+
+    m_ActionElapsed += dt;
+
+    for (const auto& evt : m_ActionDefinition->colliderEvents)
+    {
+        const float endTime = evt.startTime + evt.duration;
+        const bool active = (m_ActionElapsed >= evt.startTime) && (m_ActionElapsed < endTime);
+
+        // 仕様反映.
+        if (ColliderBase* collider = m_pOwner->GetColliderByIndex(evt.type, evt.index))
+        {
+            if (auto capsule = dynamic_cast<CapsuleCollider*>(collider))
+            {
+                capsule->SetRadius(evt.spec.Radius);
+                capsule->SetHeight(evt.spec.Height);
+            }
+            collider->SetPositionOffset(evt.spec.Offset);
+            collider->SetAttackAmount(evt.spec.AttackAmount);
+            collider->SetMyMask(static_cast<eCollisionGroup>(evt.spec.MyMask));
+            collider->SetTarGetTargetMask(static_cast<eCollisionGroup>(evt.spec.TargetMask));
+            collider->SetColor(evt.spec.DebugColor);
+        }
+
+        m_pOwner->SetColliderActive(evt.type, evt.index, active);
+
+        if (active)
+        {
+            DirectX::XMFLOAT3 bonePos{};
+            DirectX::XMFLOAT3 boneForward{};
+            if (!evt.boneName.empty() && m_pOwner->GetBoneWorldPose(evt.boneName, bonePos, boneForward))
+            {
+                m_pOwner->SetColliderTransform(evt.type, evt.index, bonePos, boneForward);
+            }
+            else
+            {
+                // ボーン指定なし: オフセットのみ反映済みなので何もしない.
+            }
+        }
+        else
+        {
+            // 非アクティブ時は明示的な処理なし.
+        }
+    }
+
+    if (m_ActionDefinition->totalDuration > 0.0f && m_ActionElapsed >= m_ActionDefinition->totalDuration)
+    {
+        // 派生ステート側で遷移を行うためのフラグとして利用できるよう、ここではリセットのみ。
+        m_ActionElapsed = m_ActionDefinition->totalDuration;
+    }
 }
 
 // 正面へラープ回転.

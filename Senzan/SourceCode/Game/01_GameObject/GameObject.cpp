@@ -1,11 +1,11 @@
-#include "GameObject.h"
+ï»¿#include "GameObject.h"
 #include "System/Utility/Transform/Transform.h"
 #include "Utility\Math\Math.h"
 #include "Game/04_Time/Time.h"   
 
 GameObject::GameObject()
 	: m_spTransform		( std::make_shared<Transform>() )
-	, m_Tag				( "Untagged" )
+	, m_Tag			( "Untagged" )
 	, m_IsActive		( true )
 	, m_IsRenderActive	( true )
 	, m_TimeScale		( -1.0f )
@@ -16,21 +16,21 @@ GameObject::~GameObject()
 {
 }
 
-// ƒRƒs[.
+// ï¿½Rï¿½sï¿½[.
 void GameObject::SetTransform(const Transform& transform) 
 {
-	// m_spTransform‚ª—LŒø‚Èƒ|ƒCƒ“ƒ^‚ğ‚Á‚Ä‚¢‚é‚©Šm”F‚µA’†g‚ğã‘‚«‚·‚é.
+	// m_spTransformï¿½ï¿½ï¿½Lï¿½ï¿½ï¿½Èƒ|ï¿½Cï¿½ï¿½ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½é‚©ï¿½mï¿½Fï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½gï¿½ï¿½ã‘ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½.
 	if (m_spTransform) {
-		*m_spTransform = transform;
+		* m_spTransform = transform;
 	}
 	else {
-		// null‚Ìê‡‚ÍV‚µ‚­ì¬.
+		// nullï¿½Ìê‡ï¿½ÍVï¿½ï¿½ï¿½ï¿½ï¿½ì¬.
 		m_spTransform = std::make_shared<Transform>(transform);
 	}
 }
 
 // ====================================================================================================
-// À•Wİ’è (SetPosition)
+// ï¿½ï¿½ï¿½Wï¿½İ’ï¿½ (SetPosition)
 // ====================================================================================================
 
 void GameObject::SetPosition(const DirectX::XMFLOAT3& Position)
@@ -60,12 +60,12 @@ void GameObject::SetPositionZ(float Z)
 
 
 // ====================================================================================================
-// À•W‰ÁZ (AddPosition)
+// ï¿½ï¿½ï¿½Wï¿½ï¿½ï¿½Z (AddPosition)
 // ====================================================================================================
 
 void GameObject::AddPosition(const DirectX::XMFLOAT3& Position)
 {
-    // SIMD‰‰Z‚ğg—p‚µ‚Ä‰ÁZ
+    // SIMDï¿½ï¿½ï¿½Zï¿½ï¿½gï¿½pï¿½ï¿½ï¿½Ä‰ï¿½ï¿½Z
     DirectX::XMVECTOR v_pos = DirectX::XMLoadFloat3(&m_spTransform->Position);
     DirectX::XMVECTOR v_add = DirectX::XMLoadFloat3(&Position);
     DirectX::XMVECTOR v_new = DirectX::XMVectorAdd(v_pos, v_add);
@@ -96,7 +96,7 @@ void GameObject::AddPositionZ(float Z)
 
 
 // ====================================================================================================
-// ‰ñ“]İ’è (SetRotation)
+// ï¿½ï¿½]ï¿½İ’ï¿½ (SetRotation)
 // ====================================================================================================
 
 void GameObject::SetRotation(const DirectX::XMFLOAT3& Rotation)
@@ -135,7 +135,7 @@ void GameObject::SetRotationAroundAxis(const DirectX::XMFLOAT3& Axis, float Angl
     DirectX::XMVECTOR q_axis = DirectX::XMQuaternionRotationAxis(v_axis, Angle);
     DirectX::XMVECTOR q_current = DirectX::XMLoadFloat4(&m_spTransform->Quaternion);
 
-    // Œ»İ‚ÌƒNƒH[ƒ^ƒjƒIƒ“‚ÉV‚µ‚¢‰ñ“]‚ğæZ
+    // ï¿½ï¿½ï¿½İ‚ÌƒNï¿½Hï¿½[ï¿½^ï¿½jï¿½Iï¿½ï¿½ï¿½ÉVï¿½ï¿½ï¿½ï¿½ï¿½ï¿½]ï¿½ï¿½ï¿½Z
     DirectX::XMVECTOR q_new = DirectX::XMQuaternionMultiply(q_current, q_axis);
     DirectX::XMStoreFloat4(&m_spTransform->Quaternion, q_new);
 
@@ -144,7 +144,7 @@ void GameObject::SetRotationAroundAxis(const DirectX::XMFLOAT3& Axis, float Angl
 
 
 // ====================================================================================================
-// Šgkİ’è (SetScale)
+// ï¿½gï¿½kï¿½İ’ï¿½ (SetScale)
 // ====================================================================================================
 
 void GameObject::SetScale(const DirectX::XMFLOAT3& Scale)
@@ -236,19 +236,20 @@ float GameObject::GetTimeScale()
     }
 }
 
-// ÅI“I‚ÈDeltaTime‚Ìæ“¾.
+// ï¿½ÅIï¿½Iï¿½ï¿½DeltaTimeï¿½Ìæ“¾.
 float GameObject::GetDelta()
 {
+    // Time::GetDeltaTime() now returns the raw elapsed seconds.
     float delta_time = Time::GetInstance().GetDeltaTime();
-    float world_scale = Time::GetInstance().GetWorldTimeScale();
 
-    // m_TimeScale ‚ª -1f ‚Ìê‡ (ƒ[ƒ‹ƒhƒ^ƒCƒ€ƒXƒP[ƒ‹‚ğ–³‹)@
+    // If object uses world scale (m_TimeScale == -1), apply world time scale.
     if (MyMath::IsNearlyEqual(m_TimeScale, -1.f))
     {
-        return delta_time * world_scale;
+        return delta_time * Time::GetInstance().GetWorldTimeScale();
     }
     else
     {
+        // Apply object's custom time scale.
         return delta_time * m_TimeScale;
     }
 }

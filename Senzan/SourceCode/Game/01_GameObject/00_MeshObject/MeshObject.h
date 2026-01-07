@@ -53,11 +53,23 @@ public: // Getter／Setter.
 	// アニメーションの再生速度を設定.
 	void SetAnimSpeed(double speed);
 
+	// アニメーションの再生速度を取得.
+	double GetAnimSpeed() const;
+
+	// 現在のアニメーションインデックスを取得.
+	int GetAnimIndex() const;
+
 	// アニメーションのループ設定.
 	void SetIsLoop(bool isLoop);
 	
 	// アニメーション開始時間を設定.
 	void SetAnimTime(double StartTime);
+
+	// アニメーションを停止（再生速度を0にする・フリーズ）
+	void StopAnimation();
+
+	// 現在のアニメーション再生時間（秒）を取得
+	double GetAnimTime() const;
 	
 	// アニメーションを変更するテンプレート.
 	template<typename T>
@@ -117,7 +129,7 @@ private:
 		DirectX::XMFLOAT3* pVertices);
 
 protected:
-	std::weak_ptr<MeshBase>		m_pMesh; // アタッチ中のメッシュ (弱参照).
+	std::weak_ptr<MeshBase>	m_pMesh; // アタッチ中のメッシュ (弱参照).
 
 	bool m_IsLight; 	// ライト影響を受けるか.
 	bool m_IsShadow; // シャドウを投影するか.
@@ -125,10 +137,10 @@ protected:
 	// SkinMesh 用アニメコントローラ.
 	LPD3DXANIMATIONCONTROLLER	m_pAnimCtrl; // アニメーションコントローラ.
 
-	int						m_AnimNo; 	// アニメ番号.
-	double					m_AnimSpeed; // アニメ再生速度.
-	double					m_AnimTimer; // アニメタイマー (経過時間).
-	bool					m_Isloop; 	// ループフラグ.
+	int					m_AnimNo; 	// アニメ番号.
+	double				m_AnimSpeed; // アニメ再生速度.
+	double				m_AnimTimer; // アニメタイマー (経過時間).
+	bool				m_Isloop; 	// ループフラグ.
 	DirectX::XMFLOAT3			m_BonePos; // ボーン位置.
 };
 

@@ -3,6 +3,7 @@
 #include <vector>
 #include <unordered_map>
 #include <cstdint>
+#include <string>
 
 #include "Game/03_Collision/00_Core/ColliderBase.h"
 #include "Game/03_Collision/00_Core/ColliderSpec.h"
@@ -85,6 +86,15 @@ public:
 	inline void AddAttackCollidersFromDefsPublic(const std::unordered_map<AttackTypeId, std::vector<struct ColliderSpec>>& defs) { CreateCollidersFromDefs(defs); }
 	inline size_t GetAttackColliderCount(AttackTypeId type) const { return GetColliderCount(type); }
 	// -----------------------------------------------------------------
+
+	// ボーン名からワールド姿勢を取得するヘルパー
+	bool GetBoneWorldPose(const std::string& name, DirectX::XMFLOAT3& outPos, DirectX::XMFLOAT3& outForward) const;
+
+	// コライダーのワールド位置を直接反映するヘルパー
+	void SetColliderTransform(AttackTypeId type, size_t index, const DirectX::XMFLOAT3& pos, const DirectX::XMFLOAT3& forward);
+
+	// 内部コライダー取得ヘルパー.
+	ColliderBase* GetColliderByIndex(AttackTypeId type, size_t index) const;
 
 protected:
 

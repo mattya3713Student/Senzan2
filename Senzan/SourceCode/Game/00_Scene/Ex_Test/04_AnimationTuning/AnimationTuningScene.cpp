@@ -43,8 +43,6 @@ AnimationTuningScene::AnimationTuningScene()
     : SceneBase()
     , m_pCamera()
     , m_pLight(std::make_shared<DirectionLight>())
-    , m_TestPressCollision(std::make_unique<CapsuleCollider>())
-    , m_TestAttackCollision(std::make_unique<CapsuleCollider>())
     , m_upPlayer(std::make_unique<Player>())
     , m_upBoss(std::make_unique<Boss>())
     , m_upGround(std::make_unique<Ground>())
@@ -55,12 +53,11 @@ AnimationTuningScene::AnimationTuningScene()
 
 AnimationTuningScene::~AnimationTuningScene()
 {
-    CollisionDetector::GetInstance().UnregisterCollider(m_TestAttackCollision.get());
 }
 
 void AnimationTuningScene::Initialize()
 {
-    m_pCamera = std::make_shared<LockOnCamera>(std::ref(*m_upPlayer), std::ref(*m_upBoss));
+    m_pCamera = std::make_shared<PlayerThirdPersonCamera>(std::ref(*m_upPlayer));
     m_pCamera->SetPosition(DirectX::XMFLOAT3(0.0f, 5.0f, -50.0f));
     m_pCamera->SetLook(DirectX::XMFLOAT3(0.0f, 2.0f, 5.0f));
     CameraManager::GetInstance().SetCamera(m_pCamera);
@@ -70,18 +67,8 @@ void AnimationTuningScene::Initialize()
 
     m_upGround = std::make_unique<Ground>();
 
-    m_TestAttackCollision->SetColor(Color::eColor::Red);
-    m_TestAttackCollision->SetAttackAmount(50.0f);
-    m_TestAttackCollision->SetHeight(2.0f);
-    m_TestAttackCollision->SetRadius(0.5f);
-    m_TestAttackCollision->SetPositionOffset(0.f,1.5f,50.f);
-    m_TestAttackCollision->SetMyMask(eCollisionGroup::Enemy_Attack);
-
-    m_TestAttackCollision->SetTarGetTargetMask(eCollisionGroup::Player_Damage 
-        | eCollisionGroup::Player_Dodge
-        | eCollisionGroup::Player_JustDodge);
-
-    CollisionDetector::GetInstance().RegisterCollider(*m_TestAttackCollision);
+    // Ensure tuning manager initialized before enabling UI
+    AnimationTuningManager::GetInstance().Init();
 
     AnimationTuningManager::GetInstance().SetEnabled(true);
 }
@@ -104,7 +91,6 @@ void AnimationTuningScene::Update()
 
     Input::Update();
     m_upGround->Update();
-    m_upPlayer->SetTargetPos(m_TestAttackCollision.get()->GetPosition());
     m_upPlayer->Update();
     m_upBoss->Update();
 
@@ -148,11 +134,6 @@ void AnimationTuningScene::Draw()
     m_upGround->Draw();
     m_upPlayer->Draw();
     m_upBoss->Draw();
-
-    m_TestPressCollision->SetDebugInfo();
-    m_TestAttackCollision->SetDebugInfo();
-
-    m_TestPressCollision->SetDebugInfo();
 
     m_upUI->Draw();
     CollisionVisualizer::GetInstance().Draw();

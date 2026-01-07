@@ -2,6 +2,7 @@
 #include "Graphic/DirectX/DirectX11/DirectX11.h"
 #include "System/Singleton/ResourceManager/ResourceManager.h"
 #include "02_UIObject/UIObject.h"
+#include "System/Singleton/Debug/AnimationTuningManager/AnimationTuningManager.h"
 #include <chrono>
 
 Loader::Loader()
@@ -85,7 +86,15 @@ const bool Loader::IsLoadCompletion()
 
 bool Loader::LoadGraphicsAssets()
 {
-    return ResourceManager::LoadMesh();
+    bool ok = ResourceManager::LoadMesh();
+
+    // Initialize AnimationTuningManager after mesh resources are loaded so it can infer animation indices
+    if (ok)
+    {
+        AnimationTuningManager::GetInstance().Init();
+    }
+
+    return ok;
 }
 
 //-------------------------------------------------------------------.

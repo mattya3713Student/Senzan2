@@ -1,87 +1,90 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../../Data/ImGui/Library/imgui_impl_dx11.h"
 #include "../../Data/ImGui/Library/imgui_impl_win32.h"
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 /*****************************************************
-*	ImGuiƒ}ƒl[ƒWƒƒ[ƒNƒ‰ƒX.
-* @(ƒVƒ“ƒOƒ‹ƒgƒ“‚Åì¬).
+*    ImGui manager singleton.
 **/
 
 class CImGuiManager final
 {
 public:
-	//ƒCƒ“ƒXƒ^ƒ“ƒX‚ğæ“¾.
-	static CImGuiManager* GetInstance();
+    // Get singleton.
+    static CImGuiManager* GetInstance();
 
-	//‰Šú‰».
-	//ˆø”‚ÉhWnd‚ğ“ü‚ê‚Ä‚¢‚é——R(—\‘z)
-	//ƒEƒBƒ“ƒhƒE‚¾‚¯‚Å‚µ‚©g‚í‚È‚¢‚Ì‚ÅƒQ[ƒ€“à‚Å‚Íg—p‚µ‚È‚¢‚½‚ß‚¾‚Æ‚¨‚à‚¤.
-	static HRESULT Init(HWND hWnd);
+    // Initialization.
+    static HRESULT Init(HWND hWnd);
 
-	//ƒŠƒŠ[ƒXŠÖ”.
-	static void Relese();
+    // Release.
+    static void Relese();
 
-	//ƒtƒŒ[ƒ€‚Ìİ’è.
-	static void NewFrameSetting();
+    // New frame setup.
+    static void NewFrameSetting();
 
-	//RenderŠÖ”‚Í€”õ‚·‚éŠÖ”‚Å‚·.
-	//•`‰æ–½—ß‚ğ€”õ‚·‚éŠÖ”.
-	//‚±‚±‚ªADraw()ŠÖ”‚Å‚Í‚È‚¢——R‚ÍA
-	//DrawŠÖ”‚ÍA‚·‚®‚É•`‰æ‚·‚éƒCƒ[ƒWŠÖ”‚Å‚·.
-	static void Render();
+    // Render.
+    static void Render();
 
-	//“ü—Íƒ{ƒbƒNƒX‚Ì•\¦.
-	template<typename T>
-	static bool Input(
-		const char* label,				//ƒ‰ƒxƒ‹•¶š(ImGui‚Å‚Ì•\¦–¼‚È‚Ç)
-		T& value,						//ƒ†[ƒU[‚ª“ü—Í‚·‚é’l‚Ö‚ÌQÆ(Œ^‚ÍT)
-		bool isLabel = true,			//ƒ‰ƒxƒ‹•\¦‚·‚é‚©‚Ç‚¤‚©(ƒfƒtƒHƒ‹ƒgtrue)
-		float step = 0.f,				//ƒXƒeƒbƒv—Ê(—á: ”’l‚Ì‘Œ¸ƒ{ƒ^ƒ“—p)
-		float steoFast = 0.f,			//ƒXƒeƒbƒv—Ê(‚‘¬ƒo[ƒWƒ‡ƒ“)¦typo‚©‚àH
-		const char* format = "% .3f",	//•\¦ƒtƒH[ƒ}ƒbƒg
-		ImGuiInputTextFlags flags = 0);	//ImGui‚Ì“ü—ÍƒIƒvƒVƒ‡ƒ“.
+    // Generic input helpers (existing)...
+    template<typename T>
+    static bool Input(
+        const char* label,
+        T& value,
+        bool isLabel = true,
+        float step = 0.f,
+        float steoFast = 0.f,
+        const char* format = "% .3f",
+        ImGuiInputTextFlags flags = 0);
 
-	//ƒXƒ‰ƒCƒ_[‚Ì•\¦.
-	//ImGui‚Å’l‚ğƒXƒ‰ƒCƒ_[‚Å’²®‚Å‚«‚é‚æ‚¤‚É‚·‚é.
-	template<typename T>
-	static void Slider(
-		const char* label,		//ƒ‰ƒxƒ‹–¼(UI‚É•\¦‚³‚ê‚é–¼‘O(—á: "Speed"))
-		T& value,				//’²®‘ÎÛ‚Ì’l(QÆ“n‚µA—á: speed)
-		T valueMin,				//ƒXƒ‰ƒCƒ_[‚ÌÅ¬’l.
-		T valieMax,				//ƒXƒ‰ƒCƒ_[‚ÌÅ‘å’l(Å¬’l‚Í’Êí0‚Æ‰¼’è‚³‚ê‚é)
-		bool isLabel = true);	//ƒ‰ƒxƒ‹‚ğUI‚É•\¦‚·‚é‚©(true‚È‚ç•\¦)
+    template<typename T>
+    static void Slider(
+        const char* label,
+        T& value,
+        T valueMin,
+        T valieMax,
+        bool isLabel = true);
 
-	//ƒRƒ“ƒ{ƒ{ƒbƒNƒX.
-	static std::string Combo(
-		const char* label,						//ƒ‰ƒxƒ‹–¼(UI‚É•\¦‚³‚ê‚é–¼‘O).
-		std::string& NowItem,					//Œ»İ‘I‚Î‚ê‚Ä‚¢‚é€–Ú‚Ì–¼‘O(‘I‘ğó‘Ô‚Ì•Û‚Ég‚¤).
-		const std::vector<std::string>& List,	//‘I‘ğˆ‚Ìˆê——(•\¦‚·‚éƒŠƒXƒg)
-		bool isLabel = false,					//ƒ‰ƒxƒ‹‚ğƒRƒ“ƒ{ƒ{ƒbƒNƒX‚Ì‰¡‚É•\¦‚·‚é‚©Htrue: •\¦, false: ”ñ•\¦.
-		float space = 100.f);					//ƒRƒ“ƒ{ƒ{ƒbƒNƒX‚Ì•(‰¡•‚ğƒsƒNƒZƒ‹‚Åw’è).
+    static std::string Combo(
+        const char* label,
+        std::string& NowItem,
+        const std::vector<std::string>& List,
+        bool isLabel = false,
+        float space = 100.f);
 
-	//ƒ`ƒFƒbƒNƒ{ƒbƒNƒX‚Ì•\¦.
-	//bool&‚ÍAŒÄ‚Ño‚µŒ³‚Ì•Ï”‚»‚Ì‚à‚Ì‚ğ‘€ì‚·‚é.
-	static bool CheckBox(
-		const char* Label,		//ƒ`ƒFƒbƒNƒ{ƒbƒNƒX‚Ì‰¡‚É•\¦‚³‚ê‚éƒ‰ƒxƒ‹(–¼‘O).
-		bool& flag,				//ƒ`ƒFƒbƒNó‘Ô‚ğŠÇ—‚·‚é•Ï”(QÆ“n‚µ‚ÅAON/OFFó‘Ô‚ğ’¼Ú•ÏX‚·‚é).
-		bool isLabel = true);	//ƒ‰ƒxƒ‹‚ğ•\¦Afalse: ƒ‰ƒxƒ‹”ñ•\¦(È—ª‚Ítrue).
+    static bool CheckBox(
+        const char* Label,
+        bool& flag,
+        bool isLabel = true);
 
-	//ƒOƒ‰ƒt‚ğ•\¦.
-	static void Graph(
-		const char* Label,							//ƒOƒ‰ƒt‚Ìƒ^ƒCƒgƒ‹(ƒ‰ƒxƒ‹)
-		std::vector<float>& Data,					//ƒOƒ‰ƒt‚É•\¦‚·‚é”’lƒf[ƒ^‚Ì”z—ñ(Ü‚êüƒOƒ‰ƒt‚â–_ƒOƒ‰ƒt‚ÌŒ³).
-		const ImVec2& Size = ImVec2(300.f, 300.f));	//ƒOƒ‰ƒt‚ÌƒTƒCƒY(‰¡•300A‚‚³300)¨È—ª‰Â”\.
+    static void Graph(
+        const char* Label,
+        std::vector<float>& Data,
+        const ImVec2& Size = ImVec2(300.f, 300.f));
+
+    // Collider schedule struct and accessors
+    struct ColliderSchedule
+    {
+        float Delay = 0.0f;
+        float Duration = 0.0f;
+    };
+
+    // Get schedule for a named state + index. Returns true if schedule exists (out param written), false otherwise.
+    static bool GetColliderSchedule(const std::string& stateName, size_t index, ColliderSchedule& out);
+
+    // Set schedule for a named state + index.
+    static void SetColliderSchedule(const std::string& stateName, size_t index, const ColliderSchedule& sched);
 
 private:
-	CImGuiManager();
-	~CImGuiManager();
+    CImGuiManager();
+    ~CImGuiManager();
 
-	//¶¬‚âƒRƒs[‚ğíœ.
-	CImGuiManager(const CImGuiManager& rhs) = delete;
-	CImGuiManager& operator = (const CImGuiManager& rhs) = delete;
+    CImGuiManager(const CImGuiManager& rhs) = delete;
+    CImGuiManager& operator = (const CImGuiManager& rhs) = delete;
 
+    // Internal storage for schedules: map stateName -> vector of schedules
+    std::unordered_map<std::string, std::vector<ColliderSchedule>> m_ColliderSchedules;
 };

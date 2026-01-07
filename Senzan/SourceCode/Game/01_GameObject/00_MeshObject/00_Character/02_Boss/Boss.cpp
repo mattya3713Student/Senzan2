@@ -29,7 +29,7 @@
 #include "System/Singleton/CameraManager/CameraManager.h"
 
 // include the RepeatAnimationState template header so we can call Enter() for initial visual loop
-#include "Game/01_GameObject/00_MeshObject/00_Character/State/RepeatAnimationState.h"
+#include "Game/01_GameObject/00_MeshObject/00_Character/RepeatAnimationState.h"
 
 
 constexpr float HP_Max = 100.0f;
@@ -58,16 +58,10 @@ Boss::Boss()
     m_HP = m_MaxHP;
 
     // Keep FSM as-is: start with Idol state
-    m_State->ChangeState(std::make_shared<BossIdolState>(this));
-
-    // 簡易: 初期アニメを繰り返しで表示（FSMはボスの通常ステートのまま）
-    {
-        RepeatAnimationState<Boss> temp(this, "Idol", static_cast<int>(Boss::enBossAnim::Idol), 1.0f);
-        temp.Enter();
-    }
+    m_State->ChangeState(std::make_shared<RepeatAnimationState<Boss>>(this, "Idol", 0, 1.f));
 
     // sample default specs (use ColliderSpec as spec carrier)
-    {
+  /*  {
         ColliderSpec s; s.Radius = 15.0f; s.Height = 40.0f; s.Offset = {0.0f,10.0f,-30.0f}; s.AttackAmount = 10.0f;
         s.MyMask = static_cast<uint32_t>(eCollisionGroup::Enemy_Attack);
         s.TargetMask = static_cast<uint32_t>(eCollisionGroup::Player_Damage);
@@ -105,7 +99,7 @@ Boss::Boss()
     {
         ColliderSpec s; s.Radius = 50.0f; s.Height = 75.0f; s.Offset = {0,1.5f,0}; s.AttackAmount = 10.0f; s.MyMask = static_cast<uint32_t>(eCollisionGroup::Enemy_Attack); s.TargetMask = static_cast<uint32_t>(eCollisionGroup::Player_Damage);
         m_AttackColliderDefs[static_cast<Character::AttackTypeId>(AttackType::Shout)] = { s };
-    }
+   } */
 
     // Pre-create and register colliders for each attack type into m_upColliders using Character helper
     CreateCollidersFromDefs(m_AttackColliderDefs);
