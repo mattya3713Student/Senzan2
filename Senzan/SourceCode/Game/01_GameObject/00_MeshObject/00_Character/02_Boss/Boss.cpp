@@ -439,8 +439,14 @@ void Boss::UpdateSlashColliderTransform()
 
 	DirectX::XMMATRIX bone_world_matrix = bone_local_matrix * boss_world_matrix;
 
+	// ワールド位置を取得してキャッシュに保存
 	DirectX::XMVECTOR v_final_pos, v_final_quat, v_final_scale;
 	DirectX::XMMatrixDecompose(&v_final_scale, &v_final_quat, &v_final_pos, bone_world_matrix);
+	// store into Transform cache
+	DirectX::XMStoreFloat3(&m_SlashBoneWorldTransform.Position, v_final_pos);
+	DirectX::XMStoreFloat4(&m_SlashBoneWorldTransform.Quaternion, v_final_quat);
+	DirectX::XMStoreFloat3(&m_SlashBoneWorldTransform.Scale, v_final_scale);
+	m_SlashBoneWorldTransform.UpdateRotationFromQuaternion();
 
 	DirectX::XMVECTOR b_pos, b_quat, b_scale;
 	DirectX::XMMatrixDecompose(&b_scale, &b_quat, &b_pos, boss_world_matrix);
@@ -452,6 +458,9 @@ void Boss::UpdateSlashColliderTransform()
 	DirectX::XMStoreFloat3(&f_relative_pos, relative_pos);
 
 	m_pSlashCollider->SetPositionOffset(f_relative_pos.x, f_relative_pos.y, f_relative_pos.z);
+
+	// 外部供給ポインタを設定（毎フレーム検索を避ける）
+	m_pSlashCollider->SetExternalTransformPointer(&m_SlashBoneWorldTransform);
 }
 
 void Boss::UpdateStompColliderTransform()
@@ -466,7 +475,16 @@ void Boss::UpdateStompColliderTransform()
 	DirectX::XMFLOAT3 boneWorldPos{};
 	if (skinMesh->GetPosFromBone(TargetBoneName.c_str(), &boneWorldPos))
 	{
+		// キャッシュに保存 into Transform
+		m_StompBoneWorldTransform.Position = boneWorldPos;
+
+		// use boss world quaternion for orientation
 		DirectX::XMMATRIX bossWorldMatrix = m_spTransform->GetWorldMatrix();
+		DirectX::XMVECTOR b_pos, b_quat, b_scale;
+		DirectX::XMMatrixDecompose(&b_scale, &b_quat, &b_pos, bossWorldMatrix);
+		DirectX::XMStoreFloat4(&m_StompBoneWorldTransform.Quaternion, b_quat);
+		DirectX::XMStoreFloat3(&m_StompBoneWorldTransform.Scale, b_scale);
+		m_StompBoneWorldTransform.UpdateRotationFromQuaternion();
 
 		DirectX::XMVECTOR bossPosVec = bossWorldMatrix.r[3];
 
@@ -479,5 +497,8 @@ void Boss::UpdateStompColliderTransform()
 		float offsetZ = boneWorldPos.z - bossWorldPos.z;
 
 		m_pStompCollider->SetPositionOffset(offsetX, offsetY, offsetZ);
+
+		// 外部供給ポインタを設定
+		m_pStompCollider->SetExternalTransformPointer(&m_StompBoneWorldTransform);
 	}
 }

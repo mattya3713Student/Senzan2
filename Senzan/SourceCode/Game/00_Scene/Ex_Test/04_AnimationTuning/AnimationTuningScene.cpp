@@ -89,14 +89,14 @@ void AnimationTuningScene::Update()
 
     m_upPlayer->SetTargetPos(m_upBoss.get()->GetPosition());
     m_upPlayer->Update();
-    m_upBoss->Update();
+    //m_upBoss->Update();
 
 }
 
 void AnimationTuningScene::LateUpdate()
 {
     m_upPlayer->LateUpdate();
-    m_upBoss->LateUpdate();
+    //m_upBoss->LateUpdate();
     CameraManager::GetInstance().LateUpdate();
 
     CollisionDetector::GetInstance().ExecuteCollisionDetection();
@@ -112,7 +112,7 @@ void AnimationTuningScene::Draw()
     m_upGround->Draw();
 
     m_upPlayer->Draw();
-    m_upBoss->Draw();
+    //m_upBoss->Draw();
 
     CollisionVisualizer::GetInstance().Draw();
 }

@@ -1,4 +1,4 @@
-#include "Combat.h"
+﻿#include "Combat.h"
 
 #include "Game/01_GameObject/00_MeshObject/00_Character/01_Player/Player.h"
 
@@ -18,6 +18,7 @@ void Combat::Enter()
 {
 	Action::Enter();
 	m_currentTime = 0.f;
+
 }
 
 void Combat::Update()
@@ -41,3 +42,4 @@ void Combat::Exit()
 }
 
 } // PlayerState.
+

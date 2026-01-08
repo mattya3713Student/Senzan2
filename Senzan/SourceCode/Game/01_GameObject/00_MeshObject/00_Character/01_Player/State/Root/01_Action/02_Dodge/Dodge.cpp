@@ -1,4 +1,4 @@
-#include "Dodge.h"
+ï»¿#include "Dodge.h"
 
 #include "00_MeshObject/00_Character/01_Player/Player.h"
 
@@ -18,16 +18,16 @@ Dodge::Dodge(Player* owner)
 	, m_currentTime(0.f)
 {
 
-    //// ”íƒ_ƒƒRƒ‰ƒCƒ_[‚Ìƒ|ƒCƒ“ƒ^‚ð•ÛŽ.
-    //const auto& internal_colliders = m_pOwner->m_upColliders->GetInternalColliders();
-    //for (const std::unique_ptr<ColliderBase>& collider_ptr : internal_colliders)
-    //{
-    //    if (collider_ptr && collider_ptr->GetMyMask() == eCollisionGroup::Player_Damage) // GetID()‚Í‰¼‚ÌŠÖ”
-    //    {
-    //        m_pDamageDetectionCollider = collider_ptr.get();
-    //        break;
-    //    }
-    //}
+    // è¢«ãƒ€ãƒ¡ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã®ãƒã‚¤ãƒ³ã‚¿ã‚’ä¿æŒ.
+    const auto& internal_colliders = m_pOwner->m_upColliders->GetInternalColliders();
+    for (const std::unique_ptr<ColliderBase>& collider_ptr : internal_colliders)
+    {
+        if (collider_ptr && collider_ptr->GetMyMask() == eCollisionGroup::Player_Damage) // GetID()ã¯ä»®ã®é–¢æ•°
+        {
+            m_pDamageDetectionCollider = collider_ptr.get();
+            break;
+        }
+    }
 }
 
 Dodge::~Dodge()
@@ -38,8 +38,8 @@ void Dodge::Enter()
 {
     Action::Enter();
 
-  /*  if (m_pDamageDetectionCollider != nullptr)
-        CollisionDetector::GetInstance().UnregisterCollider(m_pDamageDetectionCollider);*/
+    if (m_pDamageDetectionCollider != nullptr)
+        CollisionDetector::GetInstance().UnregisterCollider(m_pDamageDetectionCollider);
 	
 	m_currentTime = 0.f;
 
@@ -48,49 +48,49 @@ void Dodge::Enter()
 
 	Log::GetInstance().Info("", input_vec);
 
-	// “ü—Í‚ª‚È‚¯‚ê‚ÎƒvƒŒƒCƒ„[‚ÌŒü‚¢‚Ä‚¢‚é•ûŒü‚Ö.
+	// å…¥åŠ›ãŒãªã‘ã‚Œã°ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®å‘ã„ã¦ã„ã‚‹æ–¹å‘ã¸.
 	if (MyMath::IsVector2NearlyZero(input_vec, 0.f))
 	{
 		final_move_3d = m_pOwner->GetTransform()->GetForward();
 		final_move_3d.y = 0;
 		m_InputVec = MyMath::NormalizeVector3To2D(final_move_3d);
 	}
-	// “ü—Í‚ª‚ ‚ê‚Î•Û‘¶.
+	// å…¥åŠ›ãŒã‚ã‚Œã°ä¿å­˜.
 	else
 	{
-		// MEMO : ƒJƒƒ‰‚©‚çŒ©‚ÄŒã‚ë‚É‚µ‚Ä‚à‚¢‚¢‚©‚à.
+		// MEMO : ã‚«ãƒ¡ãƒ©ã‹ã‚‰è¦‹ã¦å¾Œã‚ã«ã—ã¦ã‚‚ã„ã„ã‹ã‚‚.
 
-		// ƒJƒƒ‰ƒxƒNƒgƒ‹‚ðŽæ“¾.
+		// ã‚«ãƒ¡ãƒ©ãƒ™ã‚¯ãƒˆãƒ«ã‚’å–å¾—.
 		DirectX::XMFLOAT3 camera_forward_vec = CameraManager::GetInstance().GetCurrentCamera()->GetForwardVec();
 		DirectX::XMFLOAT3 camera_right_vec = CameraManager::GetInstance().GetCurrentCamera()->GetRightVec();
 		DirectX::XMVECTOR v_camera_forward = DirectX::XMLoadFloat3(&camera_forward_vec);
 		DirectX::XMVECTOR v_camera_right = DirectX::XMLoadFloat3(&camera_right_vec);
 
-		// YÀ•W‚ðíœ‚µA…•½‚ÈƒxƒNƒgƒ‹‚É•ÏŠ·.
+		// Yåº§æ¨™ã‚’å‰Šé™¤ã—ã€æ°´å¹³ãªãƒ™ã‚¯ãƒˆãƒ«ã«å¤‰æ›.
 		v_camera_forward = DirectX::XMVectorSetY(v_camera_forward, 0.0f);
 		v_camera_right = DirectX::XMVectorSetY(v_camera_right, 0.0f);
 
-		// ³‹K‰».
+		// æ­£è¦åŒ–.
 		v_camera_forward = DirectX::XMVector3Normalize(v_camera_forward);
 		v_camera_right = DirectX::XMVector3Normalize(v_camera_right);
 
-		// “ü—Í‚ÆƒJƒƒ‰ƒxƒNƒgƒ‹.
+		// å…¥åŠ›ã¨ã‚«ãƒ¡ãƒ©ãƒ™ã‚¯ãƒˆãƒ«.
 		DirectX::XMVECTOR v_movement_z = DirectX::XMVectorScale(v_camera_forward, input_vec.y);
 		DirectX::XMVECTOR v_movement_x = DirectX::XMVectorScale(v_camera_right, input_vec.x);
 
-		// ÅI“I‚ÈˆÚ“®•ûŒüƒxƒNƒgƒ‹.
+		// æœ€çµ‚çš„ãªç§»å‹•æ–¹å‘ãƒ™ã‚¯ãƒˆãƒ«.
 		DirectX::XMVECTOR v_final_move = DirectX::XMVectorAdd(v_movement_z, v_movement_x);
 
-		// ³‹K‰»‚µ.
+		// æ­£è¦åŒ–ã—.
 		DirectX::XMVECTOR v_normalized_move = DirectX::XMVector3Normalize(v_final_move);
 
 		DirectX::XMStoreFloat3(&final_move_3d, v_normalized_move);
 
-		// ÅI“I‚È‰ñ”ð•ûŒü‚ðm_InputVec‚ÉÝ’è (XZ•½–Ê‚Ì³‹K‰»ƒxƒNƒgƒ‹)
+		// æœ€çµ‚çš„ãªå›žé¿æ–¹å‘ã‚’m_InputVecã«è¨­å®š (XZå¹³é¢ã®æ­£è¦åŒ–ãƒ™ã‚¯ãƒˆãƒ«)
 		m_InputVec = { final_move_3d.x, final_move_3d.z };
 	}
 
-	// ˆÚ“®•ûŒü‚ðŒü‚­.
+	// ç§»å‹•æ–¹å‘ã‚’å‘ã.
 	m_pOwner->GetTransform()->RotateToDirection(final_move_3d);
 
 	SoundManager::GetInstance().Play("Dodge");

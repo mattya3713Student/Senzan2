@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "Game/01_GameObject/00_MeshObject/00_Character/Character.h"
+#include "System/Utility/Transform/Transform.h"
 
 #include "System/Utility/StateMachine/StateMachine.h"
 #include "Game\\01_GameObject\\00_MeshObject\\00_Character\01_Player\Player.h"
@@ -157,8 +158,8 @@ protected:
 	//ステートマシンのメンバ変数.
 	std::unique_ptr<StateMachine<Boss>> m_State;
 
-	DirectX::XMFLOAT3					m_PlayerPos;
-	DirectX::XMFLOAT3					m_PlayerVelocity;
+	DirectX::XMFLOAT3				m_PlayerPos;
+	DirectX::XMFLOAT3				m_PlayerVelocity;
 
 	float m_MoveSpped = 0.0f;
 
@@ -167,7 +168,7 @@ protected:
 
 	D3DXVECTOR3 m_vCurrentMoveVelocity;
 
-	ColliderBase* m_pAttackCollider;	// 攻撃判定.
+	ColliderBase* m_pAttackCollider; 	// 攻撃判定.
 
 	float deleta_time;
 
@@ -177,4 +178,9 @@ protected:
 	ColliderBase* m_pSlashCollider;
 	ColliderBase* m_pStompCollider;
 	ColliderBase* m_pShoutCollider;
+
+	// 外部供給用のワールドTransformキャッシュ（コライダーが毎フレームメッシュ検索しないようにする）
+	Transform m_SlashBoneWorldTransform;
+	Transform m_StompBoneWorldTransform;
 };
+
