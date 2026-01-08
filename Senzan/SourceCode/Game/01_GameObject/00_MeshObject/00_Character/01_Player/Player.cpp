@@ -192,6 +192,8 @@ void Player::LateUpdate()
     HandleAttackDetection();
     HandleDodgeDetection();
 
+    // 当たり判定を表示.
+    m_upColliders->SetDebugInfo();
 }
 
 void Player::Draw()

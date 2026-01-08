@@ -88,10 +88,6 @@ Boss::Boss()
 	//ボスの最大体力.
 	m_HitPoint = HP_Max;
 
-	//動きをゆっくりにするコード.
-	//コメントアウトすることで速度がもとに戻る.
-	m_TimeScale = 0.1;
-
 	// 被ダメの追加.
 	std::unique_ptr<CapsuleCollider> damage_collider = std::make_unique<CapsuleCollider>(m_spTransform);
 

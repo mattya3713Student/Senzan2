@@ -25,7 +25,8 @@ enum class eList
 	Mattya, 
 	Memeu, 	
 	L, 	
-
+	AnimationTuning,
+	
 	UIEditor,
 #endif // _DEBUG
 
@@ -34,7 +35,7 @@ enum class eList
 
 class SceneManager :
 	public Singleton<SceneManager>
-{ 
+{
 	friend class Singleton<SceneManager>;
 private:
 	SceneManager();
@@ -61,6 +62,7 @@ private:
 		case eList::Mattya:  return "MattyaTest";
 		case eList::Memeu:   return "MemeuTest";
 		case eList::L:       return "LTest";
+		case eList::AnimationTuning: return "AnimationTuning";
 		case eList::UIEditor: return "UIEditor";
 		default: return "Unknown";
 		}
@@ -72,7 +74,7 @@ private:
 	void MakeScene(eList Scene);
 
 private:
-	std::unique_ptr<SceneBase>		m_pScene;
+	std::unique_ptr<SceneBase> 		m_pScene;
 	Buffer* m_pBuffer;		// 次シーンへインスタンスを入れるバッファー.
 
 #if _DEBUG
