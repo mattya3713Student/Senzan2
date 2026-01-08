@@ -144,6 +144,8 @@ Player::Player()
 
     m_upColliders->AddCollider(std::move(attackCollider));
 
+    // If other attack colliders existed before, they should be registered similarly.
+
     CollisionDetector::GetInstance().RegisterCollider(*m_upColliders);
 
     // 各ステートの初期化.
@@ -425,3 +427,4 @@ void Player::HandleParryDetection()
         }
     }
 }
+
