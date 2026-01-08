@@ -425,24 +425,3 @@ void Player::HandleParryDetection()
         }
     }
 }
-
-// Debug: 強制ステート設定
-void Player::DebugSetForceState(PlayerState::eID id, bool repeatOnExit)
-{
-    m_DebugForcedState = id;
-    m_DebugRepeatOnExit = repeatOnExit;
-    m_DebugWasInForcedState = false;
-
-    // 即時 Enter を実行
-    if (m_DebugForcedState != PlayerState::eID::None)
-    {
-        ChangeState(m_DebugForcedState);
-    }
-}
-
-void Player::DebugClearForceState() noexcept
-{
-    m_DebugForcedState = PlayerState::eID::None;
-    m_DebugRepeatOnExit = false;
-    m_DebugWasInForcedState = false;
-}

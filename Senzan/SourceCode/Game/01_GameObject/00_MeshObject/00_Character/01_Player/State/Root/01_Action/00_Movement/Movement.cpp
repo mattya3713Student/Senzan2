@@ -1,4 +1,4 @@
-#include "Movement.h"
+ï»¿#include "Movement.h"
 #include "Game/01_GameObject/00_MeshObject/00_Character/01_Player/Player.h"
 
 #include "Game/03_Collision/00_Core/01_Capsule/CapsuleCollider.h"
@@ -9,7 +9,7 @@
 namespace PlayerState {
 
 // ----------------------------------------------------
-// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 // ----------------------------------------------------
 Movement::Movement(Player* owner)
 	: Action(owner)
@@ -30,7 +30,7 @@ void Movement::Update()
 {
 	if (VirtualPad::GetInstance().IsActionDown(VirtualPad::eGameAction::Attack))
 	{
-		m_pOwner->ChangeState(PlayerState::eID::AttackCombo_0);
+		m_pOwner->ChangeState(PlayerState::eID::AttackCombo_1);
 		return;
 	}
 	

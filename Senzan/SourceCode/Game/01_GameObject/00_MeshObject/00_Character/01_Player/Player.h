@@ -105,10 +105,6 @@ public:
 
 	std::reference_wrapper<PlayerStateBase> GetStateReference(PlayerState::eID id);
 
-	// Debug: force state and repeat-on-exit.
-	void DebugSetForceState(PlayerState::eID id, bool repeatOnExit);
-	void DebugClearForceState() noexcept;
-
 private:
 
 	// マッピングを初期化.
