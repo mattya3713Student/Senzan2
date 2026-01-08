@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include "CollisionInfo.h"
 
+struct Transform; // forward declaration to avoid include
+
 class CollisionDetector;
 class BoxCollider;
 class CapsuleCollider;
@@ -54,7 +56,7 @@ public:
 public:
 	ColliderBase();
 	ColliderBase(std::weak_ptr<const Transform> parentTransform);
-	virtual ~ColliderBase();	
+	virtual ~ColliderBase();
 
 	virtual void Update() = 0;
 
@@ -122,6 +124,9 @@ public:
 	// 他のColliderとの衝突.
 	virtual CollisionInfo CheckCollision(const ColliderBase& other) const = 0;
 
+	// 外部から座標供給ポインタを設定（毎フレームの検索を避けるため）。
+	inline void SetExternalTransformPointer(const Transform* p) noexcept { m_pExternalTransform = p; }
+
 protected:
 	// 形状ごとの衝突処理.
 	virtual CollisionInfo DispatchCollision(const SphereCollider& other) const = 0;
@@ -131,9 +136,9 @@ protected:
 protected:
 
 	std::weak_ptr<const Transform> m_wpTransform;	// 持ち主のトランスフォーム.
-	DirectX::XMFLOAT3	m_PositionOffset;			// オフセット位置.
-	bool				m_IsActive;					// アクティブか否か.
-	float				m_AttackAmount;				// 攻撃力.
+	DirectX::XMFLOAT3	m_PositionOffset;		// オフセット位置.
+	bool				m_IsActive; 				// アクティブか否か.
+	float				m_AttackAmount; 			// 攻撃力.
 
 	// コリジョンフィルター用.
 	eCollisionGroup m_MyMask = eCollisionGroup::_Max;		// 自身が所属するグループ.
@@ -142,6 +147,9 @@ protected:
 	// 検出された衝突情報のリスト.
 	std::vector<CollisionInfo> m_CollisionEvents;
 
+	// 外部供給のTransformポインタ（あれば GetPosition はこれを返す）。
+	const Transform* m_pExternalTransform = nullptr;
+
 public:
 
 	//------------デバッグ描画用-----------.
@@ -149,13 +157,27 @@ public:
 	virtual void SetDebugInfo() = 0;
 
 protected:
-	DirectX::XMFLOAT4	m_Color;					// 表示色.
+	DirectX::XMFLOAT4	m_Color; 					// 表示色.
 
 };
 
 // 座標を取得する.
 inline const DirectX::XMFLOAT3 ColliderBase::GetPosition() const noexcept
 {
+	// 外部供給Transformが設定されていればそれを使う（ワールド座標）
+	if (m_pExternalTransform)
+	{
+		// 外部Transformはワールド座標を表す想定。オフセットを加算して戻す。
+		DirectX::XMVECTOR v_position = DirectX::XMLoadFloat3(&m_pExternalTransform->Position);
+		DirectX::XMVECTOR v_offset = DirectX::XMLoadFloat3(&m_PositionOffset);
+
+		DirectX::XMVECTOR v_result_pos = DirectX::XMVectorAdd(v_position, v_offset);
+
+		DirectX::XMFLOAT3 result_pos = {};
+		DirectX::XMStoreFloat3(&result_pos, v_result_pos);
+		return result_pos;
+	}
+
 	if (auto spTransform = m_wpTransform.lock())
 	{
 		DirectX::XMVECTOR v_position = DirectX::XMLoadFloat3(&spTransform->Position);

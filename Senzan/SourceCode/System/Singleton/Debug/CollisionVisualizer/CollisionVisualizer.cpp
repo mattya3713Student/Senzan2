@@ -148,8 +148,6 @@ void CollisionVisualizer::CreateD3D11Buffer(
 
 void CollisionVisualizer::Draw()
 {
-    return;
-
     if (m_DebugInfoQueue.empty()) { return; }
 
     DirectX11& pDirectX11 = DirectX11::GetInstance();

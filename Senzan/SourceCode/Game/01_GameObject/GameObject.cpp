@@ -1,4 +1,4 @@
-#include "GameObject.h"
+ï»¿#include "GameObject.h"
 #include "System/Utility/Transform/Transform.h"
 #include "Utility\Math\Math.h"
 #include "Game/04_Time/Time.h"   
@@ -16,21 +16,21 @@ GameObject::~GameObject()
 {
 }
 
-// ƒRƒs[.
+// ã‚³ãƒ”ãƒ¼.
 void GameObject::SetTransform(const Transform& transform) 
 {
-	// m_spTransform‚ª—LŒø‚Èƒ|ƒCƒ“ƒ^‚ğ‚Á‚Ä‚¢‚é‚©Šm”F‚µA’†g‚ğã‘‚«‚·‚é.
+	// m_spTransformãŒæœ‰åŠ¹ãªãƒã‚¤ãƒ³ã‚¿ã‚’æŒã£ã¦ã„ã‚‹ã‹ç¢ºèªã—ã€ä¸­èº«ã‚’ä¸Šæ›¸ãã™ã‚‹.
 	if (m_spTransform) {
 		*m_spTransform = transform;
 	}
 	else {
-		// null‚Ìê‡‚ÍV‚µ‚­ì¬.
+		// nullã®å ´åˆã¯æ–°ã—ãä½œæˆ.
 		m_spTransform = std::make_shared<Transform>(transform);
 	}
 }
 
 // ====================================================================================================
-// À•Wİ’è (SetPosition)
+// åº§æ¨™è¨­å®š (SetPosition)
 // ====================================================================================================
 
 void GameObject::SetPosition(const DirectX::XMFLOAT3& Position)
@@ -60,12 +60,12 @@ void GameObject::SetPositionZ(float Z)
 
 
 // ====================================================================================================
-// À•W‰ÁZ (AddPosition)
+// åº§æ¨™åŠ ç®— (AddPosition)
 // ====================================================================================================
 
 void GameObject::AddPosition(const DirectX::XMFLOAT3& Position)
 {
-    // SIMD‰‰Z‚ğg—p‚µ‚Ä‰ÁZ
+    // SIMDæ¼”ç®—ã‚’ä½¿ç”¨ã—ã¦åŠ ç®—
     DirectX::XMVECTOR v_pos = DirectX::XMLoadFloat3(&m_spTransform->Position);
     DirectX::XMVECTOR v_add = DirectX::XMLoadFloat3(&Position);
     DirectX::XMVECTOR v_new = DirectX::XMVectorAdd(v_pos, v_add);
@@ -96,7 +96,7 @@ void GameObject::AddPositionZ(float Z)
 
 
 // ====================================================================================================
-// ‰ñ“]İ’è (SetRotation)
+// å›è»¢è¨­å®š (SetRotation)
 // ====================================================================================================
 
 void GameObject::SetRotation(const DirectX::XMFLOAT3& Rotation)
@@ -135,7 +135,7 @@ void GameObject::SetRotationAroundAxis(const DirectX::XMFLOAT3& Axis, float Angl
     DirectX::XMVECTOR q_axis = DirectX::XMQuaternionRotationAxis(v_axis, Angle);
     DirectX::XMVECTOR q_current = DirectX::XMLoadFloat4(&m_spTransform->Quaternion);
 
-    // Œ»İ‚ÌƒNƒH[ƒ^ƒjƒIƒ“‚ÉV‚µ‚¢‰ñ“]‚ğæZ
+    // ç¾åœ¨ã®ã‚¯ã‚©ãƒ¼ã‚¿ãƒ‹ã‚ªãƒ³ã«æ–°ã—ã„å›è»¢ã‚’ä¹—ç®—
     DirectX::XMVECTOR q_new = DirectX::XMQuaternionMultiply(q_current, q_axis);
     DirectX::XMStoreFloat4(&m_spTransform->Quaternion, q_new);
 
@@ -144,7 +144,7 @@ void GameObject::SetRotationAroundAxis(const DirectX::XMFLOAT3& Axis, float Angl
 
 
 // ====================================================================================================
-// Šgkİ’è (SetScale)
+// æ‹¡ç¸®è¨­å®š (SetScale)
 // ====================================================================================================
 
 void GameObject::SetScale(const DirectX::XMFLOAT3& Scale)
@@ -236,16 +236,16 @@ float GameObject::GetTimeScale()
     }
 }
 
-// ÅI“I‚ÈDeltaTime‚Ìæ“¾.
+// æœ€çµ‚çš„ãªDeltaTimeã®å–å¾—.
 float GameObject::GetDelta()
 {
     float delta_time = Time::GetInstance().GetDeltaTime();
     float world_scale = Time::GetInstance().GetWorldTimeScale();
 
-    // m_TimeScale ‚ª -1f ‚Ìê‡ (ƒ[ƒ‹ƒhƒ^ƒCƒ€ƒXƒP[ƒ‹‚ğ–³‹)@
+    // m_TimeScale ãŒ -1f ã®å ´åˆ (ãƒ¯ãƒ¼ãƒ«ãƒ‰ã‚¿ã‚¤ãƒ ã‚¹ã‚±ãƒ¼ãƒ«ã‚’ç„¡è¦–)ã€€
     if (MyMath::IsNearlyEqual(m_TimeScale, -1.f))
     {
-        return delta_time * world_scale;
+        return delta_time;
     }
     else
     {

@@ -105,6 +105,10 @@ public:
 
 	std::reference_wrapper<PlayerStateBase> GetStateReference(PlayerState::eID id);
 
+	// Debug: force state and repeat-on-exit.
+	void DebugSetForceState(PlayerState::eID id, bool repeatOnExit);
+	void DebugClearForceState() noexcept;
+
 private:
 
 	// マッピングを初期化.
@@ -138,34 +142,39 @@ protected:
 
 
 	//---共有---.
-	PlayerState::eID	m_NextStateID;		// 次遷移ステート.
-	bool	m_IsStateChangeRequest;			// 次遷移ステートフラグ.
+	PlayerState::eID	m_NextStateID; 		// 次遷移ステート.
+	bool	m_IsStateChangeRequest; 			// 次遷移ステートフラグ.
 
-	DirectX::XMFLOAT3	m_MoveVec;			// 一時保存の移動ベクトル.
+	DirectX::XMFLOAT3	m_MoveVec; 			// 一時保存の移動ベクトル.
 
-	int					m_Combo;			// コンボ.
-	float				m_CurrentUltValue;	// 閃値.
-	float				m_MaxUltValue;		// max閃値.
+	int					m_Combo; 			// コンボ.
+	float				m_CurrentUltValue; 	// 閃値.
+	float				m_MaxUltValue; 		// max閃値.
 
-	ColliderBase* m_pDamageCollider;	// 被ダメ判定.
-	ColliderBase* m_pAttackCollider;	// 攻撃判定.
-	ColliderBase* m_pParryCollider;		// パリィ判定.
+	ColliderBase* m_pDamageCollider; 	// 被ダメ判定.
+	ColliderBase* m_pAttackCollider; 	// 攻撃判定.
+	ColliderBase* m_pParryCollider; 		// パリィ判定.
 
 	//---System関連---.
-	bool				m_IsKnockBack;		// ノックバック中か否か.
-	DirectX::XMFLOAT3	m_KnockBackVec;		// ノックバックのベクトル.
-	float				m_KnockBackPower;	// ノックバックの強さ(被ダメの量に比例する予定).
-	bool				m_IsDead;			// 死亡中か否か.
+	bool				m_IsKnockBack; 		// ノックバック中か否か.
+	DirectX::XMFLOAT3	m_KnockBackVec; 	// ノックバックのベクトル.
+	float				m_KnockBackPower; 	// ノックバックの強さ(被ダメの量に比例する予定).
+	bool				m_IsDead; 			// 死亡中か否か.
 
 	//---MoveMent関連---.
-	float				m_RunMoveSpeed;		// 移動速度.
+	float				m_RunMoveSpeed; 		// 移動速度.
 
 	//---Combat関連---.
-	DirectX::XMFLOAT3	m_TargetPos;		// 敵の座標.
+	DirectX::XMFLOAT3	m_TargetPos; 		// 敵の座標.
 
-	bool				m_IsSuccessParry;	// パリィの成功.
+	bool				m_IsSuccessParry; 	// パリィの成功.
 	
 	//---Dodge関連---.
-	bool				m_IsJustDodgeTiming;// ジャスト回避のタイミング.
+	bool				m_IsJustDodgeTiming; // ジャスト回避のタイミング.
+
+	//--- Debug: force state 再入場用 ---.
+	PlayerState::eID    m_DebugForcedState;     // None == 無効.
+	bool                m_DebugRepeatOnExit;
+	bool                m_DebugWasInForcedState;
 
 };

@@ -1,30 +1,30 @@
 ﻿#include "Player.h"
-#include "System/Utility/StateMachine/StateMachine.h"	
+#include "System/Utility/StateMachine/StateMachine.h"
 
-#include "State/PlayerStateID.h"	
-#include "State/PlayerStateBase.h"	
+#include "State/PlayerStateID.h"
+#include "State/PlayerStateBase.h"
 
-#include "State/Root/Root.h"	
+#include "State/Root/Root.h"
 
-#include "State/Root/00_System/System.h"	
-#include "State/Root/00_System/00_Pause/Pause.h"	
-#include "State/Root/00_System/01_KnockBack/KnockBack.h"	
-#include "State/Root/00_System/02_Dead/Dead.h"	
-#include "State/Root/00_System/03_SpecialAttack/SpecialAttack.h"	
+#include "State/Root/00_System/System.h"
+#include "State/Root/00_System/00_Pause/Pause.h"
+#include "State/Root/00_System/01_KnockBack/KnockBack.h"
+#include "State/Root/00_System/02_Dead/Dead.h"
+#include "State/Root/00_System/03_SpecialAttack/SpecialAttack.h"
 
-#include "State/Root/01_Action/Action.h"	
-#include "State/Root/01_Action/00_Movement/Movement.h"	
-#include "State/Root/01_Action/00_Movement/00_Idle/Idle.h"	
-#include "State/Root/01_Action/00_Movement/01_Run/Run.h"	
+#include "State/Root/01_Action/Action.h"
+#include "State/Root/01_Action/00_Movement/Movement.h"
+#include "State/Root/01_Action/00_Movement/00_Idle/Idle.h"
+#include "State/Root/01_Action/00_Movement/01_Run/Run.h"
 
-#include "State/Root/01_Action/01_Combat/Combat.h"	
-#include "State/Root/01_Action/01_Combat/00_AttackCombo_0/AttackCombo_0.h"	
-#include "State/Root/01_Action/01_Combat/01_AttackCombo_1/AttackCombo_1.h"	
+#include "State/Root/01_Action/01_Combat/Combat.h"
+#include "State/Root/01_Action/01_Combat/00_AttackCombo_0/AttackCombo_0.h"
+#include "State/Root/01_Action/01_Combat/01_AttackCombo_1/AttackCombo_1.h"
 #include "State/Root/01_Action/01_Combat/02_AttackCombo_2/AttackCombo_2.h"
 
-#include "State/Root/01_Action/02_Dodge/Dodge.h"	
-#include "State/Root/01_Action/02_Dodge/00_DodgeExecute/DodgeExecute.h"	
-#include "State/Root/01_Action/02_Dodge/01_JustDodge/JustDodge.h"	
+#include "State/Root/01_Action/02_Dodge/Dodge.h"
+#include "State/Root/01_Action/02_Dodge/00_DodgeExecute/DodgeExecute.h"
+#include "State/Root/01_Action/02_Dodge/01_JustDodge/JustDodge.h"
 
 #include "Game/03_Collision/00_Core/01_Capsule/CapsuleCollider.h"
 #include "Game/03_Collision/00_Core/Ex_CompositeCollider/CompositeCollider.h"
@@ -34,7 +34,7 @@
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
 #include "System/Singleton/CameraManager/CameraManager.h"
 
-Player::Player()    
+Player::Player()
 	: Character         ()
 	, m_RootState       ( std::make_unique<PlayerState::Root>(this) )
     , m_StateRefMap     ( )
@@ -53,6 +53,9 @@ Player::Player()
     , m_pAttackCollider ( nullptr )
     , m_IsJustDodgeTiming( false )
     , m_TargetPos        ( { 0.f,0.f,0.f } )
+    , m_DebugForcedState ( PlayerState::eID::None )
+    , m_DebugRepeatOnExit( false )
+    , m_DebugWasInForcedState( false )
 {
     // ステートの初期化.
     InitializeStateRefMap();
@@ -191,9 +194,6 @@ void Player::LateUpdate()
     HandleDamageDetection();
     HandleAttackDetection();
     HandleDodgeDetection();
-
-    // 当たり判定を表示.
-    m_upColliders->SetDebugInfo();
 }
 
 void Player::Draw()
@@ -320,7 +320,7 @@ void Player::HandleDamageDetection()
                 // 状態をノックバックに遷移させる
                 ChangeState(PlayerState::eID::KnockBack);
 
-				CameraManager::GetInstance().ShakeCamera(0.5f, 4.5f); // カメラを少し揺らす.
+			CameraManager::GetInstance().ShakeCamera(0.5f, 4.5f); // カメラを少し揺らす.
 
                 // 1フレームに1回.
                 return;
@@ -424,4 +424,25 @@ void Player::HandleParryDetection()
             }
         }
     }
+}
+
+// Debug: 強制ステート設定
+void Player::DebugSetForceState(PlayerState::eID id, bool repeatOnExit)
+{
+    m_DebugForcedState = id;
+    m_DebugRepeatOnExit = repeatOnExit;
+    m_DebugWasInForcedState = false;
+
+    // 即時 Enter を実行
+    if (m_DebugForcedState != PlayerState::eID::None)
+    {
+        ChangeState(m_DebugForcedState);
+    }
+}
+
+void Player::DebugClearForceState() noexcept
+{
+    m_DebugForcedState = PlayerState::eID::None;
+    m_DebugRepeatOnExit = false;
+    m_DebugWasInForcedState = false;
 }
