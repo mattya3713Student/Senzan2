@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "Easing.h"
 #include <type_traits>
 #include <DirectXMath.h>

@@ -14,6 +14,7 @@
 #include "Game/00_Scene/Ex_Test/01_memeu1101/MemeuTestScene.h"
 #include "Game/00_Scene/Ex_Test/02_L/LTestScene.h"
 #include "Game/00_Scene/Ex_Test/03_UIEditor/UIEditor.h"
+#include "Game/00_Scene/Ex_Test/04_AnimationTuning/AnimationTuningScene.h"
 
 #if _DEBUG
 #include "ImGui/CImGuiManager.h"
@@ -38,7 +39,7 @@ SceneManager::~SceneManager()
 void SceneManager::LoadData()
 {
 	// 最初にロードするシーンを環境に応じて決定
-	eList initial_scene = eList::Title;
+	eList initial_scene = eList::AnimationTuning;
 
 	// --- 環境ごとの初期シーン設定 ---
 
@@ -83,6 +84,7 @@ void SceneManager::Update()
 	if (ImGui::Button("Mattya")) { LoadScene(eList::Mattya); }
 	if (ImGui::Button("Memeu")) { LoadScene(eList::Memeu); }
 	if (ImGui::Button("L")) { LoadScene(eList::L); }
+	if (ImGui::Button("AnimationTuning")) { LoadScene(eList::AnimationTuning); }
 
 	ImGui::Separator();
 	if (ImGui::Button("UIEditor")) { LoadScene(eList::UIEditor); }
@@ -143,6 +145,9 @@ void SceneManager::MakeScene(eList Scene)
 			break;
 		case eList::UIEditor:
 			m_pScene = std::make_unique<UIEditor>();
+			break;
+		case eList::AnimationTuning:
+			m_pScene = std::make_unique<AnimationTuningScene>();
 			break;
 #endif // _DEBUG
 		case eList::MAX:

@@ -2,16 +2,14 @@
 #include "System/Singleton/SceneManager/SceneManager.h"
 #include "Game/04_Time/Time.h"
 #include "Game/05_InputDevice/Input.h"
+#include "Game/05_InputDevice/VirtualPad.h"
 #include "Game/04_Time/Time.h"
 #include "System/Singleton/ResourceManager/ResourceManager.h"
 #include "System/GameLoop/Loader.h"
 #include "Graphic/DirectX/DirectX9/DirectX9.h"
 #include "Graphic/DirectX/DirectX11/DirectX11.h"
 
-//ImGui実装のためにインクルードします.
 #include "System/Singleton/ImGui/CImGuiManager.h"
-#include "../../Data/ImGui/Library/imgui.h"
-#include "../../Data/ImGui/Library/imgui_impl_win32.h"
 
 #ifdef _DEBUG
 #include <crtdbg.h>
@@ -57,6 +55,7 @@ HRESULT Main::LoadData()
     
     // ウィンドウハンドルを設定.
     Input::SethWnd(m_hWnd);
+    VirtualPad::GetInstance().SetupDefaultBindings();
     ResourceManager::SethWnd(m_hWnd);
 
     // ロード画面で使用するデータの読み込み.

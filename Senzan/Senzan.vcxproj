@@ -238,7 +238,7 @@
     <ClCompile Include="SourceCode\Game\00_Scene\Ex_Test\01_memeu1101\MemeuTestScene.cpp" />
     <ClCompile Include="SourceCode\Game\00_Scene\Ex_Test\02_L\LTestScene.cpp" />
     <ClCompile Include="SourceCode\Game\00_Scene\Ex_Test\03_UIEditor\UIEditor.cpp" />
-    <ClCompile Include="SourceCode\Game\00_Scene\Ex_Test\10_mattya3713_Parry\MattyaTestScene_Parry.cpp" />
+    <ClCompile Include="SourceCode\Game\00_Scene\Ex_Test\04_AnimationTuning\AnimationTuningScene.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\00_Ground\Ground.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\01_Player\State\Root\00_System\00_Pause\Pause.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\01_Player\State\Root\00_System\01_KnockBack\KnockBack.cpp" />
@@ -338,7 +338,6 @@
     <ClCompile Include="SourceCode\System\GameLoop\Loader.cpp" />
     <ClCompile Include="SourceCode\System\GameLoop\Main.cpp" />
     <ClCompile Include="SourceCode\System\GameLoop\WinMain.cpp" />
-    <ClCompile Include="SourceCode\System\Singleton\BossAttackManager\BossAttackManager.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\Debug\CollisionVisualizer\CollisionVisualizer.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\ImGui\CImGuiManager.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\ResourceManager\EffectManager\EffekseerManager.cpp" />
@@ -367,10 +366,11 @@
     <ClInclude Include="Data\ImGui\Library\imstb_textedit.h" />
     <ClInclude Include="Data\ImGui\Library\imstb_truetype.h" />
     <ClInclude Include="SourceCode\Constant.h" />
-    <ClInclude Include="SourceCode\Game\00_Scene\Ex_Test\10_mattya3713_Parry\MattyaTestScene_Parry.h" />
+    <ClInclude Include="SourceCode\Game\00_Scene\Ex_Test\04_AnimationTuning\AnimationTuningScene.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\Select\Select.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\UIGameMain\UIGameMain.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\04_BackGround\BackGround.h" />
+    <ClInclude Include="SourceCode\Game\03_Collision\00_Core\CollisionSpec.h" />
     <ClInclude Include="SourceCode\Game\02_Camera\LockOnCamera\LockOnCamera.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\00_Core\00_Box\BoxCollider.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\00_Core\01_Capsule\CapsuleCollider.h" />
@@ -479,7 +479,6 @@
     <ClInclude Include="SourceCode\stdafx.h" />
     <ClInclude Include="SourceCode\System\GameLoop\Loader.h" />
     <ClInclude Include="SourceCode\System\GameLoop\Main.h" />
-    <ClInclude Include="SourceCode\System\Singleton\BossAttackManager\BossAttackManager.h" />
     <ClInclude Include="SourceCode\System\Singleton\Debug\CollisionVisualizer\CollisionVisualizer.h" />
     <ClInclude Include="SourceCode\System\Singleton\Debug\Log\DebugLog.h" />
     <ClInclude Include="SourceCode\System\Singleton\ImGui\CImGuiManager.h" />
