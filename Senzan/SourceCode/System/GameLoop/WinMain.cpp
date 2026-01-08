@@ -15,9 +15,9 @@ INT WINAPI WinMain(
 	// ----------------------------------------------------
 	// 【コンソール有効化の追加】
 	// ----------------------------------------------------
-	//AllocConsole();
-	//freopen_s(reinterpret_cast<FILE**>(stdout), "CONOUT$", "w", stdout);
-	//freopen_s(reinterpret_cast<FILE**>(stderr), "CONOUT$", "w", stderr);
+	AllocConsole();
+	freopen_s(reinterpret_cast<FILE**>(stdout), "CONOUT$", "w", stdout);
+	freopen_s(reinterpret_cast<FILE**>(stderr), "CONOUT$", "w", stderr);
 	// ----------------------------------------------------
 #endif
 	// メモリリーク検出
@@ -45,7 +45,7 @@ INT WINAPI WinMain(
 	// ----------------------------------------------------
 	// 【コンソール解放の追加】
 	// ----------------------------------------------------
-	//FreeConsole();
+	FreeConsole();
 	// ----------------------------------------------------
 #endif
 	return 0;

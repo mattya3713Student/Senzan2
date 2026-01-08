@@ -205,8 +205,7 @@ void AttackCombo_0::LateUpdate()
     Combat::LateUpdate();
 
     // 経過時間を加算.
-    float actual_anim_speed = MyMath::IsNearlyEqual(m_pOwner->m_AnimSpeed, 0.0) ? g_DebugAnimSpeed1 : static_cast<float>(m_pOwner->m_AnimSpeed);
-    float delta_time = actual_anim_speed * m_pOwner->GetDelta();
+    float delta_time = m_pOwner->GetDelta();
     m_currentTime += delta_time;
 
     // 移動量の算出.
