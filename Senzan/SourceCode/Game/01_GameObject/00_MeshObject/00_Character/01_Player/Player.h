@@ -28,6 +28,7 @@ class Parry;
 class Dodge;
 class DodgeExecute;
 class JustDodge;
+class Combat; // forward declare Combat so Player can friend it
 }
 
 
@@ -53,6 +54,7 @@ class Player
 	friend PlayerState::AttackCombo_1;
 	friend PlayerState::AttackCombo_2;
 	friend PlayerState::Parry;
+	friend PlayerState::Combat;
 	friend PlayerState::DodgeExecute;
 	friend PlayerState::JustDodge;
 	friend PlayerState::Dodge;
@@ -123,12 +125,12 @@ private:
 protected:
 
 	// 攻撃判定のActive
-	inline void SetAttackColliderActive(bool Active) const noexcept { m_pAttackCollider->SetActive(Active); }
-	inline void SetDamageColliderActive(bool Active) const noexcept { m_pDamageCollider->SetActive(Active); }
-	inline void SetParryColliderActive(bool Active) const noexcept { m_pParryCollider->SetActive(Active); }
+	inline void SetAttackColliderActive(bool Active) const noexcept { if (m_pAttackCollider) m_pAttackCollider->SetActive(Active); }
+	inline void SetDamageColliderActive(bool Active) const noexcept { if (m_pDamageCollider) m_pDamageCollider->SetActive(Active); }
+	inline void SetParryColliderActive(bool Active) const noexcept { if (m_pParryCollider) m_pParryCollider->SetActive(Active); }
 
 protected:
-	std::unique_ptr<PlayerState::Root> m_RootState;	// ステートマシーン.
+	std::unique_ptr<PlayerState::Root> m_RootState; 	// ステートマシーン.
 
 	// IDをキーとし、ステート参照を返すラムダ関数を値とするマップ.
 	using StateRefGetter = std::function<std::reference_wrapper<PlayerStateBase>()>;
@@ -143,9 +145,9 @@ protected:
 
 	DirectX::XMFLOAT3	m_MoveVec; 			// 一時保存の移動ベクトル.
 
-	int					m_Combo; 			// コンボ.
-	float				m_CurrentUltValue; 	// 閃値.
-	float				m_MaxUltValue; 		// max閃値.
+	int				m_Combo; 			// コンボ.
+	float			m_CurrentUltValue; 	// 閃値.
+	float			m_MaxUltValue; 		// max閃値.
 
 	ColliderBase* m_pDamageCollider; 	// 被ダメ判定.
 	ColliderBase* m_pAttackCollider; 	// 攻撃判定.

@@ -13,6 +13,7 @@ static constexpr float CLOSE_RANGE_THRESHOLD = 20.0f;    // Bossまでの距離�
 
 // デバッグ用に値を弄れるように static 変数などで管理（またはクラスメンバに追加）
 static float g_1DebugAnimSpeed0 = 2.0f;
+static float g_1DebugAnimSpeed1 = 2.8f; // LateUpdateでデフォルトとして使うアニメーション速度（デバッグ）
 static float g_1DebugMaxTime = 1.2f;
 static float g_1DebugComboStartTime = 0.7f; // 受付開始（例：踏み込み終わりのタイミング）
 static float g_1DebugComboEndTime = 2.4f; // 受付終了（例：アニメーション終了の少し前）
@@ -23,10 +24,10 @@ AttackCombo_1::AttackCombo_1(Player* owner)
     , m_MoveVec()
     , m_isComboAccepted(false)
 {
-    // デフォルトで2つのウィンドウを用意
-    m_ColliderWindows.clear();
-    m_ColliderWindows.push_back({0.8f, 0.1f, false, false});
-    m_ColliderWindows.push_back({1.5f, 0.1f, false, false});
+    // default collider windows
+    ClearColliderWindows();
+    AddColliderWindow(0.8f, 0.1f);
+    AddColliderWindow(1.5f, 0.1f);
 }
 AttackCombo_1::~AttackCombo_1()
 {
@@ -44,7 +45,6 @@ void AttackCombo_1::Enter()
     m_isComboAccepted = false; // フラグをリセット.
     m_currentTime = 0.0f;      // 時間をリセット.
 
-    m_ActiveWindowCount = 0;
 
     // アニメーション設定.
     m_MaxTime = g_1DebugMaxTime;
@@ -57,11 +57,6 @@ void AttackCombo_1::Enter()
 
     // 当たり判定を無効化（ステート側で自動切替）.
     m_pOwner->SetAttackColliderActive(false);
-
-    // リセット: collider フラグ
-    for (auto &w : m_ColliderWindows) { w.activated = false; w.deactivated = false; }
-    m_HasActivatedCollider = false;
-    m_HasDeactivatedCollider = false;
 
     // 距離算出用座標.
     DirectX::XMFLOAT3 target_pos = m_pOwner->m_TargetPos;
@@ -105,26 +100,8 @@ void AttackCombo_1::Update()
     static bool forceAccept = false;
     ImGui::Checkbox(IMGUI_JP("強制でコンボ受付する"), &forceAccept);
 
-    // Collider ウィンドウリスト表示・編集
-    ImGui::Separator();
-    ImGui::Text(IMGUI_JP("コライダー ウィンドウ設定"));
-
-    // リスト表示
-    for (size_t i = 0; i < m_ColliderWindows.size(); ++i)
-    {
-        auto &w = m_ColliderWindows[i];
-        ImGui::PushID((int)i);
-        ImGui::DragFloat(IMGUI_JP("開始時刻 (秒)"), &w.start, 0.01f, 0.0f, m_MaxTime);
-        ImGui::SameLine();
-        ImGui::DragFloat(IMGUI_JP("継続時間 (秒)"), &w.duration, 0.01f, 0.0f, m_MaxTime);
-        ImGui::SameLine();
-        if (ImGui::Button(IMGUI_JP("削除"))) { m_ColliderWindows.erase(m_ColliderWindows.begin() + i); ImGui::PopID(); break; }
-        ImGui::PopID();
-    }
-
-    if (ImGui::Button(IMGUI_JP("ウィンドウを追加"))) { m_ColliderWindows.push_back({0.0f, 0.1f, false, false}); }
-
-    ImGui::Separator();
+    // Collider ウィンドウリスト表示・編集 via Combat base
+    RenderColliderWindowsUI();
 
     // ロジックを実行するか制御
     if (!isStop1)
@@ -143,28 +120,8 @@ void AttackCombo_1::Update()
             }
         }
 
-        // コライダー自動判定（ステート経過時間）
-        // 各ウィンドウごとに一度だけ有効化/無効化命令を出す（start 到達で true、start+duration 到達で false）
-        for (auto &w : m_ColliderWindows)
-        {
-            // 有効化トリガー: start を越えたら一度だけ true を出す
-            if (!w.activated && m_currentTime >= w.start)
-            {
-                w.activated = true;
-                w.deactivated = false;
-                m_isAttackColliderEnabled = true;
-                m_pOwner->SetAttackColliderActive(true);
-            }
-
-            // 無効化トリガー: start+duration を越えたら一度だけ false を出す
-            if (!w.deactivated && m_currentTime >= (w.start + w.duration))
-            {
-                w.deactivated = true;
-                w.activated = false;
-                m_isAttackColliderEnabled = false;
-                m_pOwner->SetAttackColliderActive(false);
-            }
-        }
+        // Process collider windows using Combat helper
+        ProcessColliderWindows(m_currentTime);
 
         // --- ステート遷移判定 ---
         // Attack_1 の終了を判定する
