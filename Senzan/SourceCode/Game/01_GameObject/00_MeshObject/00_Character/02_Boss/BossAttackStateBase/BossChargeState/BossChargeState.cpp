@@ -1,4 +1,4 @@
-#include "BossChargeState.h"
+ï»¿#include "BossChargeState.h"
 
 #include "00_MeshObject/00_Character/02_Boss/Boss.h"
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossChargeSlashState/BossChargeSlashState.h"
@@ -16,9 +16,9 @@ BossChargeState::~BossChargeState()
 
 void BossChargeState::Enter()
 {
-	// “–‚½‚è”»’è‚ð—LŒø‰».
+	// å½“ãŸã‚Šåˆ¤å®šã‚’æœ‰åŠ¹åŒ–.
 	m_pOwner->SetAttackColliderActive(true);
-	m_pOwner->SetAnimSpeed(25.0);
+	m_pOwner->SetAnimSpeed(1.0);
 	m_pOwner->ChangeAnim(Boss::enBossAnim::Charge);
 }
 
@@ -39,7 +39,7 @@ void BossChargeState::Draw()
 }
 
 void BossChargeState::Exit()
-{	// “–‚½‚è”»’è‚ð–³Œø‰».
+{	// å½“ãŸã‚Šåˆ¤å®šã‚’ç„¡åŠ¹åŒ–.
 	m_pOwner->SetAttackColliderActive(false);
 }
 

@@ -1,4 +1,4 @@
-#include "BossShoutState.h"
+ï»¿#include "BossShoutState.h"
 
 #include "Game//04_Time//Time.h"
 #include "Game//01_GameObject//00_MeshObject//00_Character//02_Boss//Boss.h"
@@ -29,10 +29,10 @@ void BossShoutState::Enter()
         shoutCol->SetActive(true);
     }
 
-    // “–‚½‚è”»’è‚ð—LŒø‰».
+    // å½“ãŸã‚Šåˆ¤å®šã‚’æœ‰åŠ¹åŒ–.
     m_pOwner->SetAttackColliderActive(true);
 
-    //ƒ{ƒX‚ÌŒü‚«‚ðÝ’è.
+    //ãƒœã‚¹ã®å‘ãã‚’è¨­å®š.
     const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
     DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&BossPosF);
 
@@ -40,20 +40,20 @@ void BossShoutState::Enter()
     DirectX::XMVECTOR PlayerPosXM = DirectX::XMLoadFloat3(&PlayerPosF);
 
     DirectX::XMVECTOR Direction = DirectX::XMVectorSubtract(PlayerPosXM, BossPosXM);
-    //X,Z•½–Ê‚Ì•ûŒü.
+    //X,Zå¹³é¢ã®æ–¹å‘.
     Direction = DirectX::XMVectorSetY(Direction, 0.0f);
 
-    //YŽ²‰ñ“]Šp“x‚ðŒvŽZ‚µAƒ{ƒX‚ðƒvƒŒƒCƒ„[‚ÉŒü‚©‚¹‚é.
+    //Yè»¸å›žè»¢è§’åº¦ã‚’è¨ˆç®—ã—ã€ãƒœã‚¹ã‚’ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã«å‘ã‹ã›ã‚‹.
     float dx = DirectX::XMVectorGetX(Direction);
     float dz = DirectX::XMVectorGetZ(Direction);
     float angle_radian = std::atan2f(-dx, -dz);
     m_pOwner->SetRotationY(angle_radian);
 
-    //‰ŠúˆÊ’u‚ð•Û‘¶.
+    //åˆæœŸä½ç½®ã‚’ä¿å­˜.
     DirectX::XMStoreFloat3(&m_StartPos, BossPosXM);
 
-    //ƒAƒjƒ[ƒVƒ‡ƒ“‘¬“x.
-    m_pOwner->SetAnimSpeed(15.0);
+    //ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³é€Ÿåº¦.
+    m_pOwner->SetAnimSpeed(1.5);
     m_pOwner->ChangeAnim(Boss::enBossAnim::LaserCharge);
 }
 
@@ -68,7 +68,7 @@ void BossShoutState::Update()
     case BossShoutState::enShout::Shout:
         if (m_pOwner->IsAnimEnd(Boss::enBossAnim::LaserCharge))
         {
-            m_pOwner->SetAnimSpeed(10.0);
+            m_pOwner->SetAnimSpeed(1.0);
             m_pOwner->ChangeAnim(Boss::enBossAnim::Laser);
             m_List = enShout::ShoutTime;
         }
@@ -77,7 +77,7 @@ void BossShoutState::Update()
     case BossShoutState::enShout::ShoutTime:
         if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Laser))
         {
-            m_pOwner->SetAnimSpeed(15.0);
+            m_pOwner->SetAnimSpeed(1.5);
             m_pOwner->ChangeAnim(Boss::enBossAnim::LaserEnd);
             m_List = enShout::ShoutToIdol;
 
@@ -109,7 +109,7 @@ void BossShoutState::Draw()
 }
 
 void BossShoutState::Exit()
-{	// “–‚½‚è”»’è‚ð–³Œø‰».
+{	// å½“ãŸã‚Šåˆ¤å®šã‚’ç„¡åŠ¹åŒ–.
     m_pOwner->SetAttackColliderActive(false);
   
 }
