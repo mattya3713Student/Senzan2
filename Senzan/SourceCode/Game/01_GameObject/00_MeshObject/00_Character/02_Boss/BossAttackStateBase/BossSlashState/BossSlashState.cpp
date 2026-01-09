@@ -72,7 +72,7 @@ void BossSlashState::Enter()
 	DirectX::XMStoreFloat3(&m_StartPos, BossPosXM);
 
 	//アニメーションの速度.
-	m_pOwner->SetAnimSpeed(30.0);
+	m_pOwner->SetAnimSpeed(3.5);
 	//斬るアニメーションの再生.
 	m_pOwner->ChangeAnim(Boss::enBossAnim::Slash);
 
