@@ -9,22 +9,12 @@
 constexpr eCollisionGroup PRESS_GROUP = eCollisionGroup::Press;
 
 Character::Character()
-	: MeshObject()
-	, m_upColliders()
+	: MeshObject    ()
+	, m_upColliders ()
+    , m_MaxHP       (100.f)
+    , m_HP          (100.f)
 {
     m_upColliders = std::make_unique<CompositeCollider>();
-
-    // 押し戻しの追加.
-    std::unique_ptr<CapsuleCollider> pressCollider = std::make_unique<CapsuleCollider>(m_spTransform);
-
-    pressCollider->SetColor(Color::eColor::Cyan);
-    pressCollider->SetHeight(3.0f);
-    pressCollider->SetRadius(1.0f);
-    pressCollider->SetPositionOffset(0.f, 1.5f, 0.f);
-    pressCollider->SetMyMask(PRESS_GROUP);
-    pressCollider->SetTarGetTargetMask(eCollisionGroup::Press);
-
-    m_upColliders->AddCollider(std::move(pressCollider));
 }
 
 Character::~Character()
@@ -38,7 +28,6 @@ void Character::Update()
 
 void Character::LateUpdate()
 {
-
     HandleCollisionResponse();
 }
 
@@ -82,7 +71,7 @@ void Character::HandleCollisionResponse()
             if (info.PenetrationDepth > 0.0f)
             {
                 DirectX::XMVECTOR v_normal = DirectX::XMLoadFloat3(&info.Normal);
-                DirectX::XMVECTOR v_correction = DirectX::XMVectorScale(v_normal, info.PenetrationDepth);
+                DirectX::XMVECTOR v_correction = DirectX::XMVectorScale(v_normal, -info.PenetrationDepth);
                 // このゲームにy座標の概念はないのでyは切り捨て.
                 v_correction = DirectX::XMVectorSetY(v_correction, 0.0f);
                 DirectX::XMFLOAT3 correction = {};
@@ -91,5 +80,35 @@ void Character::HandleCollisionResponse()
                 AddPosition(correction);
             }
         }
+    }
+}
+
+void Character::ApplyDamage(float damageAmount)
+{
+    // すでに死亡している場合は何もしない
+    if (0.f >= m_HP) return;
+
+    // 無敵時間中ならダメージを受け付けない (必要であれば)
+    // if (m_InvincibleTimer > 0.0f) return;
+
+    // HPを減らす
+    m_HP -= damageAmount;
+
+    // HPが0以下になったら死亡処理
+    if (m_HP <= 0.0f)
+    {
+        m_HP = 0.0f;
+
+        // 死亡ステートへ（まだ作っていなければログやフラグのみでもOK）
+        // ChangeState(PlayerState::eID::Die); 
+        Log::GetInstance().Info("Player", "Player is Dead.");
+    }
+    else
+    {
+        // 被ダメージ時の共通処理（SE再生や一瞬だけ赤く光らせるフラグなど）
+        // PlaySound(SE_PlayerDamage);
+
+        // 無敵時間の設定 (例: 1.0秒間無敵)
+        // m_InvincibleTimer = 1.0f; 
     }
 }

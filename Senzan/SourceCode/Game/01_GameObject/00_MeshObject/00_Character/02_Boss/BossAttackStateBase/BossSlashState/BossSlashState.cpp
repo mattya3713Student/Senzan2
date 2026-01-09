@@ -18,6 +18,8 @@ constexpr static float AnimSlashToIdolTime	= 30.0f;
 BossSlashState::BossSlashState(Boss* owner)
 	: BossAttackStateBase(owner)
 
+	, m_StartPos {}
+
 	, m_pIdol()
 
 	, m_pTransform(std::make_shared<Transform>())
@@ -36,6 +38,16 @@ BossSlashState::~BossSlashState()
 
 void BossSlashState::Enter()
 {
+	// 当たり判定を有効化.
+	m_pOwner->SetAttackColliderActive(true);
+
+	auto* attackColl = m_pOwner->m_pAttackCollider;
+	if (attackColl) {
+		attackColl->SetRadius(15.0f);      
+		attackColl->SetHeight(40.0f);
+		attackColl->SetPositionOffset(0.0f, 10.0f, -30.0f);
+	}
+
 	m_currentTimer = 0.0f;
 	m_Attacktime = 0.0f;
 
@@ -59,10 +71,8 @@ void BossSlashState::Enter()
 	//初期位置を保存.
 	DirectX::XMStoreFloat3(&m_StartPos, BossPosXM);
 
-
-
 	//アニメーションの速度.
-	m_pOwner->SetAnimSpeed(0.06);
+	m_pOwner->SetAnimSpeed(30.0);
 	//斬るアニメーションの再生.
 	m_pOwner->ChangeAnim(Boss::enBossAnim::Slash);
 
@@ -71,24 +81,40 @@ void BossSlashState::Enter()
 
 void BossSlashState::Update()
 {
+	// Bossクラスから、あらかじめ設定しておいた斬撃用判定を取得
+	auto* pSlashCollider = m_pOwner->GetSlashCollider();
+
 	switch (m_List)
 	{
 	case BossSlashState::enList::none:
+		if (pSlashCollider) 
+		{
+			pSlashCollider->SetActive(true);
+		}
+
 		m_List = enList::SlashAttack;
 		break;
+
 	case BossSlashState::enList::SlashAttack:
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Slash))
 		{
+			if (pSlashCollider)
+			{
+				pSlashCollider->SetActive(false);
+			}
+
 			m_pOwner->ChangeAnim(Boss::enBossAnim::SlashToIdol);
 			m_List = enList::SlashIdol;
 		}
 		break;
+
 	case BossSlashState::enList::SlashIdol:
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::SlashToIdol))
 		{
 			m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
 		}
 		break;
+
 	default:
 		break;
 	}
@@ -103,7 +129,8 @@ void BossSlashState::Draw()
 }
 
 void BossSlashState::Exit()
-{
+{	// 当たり判定を無効化.
+	m_pOwner->SetAttackColliderActive(false);
 }
 
 void BossSlashState::BossAttack()

@@ -25,7 +25,8 @@ enum class eList
 	Mattya, 
 	Memeu, 	
 	L, 	
-
+	AnimationTuning,
+	
 	UIEditor,
 #endif // _DEBUG
 
@@ -34,7 +35,7 @@ enum class eList
 
 class SceneManager :
 	public Singleton<SceneManager>
-{ 
+{
 	friend class Singleton<SceneManager>;
 private:
 	SceneManager();
@@ -49,15 +50,35 @@ public:
 
 	// シーンの読み込み.
 	static void LoadScene(eList Scene);
+
+private:
+#if _DEBUG
+	const char* GetSceneName(eList scene) {
+		switch (scene) {
+		case eList::Title:    return "Title";
+		case eList::GameMain: return "GameMain";
+		case eList::GameOver: return "GameOver";
+		case eList::Ending:   return "Ending";
+		case eList::Mattya:  return "MattyaTest";
+		case eList::Memeu:   return "MemeuTest";
+		case eList::L:       return "LTest";
+		case eList::AnimationTuning: return "AnimationTuning";
+		case eList::UIEditor: return "UIEditor";
+		default: return "Unknown";
+		}
+	}
+#endif // _DEBUG
+
 private:
 	// シーンを作成.
 	void MakeScene(eList Scene);
 
 private:
-	std::unique_ptr<SceneBase>		m_pScene;
+	std::unique_ptr<SceneBase> 		m_pScene;
 	Buffer* m_pBuffer;		// 次シーンへインスタンスを入れるバッファー.
 
 #if _DEBUG
+	eList m_CurrentSceneID;
 	eList m_DebugFirstScene;	// デバッグ時に最初に起動させるシーン.
 #endif // _DEBUG
 };

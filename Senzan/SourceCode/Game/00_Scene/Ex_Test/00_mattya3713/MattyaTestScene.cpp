@@ -1,7 +1,8 @@
-#include "MattyaTestScene.h"
+ï»¿#include "MattyaTestScene.h"
 
 #include "Game/05_InputDevice/Input.h"
 
+#include "Game//01_GameObject//02_UIObject/UIGameMain/UIGameMain.h"
 #include "Game/02_Camera/CameraBase.h"
 #include "Game/02_Camera/ThirdPersonCamera/PlayerThirdPersonCamera.h"
 #include "Game/02_Camera/LockOnCamera/LockOnCamera.h"
@@ -10,9 +11,9 @@
 #include "Graphic/Light/DirectionLight/DirectionLight.h"
 #include "Graphic/Light/LightManager.h"
 
-#include "Game/01_GameObject/00_MeshObject/00_Character/00_Ground/Ground.h"	// ’n–ÊStatic.
-#include "Game/01_GameObject/00_MeshObject/00_Character/01_Player/Player.h"	// ƒvƒŒƒCƒ„[.
-#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/Boss.h"	// ƒ{ƒX.
+#include "Game/01_GameObject/00_MeshObject/00_Character/00_Ground/Ground.h"	// åœ°é¢Static.
+#include "Game/01_GameObject/00_MeshObject/00_Character/01_Player/Player.h"	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼.
+#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/Boss.h"	// ãƒœã‚¹.
 
 #include "Game/03_Collision/00_Core/ColliderBase.h"	
 #include "Game/03_Collision/00_Core/01_Capsule/CapsuleCollider.h"
@@ -25,7 +26,9 @@
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
 #include "System/Singleton/ImGui/CImGuiManager.h"
 
-// ƒRƒ“ƒXƒgƒ‰ƒNƒ^.
+#include "SceneManager/SceneManager.h"
+
+// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿.
 MattyaTestScene::MattyaTestScene()
 	: SceneBase()
 	, m_pCamera()
@@ -35,38 +38,41 @@ MattyaTestScene::MattyaTestScene()
 	, m_upPlayer(std::make_unique<Player>())
 	, m_upBoss(std::make_unique<Boss>())
 	, m_upGround(std::make_unique<Ground>())
+	, m_upUI(std::make_shared<UIGameMain>())
 {
 	Initialize();
 }
 
-// ƒfƒXƒgƒ‰ƒNƒ^.
+// ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿.
 MattyaTestScene::~MattyaTestScene()
 {
+	CollisionDetector::GetInstance().UnregisterCollider(m_TestAttackCollision.get());
 }
 
 void MattyaTestScene::Initialize()
 {
 	m_pCamera = std::make_shared<LockOnCamera>(std::ref(*m_upPlayer), std::ref(*m_upBoss));
-	// ƒJƒƒ‰İ’è.
+	// ã‚«ãƒ¡ãƒ©è¨­å®š.
 	m_pCamera->SetPosition(DirectX::XMFLOAT3(0.0f, 5.0f, -50.0f));
 	m_pCamera->SetLook(DirectX::XMFLOAT3(0.0f, 2.0f, 5.0f));
 	CameraManager::GetInstance().SetCamera(m_pCamera);
 
-	// ƒ‰ƒCƒgİ’è.
+	// ãƒ©ã‚¤ãƒˆè¨­å®š.
 	m_pLight->SetDirection(DirectX::XMFLOAT3(1.5f, 1.f, -1.f));
 	LightManager::AttachDirectionLight(m_pLight);
 
 	m_upGround = std::make_unique<Ground>();
 
-	m_TestPressCollision->SetColor(Color::eColor::Cyan);
-	m_TestPressCollision->SetHeight(60.0f);
-	m_TestPressCollision->SetRadius(20.0f);
-	m_TestPressCollision->SetPositionOffset(0.f,1.5f,0.f);
-	m_TestPressCollision->SetMyMask(eCollisionGroup::Press);
-	m_TestPressCollision->SetTarGetTargetMask(eCollisionGroup::Press);
-	CollisionDetector::GetInstance().RegisterCollider(*m_TestPressCollision);
+	//m_TestPressCollision->SetColor(Color::eColor::Cyan);
+	//m_TestPressCollision->SetHeight(60.0f);
+	//m_TestPressCollision->SetRadius(20.0f);
+	//m_TestPressCollision->SetPositionOffset(0.f,1.5f,0.f);
+	//m_TestPressCollision->SetMyMask(eCollisionGroup::Press);
+	//m_TestPressCollision->SetTarGetTargetMask(eCollisionGroup::Press);
+	//CollisionDetector::GetInstance().RegisterCollider(*m_TestPressCollision);
 
 	m_TestAttackCollision->SetColor(Color::eColor::Red);
+	m_TestAttackCollision->SetAttackAmount(50.0f);
 	m_TestAttackCollision->SetHeight(2.0f);
 	m_TestAttackCollision->SetRadius(0.5f);
 	m_TestAttackCollision->SetPositionOffset(0.f,1.5f,50.f);
@@ -85,16 +91,16 @@ void MattyaTestScene::Create()
 
 void MattyaTestScene::Update()
 {
-	// ƒEƒBƒ“ƒhƒE‚Æ‚µ‚Ä“Æ—§‚³‚¹‚é
+	// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã¨ã—ã¦ç‹¬ç«‹ã•ã›ã‚‹
 	ImGui::Begin("Performance Monitor");
 
-	// 1. Šî–{“I‚ÈFPS•\¦
+	// 1. åŸºæœ¬çš„ãªFPSè¡¨ç¤º
 	float fps = ImGui::GetIO().Framerate;
 	float ms = 1000.0f / fps;
 
 	ImGui::Text("Average: %.1f FPS (%.3f ms/frame)", fps, ms);
 
-	// ó‘Ô‚É‰‚¶‚½Œx•\¦
+	// çŠ¶æ…‹ã«å¿œã˜ãŸè­¦å‘Šè¡¨ç¤º
 	if (fps < 50.0f) {
 		ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Warning: Low FPS!");
 	}
@@ -110,6 +116,13 @@ void MattyaTestScene::Update()
 	m_upPlayer->SetTargetPos(m_TestAttackCollision.get()->GetPosition());
 	m_upPlayer->Update();
 	m_upBoss->Update();
+
+	m_upUI->SetBossHP(m_upBoss->GetMaxHP(), m_upBoss->GetHP());
+	m_upUI->SetCombo(m_upPlayer->GetCombo());
+	m_upUI->SetPlayerHP(m_upPlayer->GetMaxHP(), m_upPlayer->GetHP());
+	m_upUI->SetPlayerUlt(m_upPlayer->GetMaxUltValue(), m_upPlayer->GetUltValue());
+
+	m_upUI->Update();
 }
 
 void MattyaTestScene::LateUpdate()
@@ -117,24 +130,18 @@ void MattyaTestScene::LateUpdate()
 	m_upPlayer->LateUpdate();
 	m_upBoss->LateUpdate();
 	CameraManager::GetInstance().LateUpdate();
+	
+	if (m_upPlayer->GetHP() <= 0.f)
+	{
+		SceneManager::GetInstance().LoadScene(eList::GameOver);
+		return;
+	}
 
-	static float s_TimeCounter = 0.0f;
-	float deltaTime = Time::GetInstance().GetDeltaTime();
-	s_TimeCounter += deltaTime;
-	const float PERIOD = 200.0f;		// üŠú.
-	const float AMPLITUDE = 3.5f;	// —h‚ê•.
-	float sine_y = AMPLITUDE * sinf(DirectX::XM_2PI * (s_TimeCounter / PERIOD));
-	const float BASE_OFFSET_X = 0.0f;
-	const float BASE_OFFSET_Y = 1.5f;
-	const float BASE_OFFSET_Z = 10.0f;
-	float final_offset_y = BASE_OFFSET_Y + sine_y;
-
-	// ƒIƒtƒZƒbƒgˆÊ’u‚ğİ’è
-	m_TestAttackCollision->SetPositionOffset(
-		BASE_OFFSET_X,
-		final_offset_y,
-		BASE_OFFSET_Z
-	);
+	if (m_upBoss->GetHP() <= 0.f)
+	{
+		SceneManager::GetInstance().LoadScene(eList::Ending);
+		return;
+	}
 
 	CollisionDetector::GetInstance().ExecuteCollisionDetection();
 }
@@ -154,12 +161,11 @@ void MattyaTestScene::Draw()
 
 	m_TestPressCollision->SetDebugInfo();
 
+	m_upUI->Draw();
 	CollisionVisualizer::GetInstance().Draw();
 }
 
 HRESULT MattyaTestScene::LoadData()
 {
-	// ‚±‚±‚ÅÀÛ‚Ìƒ[ƒhˆ—‚ğs‚¤‚©ACreate()‚ÉW–ñ‚³‚ê‚Ä‚¢‚é‚Ì‚Å‚ ‚ê‚ÎE_NOTIMPL‚Ì‚Ü‚Ü‚Å‚à‚æ‚¢
-	// Œ»İ‚ÌGameMain‚Å‚ÍCreate()‚Å‚Ù‚Æ‚ñ‚Ç‚ÌInit/Loadˆ—‚ªs‚í‚ê‚Ä‚¢‚é‚æ‚¤‚Å‚·
-	return S_OK; // ¬Œ÷‚ğ•Ô‚·
+	return S_OK; // æˆåŠŸã‚’è¿”ã™
 }

@@ -14,6 +14,7 @@
 #include "Game/00_Scene/Ex_Test/01_memeu1101/MemeuTestScene.h"
 #include "Game/00_Scene/Ex_Test/02_L/LTestScene.h"
 #include "Game/00_Scene/Ex_Test/03_UIEditor/UIEditor.h"
+#include "Game/00_Scene/Ex_Test/04_AnimationTuning/AnimationTuningScene.h"
 
 #if _DEBUG
 #include "ImGui/CImGuiManager.h"
@@ -38,10 +39,11 @@ SceneManager::~SceneManager()
 void SceneManager::LoadData()
 {
 	// 最初にロードするシーンを環境に応じて決定
-	eList initial_scene;
+	eList initial_scene = eList::AnimationTuning;
 
 	// --- 環境ごとの初期シーン設定 ---
 
+#if _DEBUG
 #ifdef MATTYA_PC
 	initial_scene = eList::Mattya;
 #elif defined(MEMEU_PC)
@@ -51,13 +53,14 @@ void SceneManager::LoadData()
 #elif _DEBUG
 	// 上記の環境マクロが定義されておらず、デバッグビルドの場合
 	// 通常は開発中のメインシーンから開始
-	initial_scene = eList::GameMain;
+	//initial_scene = eList::GameMain;
 
 #else
 	// リリースビルドまたは不明な環境の場合、タイトルから開始
 	initial_scene = eList::Title;
 
 #endif 
+#endif // _DEBUG.
 
 	LoadScene(initial_scene);
 }
@@ -70,6 +73,8 @@ void SceneManager::Update()
 	
 #if _DEBUG
 	ImGui::Begin("Scene");
+	ImGui::Text(pI.GetSceneName(pI.m_CurrentSceneID));
+
 	if (ImGui::Button("Title")) { LoadScene(eList::Title); }
 	if (ImGui::Button("GameMain")) { LoadScene(eList::GameMain); }
 	if (ImGui::Button("Ending")) { LoadScene(eList::Ending); }
@@ -79,6 +84,7 @@ void SceneManager::Update()
 	if (ImGui::Button("Mattya")) { LoadScene(eList::Mattya); }
 	if (ImGui::Button("Memeu")) { LoadScene(eList::Memeu); }
 	if (ImGui::Button("L")) { LoadScene(eList::L); }
+	if (ImGui::Button("AnimationTuning")) { LoadScene(eList::AnimationTuning); }
 
 	ImGui::Separator();
 	if (ImGui::Button("UIEditor")) { LoadScene(eList::UIEditor); }
@@ -106,6 +112,10 @@ void SceneManager::LoadScene(eList Scene)
 //シーン作成.
 void SceneManager::MakeScene(eList Scene)
 {
+#if _DEBUG
+	Time::GetInstance().SetWorldTimeScale(1.0f);
+	m_CurrentSceneID = Scene;
+#endif
 	switch (Scene)
 	{
 		case eList::Title:
@@ -135,6 +145,9 @@ void SceneManager::MakeScene(eList Scene)
 			break;
 		case eList::UIEditor:
 			m_pScene = std::make_unique<UIEditor>();
+			break;
+		case eList::AnimationTuning:
+			m_pScene = std::make_unique<AnimationTuningScene>();
 			break;
 #endif // _DEBUG
 		case eList::MAX:

@@ -1,35 +1,35 @@
-#pragma once
+ï»¿#pragma once
 
 #include "Game/01_GameObject/00_MeshObject/00_Character/Character.h"
-#include "System/Singleton/BossAttackManager/BossAttackManager.h"	
+#include "System/Utility/Transform/Transform.h"
 
 #include "System/Utility/StateMachine/StateMachine.h"
 #include "Game\\01_GameObject\\00_MeshObject\\00_Character\01_Player\Player.h"
 
-////ƒXƒe[ƒgƒ}ƒVƒ“ƒNƒ‰ƒX‚Ì‘O•ûéŒ¾.
+////ã‚¹ãƒ†ãƒ¼ãƒˆãƒã‚·ãƒ³ã‚¯ãƒ©ã‚¹ã®å‰æ–¹å®£è¨€.
 //template<typename FSM_Owner> class StateMachine;
 
 //=====================================================================
-// ƒ{ƒXƒNƒ‰ƒX‚ÉƒvƒŒƒCƒ„[‚ÌˆÊ’u‚ğ“üè‚³‚¹‚é‚½‚ß‚É‚±‚±‚É‘O•ûéŒ¾‚ğ‘‚­.
-// UpdateŠÖ”‚Ì’†‚ÉƒvƒŒƒCƒ„[‚Ìƒ|ƒWƒVƒ‡ƒ“‚ğİ’è‚·‚é.
+// ãƒœã‚¹ã‚¯ãƒ©ã‚¹ã«ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ä½ç½®ã‚’å…¥æ‰‹ã•ã›ã‚‹ãŸã‚ã«ã“ã“ã«å‰æ–¹å®£è¨€ã‚’æ›¸ã.
+// Updateé–¢æ•°ã®ä¸­ã«ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ãƒã‚¸ã‚·ãƒ§ãƒ³ã‚’è¨­å®šã™ã‚‹.
 //=====================================================================
 
-class SlashState;		//aŒ‚ƒXƒe[ƒgƒNƒ‰ƒX.
+class SlashState;		//æ–¬æ’ƒã‚¹ãƒ†ãƒ¼ãƒˆã‚¯ãƒ©ã‚¹.
 
-class SlashCharge;		//ƒ`ƒƒ[ƒWaŒ‚ƒNƒ‰ƒX.
-class ChargeSlashState;	//ƒ`ƒƒ[ƒWaŒ‚ƒXƒe[ƒgƒNƒ‰ƒX.
+class SlashCharge;		//ãƒãƒ£ãƒ¼ã‚¸æ–¬æ’ƒã‚¯ãƒ©ã‚¹.
+class ChargeSlashState;	//ãƒãƒ£ãƒ¼ã‚¸æ–¬æ’ƒã‚¹ãƒ†ãƒ¼ãƒˆã‚¯ãƒ©ã‚¹.
 
-class Shout;			//‹©‚ÑƒNƒ‰ƒX.
-class ShoutState;		//‹©‚ÑUŒ‚ƒXƒe[ƒgƒNƒ‰ƒX.
+class Shout;			//å«ã³ã‚¯ãƒ©ã‚¹.
+class ShoutState;		//å«ã³æ”»æ’ƒã‚¹ãƒ†ãƒ¼ãƒˆã‚¯ãƒ©ã‚¹.
 
-//ƒ{ƒX‚Ìs“®ŠÖŒW‚ğ‘‚­.
-class BossIdolState;		//‘Ò‹@ó‘Ô.
-class BossMoveState;		//¶‰EˆÚ“®“®ó‘Ô.
-class BossAttackStateBase;	//UŒ‚ƒx[ƒXƒNƒ‰ƒX.
-class BossStompState;		//“¥‚İ‚Â‚¯UŒ‚
-class BossSlashState;		//a‚éUŒ‚.
-class BossChargeSlashState;	//—­‚ßUŒ‚.
-class BossShoutState;		//‹©‚ÑUŒ‚.
+//ãƒœã‚¹ã®è¡Œå‹•é–¢ä¿‚ã‚’æ›¸ã.
+class BossIdolState;		//å¾…æ©ŸçŠ¶æ…‹.
+class BossMoveState;		//å·¦å³ç§»å‹•å‹•çŠ¶æ…‹.
+class BossAttackStateBase;	//æ”»æ’ƒãƒ™ãƒ¼ã‚¹ã‚¯ãƒ©ã‚¹.
+class BossStompState;		//è¸ã¿ã¤ã‘æ”»æ’ƒ
+class BossSlashState;		//æ–¬ã‚‹æ”»æ’ƒ.
+class BossChargeSlashState;	//æºœã‚æ”»æ’ƒ.
+class BossShoutState;		//å«ã³æ”»æ’ƒ.
 class BossSpecialState;
 class BossLaserState;
 class BossDeadState;
@@ -41,7 +41,7 @@ class BossChargeState;
 class SkinMesh;
 
 /***********************************************************************
-*	ƒ{ƒXƒLƒƒƒ‰ƒNƒ‰ƒX.
+*	ãƒœã‚¹ã‚­ãƒ£ãƒ©ã‚¯ãƒ©ã‚¹.
 **/
 class Boss
 	: public Character
@@ -58,42 +58,42 @@ class Boss
 	friend BossChargeState;
 	friend BossThrowingState;
 
-	//ƒ{ƒX‚ÌƒAƒjƒ[ƒVƒ‡ƒ“‚Ì—ñ‹“.
+	//ãƒœã‚¹ã®ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®åˆ—æŒ™.
 	enum class enBossAnim : byte
 	{
-		Idol = 0,		//‘Ò‹@.
+		Idol = 0,		//å¾…æ©Ÿ.
 
-		RunToIdol,		//‘–‚è‚©‚ç‘Ò‹@.
-		Run,			//‘–‚è’†.
-		IdolToRun,		//‘Ò‹@‚©‚ç‘–‚è.
+		RunToIdol,		//èµ°ã‚Šã‹ã‚‰å¾…æ©Ÿ.
+		Run,			//èµ°ã‚Šä¸­.
+		IdolToRun,		//å¾…æ©Ÿã‹ã‚‰èµ°ã‚Š.
 
-		Hit,			//”í’e.
+		Hit,			//è¢«å¼¾.
 
-		ChargeToIdol,	//‚½‚ßUŒ‚‚©‚ç‘Ò‹@.
-		ChargeAttack,	//‚½‚ßUŒ‚’†.
-		Charge,			//‚½‚ß‚Ä‚¢‚é.
+		ChargeToIdol,	//ãŸã‚æ”»æ’ƒã‹ã‚‰å¾…æ©Ÿ.
+		ChargeAttack,	//ãŸã‚æ”»æ’ƒä¸­.
+		Charge,			//ãŸã‚ã¦ã„ã‚‹.
 
-		RightMove,		//‰E‚Éi.
-		LeftMove,		//¶‚Éi.
+		RightMove,		//å³ã«é€².
+		LeftMove,		//å·¦ã«é€².
 
-		SpecialToIdol,	//“ÁêUŒ‚‚Æ“¥‚İ‚Â‚¯I—¹‚É‘Ò‹@.
-		Special_1,		//“ÁêUŒ‚‚Æ“¥‚İ‚Â‚¯’†.
-		Special_0,		//”ò‚Ô.
+		SpecialToIdol,	//ç‰¹æ®Šæ”»æ’ƒã¨è¸ã¿ã¤ã‘çµ‚äº†æ™‚ã«å¾…æ©Ÿ.
+		Special_1,		//ç‰¹æ®Šæ”»æ’ƒã¨è¸ã¿ã¤ã‘ä¸­.
+		Special_0,		//é£›ã¶.
 
-		FlinchToIdol,	//‹¯‚İ‚©‚ç‘Ò‹@.
-		Flinch,			//‹¯‚İ’†.
-		FlinchParis,	//‹¯‚İ(ƒpƒŠƒB).
+		FlinchToIdol,	//æ€¯ã¿ã‹ã‚‰å¾…æ©Ÿ.
+		Flinch,			//æ€¯ã¿ä¸­.
+		FlinchParis,	//æ€¯ã¿(ãƒ‘ãƒªã‚£).
 
-		Dead,			//€–S.
+		Dead,			//æ­»äº¡.
 
-		LaserEnd,		//ƒŒ[ƒU[‚©‚ç‘Ò‹@.
-		Laser,			//ƒŒ[ƒU[’†.
-		LaserCharge,	//ƒŒ[ƒU[‚Ì‚½‚ß.
+		LaserEnd,		//ãƒ¬ãƒ¼ã‚¶ãƒ¼ã‹ã‚‰å¾…æ©Ÿ.
+		Laser,			//ãƒ¬ãƒ¼ã‚¶ãƒ¼ä¸­.
+		LaserCharge,	//ãƒ¬ãƒ¼ã‚¶ãƒ¼ã®ãŸã‚.
 
-		SlashToIdol,	//a‚éUŒ‚‚©‚ç‘Ò‹@.
-		Slash,			//a‚éUŒ‚.
+		SlashToIdol,	//æ–¬ã‚‹æ”»æ’ƒã‹ã‚‰å¾…æ©Ÿ.
+		Slash,			//æ–¬ã‚‹æ”»æ’ƒ.
 
-		none,			//‰½‚à‚µ‚È‚¢.
+		none,			//ä½•ã‚‚ã—ãªã„.
 	};
 
 public:
@@ -101,16 +101,17 @@ public:
 	~Boss() override;
 
 	void Update() override;
+	void LateUpdate() override;
 	void Draw() override;
 
 	void Init();
 
-	//ƒXƒe[ƒgƒNƒ‰ƒX‚©‚çStateMachine‚ÉƒAƒNƒZƒX‚·‚é.
+	//ã‚¹ãƒ†ãƒ¼ãƒˆã‚¯ãƒ©ã‚¹ã‹ã‚‰StateMachineã«ã‚¢ã‚¯ã‚»ã‚¹ã™ã‚‹.
 	StateMachine<Boss>* GetStateMachine();
-	//ƒXƒe[ƒgƒNƒ‰ƒX‚©‚çUŒ‚ƒIƒuƒWƒFƒNƒg‚ÉƒAƒNƒZƒX‚·‚é.
+	//ã‚¹ãƒ†ãƒ¼ãƒˆã‚¯ãƒ©ã‚¹ã‹ã‚‰æ”»æ’ƒã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã«ã‚¢ã‚¯ã‚»ã‚¹ã™ã‚‹.
 	//Slash* GetSlash();
 	//SlashCharge* GetChargeSlsh();
-	//ƒAƒjƒ[ƒVƒ‡ƒ“Ä¶‚É•K—v‚É‚È‚éGetŠÖ”‚É‚È‚Á‚Ä‚¢‚é.
+	//ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³å†ç”Ÿæ™‚ã«å¿…è¦ã«ãªã‚‹Geté–¢æ•°ã«ãªã£ã¦ã„ã‚‹.
 	LPD3DXANIMATIONCONTROLLER GetAnimCtrl() const;
 
 	float boss_x = 0.f;
@@ -121,27 +122,44 @@ public:
 
 
 public:
-	//ƒvƒŒƒCƒ„[‚ÌˆÊ’u‚ğæ“¾‚·‚é‚½‚ß‚É‚±‚±‚ÉSetPlayer()‚ğì¬‚·‚é.
+	//ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ä½ç½®ã‚’å–å¾—ã™ã‚‹ãŸã‚ã«ã“ã“ã«SetPlayer()ã‚’ä½œæˆã™ã‚‹.
 	void SetTargetPos(const DirectX::XMFLOAT3 Player_Pos);
 
 	DirectX::XMFLOAT3 GetTargetPos() { return m_PlayerPos; }
 
 protected:
 
-	// Õ“Ë_”íƒ_ƒ[ƒW.
+	// è¡çª_è¢«ãƒ€ãƒ¡ãƒ¼ã‚¸.
 	void HandleDamageDetection() override;
-	// Õ“Ë_UŒ‚”»’è.
+	// è¡çª_æ”»æ’ƒåˆ¤å®š.
 	void HandleAttackDetection() override;
-	// Õ“Ë_‰ñ”ğ.
+	// è¡çª_å›é¿.
 	void HandleDodgeDetection() override;
 
+	// è¡çª_å›é¿.
+	void HandleParryDetection();
 
+
+	// æ”»æ’ƒåˆ¤å®šã®Active
+	inline void SetAttackColliderActive(bool Active) const noexcept { m_pAttackCollider->SetActive(Active); }
+
+	//å½“ãŸã‚Šåˆ¤å®šã‚’å–å¾—ã™ã‚‹.
+	//é€šå¸¸æ”»æ’ƒ.
+	ColliderBase* GetSlashCollider() const;
+	//ã‚¸ãƒ£ãƒ³ãƒ—æ”»æ’ƒ.
+	ColliderBase* GetStompCollider() const;
+	//å«ã³æ”»æ’ƒ.
+	ColliderBase* GetShoutCollider() const;
+	//é€šå¸¸æ”»æ’ƒ(ãƒœãƒ¼ãƒ³ã®ä½ç½®è¨­å®š).
+	void UpdateSlashColliderTransform();
+	//ã‚¸ãƒ£ãƒ³ãƒ—(ãƒœãƒ¼ãƒ³ã®ä½ç½®è¨­å®š).
+	void UpdateStompColliderTransform();
 protected:
-	//ƒXƒe[ƒgƒ}ƒVƒ“‚Ìƒƒ“ƒo•Ï”.
+	//ã‚¹ãƒ†ãƒ¼ãƒˆãƒã‚·ãƒ³ã®ãƒ¡ãƒ³ãƒå¤‰æ•°.
 	std::unique_ptr<StateMachine<Boss>> m_State;
 
-	DirectX::XMFLOAT3					m_PlayerPos;
-	DirectX::XMFLOAT3					m_PlayerVelocity;
+	DirectX::XMFLOAT3				m_PlayerPos;
+	DirectX::XMFLOAT3				m_PlayerVelocity;
 
 	float m_MoveSpped = 0.0f;
 
@@ -150,9 +168,19 @@ protected:
 
 	D3DXVECTOR3 m_vCurrentMoveVelocity;
 
+	ColliderBase* m_pAttackCollider; 	// æ”»æ’ƒåˆ¤å®š.
 
 	float deleta_time;
 
 	float m_HitPoint;
 
+	//å½“ãŸã‚Šåˆ¤å®šã®ãƒ¡ãƒ³ãƒå¤‰æ•°.
+	ColliderBase* m_pSlashCollider;
+	ColliderBase* m_pStompCollider;
+	ColliderBase* m_pShoutCollider;
+
+	// å¤–éƒ¨ä¾›çµ¦ç”¨ã®ãƒ¯ãƒ¼ãƒ«ãƒ‰Transformã‚­ãƒ£ãƒƒã‚·ãƒ¥ï¼ˆã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ãŒæ¯ãƒ•ãƒ¬ãƒ¼ãƒ ãƒ¡ãƒƒã‚·ãƒ¥æ¤œç´¢ã—ãªã„ã‚ˆã†ã«ã™ã‚‹ï¼‰
+	Transform m_SlashBoneWorldTransform;
+	Transform m_StompBoneWorldTransform;
 };
+

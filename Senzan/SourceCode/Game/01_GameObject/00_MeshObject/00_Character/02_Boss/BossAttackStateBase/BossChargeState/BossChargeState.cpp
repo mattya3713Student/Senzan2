@@ -16,7 +16,9 @@ BossChargeState::~BossChargeState()
 
 void BossChargeState::Enter()
 {
-	m_pOwner->SetAnimSpeed(0.03);
+	// “–‚½‚è”»’è‚ð—LŒø‰».
+	m_pOwner->SetAttackColliderActive(true);
+	m_pOwner->SetAnimSpeed(25.0);
 	m_pOwner->ChangeAnim(Boss::enBossAnim::Charge);
 }
 
@@ -37,7 +39,8 @@ void BossChargeState::Draw()
 }
 
 void BossChargeState::Exit()
-{
+{	// “–‚½‚è”»’è‚ð–³Œø‰».
+	m_pOwner->SetAttackColliderActive(false);
 }
 
 void BossChargeState::BossAttack()

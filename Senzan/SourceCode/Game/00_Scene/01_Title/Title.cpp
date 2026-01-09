@@ -15,6 +15,7 @@ Title::Title()
 
 Title::~Title()
 {
+	SoundManager::GetInstance().AllStop();
 }
 
 void Title::Initialize()
@@ -23,6 +24,8 @@ void Title::Initialize()
 
 void Title::Create()
 {
+	SoundManager::GetInstance().Play("Sunlight—zŽË‚µ", true);
+	SoundManager::GetInstance().SetVolume("Sunlight—zŽË‚µ", 8000);
 }
 
 void Title::Update()
@@ -37,6 +40,7 @@ void Title::Update()
 	{
 		if (m_pUI->GetSelected() == m_pUI->Items::Start) {
 			SceneManager::LoadScene(eList::GameMain);
+			return;
 		}
 		else if (m_pUI->GetSelected() == m_pUI->Items::End) {
 			DestroyWindow(ResourceManager::GethWnd());
