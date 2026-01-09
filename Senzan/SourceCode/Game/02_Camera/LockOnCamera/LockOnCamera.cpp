@@ -4,7 +4,7 @@
 #include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/Boss.h"
 #include "Game/04_Time/Time.h"
 
-static constexpr float FOLLOW_SPEED = 0.004f;
+static constexpr float FOLLOW_SPEED = 3.15f;
 static constexpr float HEIGHT_OFFSET = 5.0f;
 static constexpr float LOOK_OFFSET = 4.5f;
 

@@ -1,14 +1,21 @@
 ﻿#include "Combat.h"
 
 #include "Game/01_GameObject/00_MeshObject/00_Character/01_Player/Player.h"
-#include "System/Singleton/ImGui/CImGuiManager.h"
 #include "Game/05_InputDevice/VirtualPad.h"
+#include "System/Singleton/ImGui/CImGuiManager.h"
+#include "Utility/FileManager/FileManager.h"
 
 namespace PlayerState {
 Combat::Combat(Player* owner)
-	: Action		(owner)
-	, m_MaxTime		()
-	, m_currentTime	()
+	: Action		    ( owner )
+    , m_MoveVec         ( 0.0f, 0.0f, 0.0f )
+    , m_Distance        ( 0.0f )
+    , m_AnimSpeed       ( 0.0f )
+    , m_MaxTime         ( 0.0f )
+    , m_currentTime     ( 0.0f )
+    , m_ComboStartTime  ( 0.0f )
+    , m_ComboEndTime    ( 0.0f )
+    , m_IsComboAccepted ( false )
 {
 }
 
@@ -23,8 +30,11 @@ void Combat::Enter()
 
 	// clear collider windows by default
 	m_ColliderWindows.clear();
-	m_isAttackColliderEnabled = false;
-	m_ActiveWindowCount = 0;
+	// Ensure attack collider is disabled on enter
+	if (m_pOwner) m_pOwner->SetAttackColliderActive(false);
+
+	// Allow derived states to load their settings on enter
+	LoadSettings();
 }
 
 void Combat::Update()
@@ -35,6 +45,9 @@ void Combat::Update()
 void Combat::LateUpdate()
 {
 	Action::LateUpdate();
+
+	// Drive collider windows based on the state's elapsed time.
+	ProcessColliderWindows(m_currentTime);
 }
 
 void Combat::Draw()
@@ -44,53 +57,76 @@ void Combat::Draw()
 
 void Combat::Exit()
 {
+	// On exit, make sure collider is disabled and windows cleared
+	if (m_pOwner) m_pOwner->SetAttackColliderActive(false);
+	ClearColliderWindows();
+
 	Action::Exit();
+}
+
+void Combat::LoadSettings()
+{
+    const std::string fileName = GetSettingsFileName();
+    if (fileName == "") return;
+
+    try {
+        std::filesystem::path filePath = std::filesystem::current_path() / "Data" / "Json" / "Player" / "AttackCombo" / fileName;
+
+        if (std::filesystem::exists(filePath)) {
+            json j = FileManager::JsonLoad(filePath);
+
+            // 基本パラメータの読み込み
+            if (j.contains("m_AnimSpeed"))      m_AnimSpeed = j["m_AnimSpeed"].get<float>();
+            if (j.contains("m_MaxTime"))        m_MaxTime = j["m_MaxTime"].get<float>();
+            if (j.contains("m_ComboStartTime")) m_ComboStartTime = j["m_ComboStartTime"].get<float>();
+            if (j.contains("m_ComboEndTime"))   m_ComboEndTime = j["m_ComboEndTime"].get<float>();
+
+            // コライダーウィンドウの読み込み
+            if (j.contains("ColliderWindows") && j["ColliderWindows"].is_array()) {
+                m_ColliderWindows.clear();
+                for (const auto& entry : j["ColliderWindows"]) {
+                    if (entry.contains("start") && entry.contains("duration")) {
+                        AddColliderWindow(entry["start"].get<float>(), entry["duration"].get<float>());
+                    }
+                }
+            }
+            Log::GetInstance().Info("", std::string(fileName) + " loaded successfully.");
+        }
+    }
+    catch (const std::exception& e) {
+        Log::GetInstance().Info("", "Load failed: " + std::string(e.what()));
+    }
 }
 
 void Combat::ClearColliderWindows()
 {
 	m_ColliderWindows.clear();
-	m_ActiveWindowCount = 0;
-	m_isAttackColliderEnabled = false;
+	if (m_pOwner) m_pOwner->SetAttackColliderActive(false);
 }
 
 void Combat::AddColliderWindow(float start, float duration)
 {
-	m_ColliderWindows.push_back({start, duration, false, false});
+	// normalize incoming values
+	if (start < 0.0f) start = 0.0f;
+	if (duration < 0.0f) duration = 0.0f;
+	m_ColliderWindows.push_back({start, duration});
 }
 
 void Combat::ProcessColliderWindows(float currentTime)
 {
-	// count-based activation: increment when window enters, decrement when it exits
-	for (auto &w : m_ColliderWindows)
-	{
-		// 有効化トリガー: start を越えたら一度だけカウント増加
-		if (!w.activated && currentTime >= w.start)
-		{
-			w.activated = true;
-			w.deactivated = false;
-			++m_ActiveWindowCount;
-			if (m_ActiveWindowCount == 1) {
-				m_isAttackColliderEnabled = true;
-				m_pOwner->SetAttackColliderActive(true);
-			}
-		}
-
-		// 無効化トリガー: start+duration を越えたら一度だけカウント減少
-		if (!w.deactivated && currentTime >= (w.start + w.duration))
-		{
-			w.deactivated = true;
-			if (w.activated) {
-				w.activated = false;
-				--m_ActiveWindowCount;
-				if (m_ActiveWindowCount <= 0) {
-					m_ActiveWindowCount = 0;
-					m_isAttackColliderEnabled = false;
-					m_pOwner->SetAttackColliderActive(false);
-				}
-			}
-		}
-	}
+    for(ColliderWindow var : m_ColliderWindows)
+    {
+        if (var.IsAct) {
+            if (currentTime >= var.Start + var.Duration) {
+                m_pOwner->SetAttackColliderActive(false);
+            }
+        }
+        else if (currentTime >= var.Start)
+        {
+            var.IsAct = true;
+            m_pOwner->SetAttackColliderActive(true);
+        }
+    } 
 }
 
 void Combat::RenderColliderWindowsUI(const char* title)
@@ -102,15 +138,21 @@ void Combat::RenderColliderWindowsUI(const char* title)
 	{
 		auto &w = m_ColliderWindows[i];
 		ImGui::PushID((int)i);
-		ImGui::DragFloat("開始時刻 (秒)", &w.start, 0.01f, 0.0f, m_MaxTime);
+		ImGui::DragFloat(IMGUI_JP("開始時刻 (秒)"), &w.Start, 0.01f, 0.0f, m_MaxTime);
 		ImGui::SameLine();
-		ImGui::DragFloat("継続時間 (秒)", &w.duration, 0.01f, 0.0f, m_MaxTime);
+		ImGui::DragFloat(IMGUI_JP("継続時間 (秒)"), &w.Duration, 0.01f, 0.0f, m_MaxTime);
 		ImGui::SameLine();
-		if (ImGui::Button("削除")) { m_ColliderWindows.erase(m_ColliderWindows.begin() + i); ImGui::PopID(); break; }
+		if (ImGui::Button(IMGUI_JP("削除"))) { m_ColliderWindows.erase(m_ColliderWindows.begin() + i); ImGui::PopID(); break; }
 		ImGui::PopID();
 	}
 
-	if (ImGui::Button("ウィンドウを追加")) { m_ColliderWindows.push_back({0.0f, 0.1f, false, false}); }
+	if (ImGui::Button(IMGUI_JP("ウィンドウを追加"))) { m_ColliderWindows.push_back({0.0f, 0.1f}); }
+
+	// Provide a convenience button to re-enter the current state (calls derived Enter)
+	if (ImGui::Button(IMGUI_JP("リセットして再実行"))) {
+		// Call Enter on this state instance (virtual -> derived override will be invoked)
+		this->Enter();
+	}
 }
 
 } // PlayerState.

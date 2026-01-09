@@ -1,0 +1,12 @@
+{
+  "ColliderWindows": [
+    {
+      "duration": 0.10000000149011612,
+      "start": 0.800000011920929
+    }
+  ],
+  "m_AnimSpeed": 5.0,
+  "m_ComboEndTime": 2.0,
+  "m_ComboStartTime": 0.30000001192092896,
+  "m_MaxTime": 0.699999988079071
+}
