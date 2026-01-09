@@ -53,7 +53,7 @@ void BossStompState::Enter()
 	m_pOwner->SetRotationY(angle_radian);
 
 	//溜めアニメーション開始.
-	m_pOwner->SetAnimSpeed(14.0);
+	m_pOwner->SetAnimSpeed(2.0);
 	m_pOwner->ChangeAnim(Boss::enBossAnim::Special_0);
 
 }

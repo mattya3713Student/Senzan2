@@ -1,8 +1,8 @@
-#include "BossDeadState.h"
+ï»¿#include "BossDeadState.h"
 
 #include "00_MeshObject//00_Character//02_Boss//Boss.h"
 
-static constexpr double AnimSpeed = 15.0;
+static constexpr double AnimSpeed = 3.0;
 
 BossDeadState::BossDeadState(Boss* owner)
 	: StateBase<Boss>(owner)
@@ -13,17 +13,17 @@ BossDeadState::~BossDeadState()
 {
 }
 
-//‘JˆÚ‚Éˆê‰ñ‚¾‚¯“ü‚éŠÖ”.
+//é·ç§»æ™‚ã«ä¸€å›ã ã‘å…¥ã‚‹é–¢æ•°.
 void BossDeadState::Enter()
 {
 	m_pOwner->SetIsLoop(false);
 	m_pOwner->SetAnimSpeed(AnimSpeed);
-	//€–SƒAƒjƒƒVƒ‡ƒ“‚ğÄ¶.
+	//æ­»äº¡ã‚¢ãƒ‹ãƒ¡ã‚·ãƒ§ãƒ³ã‚’å†ç”Ÿ.
 	m_pOwner->ChangeAnim(Boss::enBossAnim::Dead);
 
 	if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Dead))
 	{
-		//ƒQ[ƒ€ƒNƒŠƒA‚Ö‘JˆÚ‚³‚¹‚é
+		//ã‚²ãƒ¼ãƒ ã‚¯ãƒªã‚¢ã¸é·ç§»ã•ã›ã‚‹
 		return;
 	}
 }
