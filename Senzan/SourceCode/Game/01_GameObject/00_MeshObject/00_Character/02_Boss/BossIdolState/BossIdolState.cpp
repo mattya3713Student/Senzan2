@@ -7,7 +7,7 @@
 
 BossIdolState::BossIdolState(Boss* owner)
 	: StateBase<Boss>(owner)
-	, m_AnimSpeed	(100.0f)
+	, m_AnimSpeed	(25.0f)
 {
 }
 
