@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include "CollisionInfo.h"
 
+struct Transform; // forward declaration to avoid include
+
 class CollisionDetector;
 class BoxCollider;
 class CapsuleCollider;
@@ -16,10 +18,11 @@ enum class eCollisionGroup : uint32_t
 	Player_Damage	= 1 << 1,
 	Player_Dodge	= 1 << 2,
 	Player_JustDodge= 1 << 3,
-	Enemy_Attack	= 1 << 4,
-	Enemy_PreAttack = 1 << 5,
-	Enemy_Damage	= 1 << 6,
-	Press			= 1 << 7,
+	Player_Parry	= 1 << 4,
+	Enemy_Attack	= 1 << 5,
+	Enemy_PreAttack = 1 << 6,
+	Enemy_Damage	= 1 << 7,
+	Press			= 1 << 8,
 
 	_Max = 0xFFFFFFFF,
 };
@@ -53,7 +56,7 @@ public:
 public:
 	ColliderBase();
 	ColliderBase(std::weak_ptr<const Transform> parentTransform);
-	virtual ~ColliderBase();	
+	virtual ~ColliderBase();
 
 	virtual void Update() = 0;
 
@@ -90,6 +93,9 @@ public:
 	inline void SetColor(DirectX::XMFLOAT4 NewColor) noexcept { m_Color = NewColor; }
 	inline void SetColor(float NewR, float NewG, float NewB, float NewA) noexcept { m_Color = DirectX::XMFLOAT4(NewR, NewG, NewB, NewA); }
 
+	void SetAttackAmount(float Amount)noexcept { m_AttackAmount = Amount; }
+	float GetAttackAmount() const noexcept { return m_AttackAmount; }
+
 	// 衝突情報を追加する.
 	inline void AddCollisionInfo(const CollisionInfo& info) noexcept { m_CollisionEvents.push_back(info); }
 
@@ -115,9 +121,11 @@ public:
 		return A_collides_with_B && B_collides_with_A;
 	}
 
-
 	// 他のColliderとの衝突.
 	virtual CollisionInfo CheckCollision(const ColliderBase& other) const = 0;
+
+	// 外部から座標供給ポインタを設定（毎フレームの検索を避けるため）。
+	inline void SetExternalTransformPointer(const Transform* p) noexcept { m_pExternalTransform = p; }
 
 protected:
 	// 形状ごとの衝突処理.
@@ -128,8 +136,9 @@ protected:
 protected:
 
 	std::weak_ptr<const Transform> m_wpTransform;	// 持ち主のトランスフォーム.
-	DirectX::XMFLOAT3	m_PositionOffset;			// オフセット位置.
-	bool				m_IsActive;					// アクティブか否か.
+	DirectX::XMFLOAT3	m_PositionOffset;		// オフセット位置.
+	bool				m_IsActive; 				// アクティブか否か.
+	float				m_AttackAmount; 			// 攻撃力.
 
 	// コリジョンフィルター用.
 	eCollisionGroup m_MyMask = eCollisionGroup::_Max;		// 自身が所属するグループ.
@@ -138,7 +147,9 @@ protected:
 	// 検出された衝突情報のリスト.
 	std::vector<CollisionInfo> m_CollisionEvents;
 
-#if _DEBUG
+	// 外部供給のTransformポインタ（あれば GetPosition はこれを返す）。
+	const Transform* m_pExternalTransform = nullptr;
+
 public:
 
 	//------------デバッグ描画用-----------.
@@ -146,14 +157,27 @@ public:
 	virtual void SetDebugInfo() = 0;
 
 protected:
-	DirectX::XMFLOAT4	m_Color;					// 表示色.
-#endif // _DEBUG.
+	DirectX::XMFLOAT4	m_Color; 					// 表示色.
 
 };
 
 // 座標を取得する.
 inline const DirectX::XMFLOAT3 ColliderBase::GetPosition() const noexcept
 {
+	// 外部供給Transformが設定されていればそれを使う（ワールド座標）
+	if (m_pExternalTransform)
+	{
+		// 外部Transformはワールド座標を表す想定。オフセットを加算して戻す。
+		DirectX::XMVECTOR v_position = DirectX::XMLoadFloat3(&m_pExternalTransform->Position);
+		DirectX::XMVECTOR v_offset = DirectX::XMLoadFloat3(&m_PositionOffset);
+
+		DirectX::XMVECTOR v_result_pos = DirectX::XMVectorAdd(v_position, v_offset);
+
+		DirectX::XMFLOAT3 result_pos = {};
+		DirectX::XMStoreFloat3(&result_pos, v_result_pos);
+		return result_pos;
+	}
+
 	if (auto spTransform = m_wpTransform.lock())
 	{
 		DirectX::XMVECTOR v_position = DirectX::XMLoadFloat3(&spTransform->Position);

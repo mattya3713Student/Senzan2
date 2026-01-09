@@ -8,14 +8,18 @@ GameOver::GameOver()
 	: SceneBase		(  )
 	, m_pUI(std::make_shared<UIGameOver>())
 {
+	Initialize();
 }
 
 GameOver::~GameOver()
 {
+	SoundManager::GetInstance().AllStop();
 }
 
 void GameOver::Initialize()
 {
+	SoundManager::GetInstance().Play("•Â‚´‚µ‚½S", true);
+	SoundManager::GetInstance().SetVolume("•Â‚´‚µ‚½S", 9000);
 }
 
 void GameOver::Create()
@@ -34,9 +38,11 @@ void GameOver::Update()
 	{
 		if (m_pUI->GetSelected() == m_pUI->Items::Continue) {
 			SceneManager::LoadScene(eList::GameMain);
+			return;
 		}
 		else if (m_pUI->GetSelected() == m_pUI->Items::End) {
 			SceneManager::LoadScene(eList::Title);
+			return;
 		}
 	}
 }

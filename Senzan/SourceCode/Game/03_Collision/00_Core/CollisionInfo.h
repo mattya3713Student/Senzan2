@@ -16,6 +16,9 @@ struct CollisionInfo
 	// 接触点.
 	DirectX::XMFLOAT3 ContactPoint = {};
 
+	// 攻撃力.
+	float AttackAmount = 0.0f;
+
 	// 衝突に関わったコライダーへのポインタ.
 	const ColliderBase* ColliderA = nullptr;
 	const ColliderBase* ColliderB = nullptr;

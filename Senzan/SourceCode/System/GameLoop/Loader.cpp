@@ -64,8 +64,8 @@ void Loader::StartLoading()
 {
     // スレッドに関数を渡して非同期で読み込み開始.
     m_IsLoadResult.emplace_back(std::async(std::launch::async, &Loader::LoadGraphicsAssets, this));
-//    m_IsLoadResult.emplace_back(std::async(std::launch::async, &Loader::LoadSounds , this));
-//    m_IsLoadResult.emplace_back(std::async(std::launch::async, &Loader::LoadEffects, this));
+    m_IsLoadResult.emplace_back(std::async(std::launch::async, &Loader::LoadSounds , this));
+    m_IsLoadResult.emplace_back(std::async(std::launch::async, &Loader::LoadEffects, this));
 }
 
 //-------------------------------------------------------------------.
@@ -92,12 +92,12 @@ bool Loader::LoadGraphicsAssets()
 
 bool Loader::LoadSounds()
 {
-    return true; //ResourceManager::LoadSounds();
+    return ResourceManager::LoadSounds();
 }
 
 //-------------------------------------------------------------------.
 
 bool Loader::LoadEffects()
 {
-    return true; //ResourceManager::LoadEffects();
+    return ResourceManager::LoadEffects();
 }

@@ -1,11 +1,11 @@
-#pragma once
+ï»¿#pragma once
 #include "../Combat.h"
 
 class Player;
 
 /**************************************************
-*	ƒvƒŒƒCƒ„[‚ÌUŒ‚“ñ’i–Ú‚ÌƒXƒe[ƒg(”h¶).
-*	’S“–:•£˜e –¢—ˆ.
+*	ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®æ”»æ’ƒäºŒæ®µç›®ã®ã‚¹ãƒ†ãƒ¼ãƒˆ(æ´¾ç”Ÿ).
+*	æ‹…å½“:æ·µè„‡ æœªæ¥.
 **/
 
 namespace PlayerState {
@@ -15,7 +15,7 @@ public:
     AttackCombo_1(Player* owner);
     ~AttackCombo_1();
 
-    // ID‚Ìæ“¾.
+    // IDã®å–å¾—.
     constexpr PlayerState::eID GetStateID() const override;
 
     void Enter() override;
@@ -25,7 +25,8 @@ public:
     void Exit() override;
 
 private:
-    DirectX::XMFLOAT3 m_MoveVec;        // ˆÚ“®•ûŒü.
-    bool              m_isComboAccepted;// ƒRƒ“ƒ{ó•tƒtƒ‰ƒO.
+    DirectX::XMFLOAT3 m_MoveVec;        // ç§»å‹•æ–¹å‘.
+    bool              m_isComboAccepted;// ã‚³ãƒ³ãƒœå—ä»˜ãƒ•ãƒ©ã‚°.
 };
 }
+

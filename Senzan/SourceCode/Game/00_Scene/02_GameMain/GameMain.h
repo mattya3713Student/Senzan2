@@ -8,6 +8,7 @@ class MeshBase;
 class Boss;
 class CameraBase;
 class DirectionLight;
+class UIGameMain;
 
 #include <vector>
 
@@ -33,12 +34,14 @@ public:
 
 private:
 
-	std::shared_ptr<CameraBase>			m_pCamera;			// カメラ.
-	std::shared_ptr<DirectionLight>		m_pLight;			// ライト
+	std::shared_ptr<CameraBase>			m_spCamera;			// カメラ.
+	std::shared_ptr<DirectionLight>		m_spLight;			// ライト
 
-	std::unique_ptr<Ground>		m_pGround;
+	std::unique_ptr<Ground>		m_upGround;
 	
 	//一時的な表示用.
-	std::unique_ptr<Boss>		m_pBoss;
-	std::unique_ptr<Player>		m_pPlayer;
+	std::unique_ptr<Boss>		m_upBoss;
+	std::unique_ptr<Player>		m_upPlayer;
+
+	std::shared_ptr<UIGameMain>	m_upUI;
 };

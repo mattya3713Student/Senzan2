@@ -1,7 +1,14 @@
-#pragma once
+﻿#pragma once
 #include "Game/05_InputDevice/Input.h"
 #include "System/Singleton/SingletonTemplate.h"
 
+/**********************************************************************************
+* @author    : 淵脇 未来.
+* @date      : 2025/10/5.
+* @brief     : 仮想パッド入力ラッパークラス.
+*             キーボード/マウス/コントローラ等の入力を抽象化して
+*             ゲーム内のアクションへマッピングする機能を提供します。
+**********************************************************************************/
 class VirtualPad final 
     : public Singleton<VirtualPad>
 {
@@ -11,7 +18,7 @@ private:
 
 public:
 
-    // ���̃Q�[���̗��U�A�N�V����.
+    // ゲーム内アクション列挙.
     enum class eGameAction
     {
         None,
@@ -19,20 +26,21 @@ public:
         MoveBackward,
         MoveRight,
         MoveLeft,
-        Jump,
+        Cancel,
         Attack,
         Parry,
         Dodge,
         Pause,
         SpecialAttack,
 
+        // 軸入力用コンポーネント
         Move_Axis_X,
         Move_Axis_Y,
         Camera_X,
         Camera_Y,
     };
 
-    // ���̃Q�[���̕������A�N�V����.
+    // 軸入力の種類.
     enum class eGameAxisAction
     {
         None,
@@ -40,14 +48,15 @@ public:
         Move,
     };
 
-    // ���̓^�C�v.
+    // アクションのタイプ（ボタンか軸か）。
     enum class eActionType
     {
         Button,
         Axis
     };
 
-    // ���̓\�[�X���`.
+    // 入力ソースを表す構造体。
+    // キーボード/マウス/コントローラ等の情報を保持します。
     struct InputSource
     {
         enum class eSourceType
@@ -61,11 +70,11 @@ public:
             ControllerTriggerAxis
         };
 
-        eSourceType Type;
-        int KeyCode = 0;
-        XInput::Key ControllerKey = XInput::Key::None;
+        eSourceType Type;                        // 入力ソースの種類
+        int KeyCode = 0;                         // キーコード（キーボード用）
+        XInput::Key ControllerKey = XInput::Key::None; // コントローラボタン
 
-        XInput::StickState StickState = XInput::StickState::None;
+        XInput::StickState StickState = XInput::StickState::None; // スティック状態
 
         enum class eStickTarget
         {
@@ -76,52 +85,73 @@ public:
             RightTrigger
         };
 
-        eStickTarget StickTarget = eStickTarget::None;
+        eStickTarget StickTarget = eStickTarget::None; // スティックの対象
         
-        float Scale = 1.0f;
+        float Scale = 1.0f;                       // 入力スケール（軸系で使用）
     };
 
-    // �A�N�V�������Ƃ̃o�C���f�B���O��`
+    // アクションにバインドされた入力群を表す構造体。
     struct ActionBinding
     {
-        eActionType Type = eActionType::Button;
-        std::vector<InputSource> Sources;
+        eActionType Type = eActionType::Button;   // アクションタイプ
+        std::vector<InputSource> Sources;         // バインドされた入力ソース一覧
     };
 
 public:
-    // �Q�[�����̃A�N�V�����Ǝ��ۂ̓��͂��֘A�t����}�b�v
-    // eGameAction �͗��U�A�N�V�����Ǝ��R���|�[�l���g�̗����̃L�[�Ƃ��Ďg�p����܂��B
+    // アクション -> バインディングのマップ.
+    // 外部から直接参照する必要があるためメンバとして公開しています。
     std::map<eGameAction, ActionBinding> m_KeyMap;
 
 public:
     ~VirtualPad() override = default;
 
-    // �����ꑱ���Ă��邩.
+    /**********************************************************
+    * @brief 指定アクションが押された瞬間かを返す.
+    * @param action 判定するゲームアクション
+    **********************************************************/
     bool IsActionPress(eGameAction action) const;
 
-    // �����ꂽ�u�Ԃ�.
+    /**********************************************************
+    * @brief 指定アクションが押されているかを返す（入力バッファ対応）.
+    * @param action 判定するゲームアクション
+    * @param inputBufferTime バッファ時間（秒）
+    **********************************************************/
     bool IsActionDown(eGameAction action, float inputBufferTime = 0.0f) const;
 
-    // �����ꂽ�u�Ԃ�. 
+    /**********************************************************
+    * @brief 指定アクションが離された瞬間かを返す.
+    **********************************************************/
     bool IsActionUp(eGameAction action) const;
 
-    //  �������擾.
+    /**********************************************************
+    * @brief 軸入力の取得.
+    * @param axisType 取得する軸タイプ
+    * @return 2D軸値（X, Y）
+    **********************************************************/
     DirectX::XMFLOAT2 GetAxisInput(eGameAxisAction axisType) const;
 
-    // �L�[�o�C���h�̏�����.
+    /**********************************************************
+    * @brief デフォルトの入力バインディングをセットアップする.
+    **********************************************************/
     void SetupDefaultBindings();
 
 private:
-    // ��ԃ`�F�b�N�̒��ۉ��w���p�[.
+    /**********************************************************
+    * @brief アクションの状態をチェックする汎用ヘルパー.
+    * @tparam KeyCheckFunc キー判定関数オブジェクト
+    * @tparam ButtonCheckFunc ボタン判定関数オブジェクト
+    **********************************************************/
     template <typename KeyCheckFunc, typename ButtonCheckFunc>
     bool checkActionState(eGameAction action,
         KeyCheckFunc&& keyCheck,
         ButtonCheckFunc&& buttonCheck) const;
 
-    // ���A�N�V�����̍��v�l���擾.
+    /**********************************************************
+    * @brief 単一コンポーネント（例: Move_Axis_X 等）の軸値を取得する.
+    **********************************************************/
     float GetSingleAxisValue(eGameAction componentAction) const;
 
 private:
-    // TODO: �o�b�t�@�@�\������
+    // TODO: コヨーテタイム等の入力補正の実装予定.
     float m_CoyoteTimeTimer = 0.0f;
 };

@@ -69,7 +69,7 @@ public:
 		return m_pCurrentState != nullptr;
 	}
 
-private:
+public:
 	std::shared_ptr<StateBase<FSM_Owner>> m_pCurrentState;
 	FSM_Owner* m_pOwner;
 };

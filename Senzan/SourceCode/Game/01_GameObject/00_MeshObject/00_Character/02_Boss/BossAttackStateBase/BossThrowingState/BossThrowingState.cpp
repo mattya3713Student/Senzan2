@@ -1,10 +1,8 @@
-#include "BossThrowingState.h"
-
+ï»¿#include "BossThrowingState.h"
 #include "00_MeshObject/00_Character/02_Boss/Boss.h"
 #include "00_MeshObject/00_Character/02_Boss/BossIdolState/BossIdolState.h"
 #include "..//04_Time/Time.h"
-
-#include "00_MeshObject/03_SnowBall/SnowBall.h"
+#include "00_MeshObject/00_Character/03_SnowBall/SnowBall.h"
 
 BossThrowingState::BossThrowingState(Boss* owner)
 	: BossAttackStateBase(owner)
@@ -12,7 +10,6 @@ BossThrowingState::BossThrowingState(Boss* owner)
 	, m_TransitionTimer(60.0f)
 	, m_List(enThrowing::None)
 	, m_Parry(enParry::none)
-
 	, m_pBall(std::make_unique<SnowBall>())
 {
 }
@@ -23,72 +20,68 @@ BossThrowingState::~BossThrowingState()
 
 void BossThrowingState::Enter()
 {
-	//ƒ{ƒX‚ÌŒü‚«‚ðÝ’è.
-	const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
-	DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&BossPosF);
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®æ–¹ã‚’å‘ã
+	DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
+	DirectX::XMFLOAT3 PlayerPosF = m_pOwner->m_PlayerPos;
 
-	const DirectX::XMFLOAT3 PlayerPosF = m_pOwner->m_PlayerPos;
-	DirectX::XMVECTOR PlayerPosXM = DirectX::XMLoadFloat3(&PlayerPosF);
-
-	DirectX::XMVECTOR Direction = DirectX::XMVectorSubtract(PlayerPosXM, BossPosXM);
-	//X,Z•½–Ê‚Ì•ûŒü.
-	Direction = DirectX::XMVectorSetY(Direction, 0.0f);
-
-	//YŽ²‰ñ“]Šp“x‚ðŒvŽZ‚µAƒ{ƒX‚ðƒvƒŒƒCƒ„[‚ÉŒü‚©‚¹‚é.
-	float dx = DirectX::XMVectorGetX(Direction);
-	float dz = DirectX::XMVectorGetZ(Direction);
-	float angle_radian = std::atan2f(-dx, -dz);
+	float dx = PlayerPosF.x - BossPosF.x;
+	float dz = PlayerPosF.z - BossPosF.z;
+	float angle_radian = std::atan2f(dx, dz) + DirectX::XM_PI;
 	m_pOwner->SetRotationY(angle_radian);
 
-	//UŒ‚ŠJŽnˆÊ’u.
-	DirectX::XMFLOAT3 m_StartPos;
+	// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³é–‹å§‹
+	m_pOwner->SetAnimSpeed(10.0);
+	m_pOwner->ChangeAnim(Boss::enBossAnim::LaserCharge); // æŠ•æ“²ç”¨ã®æºœã‚
 
-	//‰ŠúˆÊ’u‚ð•Û‘¶.
-	DirectX::XMStoreFloat3(&m_StartPos, BossPosXM);
-
-
-	m_pOwner->SetAnimSpeed(0.06);
-	m_pOwner->ChangeAnim(Boss::enBossAnim::LaserCharge);
+	m_IsLaunched = false;
+	m_List = enThrowing::None;
 }
 
 void BossThrowingState::Update()
 {
-	//deltaTime‚ÌŽæ“¾.
 	float deltaTime = Time::GetInstance().GetDeltaTime();
+
+	// ãƒ‘ãƒªã‚£ï¼ˆæ€¯ã¿ï¼‰çŠ¶æ…‹ã®å ´åˆã¯Updateã‚’ã‚¹ã‚­ãƒƒãƒ—ã—ã¦ParryTimeã¸
+	if (m_Parry != enParry::none)
+	{
+		ParryTime();
+		return;
+	}
 
 	switch (m_List)
 	{
-	case BossThrowingState::enThrowing::None:
-		//‚·‚®‚ÉƒAƒjƒƒVƒ‡ƒ“‚ðÄ¶‚·‚é.
+	case enThrowing::None:
+		// å½“ãŸã‚Šåˆ¤å®šã‚’ç„¡åŠ¹åŒ–.
+		m_pOwner->SetAttackColliderActive(true);
 		m_List = enThrowing::Anim;
 		break;
-	case BossThrowingState::enThrowing::Anim:
-		//ƒAƒjƒ[ƒVƒ‡ƒ“‚ð‚±‚±‚É‚Í‘‚©‚È‚¢.
+
+	case enThrowing::Anim:
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::LaserCharge))
 		{
-			m_pOwner->ChangeAnim(Boss::enBossAnim::Laser);
+			m_pOwner->ChangeAnim(Boss::enBossAnim::Laser); // æŠ•ã’ã‚‹çž¬é–“ã®ã‚¢ãƒ‹ãƒ¡
 			m_List = enThrowing::Attack;
 		}
 		break;
-	case BossThrowingState::enThrowing::Attack:
-		//ƒAƒjƒ[ƒVƒ‡ƒ“‚ð‚µ‚Ä‚¢‚éŽž‚ÉUŒ‚‚ð”­“®‚³‚¹‚é.
-		//‚±‚±‚É“ñŽŸƒxƒWƒF‹Èü‚ðŽg—p‚µ‚Ä“Š±‚ð‹N‚±‚·.
-		//false‚Ì‚Æ‚«‚É“ü‚é.
+
+	case enThrowing::Attack:
 		if (!m_IsLaunched)
 		{
-			m_pBall->Fire(m_pOwner->GetTargetPos(), m_pOwner->GetPosition());
+			// ç™ºå°„ä½ç½®ã‚’èª¿æ•´ï¼ˆãƒœã‚¹ã®æ‰‹å…ƒã®é«˜ã•ï¼šç´„5.0fï¼‰
+			DirectX::XMFLOAT3 startPos = m_pOwner->GetPosition();
+			startPos.y += 5.0f;
 
-			// ”­ŽËƒtƒ‰ƒO‚ðON‚É‚µA“ñ“x‚Æ‰Šú‰»‚³‚ê‚È‚¢‚æ‚¤‚É‚·‚é
+			// é›ªçŽ‰ç™ºå°„
+			m_pBall->Fire(m_pOwner->GetTargetPos(), startPos);
 			m_IsLaunched = true;
 		}
 
-		//“Š±—p‚Ìá‹Ê‚ð•\Ž¦‚·‚é.
+		// é›ªçŽ‰ã®ç§»å‹•æ›´æ–°
 		m_pBall->Update();
 
-		//á‹Ê‚ªA‘O‚ÌPlayer‚ÌˆÊ’u‚É‚Â‚¢‚½‚Æ‚«‚É“ü‚é.
+		// é›ªçŽ‰ãŒç€å¼¾ã€ã‹ã¤æŠ•ã’ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãŒçµ‚äº†ã—ãŸã‚‰æ¬¡ã¸
 		if (!m_pBall->IsAction)
 		{
-			m_IsLaunched = false; // ŽŸ‚ÌUŒ‚‚Ì‚½‚ß‚ÉƒŠƒZƒbƒg
 			if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Laser))
 			{
 				m_pOwner->ChangeAnim(Boss::enBossAnim::LaserEnd);
@@ -96,25 +89,18 @@ void BossThrowingState::Update()
 			}
 		}
 		break;
-	case BossThrowingState::enThrowing::CoolDown:
-		//UŒ‚‚ÌƒN[ƒ‹ƒ^ƒCƒ€‚ªI—¹‚µ‚½Û‚ÉTrans‚ÉˆÚ“®‚·‚é.
 
+	case enThrowing::CoolDown:
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::LaserEnd))
 		{
 			m_pBall->ResetPosition();
 			m_List = enThrowing::Trans;
 		}
 		break;
-	case BossThrowingState::enThrowing::Trans:
-		//Idol‚Ö‚Ì‘JˆÚ—p.
-		//¡ƒfƒoƒbƒO‚Ì‚½‚ß‚ÉEnter‚ÅÄ“xUŒ‚‚ð‚·‚é‚æ‚¤‚É‚µ‚Ä‚¢‚é
-		if (GetAsyncKeyState(VK_RETURN) & 0x8000)
-		{
-			m_List = enThrowing::None;
-		}
+
+	case enThrowing::Trans:
+		// æ¬¡ã®è¡Œå‹•ï¼ˆã‚¢ã‚¤ãƒ‰ãƒ«ï¼‰ã¸
 		m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
-		break;
-	default:
 		break;
 	}
 }
@@ -130,47 +116,38 @@ void BossThrowingState::Draw()
 
 void BossThrowingState::Exit()
 {
+	// å½“ãŸã‚Šåˆ¤å®šã‚’ç„¡åŠ¹åŒ–.
+	m_pOwner->SetAttackColliderActive(false);
 }
 
 void BossThrowingState::ParryTime()
 {
+	// çœç•¥ãªã—ã§è¨˜è¿°ï¼ˆãƒ‘ãƒªã‚£ãƒ­ã‚¸ãƒƒã‚¯ï¼‰
 	switch (m_Parry)
 	{
-	case BossThrowingState::enParry::none:
-		//‚Ð‚é‚ñ‚¾Žž‚ÌƒAƒjƒ[ƒVƒ‡ƒ“‚ÌÄ¶‚Ö“ü‚é.
-		m_Parry = enParry::Flinch;
-		break;
-	case BossThrowingState::enParry::Flinch:
-		//ƒAƒjƒ[ƒVƒ‡ƒ“‚ÌÄ¶.
-		m_pOwner->SetAnimSpeed(0.03);
+	case enParry::Flinch:
+		m_pOwner->SetAnimSpeed(30.0);
 		m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchParis);
-		//ƒAƒjƒ[ƒVƒ‡ƒ“‚ÌÄ¶‚ªI—¹‚µ‚½‚ç.
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::FlinchParis))
 		{
-			m_pOwner->SetAnimSpeed(0.01);
+			m_pOwner->SetAnimSpeed(30.0);
 			m_pOwner->ChangeAnim(Boss::enBossAnim::Flinch);
-			//‹¯‚Ý’†‚ÌƒR[ƒh‚É“ü‚é.
 			m_Parry = enParry::FlinchTimer;
 		}
 		break;
-	case BossThrowingState::enParry::FlinchTimer:
-		//‹¯‚Ý’†‚ÌƒAƒjƒ[ƒVƒ‡ƒ“‚ÌÄ¶‚ªI—¹‚µ‚½‚ç.
+	case enParry::FlinchTimer:
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Flinch))
 		{
-			m_pOwner->SetAnimSpeed(0.03);
+			m_pOwner->SetAnimSpeed(15.0);
 			m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchToIdol);
-			//‘Ò‹@‚É‚à‚Ç‚éƒAƒjƒ[ƒVƒ‡ƒ“‚ÌÄ¶.
 			m_Parry = enParry::FlinchToIdol;
 		}
 		break;
-	case BossThrowingState::enParry::FlinchToIdol:
-		//‘Ò‹@‚Ö–ß‚éƒAƒjƒ[ƒVƒ‡ƒ“‚ÌÄ¶‚ªI—¹‚µ‚½‚ç.
+	case enParry::FlinchToIdol:
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::FlinchToIdol))
 		{
 			m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
 		}
-		break;
-	default:
 		break;
 	}
 }

@@ -6,7 +6,7 @@
 
 
 static constexpr float INITIAL_JUMP_SPEED   = 8.0f;    // 垂直速度. 
-static constexpr float GRAVITY_ACCELERATION = -1.f;     // 重力.
+static constexpr float GRAVITY_ACCELERATION = -9.8f;     // 重力.
 static constexpr float DAMPING_FACTOR       = 0.99f;    // 減衰率.
 
 namespace PlayerState {
@@ -28,6 +28,12 @@ constexpr PlayerState::eID KnockBack::GetStateID() const
 void KnockBack::Enter()
 {
     m_pOwner->m_IsKnockBack = true;
+
+    // アニメーション設定.
+    m_pOwner->SetIsLoop(false);
+    m_pOwner->SetAnimTime(0.0);
+    m_pOwner->SetAnimSpeed(1.0);
+    m_pOwner->ChangeAnim(Player::eAnim::Dead);
 
     DirectX::XMVECTOR v_initial_vector = DirectX::XMLoadFloat3(&m_pOwner->m_KnockBackVec);
 

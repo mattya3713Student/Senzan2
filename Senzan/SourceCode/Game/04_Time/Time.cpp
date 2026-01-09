@@ -12,8 +12,8 @@ Time::Time()
     , m_OriginalTimeScale   ( 1.0f )
     , m_TimeScaleRestoreTime( 0.0f )
 {
-    m_TargetFrameTime   = 1.0f / TAEGET_FPS; 
-    m_PreviousTime      = std::chrono::high_resolution_clock::now();
+    m_TargetFrameTime   = 1.0f / TAEGET_FPS;
+    m_PreviousTime      = std::chrono::steady_clock::now();
 }
 
 Time::~Time()
@@ -24,10 +24,14 @@ Time::~Time()
 void Time::Update()
 {
     // デルタタイム計算.
-    auto currentTime = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<float> elapsed = currentTime - m_PreviousTime;
+    auto current_time = std::chrono::steady_clock::now();
+    std::chrono::duration<float> elapsed = current_time - m_PreviousTime;
     m_DeltaTime = elapsed.count();
-    m_PreviousTime = currentTime;
+
+    // デルタタイム制限.
+    if (m_DeltaTime > 0.1f) { m_DeltaTime = m_TargetFrameTime; }
+
+    m_PreviousTime = current_time;
 
     // 時間スケールの復帰.
     if (m_TimeScaleRestoreTime > 0.0f)
@@ -39,23 +43,50 @@ void Time::Update()
             m_WorldTimeScale = m_OriginalTimeScale;
             m_TimeScaleRestoreTime = 0.0f;
         }
-
-        Log::GetInstance().Info("あ", nowTime - m_TimeScaleRestoreTime);
     }
 
     // 時間スケールを適用.
-    m_DeltaTime *= m_WorldTimeScale; 
+    m_DeltaTime *= m_WorldTimeScale;
+}
+
+// アプリが復帰したとき時間基準をリセットしてでかいDeltaTimeになるのを防ぐ.
+void Time::ResetOnResume()
+{
+    m_PreviousTime = std::chrono::steady_clock::now();
+    m_DeltaTime = m_TargetFrameTime;
+}
+
+// FPSを維持するために待機が必要かチェックする.
+bool Time::IsReadyForNextFrame()
+{
+    auto now = std::chrono::steady_clock::now();
+    std::chrono::duration<float> elapsed = now - m_PreviousTime;
+
+    // 目標とするフレーム時間に達していれば true.
+    return elapsed.count() >= m_TargetFrameTime;
 }
 
 // FPSを維持するための処理.
 void Time::MaintainFPS()
 {
-    Time& pI = GetInstance();
+    // フレームの残り時間を計算し sleep.
+    auto frame_end = std::chrono::steady_clock::now();
+    std::chrono::duration<float> frameElapsed = frame_end - m_PreviousTime; // フレーム開始からの経過時間.
 
-    if (pI.m_DeltaTime < pI.m_TargetFrameTime)
-    {
-        auto sleepTime = pI.m_TargetFrameTime - pI.m_DeltaTime;
-        std::this_thread::sleep_for(std::chrono::duration<float>(sleepTime));
+    float remaining = m_TargetFrameTime - frameElapsed.count();
+    if (remaining <= 0.0f) return;
+
+    // ミリ秒単位で Sleep して短時間はスピンで待機する.
+    auto ms = static_cast<int>(remaining * 1000.0f);
+    if (ms > 0) std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+
+    // スピンで残り時間を待つ.
+    while (true) {
+        auto now = std::chrono::steady_clock::now();
+        std::chrono::duration<float> d = now - m_PreviousTime;
+        if (d.count() >= m_TargetFrameTime) break;
+        // 省CPUの為、軽くyield.
+        std::this_thread::yield();
     }
 }
 
@@ -65,22 +96,13 @@ const float Time::GetDeltaTime() const
     return m_DeltaTime;
 }
 
-// 現在時刻を取得.
+// アプリ起動からの時間を取得.
 float Time::GetNowTime()
 {
-    using namespace std::chrono;
-
-    // 現在の time_point を取得.
-    auto now_timepoint = high_resolution_clock::now();
-
-    // time_point を duration (期間) に変換.
-    auto duration_since_epoch = now_timepoint.time_since_epoch();
-
-    // duration を float型の秒数に変換.
-    using float_seconds = duration<float>;
-    float time_in_seconds = duration_cast<float_seconds>(duration_since_epoch).count();
-
-    return time_in_seconds;
+    static auto appStart = std::chrono::steady_clock::now();
+    auto now = std::chrono::steady_clock::now();
+    std::chrono::duration<float> elapsed = now - appStart;
+    return elapsed.count();
 }
 
 // ワールドの時間尺度を取得.
@@ -93,29 +115,22 @@ float Time::GetWorldTimeScale() const
 void Time::SetWorldTimeScale(float NewTimeScale)
 {
     m_WorldTimeScale = NewTimeScale;
-    m_TimeScaleRestoreTime = 0.0f; 
+    m_TimeScaleRestoreTime = 0.0f;
 }
 
 // ワールドの時間の流れを一時的に変更する.
 void Time::SetWorldTimeScale(float NewTimeScale, float DurationSeconds)
 {
-    if (GetNowTime() >= m_TimeScaleRestoreTime)
-    {
-        // 元の時間スケールを保存.
-        m_OriginalTimeScale = m_WorldTimeScale;
-    }
-
-    // 新しい時間スケールを適用.
+    // 一時的な変更の場合は現在の值を保存してから適用
+    m_OriginalTimeScale = m_WorldTimeScale;
     m_WorldTimeScale = NewTimeScale;
 
-    // 復帰時刻を設定.
     if (DurationSeconds > 0.0f)
     {
         m_TimeScaleRestoreTime = GetNowTime() + DurationSeconds;
     }
     else
     {
-        // DurationSecondsが0以下の場合は永続的な設定として扱い、タイマーを解除.
         m_TimeScaleRestoreTime = 0.0f;
     }
 }

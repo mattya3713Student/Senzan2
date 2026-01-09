@@ -22,7 +22,8 @@ BossLaserState::~BossLaserState()
 }
 
 void BossLaserState::Enter()
-{
+{	// “–‚½‚è”»’è‚ð–³Œø‰».
+    m_pOwner->SetAttackColliderActive(false);
     //ƒ{ƒX‚ÌŒü‚«‚ðÝ’è.
     const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
     DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&BossPosF);
@@ -47,7 +48,7 @@ void BossLaserState::Enter()
     DirectX::XMStoreFloat3(&m_StartPos, BossPosXM);
 
 
-    m_pOwner->SetAnimSpeed(0.01);
+    m_pOwner->SetAnimSpeed(5.0);
     m_pOwner->ChangeAnim(Boss::enBossAnim::LaserCharge);
     m_AnimChange = enAnimChange::Charge;
 }
@@ -93,6 +94,8 @@ void BossLaserState::Draw()
 
 void BossLaserState::Exit()
 {
+    // “–‚½‚è”»’è‚ð–³Œø‰».
+    m_pOwner->SetAttackColliderActive(false);
 }
 
 void BossLaserState::BossAttack()
