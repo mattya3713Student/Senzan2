@@ -32,7 +32,7 @@ public:
 
 private:
 	std::shared_ptr<DirectionLight> m_pLight;
-	std::shared_ptr<CameraBase> m_pCamera;
+	std::shared_ptr<CameraBase> m_spCamera;
 
     std::unique_ptr<Ground>		m_upGround;
     std::unique_ptr<Player>		m_upPlayer;

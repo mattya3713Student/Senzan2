@@ -1,22 +1,29 @@
-#pragma once
+ï»¿#pragma once
 #include "../Combat.h"
 
 class Player;
 
 /**************************************************
-*	ƒvƒŒƒCƒ„[‚ÌUŒ‚O’i–Ú‚ÌƒXƒe[ƒg(”h¶).
-*	’S“–:•£˜e –¢—ˆ.
+*	ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®æ”»æ’ƒä¸‰æ®µç›®ã®ã‚¹ãƒ†ãƒ¼ãƒˆ(æ´¾ç”Ÿ).
+*	æ‹…å½“:æ·µè„‡ æœªæ¥.
 **/
 
 namespace PlayerState {
-class AttackCombo_2 final : public Combat
+class AttackCombo_2 final
+    : public Combat
 {
 public:
     AttackCombo_2(Player* owner);
     ~AttackCombo_2();
 
-    // ID‚Ìæ“¾.
+    // IDã®å–å¾—.
     constexpr PlayerState::eID GetStateID() const override;
+
+    // è¨­å®šé …ç›®è¨­ç½®ãƒ‘ã‚¹.
+    // è¦ªã‚¯ãƒ©ã‚¹ã®æˆ»ã‚Šå€¤ã®å‹ã¨ä¸€è‡´ã•ã›ã‚‹ï¼ˆãƒˆãƒƒãƒ—ãƒ¬ãƒ™ãƒ« const ã‚’å‰Šé™¤ï¼‰ã€‚
+    std::string GetSettingsFileName() const override {
+        return "Data\\Json\\Player\\AttackCombo\\AttackCombo_2.json";
+    }
 
     void Enter() override;
     void Update() override;
@@ -25,6 +32,6 @@ public:
     void Exit() override;
 
 private:
-    DirectX::XMFLOAT3 m_MoveVec;        // ˆÚ“®•ûŒü.
 };
-}
+
+} // namespace PlayerState

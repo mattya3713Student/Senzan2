@@ -31,7 +31,7 @@
 // コンストラクタ.
 AnimationTuningScene::AnimationTuningScene()
     : SceneBase()
-    , m_pCamera()
+    , m_spCamera()
     , m_pLight(std::make_shared<DirectionLight>())
     , m_upPlayer(std::make_unique<Player>())
     , m_upBoss(std::make_unique<Boss>())
@@ -47,11 +47,11 @@ AnimationTuningScene::~AnimationTuningScene()
 
 void AnimationTuningScene::Initialize()
 {
-    m_pCamera = std::make_shared<PlayerThirdPersonCamera>(std::ref(*m_upPlayer));
+    m_spCamera = std::make_shared<LockOnCamera>(std::ref(*m_upPlayer), std::ref(*m_upBoss));
     // カメラ設定.
-    m_pCamera->SetPosition(DirectX::XMFLOAT3(0.0f, 5.0f, -50.0f));
-    m_pCamera->SetLook(DirectX::XMFLOAT3(0.0f, 2.0f, 5.0f));
-    CameraManager::GetInstance().SetCamera(m_pCamera);
+    //m_spCamera->SetPosition(DirectX::XMFLOAT3(0.0f, 5.0f, -50.0f));
+    //m_spCamera->SetLook(DirectX::XMFLOAT3(0.0f, 2.0f, 5.0f));
+    CameraManager::GetInstance().SetCamera(m_spCamera);
 
     // ライト設定.
     m_pLight->SetDirection(DirectX::XMFLOAT3(1.5f, 1.f, -1.f));
@@ -89,14 +89,14 @@ void AnimationTuningScene::Update()
 
     m_upPlayer->SetTargetPos(m_upBoss.get()->GetPosition());
     m_upPlayer->Update();
-    //m_upBoss->Update();
+    m_upBoss->Update();
 
 }
 
 void AnimationTuningScene::LateUpdate()
 {
     m_upPlayer->LateUpdate();
-    //m_upBoss->LateUpdate();
+    m_upBoss->LateUpdate();
     CameraManager::GetInstance().LateUpdate();
 
     CollisionDetector::GetInstance().ExecuteCollisionDetection();
@@ -112,7 +112,7 @@ void AnimationTuningScene::Draw()
     m_upGround->Draw();
 
     m_upPlayer->Draw();
-    //m_upBoss->Draw();
+    m_upBoss->Draw();
 
     CollisionVisualizer::GetInstance().Draw();
 }

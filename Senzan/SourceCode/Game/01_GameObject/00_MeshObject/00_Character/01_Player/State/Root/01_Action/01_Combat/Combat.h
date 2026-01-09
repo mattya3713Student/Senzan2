@@ -1,51 +1,58 @@
 ﻿#pragma once
 #include "../Action.h"
 #include <vector>
+#include <string>
 
 class Player;
-class SingleTrigger;
 
 /**************************************************
-*	プレイヤーの攻撃の共通処理ステート(基底).
+*   プレイヤーの攻撃の共通処理ステート(基底).
 *   このステート自体がインスタンス化されることはない.
-*	担当:淵脇 未来.
+*   担当:淵脇 未来.
 **/
 
-namespace PlayerState 
+namespace PlayerState
 {
-    class Combat : public Action
-    {
-    public:
-        Combat(Player* owner);
-        ~Combat();
+	struct ColliderWindow
+	{
+		float Start = 0.0f;    // 開始時刻(ステート秒).
+		float Duration = 0.1f; // 継続時間(秒).
+        bool  IsAct;           // 起動済み.
+	};
 
-        virtual void Enter() override;
-        virtual void Update() override;
-        virtual void LateUpdate() override;
-        virtual void Draw() override;
-        virtual void Exit() override;
+	class Combat : public Action
+	{
+	public:
+		Combat(Player* owner);
+		virtual ~Combat();
 
-        // Collider window helpers (for attack hit windows)
-        void ClearColliderWindows();
-        void AddColliderWindow(float start, float duration);
-        void ProcessColliderWindows(float currentTime);
-        void RenderColliderWindowsUI(const char* title = "コライダー ウィンドウ設定");
+		virtual void Enter() override;
+		virtual void Update() override;
+		virtual void LateUpdate() override;
+		virtual void Draw() override;
+		virtual void Exit() override;
 
-    protected:
-        float               m_Distance; // 各移動距離.
-        float               m_MaxTime;  // 各攻撃時間.
-        float               m_currentTime;  // 各経過時間.
+        virtual std::string GetSettingsFileName() const { return std::string(); }
+        virtual void LoadSettings();
 
-        struct ColliderWindow {
-            float start = 0.0f;    // 開始時刻(ステート秒)
-            float duration = 0.1f; // 継続時間(秒)
-            bool activated = false; // 既に有効化処理を行ったか
-            bool deactivated = false; // 既に無効化処理を行ったか
-        };
+		// Collider window helpers (for attack hit windows)
+		void ClearColliderWindows();
+		void AddColliderWindow(float start, float duration);
+		void ProcessColliderWindows(float currentTime);
+		void RenderColliderWindowsUI(const char* title = "コライダー ウィンドウ設定");
 
-        std::vector<ColliderWindow> m_ColliderWindows; // 可変長のウィンドウリスト
-        bool  m_isAttackColliderEnabled = false; // 現在コライダーが有効になっているかの目安
-        int   m_ActiveWindowCount = 0; // 現在アクティブなウィンドウ数
-    };
-}
+	protected:
+        DirectX::XMFLOAT3 m_MoveVec = {};
+
+        float m_Distance;           // Bossとの距離.
+        float m_AnimSpeed;          // アニメーション速度 (倍率).
+        float m_MaxTime;            // ステートを抜ける時間 (秒).
+        float m_currentTime;        // ステートに入ってからの経過時間 (秒).
+        float m_ComboStartTime;     // コンボ受付開始時間 (秒).
+        float m_ComboEndTime;       // コンボ受付終了時間 (秒).
+        bool  m_IsComboAccepted;    // コンボ確定.
+        std::vector<ColliderWindow> m_ColliderWindows;  // 当たり判定設定.
+	};
+
+} // namespace PlayerState
 

@@ -18,6 +18,11 @@ public:
     // IDの取得.
     constexpr PlayerState::eID GetStateID() const override;
 
+    // 設定項目設置パス.
+    std::string GetSettingsFileName() const override {
+        return "Data\\Json\\Player\\AttackCombo\\AttackCombo_1.json";
+    }
+
     void Enter() override;
     void Update() override;
     void LateUpdate() override;
@@ -25,8 +30,6 @@ public:
     void Exit() override;
 
 private:
-    DirectX::XMFLOAT3 m_MoveVec;        // 移動方向.
-    bool              m_isComboAccepted;// コンボ受付フラグ.
 };
-}
 
+} // namespace PlayerState
