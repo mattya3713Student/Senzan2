@@ -99,7 +99,6 @@ void AttackCombo_2::Enter()
     // 少し近づく.
     DirectX::XMVECTOR v_small_move = DirectX::XMVectorScale(v_diff_vec, 0.1f);
     DirectX::XMStoreFloat3(&m_MoveVec, v_small_move);
-    Log::GetInstance().Info("", "近い");
 }
 void AttackCombo_2::Update()
 {
@@ -183,7 +182,7 @@ void AttackCombo_2::Update()
         // コンボ入力受付.
         if (m_currentTime >= m_ComboStartTime && m_currentTime <= m_ComboEndTime)
         {
-            if (VirtualPad::GetInstance().IsActionDown(VirtualPad::eGameAction::Attack))
+            if (VirtualPad::GetInstance().IsActionPress(VirtualPad::eGameAction::Attack))
             {
                 m_IsComboAccepted = true;
             }

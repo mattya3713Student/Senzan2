@@ -153,7 +153,7 @@ void AttackCombo_0::Update()
         // コンボ入力受付.
         if (m_currentTime >= m_ComboStartTime && m_currentTime <= m_ComboEndTime)
         {
-            if (VirtualPad::GetInstance().IsActionDown(VirtualPad::eGameAction::Attack))
+            if (VirtualPad::GetInstance().IsActionPress(VirtualPad::eGameAction::Attack))
             {
                 m_IsComboAccepted = true;
             }

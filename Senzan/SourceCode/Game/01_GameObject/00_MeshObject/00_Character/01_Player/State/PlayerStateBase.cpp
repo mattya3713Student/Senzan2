@@ -23,6 +23,8 @@ void PlayerStateBase::RotetToFront()
 {
     DirectX::XMFLOAT3 move_vec = m_pOwner->m_MoveVec;
 
+    Log::GetInstance().Info("", move_vec);
+
     // 移動していない場合は、向きを変えない.
     if (MyMath::IsVector3NearlyZero(move_vec, 0.0f)) {
         return;
