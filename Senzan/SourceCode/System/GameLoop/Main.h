@@ -20,7 +20,7 @@ public:
 	void Update();		// 更新処理.
 	void Draw();		// 描画処理.
 	HRESULT LoadData();	// データロード処理.
-	void Crate();	// 初期処理.
+	void Create();	// 初期処理. (名前を修正)
 	void Release();		// 解放処理.
 
 	void Loop();		// メインループ.
@@ -39,7 +39,9 @@ private:
 
 
 	// Escキーのダブルタップでゲームを終了する.
-	void IsExitGame(); 
+	void IsExitGame();
+
+    void DebugImgui(); // デバッグ表示.
 
 private:
 	HWND			m_hWnd;	 // ウィンドウハンドル.
@@ -52,3 +54,4 @@ private:
 	float m_SomeFloatValue = 0.0f;
 	bool m_bFeatureEnabled = false;
 };
+

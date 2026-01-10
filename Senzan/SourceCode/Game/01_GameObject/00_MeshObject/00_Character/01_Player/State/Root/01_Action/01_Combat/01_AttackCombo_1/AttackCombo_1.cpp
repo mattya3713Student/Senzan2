@@ -5,6 +5,7 @@
 #include "Resource/Mesh/02_Skin/SkinMesh.h"
 
 #include "System/Utility/SingleTrigger/SingleTrigger.h"
+#include "System/Singleton/Debug/Log/DebugLog.h"
 #include "System/Singleton/ImGui/CImGuiManager.h"
 #include "System/Utility/FileManager/FileManager.h"
 
@@ -13,9 +14,6 @@ namespace PlayerState {
 AttackCombo_1::AttackCombo_1(Player* owner)
     : Combat(owner)
 {
-    ClearColliderWindows();
-    AddColliderWindow(0.8f, 0.1f);
-    AddColliderWindow(1.5f, 0.1f);
 }
 
 AttackCombo_1::~AttackCombo_1()
@@ -44,7 +42,7 @@ void AttackCombo_1::Enter()
 
             if (j.contains("ColliderWindows") && j["ColliderWindows"].is_array()) {
                 m_ColliderWindows.clear();
-                for (const auto &entry : j["ColliderWindows"]) {
+                for (const auto& entry : j["ColliderWindows"]) {
                     if (entry.contains("start") && entry.contains("duration")) {
                         AddColliderWindow(entry["start"].get<float>(), entry["duration"].get<float>());
                     }
@@ -99,23 +97,7 @@ void AttackCombo_1::Update()
     ImGui::Checkbox(IMGUI_JP("ストップ"), &isStop);
 
     RenderColliderWindowsUI("AttackCombo_1 Collider Windows");
-
-    // 当たり判定のSetActive.
-    for (auto& Collider : m_ColliderWindows) {
-        if (Collider.IsAct) {
-            float end = Collider.Start + Collider.Duration;
-            if (m_currentTime >= end) {
-                m_pOwner->SetAttackColliderActive(false);
-            }
-        }
-        else {
-            if (m_currentTime >= Collider.Start) {
-                m_pOwner->SetAttackColliderActive(true);
-                Collider.IsAct = true;
-            }
-        }
-    }
-
+    
     // Show whether combo input is currently accepted (green) or not (red)
     bool isAccepting = (m_currentTime >= m_ComboStartTime && m_currentTime <= m_ComboEndTime);
     if (isAccepting) {

@@ -13,35 +13,36 @@ class Player;
 
 namespace PlayerState
 {
-	struct ColliderWindow
-	{
-		float Start = 0.0f;    // 開始時刻(ステート秒).
-		float Duration = 0.1f; // 継続時間(秒).
-        bool  IsAct;           // 起動済み.
-	};
+    struct ColliderWindow
+    {
+        float Start = 0.0f;    // 開始時刻(ステート秒).
+        float Duration = 0.1f; // 継続時間(秒).
+        bool  IsAct = false;           // 起動済み.
+        bool  IsEnd = false;           // 終了済み.
+    };
 
-	class Combat : public Action
-	{
-	public:
-		Combat(Player* owner);
-		virtual ~Combat();
+    class Combat : public Action
+    {
+    public:
+        Combat(Player* owner);
+        virtual ~Combat();
 
-		virtual void Enter() override;
-		virtual void Update() override;
-		virtual void LateUpdate() override;
-		virtual void Draw() override;
-		virtual void Exit() override;
+        virtual void Enter() override;
+        virtual void Update() override;
+        virtual void LateUpdate() override;
+        virtual void Draw() override;
+        virtual void Exit() override;
 
         virtual std::string GetSettingsFileName() const { return std::string(); }
         virtual void LoadSettings();
 
-		// Collider window helpers (for attack hit windows)
-		void ClearColliderWindows();
-		void AddColliderWindow(float start, float duration);
-		void ProcessColliderWindows(float currentTime);
-		void RenderColliderWindowsUI(const char* title = "コライダー ウィンドウ設定");
+        // Collider window helpers (for attack hit windows)
+        void ClearColliderWindows();
+        void AddColliderWindow(float start, float duration);
+        void ProcessColliderWindows(float currentTime);
+        void RenderColliderWindowsUI(const char* title = "コライダー ウィンドウ設定");
 
-	protected:
+    protected:
         DirectX::XMFLOAT3 m_MoveVec = {};
 
         float m_Distance;           // Bossとの距離.
@@ -52,7 +53,7 @@ namespace PlayerState
         float m_ComboEndTime;       // ステートを自然に抜ける時間 (秒).
         bool  m_IsComboAccepted;    // コンボ確定.
         std::vector<ColliderWindow> m_ColliderWindows;  // 当たり判定設定.
-	};
+    };
 
 } // namespace PlayerState
 

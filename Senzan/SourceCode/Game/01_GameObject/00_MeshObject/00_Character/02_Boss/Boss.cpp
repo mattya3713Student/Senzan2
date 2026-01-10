@@ -293,7 +293,7 @@ void Boss::HandleDamageDetection()
 				// ダメージを適用 
 				ApplyDamage(info.AttackAmount);
 
-				Time::GetInstance().SetWorldTimeScale(0.1f, 0.016f * 8);
+				Time::GetInstance().SetWorldTimeScale(0.1f, 0.016f * 5);
 				CameraManager::GetInstance().ShakeCamera(0.1f, 2.5f); // カメラを少し揺らす.
 
 				// 1フレームに1回.

@@ -3,7 +3,6 @@
 #include "Game/04_Time/Time.h"
 #include "Game/05_InputDevice/Input.h"
 #include "Game/05_InputDevice/VirtualPad.h"
-#include "Game/04_Time/Time.h"
 #include "System/Singleton/ResourceManager/ResourceManager.h"
 #include "System/GameLoop/Loader.h"
 #include "Graphic/DirectX/DirectX9/DirectX9.h"
@@ -68,7 +67,7 @@ HRESULT Main::LoadData()
     return S_OK;
 }
 
-void Main::Crate()
+void Main::Create()
 {
     CImGuiManager::Init(m_hWnd);
 
@@ -81,7 +80,7 @@ void Main::Update()
     // ImGuiの新しいフレームを開始する (描画の前に)
     CImGuiManager::NewFrameSetting();
 
-    // Time の更新はループ側で行う（フレーム制御を一元化）
+    DebugImgui();
 
     SceneManager::GetInstance().Update();
 
@@ -169,7 +168,7 @@ void Main::Loop()
     }
 
     // データの読み込みが終わったらゲームを構築.
-    Crate();
+    Create();
 
     MSG msg = {};
     while (msg.message != WM_QUIT) {
@@ -181,7 +180,6 @@ void Main::Loop()
 
         // Time の更新は Loop が責務.
         Time::GetInstance().Update();
-
         // ゲーム更新と描画.
         Update();
         Draw();
@@ -306,4 +304,58 @@ void Main::IsExitGame()
             m_LastEscPressTime = currentTime;
         }
     }
+}
+
+void Main::DebugImgui()
+{
+    ImGui::Begin("Performance Monitor");
+
+    // 基本的なFPS表示.
+    float fps = ImGui::GetIO().Framerate;
+    float ms = 1000.0f / fps;
+
+    ImGui::Text("Average: %.1f FPS (%.3f ms/frame)", fps, ms);
+
+    // 状態に応じた警告表示.
+    if (fps < 50.0f) {
+        ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Warning: Low FPS!");
+    }
+    else {
+        ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Status: Stable");
+    }
+
+    ImGui::Separator();
+
+    // --- World Time Scale の操作UI ---
+    ImGui::Text("World Time Scale");
+
+    // 現在の time scale を取得（Time クラスの GetWorldTimeScale() を使用）
+    float timeScale = Time::GetInstance().GetWorldTimeScale();
+
+    // スライダーで time scale を調整（0.0f から 4.0f）
+    if (ImGui::SliderFloat("Scale", &timeScale, 0.0f, 4.0f, "%.2f")) {
+        // 負の値は許可しない
+        if (timeScale < 0.0f) {
+            timeScale = 0.0f;
+        }
+        Time::GetInstance().SetWorldTimeScale(timeScale);
+    }
+
+    // リセットと一時停止ボタン
+    if (ImGui::Button("Reset##TimeScale")) {
+        Time::GetInstance().SetWorldTimeScale(1.0f);
+        timeScale = 1.0f;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Pause/Resume##TimeScale")) {
+        float cur = Time::GetInstance().GetWorldTimeScale();
+        Time::GetInstance().SetWorldTimeScale((cur > 0.0f) ? 0.0f : 1.0f);
+    }
+
+    // 現在の time scale をテキスト表示
+    ImGui::Text("Current: %.2f", Time::GetInstance().GetWorldTimeScale());
+
+    ImGui::Separator();
+
+    ImGui::End();
 }

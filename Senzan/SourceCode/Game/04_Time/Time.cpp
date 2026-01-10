@@ -119,10 +119,21 @@ void Time::SetWorldTimeScale(float NewTimeScale)
 }
 
 // ワールドの時間の流れを一時的に変更する.
-void Time::SetWorldTimeScale(float NewTimeScale, float DurationSeconds)
+void Time::SetWorldTimeScale(float NewTimeScale, float DurationSeconds, bool Override /*= false*/)
 {
-    // 一時的な変更の場合は現在の值を保存してから適用
-    m_OriginalTimeScale = m_WorldTimeScale;
+    // 上書き不可且つスローなら処理を行わない.
+    if (!Override && m_TimeScaleRestoreTime > 0.0f)
+    {
+        return;
+    }
+
+    // 一時的変更が無効な場合、現在のスケールを元の値として保存する.
+    if (m_TimeScaleRestoreTime <= 0.0f)
+    {
+        m_OriginalTimeScale = m_WorldTimeScale;
+    }
+
+    // 新しい時間スケールを適用.
     m_WorldTimeScale = NewTimeScale;
 
     if (DurationSeconds > 0.0f)
