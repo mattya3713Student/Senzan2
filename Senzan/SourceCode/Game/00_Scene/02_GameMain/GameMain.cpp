@@ -15,6 +15,7 @@
 #include "Graphic/Shadow/Shadow.h"
 #include "Graphic/Light/DirectionLight/DirectionLight.h"
 #include "Graphic/Light/LightManager.h"
+#include "Graphic/DirectX/DirectX11/DirectX11.h"
 
 #include "System/Singleton/CameraManager/CameraManager.h"
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
@@ -106,21 +107,28 @@ void GameMain::LateUpdate()
 
 void GameMain::Draw()
 {
-
-	Shadow::Begin();
-	m_upGround->DrawDepth();
+    Shadow::Begin();
+    m_upGround->DrawDepth();
     Shadow::End();
-    if (PostEffectManager::GetInstance().IsGray()) {
+
+    const bool useGray = PostEffectManager::GetInstance().IsGray();
+    if (useGray) {
         PostEffectManager::GetInstance().BeginSceneRender();
     }
 
-	m_upGround->Draw();
-	m_upBoss->Draw();
-	m_upPlayer->Draw();
+    m_upGround->Draw();
+    m_upBoss->Draw();
+    m_upPlayer->Draw();
+
+    m_upPlayer->Draw();
+
+    if (useGray) {
+        PostEffectManager::GetInstance().DrawToBackBuffer();
+    }
 
     m_upUI->Draw();
 
-	CollisionVisualizer::GetInstance().Draw();
+    CollisionVisualizer::GetInstance().Draw();
 }
 
 HRESULT GameMain::LoadData()
