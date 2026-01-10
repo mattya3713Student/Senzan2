@@ -61,22 +61,6 @@ Boss::Boss()
 	m_MaxHP = 1000000.f;
 	m_HP = m_MaxHP;
 
-	// ステートマシンの初期ステートを、SlashChargeStateに設定
-	//Idolに遷移させるんだけど
-	//アニメーションの再生系統を今日するのでここを変更していく.
-	//m_State->ChangeState(std::make_shared<BossStompState>(this));
-	m_State->ChangeState(std::make_shared<BossIdolState>(this));
-	//m_State->ChangeState(std::make_shared<BossShoutState>());
-   /* BossSlashState
-    BossChargeState
-    BossChargeSlashState
-    BossLaserState
-    BossShoutState
-    BossSlashState
-    BossSpecialState
-    BossStompState
-    BossThrowingState*/
-
 	// 攻撃の追加.
 	std::unique_ptr<CapsuleCollider> attackCollider = std::make_unique<CapsuleCollider>(m_spTransform);
 
@@ -170,7 +154,16 @@ Boss::Boss()
 	m_pShoutCollider->SetActive(false);
 	m_upColliders->AddCollider(std::move(Shout_collider));
 
-
+    m_State->ChangeState(std::make_shared<BossSlashState>(this));
+    /* BossSlashState
+ BossChargeState
+ BossChargeSlashState
+ BossLaserState
+ BossShoutState
+ BossSlashState
+ BossSpecialState
+ BossStompState
+ BossThrowingState*/
 	CollisionDetector::GetInstance().RegisterCollider(*m_upColliders);
 }
 
@@ -189,7 +182,7 @@ void Boss::Update()
 #if _DEBUG
 	if (GetAsyncKeyState(VK_RETURN) & 0x0001)
 	{
-		Hit();
+        m_State->ChangeState(std::make_shared<BossSlashState>(this));
 	}
 #endif
 }
