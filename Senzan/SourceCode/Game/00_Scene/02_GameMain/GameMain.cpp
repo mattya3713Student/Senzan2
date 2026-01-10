@@ -15,11 +15,17 @@
 #include "Graphic/Shadow/Shadow.h"
 #include "Graphic/Light/DirectionLight/DirectionLight.h"
 #include "Graphic/Light/LightManager.h"
+#include "Graphic/DirectX/DirectX11/DirectX11.h"
 
 #include "System/Singleton/CameraManager/CameraManager.h"
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
 #include "System/Singleton/Debug\CollisionVisualizer\CollisionVisualizer.h"
 #include "SceneManager/SceneManager.h"
+#include "Singleton/PostEffectManager/PostEffectManager.h"
+
+#if _DEBUG
+#include "System/Singleton/ImGui/CImGuiManager.h"
+#endif
 
 #include <algorithm> // std::min のために必要
 
@@ -74,8 +80,16 @@ void GameMain::Update()
 	m_upUI->SetCombo(m_upPlayer->GetCombo());
 	m_upUI->SetPlayerHP(m_upPlayer->GetMaxHP(), m_upPlayer->GetHP());
  	m_upUI->SetPlayerUlt(m_upPlayer->GetMaxUltValue(), m_upPlayer->GetUltValue());
+    m_upUI->Update();
 
-	m_upUI->Update();
+#if _DEBUG
+    ImGui::Begin("Boss Debug");
+    bool gray = PostEffectManager::GetInstance().IsGray();
+    if (ImGui::Checkbox("GrayScale", &gray)) {
+        PostEffectManager::GetInstance().SetGray(gray);
+    }
+    ImGui::End();
+#endif
 }
 
 void GameMain::LateUpdate()
@@ -93,18 +107,28 @@ void GameMain::LateUpdate()
 
 void GameMain::Draw()
 {
+    Shadow::Begin();
+    m_upGround->DrawDepth();
+    Shadow::End();
 
-	Shadow::Begin();
-	m_upGround->DrawDepth();
-	Shadow::End();
-	m_upGround->Draw();
+    const bool useGray = PostEffectManager::GetInstance().IsGray();
+    if (useGray) {
+        PostEffectManager::GetInstance().BeginSceneRender();
+    }
 
-	m_upBoss->Draw();
-	m_upPlayer->Draw();
+    m_upGround->Draw();
+    m_upBoss->Draw();
+    m_upPlayer->Draw();
 
-	m_upUI->Draw();
+    m_upPlayer->Draw();
 
-	CollisionVisualizer::GetInstance().Draw();
+    if (useGray) {
+        PostEffectManager::GetInstance().DrawToBackBuffer();
+    }
+
+    m_upUI->Draw();
+
+    CollisionVisualizer::GetInstance().Draw();
 }
 
 HRESULT GameMain::LoadData()
