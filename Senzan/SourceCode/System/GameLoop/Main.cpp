@@ -7,6 +7,7 @@
 #include "System/GameLoop/Loader.h"
 #include "Graphic/DirectX/DirectX9/DirectX9.h"
 #include "Graphic/DirectX/DirectX11/DirectX11.h"
+#include "Singleton/PostEffectManager/PostEffectManager.h"
 
 #include "System/Singleton/ImGui/CImGuiManager.h"
 
@@ -72,6 +73,7 @@ void Main::Create()
     CImGuiManager::Init(m_hWnd);
 
     SceneManager::GetInstance().LoadData();
+    PostEffectManager::GetInstance().Initialize();
 }
 
 // 更新処理.
@@ -119,8 +121,18 @@ void Main::Draw()
     // バックバッファのクリア.
     DirectX11::GetInstance().ClearBackBuffer();
 
-    // シーンの描画.
-    SceneManager::Draw();
+    auto& pe = PostEffectManager::GetInstance();
+
+    if (pe.IsGray()) {
+        pe.BeginSceneRender();
+        SceneManager::Draw();
+        pe.DrawToBackBuffer();
+    }
+    else {
+        // 通常描画（レンダーターゲットを戻してから描画）
+        DirectX11::GetInstance().ResetRenderTarget();
+        SceneManager::Draw();
+    }
 
     CImGuiManager::Render();
 
