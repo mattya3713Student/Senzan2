@@ -1,116 +1,119 @@
-#pragma once
+ï»¿#pragma once
 
-//Œx‚É‚Â‚¢‚Ä‚ÌƒR[ƒh•ªÍ‚ğ–³Œø‚É‚·‚é.4005:Ä’è‹`.
+//è­¦å‘Šã«ã¤ã„ã¦ã®ã‚³ãƒ¼ãƒ‰åˆ†æã‚’ç„¡åŠ¹ã«ã™ã‚‹.4005:å†å®šç¾©.
 #pragma warning(disable:4005)
 #include "System/Singleton/SingletonTemplate.h"
 
 #include "System/Singleton/Debug/Log/DebugLog.h"
 
-//ƒwƒbƒ_“Ç.
+//ãƒ˜ãƒƒãƒ€èª­è¾¼.
 #include <D3DX11.h>
 #include <D3D11.h>
-#include <D3DX10.h>	//uD3DX`v‚Ì’è‹`g—p‚É•K—v.
+#include <D3DX10.h>	//ã€ŒD3DXï½ã€ã®å®šç¾©ä½¿ç”¨æ™‚ã«å¿…è¦.
 #include <D3D10.h>
 
-//ƒ‰ƒCƒuƒ‰ƒŠ“Ç‚İ‚İ.
+//ãƒ©ã‚¤ãƒ–ãƒ©ãƒªèª­ã¿è¾¼ã¿.
 #pragma comment(lib, "winmm.lib")
 #pragma comment(lib, "d3dx11.lib")
 #pragma comment(lib, "d3d11.lib")
-#pragma comment(lib, "d3dx10.lib")	//uD3DX`v‚Ì’è‹`g—p‚É•K—v.
+#pragma comment(lib, "d3dx10.lib")	//ã€ŒD3DXï½ã€ã®å®šç¾©ä½¿ç”¨æ™‚ã«å¿…è¦.
 
-// ƒ‰ƒXƒ^ƒ‰ƒCƒU‚ÌƒtƒBƒ‹ƒ‚[ƒh
+// ãƒ©ã‚¹ã‚¿ãƒ©ã‚¤ã‚¶ã®ãƒ•ã‚£ãƒ«ãƒ¢ãƒ¼ãƒ‰
 enum class eRasterizerMode : uint8_t
 {
-	Solid = 1 << 0,	// –Ê‚Å“h‚è‚Â‚Ô‚·.
-	Wireframe = 1 << 1,	// ƒƒCƒ„[ƒtƒŒ[ƒ€.
-	None = 1 << 2,	// ƒJƒŠƒ“ƒO‚È‚µ.
-	Front = 1 << 3,	// ³–ÊƒJƒŠƒ“ƒO.
-	Back = 1 << 4,	// ”w–ÊƒJƒŠƒ“ƒO.
+	Solid = 1 << 0,	// é¢ã§å¡—ã‚Šã¤ã¶ã™.
+	Wireframe = 1 << 1,	// ãƒ¯ã‚¤ãƒ¤ãƒ¼ãƒ•ãƒ¬ãƒ¼ãƒ .
+	None = 1 << 2,	// ã‚«ãƒªãƒ³ã‚°ãªã—.
+	Front = 1 << 3,	// æ­£é¢ã‚«ãƒªãƒ³ã‚°.
+	Back = 1 << 4,	// èƒŒé¢ã‚«ãƒªãƒ³ã‚°.
 };
 
-DEFINE_ENUM_FLAG_OPERATORS(eRasterizerMode); // ƒrƒbƒg‰‰Zq‚ğ’è‹`.
+DEFINE_ENUM_FLAG_OPERATORS(eRasterizerMode); // ãƒ“ãƒƒãƒˆæ¼”ç®—å­ã‚’å®šç¾©.
 
 /**************************************************
-*	DirectX11 ƒZƒbƒgƒAƒbƒv.
+*	DirectX11 ã‚»ãƒƒãƒˆã‚¢ãƒƒãƒ—.
 **/
 class DirectX11
 	: public Singleton<DirectX11>
 {
-	friend class Singleton<DirectX11>; // Singleton‚©‚ç‚ÌƒAƒNƒZƒX‚ğ‹–‰Â.
+	friend class Singleton<DirectX11>; // Singletonã‹ã‚‰ã®ã‚¢ã‚¯ã‚»ã‚¹ã‚’è¨±å¯.
 private:
 	DirectX11();
 	
 public:
 	~DirectX11();
-	//DirectX11\’z.
+	//DirectX11æ§‹ç¯‰.
 	HRESULT Create(HWND hWnd);
-	//DirectX11‰ğ•ú.
+	//DirectX11è§£æ”¾.
 	void Release();
 
-	//[“xi‚yjƒeƒXƒgON/OFFØ‚è‘Ö‚¦.
+	//æ·±åº¦ï¼ˆï¼ºï¼‰ãƒ†ã‚¹ãƒˆON/OFFåˆ‡ã‚Šæ›¿ãˆ.
 	void SetDepth(bool flag);
-	//ƒAƒ‹ƒtƒ@ƒuƒŒƒ“ƒhON/OFFØ‚è‘Ö‚¦.
+	//ã‚¢ãƒ«ãƒ•ã‚¡ãƒ–ãƒ¬ãƒ³ãƒ‰ON/OFFåˆ‡ã‚Šæ›¿ãˆ.
 	void SetAlphaBlend(bool flag);
 
-	//ƒoƒbƒNƒoƒbƒtƒ@ƒNƒŠƒAŠÖ”.
+	//ãƒãƒƒã‚¯ãƒãƒƒãƒ•ã‚¡ã‚¯ãƒªã‚¢é–¢æ•°.
 	void ClearBackBuffer();
 
-	// ƒŒƒ“ƒ_[ƒ^[ƒQƒbƒg‚ğƒŠƒZƒbƒg.
+	// ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã‚’ãƒªã‚»ãƒƒãƒˆ.
 	void ResetRenderTarget();
 
-	//•\¦.
+	//è¡¨ç¤º.
 	void Present();
 
-	//ƒfƒoƒCƒX‚ğæ“¾.
+	//ãƒ‡ãƒã‚¤ã‚¹ã‚’å–å¾—.
 	ID3D11Device* GetDevice() { return GetInstance().m_pDevice11; }
-	//ƒfƒoƒCƒXƒRƒ“ƒeƒLƒXƒg‚ğæ“¾.
+	//ãƒ‡ãƒã‚¤ã‚¹ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã‚’å–å¾—.
 	ID3D11DeviceContext* GetContext() { return GetInstance().m_pContext11; }
-	// ƒXƒƒbƒvƒ`ƒFƒCƒ“‚ğæ“¾.
+	// ã‚¹ãƒ¯ãƒƒãƒ—ãƒã‚§ã‚¤ãƒ³ã‚’å–å¾—.
 	IDXGISwapChain* GetSwapChain() { return GetInstance().m_pSwapChain; }
 
 
 	/****************************************************
-	* @brief			: ƒ‰ƒXƒ^ƒ‰ƒCƒU‚Ìİ’è.
-	* @param fillMode	: ƒtƒBƒ‹ƒ‚[ƒh.
-	* @param cullingMode: ƒJƒŠƒ“ƒOƒ‚[ƒh.
+	* @brief			: ãƒ©ã‚¹ã‚¿ãƒ©ã‚¤ã‚¶ã®è¨­å®š.
+	* @param fillMode	: ãƒ•ã‚£ãƒ«ãƒ¢ãƒ¼ãƒ‰.
+	* @param cullingMode: ã‚«ãƒªãƒ³ã‚°ãƒ¢ãƒ¼ãƒ‰.
 	****************************************************/
 	void SetRasterizerState(eRasterizerMode fill_cullingMode);
 
+    ID3D11DepthStencilView* GetBackBufferDSV() const;
+    ID3D11RenderTargetView* GetBackBufferRTV() const;
+
 private:
-	//ƒfƒoƒCƒX‚ÆƒXƒƒbƒvƒ`ƒFƒCƒ“ì¬.
+	//ãƒ‡ãƒã‚¤ã‚¹ã¨ã‚¹ãƒ¯ãƒƒãƒ—ãƒã‚§ã‚¤ãƒ³ä½œæˆ.
 	HRESULT CreateDeviceAndSwapChain(
 		HWND hWnd, UINT uFPS, UINT uWidth, UINT uHeight);
 
-	//ƒoƒbƒNƒoƒbƒtƒ@ì¬:ƒJƒ‰[—pƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgƒrƒ…[ì¬.
+	//ãƒãƒƒã‚¯ãƒãƒƒãƒ•ã‚¡ä½œæˆ:ã‚«ãƒ©ãƒ¼ç”¨ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¿ãƒ¼ã‚²ãƒƒãƒˆãƒ“ãƒ¥ãƒ¼ä½œæˆ.
 	HRESULT CreateColorBackBufferRTV();
 
-	//ƒoƒbƒNƒoƒbƒtƒ@ì¬:ƒfƒvƒXƒXƒeƒ“ƒVƒ‹—pƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgƒrƒ…[ì¬.
+	//ãƒãƒƒã‚¯ãƒãƒƒãƒ•ã‚¡ä½œæˆ:ãƒ‡ãƒ—ã‚¹ã‚¹ãƒ†ãƒ³ã‚·ãƒ«ç”¨ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¿ãƒ¼ã‚²ãƒƒãƒˆãƒ“ãƒ¥ãƒ¼ä½œæˆ.
 	HRESULT CreateDepthStencilBackBufferRTV();
 
-	//ƒfƒvƒXƒXƒeƒ“ƒVƒ‹ƒXƒe[ƒgì¬.
+	//ãƒ‡ãƒ—ã‚¹ã‚¹ãƒ†ãƒ³ã‚·ãƒ«ã‚¹ãƒ†ãƒ¼ãƒˆä½œæˆ.
 	HRESULT CreateDepthStencilState();
 
-	//ƒAƒ‹ƒtƒ@ƒuƒŒƒ“ƒhƒXƒe[ƒgì¬.
+	//ã‚¢ãƒ«ãƒ•ã‚¡ãƒ–ãƒ¬ãƒ³ãƒ‰ã‚¹ãƒ†ãƒ¼ãƒˆä½œæˆ.
 	HRESULT CreateAlphaBlendState();
 
-	//ƒIƒvƒVƒ‡ƒ“‚ª—LŒø‚©‚Ç‚¤‚©‚ğƒ`ƒFƒbƒN.
+	//ã‚ªãƒ—ã‚·ãƒ§ãƒ³ãŒæœ‰åŠ¹ã‹ã©ã†ã‹ã‚’ãƒã‚§ãƒƒã‚¯.
 	bool IsOptionEnabled(eRasterizerMode currentOptions, eRasterizerMode optionsToCheck) const;
 private:
-	ID3D11Device* m_pDevice11;			//ƒfƒoƒCƒXƒIƒuƒWƒFƒNƒg.
-	ID3D11DeviceContext* m_pContext11;			//ƒfƒoƒCƒXƒRƒ“ƒeƒLƒXƒg.
-	IDXGISwapChain* m_pSwapChain;			//ƒXƒƒbƒvƒ`ƒF[ƒ“.
-	ID3D11RenderTargetView* m_pBackBuffer_TexRTV;	//ƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgƒrƒ…[.
-	ID3D11Texture2D* m_pBackBuffer_DSTex;	//ƒfƒvƒXƒXƒeƒ“ƒVƒ‹—pƒeƒNƒXƒ`ƒƒ.
-	ID3D11DepthStencilView* m_pBackBuffer_DSTexDSV;	//ƒfƒvƒXƒXƒeƒ“ƒVƒ‹ƒrƒ…[.
+	ID3D11Device* m_pDevice11;			//ãƒ‡ãƒã‚¤ã‚¹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ.
+	ID3D11DeviceContext* m_pContext11;			//ãƒ‡ãƒã‚¤ã‚¹ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆ.
+	IDXGISwapChain* m_pSwapChain;			//ã‚¹ãƒ¯ãƒƒãƒ—ãƒã‚§ãƒ¼ãƒ³.
+	ID3D11RenderTargetView* m_pBackBuffer_TexRTV;	//ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¿ãƒ¼ã‚²ãƒƒãƒˆãƒ“ãƒ¥ãƒ¼.
+	ID3D11Texture2D* m_pBackBuffer_DSTex;	//ãƒ‡ãƒ—ã‚¹ã‚¹ãƒ†ãƒ³ã‚·ãƒ«ç”¨ãƒ†ã‚¯ã‚¹ãƒãƒ£.
+	ID3D11DepthStencilView* m_pBackBuffer_DSTexDSV;	//ãƒ‡ãƒ—ã‚¹ã‚¹ãƒ†ãƒ³ã‚·ãƒ«ãƒ“ãƒ¥ãƒ¼.
 
-	//[“xi‚yjƒeƒXƒgİ’è.
-	ID3D11DepthStencilState* m_pDepthStencilStateOn;		//—LŒøİ’è.
-	ID3D11DepthStencilState* m_pDepthStencilStateOff;	//–³Œøİ’è.
+	//æ·±åº¦ï¼ˆï¼ºï¼‰ãƒ†ã‚¹ãƒˆè¨­å®š.
+	ID3D11DepthStencilState* m_pDepthStencilStateOn;		//æœ‰åŠ¹è¨­å®š.
+	ID3D11DepthStencilState* m_pDepthStencilStateOff;	//ç„¡åŠ¹è¨­å®š.
 
-	//ƒAƒ‹ƒtƒ@ƒuƒŒƒ“ƒh.
-	ID3D11BlendState* m_pAlphaBlendOn;	//—LŒøİ’è.
-	ID3D11BlendState* m_pAlphaBlendOff;	//–³Œøİ’è.
+	//ã‚¢ãƒ«ãƒ•ã‚¡ãƒ–ãƒ¬ãƒ³ãƒ‰.
+	ID3D11BlendState* m_pAlphaBlendOn;	//æœ‰åŠ¹è¨­å®š.
+	ID3D11BlendState* m_pAlphaBlendOff;	//ç„¡åŠ¹è¨­å®š.
 
-	// ƒ‰ƒXƒ^ƒ‰ƒCƒU.
-	MyComPtr<ID3D11RasterizerState> m_RasterizerState;		// ƒ‰ƒXƒ^ƒ‰ƒCƒU.
+	// ãƒ©ã‚¹ã‚¿ãƒ©ã‚¤ã‚¶.
+	MyComPtr<ID3D11RasterizerState> m_RasterizerState;		// ãƒ©ã‚¹ã‚¿ãƒ©ã‚¤ã‚¶.
 };
