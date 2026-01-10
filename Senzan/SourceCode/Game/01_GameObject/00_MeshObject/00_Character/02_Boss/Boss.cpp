@@ -67,7 +67,15 @@ Boss::Boss()
 	//m_State->ChangeState(std::make_shared<BossStompState>(this));
 	m_State->ChangeState(std::make_shared<BossIdolState>(this));
 	//m_State->ChangeState(std::make_shared<BossShoutState>());
-
+   /* BossSlashState
+    BossChargeState
+    BossChargeSlashState
+    BossLaserState
+    BossShoutState
+    BossSlashState
+    BossSpecialState
+    BossStompState
+    BossThrowingState*/
 
 	// 攻撃の追加.
 	std::unique_ptr<CapsuleCollider> attackCollider = std::make_unique<CapsuleCollider>(m_spTransform);
