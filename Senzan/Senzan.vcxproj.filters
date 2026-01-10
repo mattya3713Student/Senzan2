@@ -137,6 +137,7 @@
     <ClCompile Include="SourceCode\System\Singleton\ResourceManager\EffectManager\EffekseerManager.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\ResourceManager\SoundManager\SoundManager.cpp" />
     <ClCompile Include="SourceCode\Game\00_Scene\Ex_Test\04_AnimationTuning\AnimationTuningScene.cpp" />
+    <ClCompile Include="SourceCode\System\Singleton\PostEffectManager\PostEffectManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SourceCode\Constant.h" />
@@ -289,6 +290,7 @@
     <ClInclude Include="SourceCode\System\Singleton\ResourceManager\SoundManager\SoundManager.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\00_Core\CollisionSpec.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\Ex_Test\04_AnimationTuning\AnimationTuningScene.h" />
+    <ClInclude Include="SourceCode\System\Singleton\PostEffectManager\PostEffectManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Shader\PMX\Header.hlsli" />
