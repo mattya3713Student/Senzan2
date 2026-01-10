@@ -1,28 +1,28 @@
-﻿{
-    "ColliderWindows": [
-        {
-            "duration": 0.00100000149011612,
-            "start": 0.3
-        },
-        {
-            "duration": 0.00100000149011612,
-            "start": 0.35
-        },
-        {
-            "duration": 0.00100000149011612,
-            "start": 0.4
-        },
-        {
-            "duration": 0.00100000149011612,
-            "start": 0.45
-        },
-        {
-            "duration": 0.00100000149011612,
-            "start": 0.51
-        }
-    ],
-    "m_AnimSpeed": 4.0,
-    "m_MinComboTransTime": 1.0,
-    "m_ComboStartTime": 0.6000000238418579,
-    "m_ComboEndTime": 3.700000047683716
+{
+  "ColliderWindows": [
+    {
+      "duration": 0.0010000014444813132,
+      "start": 0.30000001192092896
+    },
+    {
+      "duration": 0.0010000014444813132,
+      "start": 0.3499999940395355
+    },
+    {
+      "duration": 0.0010000014444813132,
+      "start": 0.4000000059604645
+    },
+    {
+      "duration": 0.0010000014444813132,
+      "start": 0.44999998807907104
+    },
+    {
+      "duration": 0.0010000014444813132,
+      "start": 0.5099999904632568
+    }
+  ],
+  "m_AnimSpeed": 4.0,
+  "m_ComboEndTime": 1.5,
+  "m_ComboStartTime": 0.6000000238418579,
+  "m_MinComboTransTime": 1.0
 }

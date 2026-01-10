@@ -93,7 +93,7 @@ void MattyaTestScene::Update()
 {
     Input::Update();
 	m_upGround->Update();
-	m_upPlayer->SetTargetPos(m_TestAttackCollision.get()->GetPosition());
+	m_upPlayer->SetTargetPos(m_upBoss.get()->GetPosition());
 	m_upPlayer->Update();
 	m_upBoss->Update();
 

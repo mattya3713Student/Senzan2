@@ -43,8 +43,6 @@ namespace PlayerState
         void RenderColliderWindowsUI(const char* title = "コライダー ウィンドウ設定");
 
     protected:
-        DirectX::XMFLOAT3 m_MoveVec = {};
-
         float m_Distance;           // Bossとの距離.
         float m_AnimSpeed;          // アニメーション速度 (倍率).
         float m_MinComboTransTime;  // コンボ確定時に次の攻撃へ移れる最短の時間 (秒).

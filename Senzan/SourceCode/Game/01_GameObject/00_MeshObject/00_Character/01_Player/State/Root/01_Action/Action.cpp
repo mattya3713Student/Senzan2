@@ -1,4 +1,4 @@
-#include "Action.h"
+ï»¿#include "Action.h"
 
 #include "00_MeshObject/00_Character/01_Player/Player.h"
 
@@ -23,15 +23,15 @@ void Action::Enter()
 
 void Action::Update()
 {
-	// ‰ñ”ðƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚½‚ç.
+	// å›žé¿ãƒœã‚¿ãƒ³ãŒæŠ¼ã•ã‚ŒãŸã‚‰.
 	if (VirtualPad::GetInstance().IsActionDown(VirtualPad::eGameAction::Dodge))
 	{
-		// ƒWƒƒƒXƒg‰ñ”ð‚É”h¶.
+		// ã‚¸ãƒ£ã‚¹ãƒˆå›žé¿ã«æ´¾ç”Ÿ.
 		if (m_pOwner->m_IsJustDodgeTiming)
 		{
 			m_pOwner->ChangeState(PlayerState::eID::JustDodge);
 		}
-		// ‰ñ”ð‚É”h¶.	
+		// å›žé¿ã«æ´¾ç”Ÿ.	
 		else
 		{
 			m_pOwner->ChangeState(PlayerState::eID::DodgeExecute);
@@ -42,6 +42,7 @@ void Action::Update()
 
 void Action::LateUpdate()
 {
+    RotetToFront();
 }
 
 void Action::Draw()
