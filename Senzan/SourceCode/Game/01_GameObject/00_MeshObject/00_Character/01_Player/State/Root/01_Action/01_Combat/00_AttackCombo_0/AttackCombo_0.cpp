@@ -71,6 +71,9 @@ void AttackCombo_0::Enter()
     v_diff_vec = DirectX::XMVector3Normalize(v_diff_vec);
     DirectX::XMFLOAT3 diff_vec; DirectX::XMStoreFloat3(&diff_vec, v_diff_vec);
     m_pOwner->GetTransform()->RotateToDirection(diff_vec);
+
+    // Ensure both the state's move vector and the player's exposed move vector are set
+    m_pOwner->m_MoveVec = diff_vec;
 }
 
 void AttackCombo_0::Update()
@@ -182,7 +185,7 @@ void AttackCombo_0::LateUpdate()
     m_currentTime += dt;
 
     // movement optional
-    DirectX::XMFLOAT3 moveDirection = { m_MoveVec.x, 0.0f, m_MoveVec.z };
+    DirectX::XMFLOAT3 moveDirection = { m_pOwner->m_MoveVec.x, 0.0f, m_pOwner->m_MoveVec.z };
     float movement_speed = m_Distance / m_ComboEndTime;
     float move_amount = movement_speed * dt;
     DirectX::XMFLOAT3 movement = {};
@@ -199,7 +202,6 @@ void AttackCombo_0::Draw() {
 void AttackCombo_0::Exit()
 {
     Combat::Exit();
-    m_MoveVec = {};
     m_IsComboAccepted = false;
     m_pOwner->SetAttackColliderActive(false);
 }

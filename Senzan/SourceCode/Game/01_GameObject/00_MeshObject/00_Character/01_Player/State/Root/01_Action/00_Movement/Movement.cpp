@@ -28,6 +28,8 @@ void Movement::Enter()
 
 void Movement::Update()
 {
+    Action::Update();
+
 	if (VirtualPad::GetInstance().IsActionDown(VirtualPad::eGameAction::Attack))
 	{
 		m_pOwner->ChangeState(PlayerState::eID::AttackCombo_0);
@@ -39,15 +41,11 @@ void Movement::Update()
 		m_pOwner->ChangeState(PlayerState::eID::Parry);
 		return;
 	}
-
-	Action::Update();
 }
 
 void Movement::LateUpdate()
 {
 	Action::LateUpdate();
-
-	RotetToFront();
 }
 
 void Movement::Draw()

@@ -1,4 +1,4 @@
-#include "Idle.h"
+﻿#include "Idle.h"
 #include "../../../../../Player.h"
 
 
@@ -28,6 +28,9 @@ constexpr PlayerState::eID Idle::GetStateID() const
 void Idle::Enter()
 {
 	Movement::Enter();
+
+	// 待機状態では移動ベクトルをクリア（攻撃後の向きが残らないように）
+	m_pOwner->m_MoveVec = {};
 
 	m_pOwner->SetIsLoop(true);
 	m_pOwner->SetAnimSpeed(IDOL_ANIM_SPEED);

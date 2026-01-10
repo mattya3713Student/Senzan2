@@ -4,11 +4,11 @@
 #include "Game/05_InputDevice/VirtualPad.h"
 #include "System/Singleton/ImGui/CImGuiManager.h"
 #include "Utility/FileManager/FileManager.h"
+#include "System/Utility/Math/Math.h"
 
 namespace PlayerState {
 Combat::Combat(Player* owner)
 	: Action			( owner )
-    , m_MoveVec             ( 0.0f, 0.0f, 0.0f )
     , m_Distance            ( 0.0f )
     , m_AnimSpeed           ( 0.0f )
     , m_MinComboTransTime   ( 0.0f )
@@ -49,6 +49,16 @@ void Combat::Update()
 void Combat::LateUpdate()
 {
 	Action::LateUpdate();
+
+	// Keep facing the move direction while in combat if a move vector is set
+	if (m_pOwner)
+	{
+		const DirectX::XMFLOAT3& mv = m_pOwner->m_MoveVec;
+		if (!MyMath::IsVector3NearlyZero(mv))
+		{
+			m_pOwner->GetTransform()->RotateToDirection(mv);
+		}
+	}
 }
 
 void Combat::Draw()
@@ -58,9 +68,7 @@ void Combat::Draw()
 
 void Combat::Exit()
 {
-    m_MoveVec = {};
     // 当たり判定を無効化.
-
     for (auto& Collider : m_ColliderWindows) {
         Collider.IsAct = false;
         Collider.IsEnd = false;

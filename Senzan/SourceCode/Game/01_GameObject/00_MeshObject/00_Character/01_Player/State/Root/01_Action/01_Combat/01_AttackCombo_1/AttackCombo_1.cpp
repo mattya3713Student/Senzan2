@@ -79,12 +79,14 @@ void AttackCombo_1::Enter()
     // 敵の方向を向く.
     m_pOwner->GetTransform()->RotateToDirection(diff_vec);
 
+    m_pOwner->m_MoveVec = diff_vec;
+
     // 入力を取得.
     DirectX::XMFLOAT2 input_vec = VirtualPad::GetInstance().GetAxisInput(VirtualPad::eGameAxisAction::Move);
 
     // 少し近づく.
     DirectX::XMVECTOR v_small_move = DirectX::XMVectorScale(v_diff_vec, 0.1f);
-    DirectX::XMStoreFloat3(&m_MoveVec, v_small_move);
+    DirectX::XMStoreFloat3(&m_pOwner->m_MoveVec, v_small_move);
 }
 
 void AttackCombo_1::Update()
@@ -198,7 +200,7 @@ void AttackCombo_1::LateUpdate()
     m_currentTime += dt;
 
     // movement similar to others (optional)
-    DirectX::XMFLOAT3 moveDirection = { m_MoveVec.x, 0.0f, m_MoveVec.z };
+    DirectX::XMFLOAT3 moveDirection = { m_pOwner->m_MoveVec.x, 0.0f, m_pOwner->m_MoveVec.z };
     float movement_speed = m_Distance / m_ComboEndTime;
     float move_amount = movement_speed * dt;
     DirectX::XMFLOAT3 movement = {};
@@ -213,7 +215,6 @@ void AttackCombo_1::Draw() { Combat::Draw(); }
 void AttackCombo_1::Exit()
 {
     Combat::Exit();
-    m_MoveVec = {};
     m_IsComboAccepted = false;
     m_pOwner->SetAttackColliderActive(false);
 }

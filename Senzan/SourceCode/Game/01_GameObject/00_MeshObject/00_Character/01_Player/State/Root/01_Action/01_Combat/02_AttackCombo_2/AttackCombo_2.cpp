@@ -98,7 +98,7 @@ void AttackCombo_2::Enter()
 
     // 少し近づく.
     DirectX::XMVECTOR v_small_move = DirectX::XMVectorScale(v_diff_vec, 0.1f);
-    DirectX::XMStoreFloat3(&m_MoveVec, v_small_move);
+    DirectX::XMStoreFloat3(&m_pOwner->m_MoveVec, v_small_move);
 }
 void AttackCombo_2::Update()
 {
@@ -215,7 +215,7 @@ void AttackCombo_2::LateUpdate()
     float move_amount = movement_speed * delta_time;
 
     // 移動方向.
-    DirectX::XMFLOAT3 moveDirection = { m_MoveVec.x, 0.0f, m_MoveVec.z };
+    DirectX::XMFLOAT3 moveDirection = { m_pOwner->m_MoveVec.x, 0.0f, m_pOwner->m_MoveVec.z };
 
     // 移動量加算.
     DirectX::XMFLOAT3 movement = {};
