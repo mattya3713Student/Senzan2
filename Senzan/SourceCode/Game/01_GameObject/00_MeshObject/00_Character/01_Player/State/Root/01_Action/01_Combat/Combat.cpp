@@ -7,15 +7,15 @@
 
 namespace PlayerState {
 Combat::Combat(Player* owner)
-	: Action		    ( owner )
-    , m_MoveVec         ( 0.0f, 0.0f, 0.0f )
-    , m_Distance        ( 0.0f )
-    , m_AnimSpeed       ( 0.0f )
-    , m_MaxTime         ( 0.0f )
-    , m_currentTime     ( 0.0f )
-    , m_ComboStartTime  ( 0.0f )
-    , m_ComboEndTime    ( 0.0f )
-    , m_IsComboAccepted ( false )
+	: Action			( owner )
+    , m_MoveVec             ( 0.0f, 0.0f, 0.0f )
+    , m_Distance            ( 0.0f )
+    , m_AnimSpeed           ( 0.0f )
+    , m_MinComboTransTime   ( 0.0f )
+    , m_currentTime         ( 0.0f )
+    , m_ComboStartTime      ( 0.0f )
+    , m_ComboEndTime        ( 0.0f )
+    , m_IsComboAccepted     ( false )
 {
 }
 
@@ -27,6 +27,8 @@ void Combat::Enter()
 {
 	Action::Enter();
 	m_currentTime = 0.f;
+
+    m_IsComboAccepted = false;
 
 	// clear collider windows by default
 	m_ColliderWindows.clear();
@@ -57,6 +59,10 @@ void Combat::Draw()
 
 void Combat::Exit()
 {
+    m_MoveVec = {};
+    // 当たり判定を無効化.
+    m_pOwner->SetAttackColliderActive(false);
+
 	// On exit, make sure collider is disabled and windows cleared
 	if (m_pOwner) m_pOwner->SetAttackColliderActive(false);
 	ClearColliderWindows();
@@ -77,7 +83,7 @@ void Combat::LoadSettings()
 
             // 基本パラメータの読み込み
             if (j.contains("m_AnimSpeed"))      m_AnimSpeed = j["m_AnimSpeed"].get<float>();
-            if (j.contains("m_MaxTime"))        m_MaxTime = j["m_MaxTime"].get<float>();
+            if (j.contains("m_MinComboTransTime")) m_MinComboTransTime = j["m_MinComboTransTime"].get<float>();
             if (j.contains("m_ComboStartTime")) m_ComboStartTime = j["m_ComboStartTime"].get<float>();
             if (j.contains("m_ComboEndTime"))   m_ComboEndTime = j["m_ComboEndTime"].get<float>();
 
@@ -114,17 +120,19 @@ void Combat::AddColliderWindow(float start, float duration)
 
 void Combat::ProcessColliderWindows(float currentTime)
 {
-    for(ColliderWindow var : m_ColliderWindows)
+    // iterate by reference so changes to IsAct are stored
+    for(auto &var : m_ColliderWindows)
     {
         if (var.IsAct) {
             if (currentTime >= var.Start + var.Duration) {
-                m_pOwner->SetAttackColliderActive(false);
+                var.IsAct = false;
+                if (m_pOwner) m_pOwner->SetAttackColliderActive(false);
             }
         }
         else if (currentTime >= var.Start)
         {
             var.IsAct = true;
-            m_pOwner->SetAttackColliderActive(true);
+            if (m_pOwner) m_pOwner->SetAttackColliderActive(true);
         }
     } 
 }
@@ -138,9 +146,9 @@ void Combat::RenderColliderWindowsUI(const char* title)
 	{
 		auto &w = m_ColliderWindows[i];
 		ImGui::PushID((int)i);
-		ImGui::DragFloat(IMGUI_JP("開始時刻 (秒)"), &w.Start, 0.01f, 0.0f, m_MaxTime);
+		ImGui::DragFloat(IMGUI_JP("開始時刻 (秒)"), &w.Start, 0.01f, 0.0f, m_ComboEndTime);
 		ImGui::SameLine();
-		ImGui::DragFloat(IMGUI_JP("継続時間 (秒)"), &w.Duration, 0.01f, 0.0f, m_MaxTime);
+		ImGui::DragFloat(IMGUI_JP("継続時間 (秒)"), &w.Duration, 0.01f, 0.0f, m_ComboEndTime);
 		ImGui::SameLine();
 		if (ImGui::Button(IMGUI_JP("削除"))) { m_ColliderWindows.erase(m_ColliderWindows.begin() + i); ImGui::PopID(); break; }
 		ImGui::PopID();
