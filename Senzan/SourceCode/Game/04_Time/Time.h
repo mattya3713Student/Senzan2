@@ -45,7 +45,7 @@ public:
 	void SetWorldTimeScale(float NewTimeScale, float DurationSeconds, bool Override = false);
 
 	// アプリが非アクティブから復帰したときに呼ぶ。タイマーの基準をリセットして
-	// 大きなデルタが流れ込むのを防ぐ。
+	// 大きなデルタが流れ込むのを防ぐ.
 	void ResetOnResume();
 
 private:
