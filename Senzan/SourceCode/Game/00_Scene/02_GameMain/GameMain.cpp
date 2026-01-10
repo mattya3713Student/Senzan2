@@ -15,6 +15,7 @@
 #include "Graphic/Shadow/Shadow.h"
 #include "Graphic/Light/DirectionLight/DirectionLight.h"
 #include "Graphic/Light/LightManager.h"
+#include "Graphic/DirectX/DirectX11/DirectX11.h"
 
 #include "System/Singleton/CameraManager/CameraManager.h"
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
@@ -106,21 +107,59 @@ void GameMain::LateUpdate()
 
 void GameMain::Draw()
 {
-
-	Shadow::Begin();
-	m_upGround->DrawDepth();
+    Shadow::Begin();
+    m_upGround->DrawDepth();
     Shadow::End();
-    if (PostEffectManager::GetInstance().IsGray()) {
+
+    const bool useGray = PostEffectManager::GetInstance().IsGray();
+    if (useGray) {
         PostEffectManager::GetInstance().BeginSceneRender();
     }
 
-	m_upGround->Draw();
-	m_upBoss->Draw();
-	m_upPlayer->Draw();
+    m_upGround->Draw();
+    m_upBoss->Draw();
+
+    m_upPlayer->Draw();
+
+    if (useGray) {
+        // オフスクリーン -> バックバッファへ合成（グレースケール適用）
+        PostEffectManager::GetInstance().DrawToBackBuffer();
+
+        // DrawToBackBuffer がパイプラインを変更したまま戻すため、
+        // 明示的に主要なレンダーステート／シェーダをクリアして復帰させる。
+        // これが無いと後続描画（Player / UI）が描画されない場合がある。
+        {
+            auto& dx = DirectX11::GetInstance();
+            auto ctx = dx.GetContext();
+
+            // シェーダ解除
+            ctx->VSSetShader(nullptr, nullptr, 0);
+            ctx->PSSetShader(nullptr, nullptr, 0);
+
+            // 入力レイアウト / VB / プリミティブトポロジーをデフォルトへ
+            ctx->IASetInputLayout(nullptr);
+            ID3D11Buffer* nullVB = nullptr;
+            UINT stride = 0, offset = 0;
+            ctx->IASetVertexBuffers(0, 1, &nullVB, &stride, &offset);
+            ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+            // バックバッファの深度をクリアして深度テストの影響をなくす
+            ctx->ClearDepthStencilView(dx.GetBackBufferDSV(),
+                D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
+                1.0f, 0);
+
+            // 深度テストとアルファブレンドの既定状態を設定（必要に応じて DirectX11 側の設定に合わせる）
+            dx.SetDepth(true);
+            dx.SetAlphaBlend(true);
+        }
+    }
+
+    // プレイヤーとUIはポスト処理の影響外に描画
+    m_upPlayer->Draw();
 
     m_upUI->Draw();
 
-	CollisionVisualizer::GetInstance().Draw();
+    CollisionVisualizer::GetInstance().Draw();
 }
 
 HRESULT GameMain::LoadData()
