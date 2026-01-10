@@ -20,6 +20,11 @@
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
 #include "System/Singleton/Debug\CollisionVisualizer\CollisionVisualizer.h"
 #include "SceneManager/SceneManager.h"
+#include "Singleton/PostEffectManager/PostEffectManager.h"
+
+#if _DEBUG
+#include "System/Singleton/ImGui/CImGuiManager.h"
+#endif
 
 #include <algorithm> // std::min のために必要
 
@@ -74,8 +79,16 @@ void GameMain::Update()
 	m_upUI->SetCombo(m_upPlayer->GetCombo());
 	m_upUI->SetPlayerHP(m_upPlayer->GetMaxHP(), m_upPlayer->GetHP());
  	m_upUI->SetPlayerUlt(m_upPlayer->GetMaxUltValue(), m_upPlayer->GetUltValue());
+    m_upUI->Update();
 
-	m_upUI->Update();
+#if _DEBUG
+    ImGui::Begin("Boss Debug");
+    bool gray = PostEffectManager::GetInstance().IsGray();
+    if (ImGui::Checkbox("GrayScale", &gray)) {
+        PostEffectManager::GetInstance().SetGray(gray);
+    }
+    ImGui::End();
+#endif
 }
 
 void GameMain::LateUpdate()
@@ -96,13 +109,16 @@ void GameMain::Draw()
 
 	Shadow::Begin();
 	m_upGround->DrawDepth();
-	Shadow::End();
-	m_upGround->Draw();
+    Shadow::End();
+    if (PostEffectManager::GetInstance().IsGray()) {
+        PostEffectManager::GetInstance().BeginSceneRender();
+    }
 
+	m_upGround->Draw();
 	m_upBoss->Draw();
 	m_upPlayer->Draw();
 
-	m_upUI->Draw();
+    m_upUI->Draw();
 
 	CollisionVisualizer::GetInstance().Draw();
 }
