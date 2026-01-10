@@ -46,10 +46,10 @@ namespace PlayerState
 
         float m_Distance;           // Bossとの距離.
         float m_AnimSpeed;          // アニメーション速度 (倍率).
-        float m_MaxTime;            // ステートを抜ける時間 (秒).
+        float m_MinComboTransTime;  // コンボ確定時に次の攻撃へ移れる最短の時間 (秒).
         float m_currentTime;        // ステートに入ってからの経過時間 (秒).
         float m_ComboStartTime;     // コンボ受付開始時間 (秒).
-        float m_ComboEndTime;       // コンボ受付終了時間 (秒).
+        float m_ComboEndTime;       // ステートを自然に抜ける時間 (秒).
         bool  m_IsComboAccepted;    // コンボ確定.
         std::vector<ColliderWindow> m_ColliderWindows;  // 当たり判定設定.
 	};

@@ -30,7 +30,7 @@
 #include "System/Singleton/CameraManager/CameraManager.h"
 
 
-constexpr float HP_Max = 100.0f;
+constexpr float HP_Max = 10000.0f;
 
 Boss::Boss()
 	: Character()
@@ -58,7 +58,7 @@ Boss::Boss()
 	m_spTransform->SetScale(scale);
 	m_spTransform->SetRotationDegrees(Rotation);
 
-	m_MaxHP = 100.f;
+	m_MaxHP = 1000000.f;
 	m_HP = m_MaxHP;
 
 	// ステートマシンの初期ステートを、SlashChargeStateに設定

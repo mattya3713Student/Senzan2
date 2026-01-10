@@ -35,7 +35,6 @@ constexpr PlayerState::eID AttackCombo_2::GetStateID() const
 void AttackCombo_2::Enter()
 {
     Combat::Enter();
-    m_currentTime = 0.0f;      // 時間をリセット.
 
     // Attempt to load state-specific values including collider windows
     try {
@@ -44,7 +43,7 @@ void AttackCombo_2::Enter()
         {
             json j = FileManager::JsonLoad(filePath);
             if (j.contains("m_AnimSpeed")) m_AnimSpeed = j["m_AnimSpeed"].get<float>();
-            if (j.contains("m_MaxTime")) m_MaxTime = j["m_MaxTime"].get<float>();
+            if (j.contains("m_MinComboTransTime")) m_MinComboTransTime = j["m_MinComboTransTime"].get<float>();
             if (j.contains("m_ComboStartTime")) m_ComboStartTime = j["m_ComboStartTime"].get<float>();
             if (j.contains("m_ComboEndTime")) m_ComboEndTime = j["m_ComboEndTime"].get<float>();
 
@@ -113,15 +112,20 @@ void AttackCombo_2::Update()
 
     RenderColliderWindowsUI("AttackCombo_2 Collider Windows");
 
-    // Ensure attack collider active only during collider windows
-    {
-        bool inColliderWindow = false;
-        for (const auto &w : m_ColliderWindows) {
-            float start = w.Start;
-            float end = w.Start + w.Duration;
-            if (m_currentTime >= start && m_currentTime <= end) { inColliderWindow = true; break; }
+    // 当たり判定のSetActive.
+    for (auto& Collider : m_ColliderWindows) {
+        if (Collider.IsAct) {
+            float end = Collider.Start + Collider.Duration;
+            if (m_currentTime >= end) {
+                m_pOwner->SetAttackColliderActive(false);
+            }
         }
-        m_pOwner->SetAttackColliderActive(inColliderWindow);
+        else {
+            if (m_currentTime >= Collider.Start) {
+                m_pOwner->SetAttackColliderActive(true);
+                Collider.IsAct = true;
+            }
+        }
     }
 
     // Show whether combo input is currently accepted (green) or not (red)
@@ -133,15 +137,15 @@ void AttackCombo_2::Update()
         ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), IMGUI_JP("受付外"));
     }
     ImGui::Separator();
-    ImGui::DragFloat(IMGUI_JP("コンボ入力開始時間 (ComboStart)"), &m_ComboStartTime, 0.01f, 0.0f, m_MaxTime);
-    ImGui::DragFloat(IMGUI_JP("コンボ入力終了時間 (ComboEnd)"), &m_ComboEndTime, 0.01f, 0.0f, m_MaxTime);
+    ImGui::DragFloat(IMGUI_JP("コンボ入力開始時間 (ComboStart)"), &m_ComboStartTime, 0.01f, 0.0f, m_ComboEndTime);
+    ImGui::DragFloat(IMGUI_JP("次コンボ最低開始時間 (ComboStart)"), &m_MinComboTransTime, 0.01f, 0.0f, m_ComboEndTime);
     ImGui::Text(IMGUI_JP("入力受付時間: %.3f - %.3f"), m_ComboStartTime, m_ComboEndTime);
 
 
     ImGui::Separator();
-    ImGui::Text(IMGUI_JP("時間: %.3f / %.3f"), m_currentTime, m_MaxTime);
+    ImGui::Text(IMGUI_JP("時間: %.3f / %.3f"), m_currentTime, m_ComboEndTime);
     ImGui::DragFloat(IMGUI_JP("アニメ速度"), &m_AnimSpeed, 0.1f, 0.1f, 60.0f);
-    ImGui::DragFloat(IMGUI_JP("ステート持続時間 (MaxTime)"), &m_MaxTime, 0.01f, 0.1f, 10.0f);
+    ImGui::DragFloat(IMGUI_JP("ステート持続時間 (MaxTime)"), &m_ComboEndTime, 0.01f, 0.1f, 10.0f);
 
     if (ImGui::Button(IMGUI_JP("Load"))) {
         try {
@@ -149,7 +153,7 @@ void AttackCombo_2::Update()
             if (std::filesystem::exists(filePath)) {
                 json j = FileManager::JsonLoad(filePath);
                 if (j.contains("m_AnimSpeed")) m_AnimSpeed = j["m_AnimSpeed"].get<float>();
-                if (j.contains("m_MaxTime")) m_MaxTime = j["m_MaxTime"].get<float>();
+                if (j.contains("m_MinComboTransTime")) m_MinComboTransTime = j["m_MinComboTransTime"].get<float>();
                 if (j.contains("m_ComboStartTime")) m_ComboStartTime = j["m_ComboStartTime"].get<float>();
                 if (j.contains("m_ComboEndTime")) m_ComboEndTime = j["m_ComboEndTime"].get<float>();
 
@@ -176,7 +180,7 @@ void AttackCombo_2::Update()
 
             json j;
             j["m_AnimSpeed"] = m_AnimSpeed;
-            j["m_MaxTime"] = m_MaxTime;
+            j["m_MinComboTransTime"] = m_MinComboTransTime;
             j["m_ComboStartTime"] = m_ComboStartTime;
             j["m_ComboEndTime"] = m_ComboEndTime;
             j["ColliderWindows"] = json::array();
@@ -192,17 +196,28 @@ void AttackCombo_2::Update()
     {
         Combat::Update();
 
-        // state transition
-        if (m_currentTime >= m_MaxTime)
+        // コンボ入力受付.
+        if (m_currentTime >= m_ComboStartTime && m_currentTime <= m_ComboEndTime)
+        {
+            if (VirtualPad::GetInstance().IsActionDown(VirtualPad::eGameAction::Attack))
+            {
+                m_IsComboAccepted = true;
+            }
+        }
+
+        // コンボが確定しており、かつ最短遷移時間を過ぎていれば即座に次へ.
+        if (m_IsComboAccepted && m_currentTime >= m_MinComboTransTime)
+        {
+            m_pOwner->ChangeState(PlayerState::eID::AttackCombo_0);
+            return;
+        }
+
+        // コンボ不成立のまま最後まで到達.
+        if (m_currentTime >= m_ComboEndTime)
         {
             m_pOwner->ChangeState(PlayerState::eID::Idle);
         }
     }
-    else
-    {
-        ImGui::Text(IMGUI_JP("停止中"));
-    }
-
 }
 void AttackCombo_2::LateUpdate()
 {
@@ -213,7 +228,7 @@ void AttackCombo_2::LateUpdate()
     m_currentTime += delta_time;
 
     // 移動量の算出.
-    float movement_speed = m_Distance / m_MaxTime;
+    float movement_speed = m_Distance / m_ComboEndTime;
     float move_amount = movement_speed * delta_time;
 
     // 移動方向.
@@ -234,9 +249,6 @@ void AttackCombo_2::Draw()
 void AttackCombo_2::Exit()
 {
     Combat::Exit();
-    m_MoveVec = {};
-    // 当たり判定を無効化.
-    m_pOwner->SetAttackColliderActive(false);
 }
 
 } // PlayerState.
