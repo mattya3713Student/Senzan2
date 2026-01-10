@@ -82,23 +82,6 @@ void AttackCombo_0::Update()
 
     RenderColliderWindowsUI("AttackCombo_0 Collider Windows");
 
-    // 当たり判定のSetActive.
-    for (auto& Collider : m_ColliderWindows) {
-        if (Collider.IsAct) {
-            float end = Collider.Start + Collider.Duration;
-            if (m_currentTime >= end) {
-                m_pOwner->SetAttackColliderActive(false);
-            }
-        }
-        else {
-            if (m_currentTime >= Collider.Start) {
-                m_pOwner->SetAttackColliderActive(true);
-                Collider.IsAct = true;
-            }
-        }
-    }
-    
-
     // Show whether combo input is currently accepted (green) or not (red)
     bool isAccepting = (m_currentTime >= m_ComboStartTime && m_currentTime <= m_ComboEndTime);
     if (isAccepting) {

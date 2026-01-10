@@ -40,8 +40,9 @@ public:
 	* @brief	ワールドの時間の流れを変更する.
 	* @param[in]	NewTimeScale	：新しい時間スケールの値(例: 0.5f で半分の速さ、2.0f で倍速).
 	* @param[in]	DurationSeconds	：NewTimeScale を適用する持続時間(秒). 0以下の場合は即座に戻る.
+	* @param[in]	Override	    ：既に一時的な時間スケールが適用中の場合、これを上書きするかどうか (デフォルト false).
 	* ************************************************************/
-	void SetWorldTimeScale(float NewTimeScale, float DurationSeconds);
+	void SetWorldTimeScale(float NewTimeScale, float DurationSeconds, bool Override = false);
 
 	// アプリが非アクティブから復帰したときに呼ぶ。タイマーの基準をリセットして
 	// 大きなデルタが流れ込むのを防ぐ。

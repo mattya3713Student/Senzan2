@@ -91,27 +91,7 @@ void MattyaTestScene::Create()
 
 void MattyaTestScene::Update()
 {
-	// ウィンドウとして独立させる
-	ImGui::Begin("Performance Monitor");
-
-	// 1. 基本的なFPS表示
-	float fps = ImGui::GetIO().Framerate;
-	float ms = 1000.0f / fps;
-
-	ImGui::Text("Average: %.1f FPS (%.3f ms/frame)", fps, ms);
-
-	// 状態に応じた警告表示
-	if (fps < 50.0f) {
-		ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Warning: Low FPS!");
-	}
-	else {
-		ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Status: Stable");
-	}
-
-	ImGui::Separator();
-	ImGui::End();
-
-	Input::Update();
+    Input::Update();
 	m_upGround->Update();
 	m_upPlayer->SetTargetPos(m_TestAttackCollision.get()->GetPosition());
 	m_upPlayer->Update();

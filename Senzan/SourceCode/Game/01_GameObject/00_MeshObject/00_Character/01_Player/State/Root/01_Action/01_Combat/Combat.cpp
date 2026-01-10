@@ -28,7 +28,7 @@ void Combat::Enter()
 	Action::Enter();
 	m_currentTime = 0.f;
 
-    m_IsComboAccepted = false;
+    m_IsComboAccepted = false; 
 
 	// clear collider windows by default
 	m_ColliderWindows.clear();
@@ -42,14 +42,13 @@ void Combat::Enter()
 void Combat::Update()
 {
 	Action::Update();
+
+	ProcessColliderWindows(m_currentTime);
 }
 
 void Combat::LateUpdate()
 {
 	Action::LateUpdate();
-
-	// Drive collider windows based on the state's elapsed time.
-	ProcessColliderWindows(m_currentTime);
 }
 
 void Combat::Draw()
@@ -61,8 +60,11 @@ void Combat::Exit()
 {
     m_MoveVec = {};
     // 当たり判定を無効化.
-    m_pOwner->SetAttackColliderActive(false);
 
+    for (auto& Collider : m_ColliderWindows) {
+        Collider.IsAct = false;
+        Collider.IsEnd = false;
+    }
 	// On exit, make sure collider is disabled and windows cleared
 	if (m_pOwner) m_pOwner->SetAttackColliderActive(false);
 	ClearColliderWindows();
@@ -115,26 +117,34 @@ void Combat::AddColliderWindow(float start, float duration)
 	// normalize incoming values
 	if (start < 0.0f) start = 0.0f;
 	if (duration < 0.0f) duration = 0.0f;
-	m_ColliderWindows.push_back({start, duration});
+	// ensure flags are initialized
+	ColliderWindow w;
+	w.Start = start;
+	w.Duration = duration;
+	w.IsAct = false;
+	w.IsEnd = false;
+	m_ColliderWindows.push_back(w);
 }
 
 void Combat::ProcessColliderWindows(float currentTime)
 {
-    // iterate by reference so changes to IsAct are stored
-    for(auto &var : m_ColliderWindows)
-    {
-        if (var.IsAct) {
-            if (currentTime >= var.Start + var.Duration) {
-                var.IsAct = false;
-                if (m_pOwner) m_pOwner->SetAttackColliderActive(false);
+    // 当たり判定のSetActive.
+    for (auto& Collider : m_ColliderWindows) {
+        if (Collider.IsEnd) continue;
+        if (Collider.IsAct) {
+            float end = Collider.Start + Collider.Duration;
+            if (m_currentTime >= end) {
+                m_pOwner->SetAttackColliderActive(false);
+                Collider.IsEnd = true;
             }
         }
-        else if (currentTime >= var.Start)
-        {
-            var.IsAct = true;
-            if (m_pOwner) m_pOwner->SetAttackColliderActive(true);
+        else {
+            if (m_currentTime >= Collider.Start) {
+                m_pOwner->SetAttackColliderActive(true);
+                Collider.IsAct = true;
+            }
         }
-    } 
+    }
 }
 
 void Combat::RenderColliderWindowsUI(const char* title)
