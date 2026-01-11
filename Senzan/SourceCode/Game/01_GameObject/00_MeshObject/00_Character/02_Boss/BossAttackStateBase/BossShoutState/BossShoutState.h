@@ -1,9 +1,9 @@
-#pragma once
+ï»¿#pragma once
 #include "..//BossAttackStateBase.h"
 #include "Game\03_Collision\00_Core\01_Capsule\CapsuleCollider.h"
 
 /************************************************************************************
-*	‹©‚ÑUŒ‚F‹©‚Ñ‚ÌUŒ‚‚Í“–‚½‚è”»’è‚ÅƒmƒbƒNƒoƒbƒN‚³‚¹‚é‚Ì‚Å‚±‚±‚Å‚ÍŠÔ‚Å‚ÌIdol‚Ì‘JˆÚ‚ğ‘‚­.
+*	å«ã³æ”»æ’ƒï¼šå«ã³ã®æ”»æ’ƒã¯å½“ãŸã‚Šåˆ¤å®šã§ãƒãƒƒã‚¯ãƒãƒƒã‚¯ã•ã›ã‚‹ã®ã§ã“ã“ã§ã¯æ™‚é–“ã§ã®Idolã®é·ç§»ã‚’æ›¸ã.
 **/
 
 
@@ -35,14 +35,8 @@ private:
 private:
 	std::shared_ptr<BossIdolState> m_pBossIdol;
 
-	//‘JˆÚ‚Ìƒ^ƒCƒ~ƒ“ƒOæ“¾—p‚Ìƒ^ƒCƒ€•Ï”.
-	float m_Timer = 0.0f;
-
-	//‘JˆÚ‚ÌŠÔ‚Ìƒ^ƒCƒ€•Ï”.
+	// å¤‰æ›ç”¨ã‚¿ã‚¤ãƒãƒ¼
 	float m_TransitionTimer = 60.0f;
-
-	//UŒ‚ŠJnˆÊ’u.
-	DirectX::XMFLOAT3 m_StartPos;
 
 	enShout m_List;
 };
