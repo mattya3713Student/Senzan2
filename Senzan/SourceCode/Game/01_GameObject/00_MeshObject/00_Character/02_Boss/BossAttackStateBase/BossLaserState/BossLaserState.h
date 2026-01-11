@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossAttackStateBase.h"
 
 
@@ -10,11 +10,11 @@ class BossLaserState
 public:
 	enum class enAnimChange : byte
 	{
-		Charge,		//‚½‚ß’†.
-		Attack,		//‚½‚ßUŒ‚”­Ë’†.
-		ChargeEnd,	//‚½‚ßUŒ‚‚©‚ç‘Ò‹@.
+		Charge,		//ãŸã‚ä¸­.
+		Attack,		//ãŸã‚æ”»æ’ƒç™ºå°„ä¸­.
+		ChargeEnd,	//ãŸã‚æ”»æ’ƒã‹ã‚‰å¾…æ©Ÿ.
 
-		none,		//‰½‚à‚µ‚È‚¢.
+		none,		//ä½•ã‚‚ã—ãªã„.
 	};
 public:
 	BossLaserState(Boss* owner);
@@ -29,12 +29,6 @@ private:
 	void BossAttack() override;
 private:
 	std::shared_ptr<BossIdolState> m_pBossIdol;
-
-	//‘JˆÚ‚Ìƒ^ƒCƒ~ƒ“ƒOæ“¾—p‚Ìƒ^ƒCƒ€•Ï”.
-	float m_Timer = 0.0f;
-
-	//‘JˆÚ‚ÌŠÔ‚Ìƒ^ƒCƒ€•Ï”.
-	float m_TransitionTimer = 120.0f;
 
 	enAnimChange m_AnimChange;
 };

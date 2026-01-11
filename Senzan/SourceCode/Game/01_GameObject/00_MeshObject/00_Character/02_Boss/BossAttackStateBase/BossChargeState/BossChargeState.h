@@ -1,9 +1,10 @@
-#pragma once
+ï»¿#pragma once
 #include "..//BossAttackStateBase.h"
 
 /******************************************************************************
-*	‚½‚ßa‚èUŒ‚—p‚ÌChargeStateƒNƒ‰ƒX.
+*	ãŸã‚æ–¬ã‚Šæ”»æ’ƒç”¨ã®ChargeStateã‚¯ãƒ©ã‚¹.
 **/
+
 class Boss;
 class BossChargeSlashState;
 
@@ -20,15 +21,12 @@ public:
 	void Draw() override;
 	void Exit() override;
 
-	//UŒ‚‚ğÀs‚³‚¹‚éŠÖ”.
+	//æ”»æ’ƒã‚’å®Ÿè¡Œã•ã›ã‚‹é–¢æ•°.
 	void BossAttack() override;
 private:
 	std::shared_ptr<BossChargeSlashState> m_ChargeSlash;
 
-	//‚½‚ßŠÔ‚Ìƒƒ“ƒo•Ï”/
-	float m_Timer = 0.0f;
-	//‘JˆÚ‚ÌŠÔ‚Ìƒ^ƒCƒ€•Ï”.
-	float m_TransitionTimer = 120.0f;
-	//¡‚½‚ß‚Ä‚¢‚é‚Ì‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒO.
+	// timers moved to base: float m_Timer, m_TransitionTimer
+	// ãŸã‚ãƒ•ãƒ©ã‚°
 	bool ChargeFlag = false;
 };

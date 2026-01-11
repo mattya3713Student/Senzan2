@@ -18,15 +18,9 @@ constexpr static float AnimSlashToIdolTime	= 30.0f;
 BossSlashState::BossSlashState(Boss* owner)
 	: BossAttackStateBase(owner)
 
-	, m_StartPos {}
 
-	, m_pIdol()
-
-	, m_pTransform(std::make_shared<Transform>())
 
 	, m_List	(enList::none)
-
-	, AnimChange(false)
 {
 	//m_pColl->SetHeight(50.0f);
 	//m_pColl->SetRadius(5.0f);
@@ -75,8 +69,6 @@ void BossSlashState::Enter()
 	m_pOwner->SetAnimSpeed(3.5);
 	//斬るアニメーションの再生.
 	m_pOwner->ChangeAnim(Boss::enBossAnim::Slash);
-
-	AnimChange = false;
 }
 
 void BossSlashState::Update()

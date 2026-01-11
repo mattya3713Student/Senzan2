@@ -1,54 +1,50 @@
-#pragma once
+ï»¿#pragma once
 #include "..//BossAttackStateBase.h"
-#include <memory>
-#include <DirectXMath.h>
 
-class Boss;
-class SnowBall;
+#include "00_MeshObject/00_Character/02_Boss/BossIdolState/BossIdolState.h"
 
-class BossThrowingState final
-	: public BossAttackStateBase
+#include "00_MeshObject/00_Character/03_SnowBall/SnowBall.h"
+
+
+class BossThrowingState
+    : public BossAttackStateBase
 {
 public:
-	enum class enThrowing : byte
-	{
-		None,		// ‰Šúó‘Ô
-		Anim,		// —­‚ßƒAƒjƒ[ƒVƒ‡ƒ“
-		Attack,		// ”­ËEˆÚ“®’†
-		CoolDown,	// “Š‚°I‚í‚è‚Ì—]‰C
-		Trans		// Ÿ‚ÌƒXƒe[ƒg‚Ö
-	};
+    enum class enThrowing : byte
+    {
+        None,
+        Anim,
+        Attack,
+        CoolDown,
+        Trans
+    };
 
-	enum class enParry : byte
-	{
-		none,
-		Flinch,
-		FlinchTimer,
-		FlinchToIdol,
-	};
+    enum class enParry : byte
+    {
+        none,
+        Flinch,
+        FlinchTimer,
+        FlinchToIdol,
+    };
 
 public:
-	BossThrowingState(Boss* owner);
-	~BossThrowingState() override;
+    BossThrowingState(Boss* owner);
+    ~BossThrowingState() override;
 
-	void Enter() override;
-	void Update() override;
-	void LateUpdate() override;
-	void Draw() override;
-	void Exit() override;
+    void Enter() override;
+    void Update() override;
+    void LateUpdate() override;
+    void Draw() override;
+    void Exit() override;
 
-	void ParryTime() override ;
-
-private:
-	void BossAttack() override;
+    void ParryTime() override;
 
 private:
-	float m_Timer;
-	float m_TransitionTimer;
+    void BossAttack() override;
 
-	enThrowing m_List;
-	enParry m_Parry;
-
-	std::unique_ptr<SnowBall> m_pBall;
-	bool m_IsLaunched = false;
+private:
+    std::unique_ptr<SnowBall> m_pBall;
+    enThrowing m_List;
+    enParry m_Parry;
+    bool m_IsLaunched;
 };
