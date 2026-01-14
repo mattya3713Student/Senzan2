@@ -10,20 +10,10 @@
 
 constexpr float MY_PI = 3.1415926535f;
 
-
-constexpr static float AnimSlashTime		= 3000.0f;
-constexpr static float AnimSlashToIdolTime	= 30.0f;
-
-
 BossSlashState::BossSlashState(Boss* owner)
 	: BossAttackStateBase(owner)
-
-
-
-	, m_List	(enList::none)
+	, m_List(enList::none)
 {
-	//m_pColl->SetHeight(50.0f);
-	//m_pColl->SetRadius(5.0f);
 }
 
 BossSlashState::~BossSlashState()
@@ -32,76 +22,85 @@ BossSlashState::~BossSlashState()
 
 void BossSlashState::Enter()
 {
-	// 当たり判定を有効化.
-	m_pOwner->SetAttackColliderActive(true);
-
-	auto* attackColl = m_pOwner->m_pAttackCollider;
-	if (attackColl) {
-		attackColl->SetRadius(15.0f);      
-		attackColl->SetHeight(40.0f);
-		attackColl->SetPositionOffset(0.0f, 10.0f, -30.0f);
-	}
-
+	m_StateTimer = 0.0f;
 	m_currentTimer = 0.0f;
 	m_Attacktime = 0.0f;
 
-	//ボスの向きを設定.
+	for (auto& w : m_ColliderWindows) { w.Reset(); }
+	for (auto& w : m_MovementWindows) { w.Reset(); }
+
+	m_ColliderWindows.clear();
+	m_MovementWindows.clear();
+
+	// 既定値（ImGuiで調整可能）
+	m_AnimSpeed = 3.5f;
+	m_ExitTime = 1.0f;
+	m_HomingEndTime = 0.2f;
+
+	// 斬撃当たり判定: 右手ボーン
+	ColliderWindow slashWindow;
+	slashWindow.BoneName = "boss_Hand_R";
+	slashWindow.Start = 0.15f;
+	slashWindow.Duration = 0.25f;
+	m_ColliderWindows.push_back(slashWindow);
+
+	// 踏み込み
+	MovementWindow stepIn;
+	stepIn.Start = 0.05f;
+	stepIn.Duration = 0.25f;
+	stepIn.Speed = 60.0f;
+	m_MovementWindows.push_back(stepIn);
+
+	// 当たり判定は window 側で ON/OFF するので通常攻撃判定はOFF（念のため）
+	m_pOwner->SetAttackColliderActive(false);
+
+	// 初期位置を保存.
 	const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
-	DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&BossPosF);
+	DirectX::XMStoreFloat3(&m_StartPos, DirectX::XMLoadFloat3(&BossPosF));
 
-	const DirectX::XMFLOAT3 PlayerPosF = m_pOwner->m_PlayerPos;
-	DirectX::XMVECTOR PlayerPosXM = DirectX::XMLoadFloat3(&PlayerPosF);
-
-	DirectX::XMVECTOR Direction = DirectX::XMVectorSubtract(PlayerPosXM, BossPosXM);
-	//X,Z平面の方向.
-	Direction = DirectX::XMVectorSetY(Direction, 0.0f);
-
-	//Y軸回転角度を計算し、ボスをプレイヤーに向かせる.
-	float dx = DirectX::XMVectorGetX(Direction);
-	float dz = DirectX::XMVectorGetZ(Direction);
-	float angle_radian = std::atan2f(-dx, -dz);
-	m_pOwner->SetRotationY(angle_radian);
-
-	//初期位置を保存.
-	DirectX::XMStoreFloat3(&m_StartPos, BossPosXM);
-
-	//アニメーションの速度.
-	m_pOwner->SetAnimSpeed(3.5);
-	//斬るアニメーションの再生.
+	// 斬るアニメーションの再生.
 	m_pOwner->ChangeAnim(Boss::enBossAnim::Slash);
+
+	m_List = enList::SlashAttack;
 }
 
 void BossSlashState::Update()
 {
-	// Bossクラスから、あらかじめ設定しておいた斬撃用判定を取得
-	auto* pSlashCollider = m_pOwner->GetSlashCollider();
+	const float dt = Time::GetInstance().GetDeltaTime();
+
+	// ホーミング（一定時間まで）
+	if (m_StateTimer <= m_HomingEndTime)
+	{
+		const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
+		DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&BossPosF);
+
+		const DirectX::XMFLOAT3 PlayerPosF = m_pOwner->m_PlayerPos;
+		DirectX::XMVECTOR PlayerPosXM = DirectX::XMLoadFloat3(&PlayerPosF);
+
+		DirectX::XMVECTOR Direction = DirectX::XMVectorSubtract(PlayerPosXM, BossPosXM);
+		Direction = DirectX::XMVectorSetY(Direction, 0.0f);
+
+		float dx = DirectX::XMVectorGetX(Direction);
+		float dz = DirectX::XMVectorGetZ(Direction);
+		float angle_radian = std::atan2f(-dx, -dz);
+		m_pOwner->SetRotationY(angle_radian);
+	}
+
+	UpdateBaseLogic(dt);
 
 	switch (m_List)
 	{
-	case BossSlashState::enList::none:
-		if (pSlashCollider) 
-		{
-			pSlashCollider->SetActive(true);
-		}
-
-		m_List = enList::SlashAttack;
-		break;
-
 	case BossSlashState::enList::SlashAttack:
-		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Slash))
+		if (m_StateTimer >= m_ExitTime)
 		{
-			if (pSlashCollider)
-			{
-				pSlashCollider->SetActive(false);
-			}
-
 			m_pOwner->ChangeAnim(Boss::enBossAnim::SlashToIdol);
 			m_List = enList::SlashIdol;
 		}
 		break;
 
 	case BossSlashState::enList::SlashIdol:
-		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::SlashToIdol))
+		// Idol遷移も時間で統一（余韻用に固定）
+		if (m_StateTimer >= (m_ExitTime + 0.4f))
 		{
 			m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
 		}
@@ -110,6 +109,10 @@ void BossSlashState::Update()
 	default:
 		break;
 	}
+
+#if _DEBUG
+	DrawImGui();
+#endif
 }
 
 void BossSlashState::LateUpdate()
@@ -121,7 +124,9 @@ void BossSlashState::Draw()
 }
 
 void BossSlashState::Exit()
-{	// 当たり判定を無効化.
+{
+	// window 制御のコライダーを確実にOFF
+	m_pOwner->SetColliderActiveByName("boss_Hand_R", false);
 	m_pOwner->SetAttackColliderActive(false);
 }
 

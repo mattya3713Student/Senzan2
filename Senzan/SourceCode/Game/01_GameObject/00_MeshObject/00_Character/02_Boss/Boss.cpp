@@ -17,6 +17,7 @@
 
 #include "BossAttackStateBase/BossSpecialState/BossSpecialState.h"
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossLaserState/BossLaserState.h"
+#include "BossAttackStateBase/BossParryState/BossParryState.h"
 
 #include "Resource/Mesh/02_Skin/SkinMesh.h"
 
@@ -100,7 +101,7 @@ Boss::Boss()
 	press_collider->SetHeight(20.0f);
 	press_collider->SetRadius(5.1f);
 	press_collider->SetPositionOffset(0.f, 1.5f, 0.f);
-	press_collider->SetMyMask(eCollisionGroup::Press);
+	press_collider->SetMyMask(eCollisionGroup::BossPress);
 	press_collider->SetTarGetTargetMask(eCollisionGroup::Press);
 
 	m_upColliders->AddCollider(std::move(press_collider));
@@ -189,15 +190,11 @@ void Boss::Update()
 
 void Boss::LateUpdate()
 {
-
 	Character::LateUpdate();
 
 	if (!m_State) {
 		return;
 	}
-
-	UpdateSlashColliderTransform();
-	UpdateStompColliderTransform();
 
 	// ステートマシーンの最終更新を実行.
 	m_State->LateUpdate();
@@ -213,8 +210,8 @@ void Boss::Draw()
 {
 	MeshObject::Draw();
 	m_State->Draw();
-
 }
+
 void Boss::Init()
 {
 }
@@ -393,15 +390,9 @@ void Boss::HandleParryDetection()
 
 			if ((other_group & eCollisionGroup::Player_Parry) != eCollisionGroup::None)
 			{
-				auto* currentState = m_State->m_pOwner; // 現在の状態を取得
-				if (BossAttackStateBase* attackState = dynamic_cast<BossAttackStateBase*>(currentState))
-				{
-					// 現在のステートが BossAttackStateBase だった場合のみ実行される
-					attackState->ParryTime();
-					return;
-				}
-
+				// 別ステートへ遷移させる（共通のパリィステート）
 				m_pAttackCollider->SetActive(false);
+				m_State->ChangeState(std::make_shared<BossParryState>(this));
 
 				// 一フレーム1回.
 				return;
@@ -501,5 +492,25 @@ void Boss::UpdateStompColliderTransform()
 
 		// 外部供給ポインタを設定
 		m_pStompCollider->SetExternalTransformPointer(&m_StompBoneWorldTransform);
+	}
+}
+
+void Boss::SetColliderActiveByName(const std::string& name, bool active)
+{
+	// NOTE: 文字列は typo を避けるため定数化推奨
+	if (name == "boss_Hand_R")
+	{
+		if (auto* col = GetSlashCollider()) col->SetActive(active);
+		return;
+	}
+	if (name == "boss_pSphere28")
+	{
+		if (auto* col = GetStompCollider()) col->SetActive(active);
+		return;
+	}
+	if (name == "boss_Shout")
+	{
+		if (auto* col = GetShoutCollider()) col->SetActive(active);
+		return;
 	}
 }

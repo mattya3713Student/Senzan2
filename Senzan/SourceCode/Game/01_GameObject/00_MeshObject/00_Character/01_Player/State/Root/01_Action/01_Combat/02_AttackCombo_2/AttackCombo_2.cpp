@@ -17,10 +17,7 @@ namespace PlayerState {
 AttackCombo_2::AttackCombo_2(Player* owner)
     : Combat(owner)
 {
-    // default collider windows for this attack
-    ClearColliderWindows();
-    AddColliderWindow(0.3f, 0.1f);
-    AddColliderWindow(1.0f, 0.1f);
+    LoadSettings();
 }
 AttackCombo_2::~AttackCombo_2()
 {
@@ -36,38 +33,10 @@ void AttackCombo_2::Enter()
 {
     Combat::Enter();
 
-    // Attempt to load state-specific values including collider windows
-    try {
-        std::filesystem::path filePath = std::filesystem::current_path() / "Data" / "Json" / "Player" / "AttackCombo" / "AttackCombo_2.json";
-        if (std::filesystem::exists(filePath))
-        {
-            json j = FileManager::JsonLoad(filePath);
-            if (j.contains("m_AnimSpeed")) m_AnimSpeed = j["m_AnimSpeed"].get<float>();
-            if (j.contains("m_MinComboTransTime")) m_MinComboTransTime = j["m_MinComboTransTime"].get<float>();
-            if (j.contains("m_ComboStartTime")) m_ComboStartTime = j["m_ComboStartTime"].get<float>();
-            if (j.contains("m_ComboEndTime")) m_ComboEndTime = j["m_ComboEndTime"].get<float>();
-
-            // Load collider windows if present
-            if (j.contains("ColliderWindows") && j["ColliderWindows"].is_array()) {
-                m_ColliderWindows.clear();
-                for (const auto &entry : j["ColliderWindows"]) {
-                    if (entry.contains("start") && entry.contains("duration")) {
-                        float s = entry["start"].get<float>();
-                        float d = entry["duration"].get<float>();
-                        AddColliderWindow(s, d);
-                    }
-                }
-            }
-
-            Log::GetInstance().Info("", "AttackCombo_2: Loaded settings.");
-        }
-    }
-    catch (const std::exception& e) { Log::GetInstance().Info("", std::string("AttackCombo_2: Load failed: ") + e.what()); }
-
     // アニメーション設定.
     m_pOwner->SetIsLoop(false);
     m_pOwner->SetAnimTime(0.0);
-    m_pOwner->SetAnimSpeed(m_AnimSpeed); // use per-state anim speed
+    m_pOwner->SetAnimSpeed(m_AnimSpeed);
     m_pOwner->ChangeAnim(Player::eAnim::Attack_2);
 
     // 当たり判定を無効化（ステート側で自動切替）.
@@ -95,15 +64,27 @@ void AttackCombo_2::Enter()
 
     // 入力を取得.
     DirectX::XMFLOAT2 input_vec = VirtualPad::GetInstance().GetAxisInput(VirtualPad::eGameAxisAction::Move);
+    DirectX::XMVECTOR input_vec_v = DirectX::XMVectorSet(input_vec.x, 0.0f, input_vec.y, 0.0f);
 
     // 少し近づく.
-    DirectX::XMVECTOR v_small_move = DirectX::XMVectorScale(v_diff_vec, 0.1f);
-    DirectX::XMStoreFloat3(&m_pOwner->m_MoveVec, v_small_move);
+    float inputLenSq = DirectX::XMVectorGetX(DirectX::XMVector3LengthSq(input_vec_v));
+    if (inputLenSq > EPSILON_E4)
+    {
+        // 入力ベクトルを正規化して m_MoveVec に格納.
+        DirectX::XMVECTOR v_in_norm = DirectX::XMVector3Normalize(input_vec_v);
+        DirectX::XMFLOAT3 out_move = {};
+        DirectX::XMStoreFloat3(&out_move, v_in_norm);
+        m_pOwner->m_MoveVec = out_move;
+    }
+    else
+    {
+        // 敵方向を使用
+        m_pOwner->m_MoveVec = diff_vec;
+    }
 }
+
 void AttackCombo_2::Update()
 {
-
-
     ImGui::Begin(IMGUI_JP("AttackCombo_2 デバッグ"));
 
     static bool isStop = false;

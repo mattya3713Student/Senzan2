@@ -15,9 +15,6 @@
 
 BossChargeSlashState::BossChargeSlashState(Boss* owner)
 	: BossAttackStateBase(owner)
-
-	, m_Parry(enParry::none)
-
 	, m_List(enChargeSlashAnim::none)
 {
 	Enter();
@@ -56,7 +53,8 @@ void BossChargeSlashState::Enter()
 	DirectX::XMStoreFloat3(&m_StartPos, BossPosXM);
 
 	//アニメーション速度.
-	m_pOwner->SetAnimSpeed(5.0);
+	m_pOwner->SetAnimSpeed(m_pOwner->m_AnimSpeed);
+
 	//ため斬りアニメーションの再生.
 	m_pOwner->ChangeAnim(Boss::enBossAnim::ChargeAttack);
 }
@@ -106,51 +104,6 @@ void BossChargeSlashState::Exit()
 void BossChargeSlashState::BoneDraw()
 {
 }
-
-void BossChargeSlashState::ParryTime()
-{
-	switch (m_Parry)
-	{
-	case BossChargeSlashState::enParry::none:
-		//ひるんだ時のアニメーションの再生へ入る.
-		m_Parry = enParry::Flinch;
-		break;
-	case BossChargeSlashState::enParry::Flinch:
-		//アニメーションの再生.
-		m_pOwner->SetAnimSpeed(3.0);
-		m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchParis);
-		//アニメーションの再生が終了したら.
-		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::FlinchParis))
-		{
-			m_pOwner->SetAnimSpeed(2.5);
-			m_pOwner->ChangeAnim(Boss::enBossAnim::Flinch);
-			//怯み中のコードに入る.
-			m_Parry = enParry::FlinchTimer;
-		}
-		break;
-	case BossChargeSlashState::enParry::FlinchTimer:
-		//怯み中のアニメーションの再生が終了したら.
-		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Flinch))
-		{
-			m_pOwner->SetAnimSpeed(5.0);
-			m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchToIdol);
-			//待機にもどるアニメーションの再生.
-			m_Parry = enParry::FlinchToIdol;
-		}
-		break;
-	case BossChargeSlashState::enParry::FlinchToIdol:
-		//待機へ戻るアニメーションの再生が終了したら.
-		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::FlinchToIdol))
-		{
-			m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
-		}
-		break;
-	default:
-		break;
-	}
-
-}
-
 
 void BossChargeSlashState::BossAttack()
 {

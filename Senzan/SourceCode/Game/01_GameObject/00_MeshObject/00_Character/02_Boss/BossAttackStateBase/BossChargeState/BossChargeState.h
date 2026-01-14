@@ -26,7 +26,6 @@ public:
 private:
 	std::shared_ptr<BossChargeSlashState> m_ChargeSlash;
 
-	// timers moved to base: float m_Timer, m_TransitionTimer
 	// ためフラグ
 	bool ChargeFlag = false;
 };

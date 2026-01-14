@@ -10,7 +10,6 @@ using namespace DirectX;
 BossSpecialState::BossSpecialState(Boss* owner)
 	: BossAttackStateBase(owner)
 	, m_List(enSpecial::None)
-	, m_Flinch(enFlinch::none)
 	, m_Velocity(0.0f, 0.0f, 0.0f)
 	, m_SpecialPower(1.5f)
 	, m_Gravity(0.089f)
@@ -121,40 +120,6 @@ void BossSpecialState::Exit()
 
 	// 当たり判定を有効化.
 	m_pOwner->SetAttackColliderActive(false);
-}
-
-void BossSpecialState::ParryTime()
-{
-	switch (m_Flinch)
-	{
-	case BossSpecialState::enFlinch::none:
-		m_Flinch = enFlinch::Flinch;
-		break;
-	case BossSpecialState::enFlinch::Flinch:
-		m_pOwner->SetAnimSpeed(3.0);
-		m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchParis);
-		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::FlinchParis))
-		{
-			m_pOwner->SetAnimSpeed(1.0);
-			m_pOwner->ChangeAnim(Boss::enBossAnim::Flinch);
-			m_Flinch = enFlinch::FlinchTimer;
-		}
-		break;
-	case BossSpecialState::enFlinch::FlinchTimer:
-		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Flinch))
-		{
-			m_pOwner->SetAnimSpeed(3.0);
-			m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchToIdol);
-			m_Flinch = enFlinch::FlinchToIdol;
-		}
-		break;
-	case BossSpecialState::enFlinch::FlinchToIdol:
-		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::FlinchToIdol))
-		{
-			m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
-		}
-		break;
-	}
 }
 
 void BossSpecialState::ChargeTime()

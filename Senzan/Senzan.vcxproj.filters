@@ -138,6 +138,8 @@
     <ClCompile Include="SourceCode\System\Singleton\ResourceManager\SoundManager\SoundManager.cpp" />
     <ClCompile Include="SourceCode\Game\00_Scene\Ex_Test\04_AnimationTuning\AnimationTuningScene.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\PostEffectManager\PostEffectManager.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossParryState\BossParryState.cpp" />
+    <ClCompile Include="SourceCode\Game\02_Camera\FirstPersonCamera\FirstPersonCamera.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SourceCode\Constant.h" />
@@ -291,6 +293,8 @@
     <ClInclude Include="SourceCode\Game\03_Collision\00_Core\CollisionSpec.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\Ex_Test\04_AnimationTuning\AnimationTuningScene.h" />
     <ClInclude Include="SourceCode\System\Singleton\PostEffectManager\PostEffectManager.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossParryState\BossParryState.h" />
+    <ClInclude Include="SourceCode\Game\02_Camera\FirstPersonCamera\FirstPersonCamera.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Shader\PMX\Header.hlsli" />

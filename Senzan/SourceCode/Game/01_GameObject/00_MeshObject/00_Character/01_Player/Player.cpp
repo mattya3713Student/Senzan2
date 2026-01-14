@@ -124,7 +124,7 @@ Player::Player()
     pressCollider->SetRadius(1.0f);
     pressCollider->SetPositionOffset(0.f, 1.5f, 0.f);
     pressCollider->SetMyMask(eCollisionGroup::Press);
-    pressCollider->SetTarGetTargetMask(eCollisionGroup::Press);
+    pressCollider->SetTarGetTargetMask(eCollisionGroup::BossPress);
 
     m_upColliders->AddCollider(std::move(pressCollider));
 

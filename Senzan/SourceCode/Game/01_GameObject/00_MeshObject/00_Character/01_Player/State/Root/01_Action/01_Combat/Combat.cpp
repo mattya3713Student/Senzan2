@@ -73,9 +73,7 @@ void Combat::Exit()
         Collider.IsAct = false;
         Collider.IsEnd = false;
     }
-	// On exit, make sure collider is disabled and windows cleared
-	if (m_pOwner) m_pOwner->SetAttackColliderActive(false);
-	ClearColliderWindows();
+    if (m_pOwner) m_pOwner->SetAttackColliderActive(false);
 
 	Action::Exit();
 }
@@ -86,18 +84,15 @@ void Combat::LoadSettings()
     if (fileName == "") return;
 
     try {
-        std::filesystem::path filePath = std::filesystem::current_path() / "Data" / "Json" / "Player" / "AttackCombo" / fileName;
-
+    //C:\Users\green\source\C++\Senzan\Senzan\Data\Json\Player\AttackCombo
+        std::filesystem::path filePath = std::filesystem::current_path() / fileName;
         if (std::filesystem::exists(filePath)) {
             json j = FileManager::JsonLoad(filePath);
-
-            // 基本パラメータの読み込み
-            if (j.contains("m_AnimSpeed"))      m_AnimSpeed = j["m_AnimSpeed"].get<float>();
+            if (j.contains("m_AnimSpeed")) m_AnimSpeed = j["m_AnimSpeed"].get<float>();
             if (j.contains("m_MinComboTransTime")) m_MinComboTransTime = j["m_MinComboTransTime"].get<float>();
             if (j.contains("m_ComboStartTime")) m_ComboStartTime = j["m_ComboStartTime"].get<float>();
-            if (j.contains("m_ComboEndTime"))   m_ComboEndTime = j["m_ComboEndTime"].get<float>();
+            if (j.contains("m_ComboEndTime")) m_ComboEndTime = j["m_ComboEndTime"].get<float>();
 
-            // コライダーウィンドウの読み込み
             if (j.contains("ColliderWindows") && j["ColliderWindows"].is_array()) {
                 m_ColliderWindows.clear();
                 for (const auto& entry : j["ColliderWindows"]) {
@@ -106,18 +101,9 @@ void Combat::LoadSettings()
                     }
                 }
             }
-            Log::GetInstance().Info("", std::string(fileName) + " loaded successfully.");
         }
     }
-    catch (const std::exception& e) {
-        Log::GetInstance().Info("", "Load failed: " + std::string(e.what()));
-    }
-}
-
-void Combat::ClearColliderWindows()
-{
-	m_ColliderWindows.clear();
-	if (m_pOwner) m_pOwner->SetAttackColliderActive(false);
+    catch (...) {}
 }
 
 void Combat::AddColliderWindow(float start, float duration)

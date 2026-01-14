@@ -19,14 +19,6 @@ public:
         Trans
     };
 
-    enum class enParry : byte
-    {
-        none,
-        Flinch,
-        FlinchTimer,
-        FlinchToIdol,
-    };
-
 public:
     BossThrowingState(Boss* owner);
     ~BossThrowingState() override;
@@ -37,14 +29,12 @@ public:
     void Draw() override;
     void Exit() override;
 
-    void ParryTime() override;
-
 private:
     void BossAttack() override;
 
 private:
     std::unique_ptr<SnowBall> m_pBall;
     enThrowing m_List;
-    enParry m_Parry;
     bool m_IsLaunched;
 };
+

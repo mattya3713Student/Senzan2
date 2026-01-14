@@ -264,6 +264,7 @@
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossAttackStateBase.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossChargeSlashState\BossChargeSlashState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossChargeState\BossChargeState.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossParryState\BossParryState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossThrowingState\BossThrowingState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossDeadState\BossDeadState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossLaserState\BossLaserState.cpp" />
@@ -290,6 +291,7 @@
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UITitle\UITitle.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\GameObject.cpp" />
     <ClCompile Include="SourceCode\Game\02_Camera\CameraBase.cpp" />
+    <ClCompile Include="SourceCode\Game\02_Camera\FirstPersonCamera\FirstPersonCamera.cpp" />
     <ClCompile Include="SourceCode\Game\02_Camera\LockOnCamera\LockOnCamera.cpp" />
     <ClCompile Include="SourceCode\Game\03_Collision\00_Core\00_Box\BoxCollider.cpp" />
     <ClCompile Include="SourceCode\Game\03_Collision\00_Core\01_Capsule\CapsuleCollider.cpp" />
@@ -368,9 +370,11 @@
     <ClInclude Include="Data\ImGui\Library\imstb_truetype.h" />
     <ClInclude Include="SourceCode\Constant.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\Ex_Test\04_AnimationTuning\AnimationTuningScene.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossParryState\BossParryState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\Select\Select.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\UIGameMain\UIGameMain.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\04_BackGround\BackGround.h" />
+    <ClInclude Include="SourceCode\Game\02_Camera\FirstPersonCamera\FirstPersonCamera.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\00_Core\CollisionSpec.h" />
     <ClInclude Include="SourceCode\Game\02_Camera\LockOnCamera\LockOnCamera.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\00_Core\00_Box\BoxCollider.h" />

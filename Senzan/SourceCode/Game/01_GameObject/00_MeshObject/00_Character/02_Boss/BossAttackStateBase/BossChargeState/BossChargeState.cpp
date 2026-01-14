@@ -6,7 +6,6 @@
 
 BossChargeState::BossChargeState(Boss* owner)
 	: BossAttackStateBase		(owner)
-	, m_ChargeSlash				()
 {
 }
 

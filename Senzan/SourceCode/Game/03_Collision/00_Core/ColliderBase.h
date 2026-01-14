@@ -23,6 +23,7 @@ enum class eCollisionGroup : uint32_t
 	Enemy_PreAttack = 1 << 6,
 	Enemy_Damage	= 1 << 7,
 	Press			= 1 << 8,
+	BossPress		= 1 << 9,
 
 	_Max = 0xFFFFFFFF,
 };

@@ -36,8 +36,6 @@ namespace PlayerState
         virtual std::string GetSettingsFileName() const { return std::string(); }
         virtual void LoadSettings();
 
-        // Collider window helpers (for attack hit windows)
-        void ClearColliderWindows();
         void AddColliderWindow(float start, float duration);
         void ProcessColliderWindows(float currentTime);
         void RenderColliderWindowsUI(const char* title = "コライダー ウィンドウ設定");
