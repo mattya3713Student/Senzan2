@@ -3,7 +3,7 @@
 #include <DirectXMath.h>
 
 namespace {
-	static constexpr DirectX::XMFLOAT2 MOUSE_SENSITIVITY = DirectX::XMFLOAT2(0.02f, 0.02f);
+	static constexpr DirectX::XMFLOAT2 MOUSE_SENSITIVITY = DirectX::XMFLOAT2(0.001f, 0.001f);
 	static constexpr DirectX::XMFLOAT2 CONTROLLER_SENSITIVITY = DirectX::XMFLOAT2(0.2f, 0.2f);
 	static constexpr float PITCH_LIMIT_RAD = D3DXToRadian(60.0f); 
 	static constexpr float CAMERA_SPEED = 1.0f;

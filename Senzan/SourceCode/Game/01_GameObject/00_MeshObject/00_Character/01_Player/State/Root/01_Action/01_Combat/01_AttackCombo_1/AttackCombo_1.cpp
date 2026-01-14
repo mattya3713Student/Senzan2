@@ -14,6 +14,7 @@ namespace PlayerState {
 AttackCombo_1::AttackCombo_1(Player* owner)
     : Combat(owner)
 {
+    LoadSettings();
 }
 
 AttackCombo_1::~AttackCombo_1()
@@ -28,29 +29,6 @@ constexpr PlayerState::eID AttackCombo_1::GetStateID() const
 void AttackCombo_1::Enter()
 {
     Combat::Enter();
-
-    // Try loading settings
-    try {
-        std::filesystem::path filePath = std::filesystem::current_path() / "Data" / "Json" / "Player" / "AttackCombo" / "AttackCombo_1.json";
-        if (std::filesystem::exists(filePath))
-        {
-            json j = FileManager::JsonLoad(filePath);
-            if (j.contains("m_AnimSpeed")) m_AnimSpeed = j["m_AnimSpeed"].get<float>();
-            if (j.contains("m_MinComboTransTime")) m_MinComboTransTime = j["m_MinComboTransTime"].get<float>();
-            if (j.contains("m_ComboStartTime")) m_ComboStartTime = j["m_ComboStartTime"].get<float>();
-            if (j.contains("m_ComboEndTime")) m_ComboEndTime = j["m_ComboEndTime"].get<float>();
-
-            if (j.contains("ColliderWindows") && j["ColliderWindows"].is_array()) {
-                m_ColliderWindows.clear();
-                for (const auto& entry : j["ColliderWindows"]) {
-                    if (entry.contains("start") && entry.contains("duration")) {
-                        AddColliderWindow(entry["start"].get<float>(), entry["duration"].get<float>());
-                    }
-                }
-            }
-        }
-    }
-    catch (...) {}
 
     m_pOwner->SetIsLoop(false);
     m_pOwner->SetAnimTime(0.0);

@@ -1,9 +1,9 @@
-#pragma once
+ï»¿#pragma once
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossAttackStateBase.h"
 
 /********************************************************************************
-*	ƒ{ƒX‚Ì“ÁêUŒ‚ƒNƒ‰ƒX.
-*	:‚±‚ÌƒNƒ‰ƒX‚Å‚ÍPlayer‚ÆBoss‚ÌˆÊ’u‚ğæ“¾‚µ‚Ä•ú•¨‰^“®‚ğ‚³‚¹‚ÄÀ‘•‚·‚é.
+*	ãƒœã‚¹ã®ç‰¹æ®Šæ”»æ’ƒã‚¯ãƒ©ã‚¹.
+*	:ã“ã®ã‚¯ãƒ©ã‚¹ã§ã¯Playerã¨Bossã®ä½ç½®ã‚’å–å¾—ã—ã¦æ”¾ç‰©é‹å‹•ã‚’ã•ã›ã¦å®Ÿè£…ã™ã‚‹.
 **/
 
 class Boss;
@@ -15,22 +15,14 @@ class BossSpecialState
 public:
 	enum class enSpecial : byte
 	{
-		None,		//‰½‚à‚µ‚È‚¢.
+		None,		//ä½•ã‚‚ã—ãªã„.
 		Charge,
-		Jump,		//”ò‚ñ‚Å‚¢‚é‚Æ‚«
-		Attack,		//Player‚ÉŒü‚©‚Á‚Ä‚ÌUŒ‚.
-		CoolTime,	//ƒN[ƒ‹ƒ^ƒCƒ€.
-		Trans		//Idol‚É‘JˆÚ.
+		Jump,		//é£›ã‚“ã§ã„ã‚‹ã¨ã
+		Attack,		//Playerã«å‘ã‹ã£ã¦ã®æ”»æ’ƒ.
+		CoolTime,	//ã‚¯ãƒ¼ãƒ«ã‚¿ã‚¤ãƒ .
+		Trans		//Idolã«é·ç§».
 	};
 
-	//ƒpƒŠƒB—p‚Ì—ñ‹“.
-	enum class enFlinch : byte
-	{
-		none,			//‰½‚à‚µ‚È‚¢.
-		Flinch,			//ƒpƒŠƒB.
-		FlinchTimer,	//‹¯‚İó‘Ô’†.
-		FlinchToIdol,	//‹¯‚İ‚©‚ç‘Ò‹@‚Ö‚Ì‘JˆÚ.
-	};
 public:
 	BossSpecialState(Boss* owner);
 	~BossSpecialState() override;
@@ -41,56 +33,50 @@ public:
 	void Draw() override;
 	void Exit() override;
 
-	//ƒpƒŠƒB‚µ‚Ä‚¢‚é‚Æ‚«‚Æ‚µ‚Ä‚¢‚È‚¢‚Æ‚«‚ÌƒR[ƒh.
-
-	void ParryTime() override;
-
 private:
 	//============================================================
-	// “ÁêUŒ‚‚ÌCharge/Jump/Attack‚Ì‚ÌŠÖ”
+	// ç‰¹æ®Šæ”»æ’ƒã®Charge/Jump/Attackã®æ™‚ã®é–¢æ•°
 	//============================================================
-	//ƒWƒƒƒ“ƒv‚Ì‚ÉPlayer‚Ì’Ç”öƒR[ƒh‚ğ‘‚­ŠÖ”. 
+	//ã‚¸ãƒ£ãƒ³ãƒ—ã®æ™‚ã«Playerã®è¿½å°¾ã‚³ãƒ¼ãƒ‰ã‚’æ›¸ãé–¢æ•°. 
 	void JumpTime();
-	//ƒAƒ^ƒbƒNŠÖ”.
+	//ã‚¢ã‚¿ãƒƒã‚¯æ™‚é–¢æ•°.
 	void BossAttack() override;
 
 	void ChargeTime();
 private:
 	//============================================================
-	// “ÁêUŒ‚‚É•K—v‚É‚È‚éƒƒ“ƒo•Ï”.
+	// ç‰¹æ®Šæ”»æ’ƒã«å¿…è¦ã«ãªã‚‹ãƒ¡ãƒ³ãƒå¤‰æ•°.
 	//============================================================
 	enSpecial m_List;
 
-	enFlinch m_Flinch;
-
 	DirectX::XMFLOAT3 m_Velocity;
 
-	//R‚È‚è‚Ì‚Ì‰‘¬.
+	//å±±ãªã‚Šã®æ™‚ã®åˆé€Ÿ.
 	float m_SpecialPower;
-	//d—Í‰Á‘¬“x.
+	//é‡åŠ›åŠ é€Ÿåº¦.
 	float m_Gravity;
-	//“ÁêUŒ‚’†‚Ìƒtƒ‰ƒO.
+	//ç‰¹æ®Šæ”»æ’ƒä¸­ã®ãƒ•ãƒ©ã‚°.
 	bool m_SpecialFrag;
-	//’…’nƒtƒ‰ƒO.
+	//ç€åœ°ãƒ•ãƒ©ã‚°.
 	bool m_GroundedFrag;
 
-	//ŠÔ‚Ìƒƒ“ƒo•Ï”.
-	//ŠÔ‰ÁZ‚Ég—p‚·‚é.
+	//æ™‚é–“ã®ãƒ¡ãƒ³ãƒå¤‰æ•°.
+	//æ™‚é–“åŠ ç®—ã«ä½¿ç”¨ã™ã‚‹.
 	float m_Timer;
-	//‘JˆÚ‚·‚é‚Æ‚«‚Ég—p‚·‚é.
+	//é·ç§»ã™ã‚‹ã¨ãã«ä½¿ç”¨ã™ã‚‹.
 	float m_TransitionTimer;
-	//UŒ‚ŠJn—p‚Ìƒ^ƒCƒ€•Ï”.
+	//æ”»æ’ƒé–‹å§‹ç”¨ã®ã‚¿ã‚¤ãƒ å¤‰æ•°.
 	float m_AttackTimer;
 
-	//ã‚ª‚é‘¬“x‚Ìİ’è.
+	//ä¸ŠãŒã‚‹é€Ÿåº¦ã®è¨­å®š.
 	float m_UpSpeed;
 
 	//============================================================
-	// “ËiUŒ‚‚É•K—v‚Èƒƒ“ƒo•Ï”.
+	// çªé€²æ”»æ’ƒã«å¿…è¦ãªãƒ¡ãƒ³ãƒå¤‰æ•°.
 	//============================================================
-	DirectX::XMFLOAT3 m_TargetDirection; // “ËiŠJn‚ÉŠm’è‚µ‚½–Ú•W•ûŒü
-	float m_MaxTrackingAngle;			 // ’Ç”ö‚ÌŒÀŠEŠp“x (“x”–@)
-	float m_AttackMoveSpeed;			 // “Ëi‘¬“x
-	float m_AttackDistance;				 // “Ëi‚·‚éÅ‘å‹——£
+	DirectX::XMFLOAT3 m_TargetDirection; // çªé€²é–‹å§‹æ™‚ã«ç¢ºå®šã—ãŸç›®æ¨™æ–¹å‘
+	float m_MaxTrackingAngle;			 // è¿½å°¾ã®é™ç•Œè§’åº¦ (åº¦æ•°æ³•)
+	float m_AttackMoveSpeed;			 // çªé€²é€Ÿåº¦
+	float m_AttackDistance;				 // çªé€²ã™ã‚‹æœ€å¤§è·é›¢
 	float m_DistanceTraveled;
 };

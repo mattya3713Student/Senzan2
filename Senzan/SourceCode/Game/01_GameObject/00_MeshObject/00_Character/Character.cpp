@@ -5,9 +5,6 @@
 #include "Game/03_Collision/00_Core/01_Capsule/CapsuleCollider.h"
 #include "Game/03_Collision/00_Core/02_Sphere/SphereCollider.h"
 
-// 押し戻し判定.
-constexpr eCollisionGroup PRESS_GROUP = eCollisionGroup::Press;
-
 Character::Character()
 	: MeshObject    ()
 	, m_upColliders ()
@@ -51,7 +48,7 @@ void Character::HandleCollisionResponse()
         if (!current_collider) { continue; }
 
         // 自分がPress属性出ないならreturn.
-        if ((current_collider->GetMyMask() & PRESS_GROUP) == eCollisionGroup::None) {
+        if ((current_collider->GetMyMask() & eCollisionGroup::Press) == eCollisionGroup::None) {
             continue;
         }
 
@@ -66,17 +63,24 @@ void Character::HandleCollisionResponse()
             if (!otherCollider) { continue; }
 
             // 相手のグループが Press であるか (このPressグループとの衝突のみを処理する).
-            if ((otherCollider->GetMyMask() & PRESS_GROUP) == eCollisionGroup::None) { continue; }
+            if ((otherCollider->GetMyMask() & eCollisionGroup::BossPress) == eCollisionGroup::None) { continue; }
 
             if (info.PenetrationDepth > 0.0f)
             {
                 DirectX::XMVECTOR v_normal = DirectX::XMLoadFloat3(&info.Normal);
-                DirectX::XMVECTOR v_correction = DirectX::XMVectorScale(v_normal, -info.PenetrationDepth);
-                // このゲームにy座標の概念はないのでyは切り捨て.
+                // yは無視する.
+                v_normal = DirectX::XMVectorSetY(v_normal, 0.0f);
+
+                // 補正量 = 法線 * penetrationDepth.
+                DirectX::XMVECTOR v_correction = DirectX::XMVectorScale(v_normal, info.PenetrationDepth);
+
+                // y成分を0にする.
                 v_correction = DirectX::XMVectorSetY(v_correction, 0.0f);
+
                 DirectX::XMFLOAT3 correction = {};
                 DirectX::XMStoreFloat3(&correction, v_correction);
 
+                // 位置を加算して押し返す.
                 AddPosition(correction);
             }
         }

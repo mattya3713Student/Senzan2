@@ -6,10 +6,7 @@
 
 BossThrowingState::BossThrowingState(Boss* owner)
 	: BossAttackStateBase(owner)
-	, m_Timer(0.0f)
-	, m_TransitionTimer(60.0f)
 	, m_List(enThrowing::None)
-	, m_Parry(enParry::none)
 	, m_pBall(std::make_unique<SnowBall>())
 {
 }
@@ -40,13 +37,6 @@ void BossThrowingState::Enter()
 void BossThrowingState::Update()
 {
 	float deltaTime = Time::GetInstance().GetDeltaTime();
-
-	// パリィ（怯み）状態の場合はUpdateをスキップしてParryTimeへ
-	if (m_Parry != enParry::none)
-	{
-		ParryTime();
-		return;
-	}
 
 	switch (m_List)
 	{
@@ -120,39 +110,8 @@ void BossThrowingState::Exit()
 	m_pOwner->SetAttackColliderActive(false);
 }
 
-void BossThrowingState::ParryTime()
-{
-	// 省略なしで記述（パリィロジック）
-	switch (m_Parry)
-	{
-	case enParry::Flinch:
-		m_pOwner->SetAnimSpeed(5.0);
-		m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchParis);
-		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::FlinchParis))
-		{
-			m_pOwner->SetAnimSpeed(5.0);
-			m_pOwner->ChangeAnim(Boss::enBossAnim::Flinch);
-			m_Parry = enParry::FlinchTimer;
-		}
-		break;
-	case enParry::FlinchTimer:
-		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Flinch))
-		{
-			m_pOwner->SetAnimSpeed(3.0);
-			m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchToIdol);
-			m_Parry = enParry::FlinchToIdol;
-		}
-		break;
-	case enParry::FlinchToIdol:
-		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::FlinchToIdol))
-		{
-			m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
-		}
-		break;
-	}
-}
-
 void BossThrowingState::BossAttack()
 {
 	m_pBall->Update();
 }
+

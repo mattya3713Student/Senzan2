@@ -15,9 +15,7 @@ namespace PlayerState {
 AttackCombo_0::AttackCombo_0(Player* owner)
     : Combat(owner)
 {
-    ClearColliderWindows();
-    AddColliderWindow(0.8f, 0.1f);
-    AddColliderWindow(1.0f, 0.1f);
+    LoadSettings();
 }
 
 AttackCombo_0::~AttackCombo_0() {}
@@ -28,28 +26,6 @@ void AttackCombo_0::Enter()
 {
     Combat::Enter();
 
-    // Try loading settings
-    try {
-        std::filesystem::path filePath = std::filesystem::current_path() / "Data" / "Json" / "Player" / "AttackCombo" / "AttackCombo_0.json";
-        if (std::filesystem::exists(filePath)) {
-            json j = FileManager::JsonLoad(filePath);
-            if (j.contains("m_AnimSpeed")) m_AnimSpeed = j["m_AnimSpeed"].get<float>();
-            if (j.contains("m_MinComboTransTime")) m_MinComboTransTime = j["m_MinComboTransTime"].get<float>();
-            if (j.contains("m_ComboStartTime")) m_ComboStartTime = j["m_ComboStartTime"].get<float>();
-            if (j.contains("m_ComboEndTime")) m_ComboEndTime = j["m_ComboEndTime"].get<float>();
-
-            if (j.contains("ColliderWindows") && j["ColliderWindows"].is_array()) {
-                m_ColliderWindows.clear();
-                for (const auto &entry : j["ColliderWindows"]) {
-                    if (entry.contains("start") && entry.contains("duration")) {
-                        AddColliderWindow(entry["start"].get<float>(), entry["duration"].get<float>());
-                    }
-                }
-            }
-        }
-    }
-    catch (...) {}
-
     m_pOwner->SetIsLoop(false);
     m_pOwner->SetAnimTime(0.0);
     m_pOwner->SetAnimSpeed(m_AnimSpeed);
@@ -57,7 +33,6 @@ void AttackCombo_0::Enter()
 
     m_pOwner->SetAttackColliderActive(false);
 
-    // compute distance
     DirectX::XMFLOAT3 target_pos = m_pOwner->m_TargetPos;
     DirectX::XMVECTOR v_target_pos = DirectX::XMLoadFloat3(&target_pos);
     v_target_pos = DirectX::XMVectorSetY(v_target_pos, 0.f);
@@ -72,7 +47,6 @@ void AttackCombo_0::Enter()
     DirectX::XMFLOAT3 diff_vec; DirectX::XMStoreFloat3(&diff_vec, v_diff_vec);
     m_pOwner->GetTransform()->RotateToDirection(diff_vec);
 
-    // Ensure both the state's move vector and the player's exposed move vector are set
     m_pOwner->m_MoveVec = diff_vec;
 }
 
@@ -85,7 +59,6 @@ void AttackCombo_0::Update()
 
     RenderColliderWindowsUI("AttackCombo_0 Collider Windows");
 
-    // Show whether combo input is currently accepted (green) or not (red)
     bool isAccepting = (m_currentTime >= m_ComboStartTime && m_currentTime <= m_ComboEndTime);
     if (isAccepting) {
         ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), IMGUI_JP("入力受付中"));

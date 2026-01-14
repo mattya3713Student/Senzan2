@@ -33,9 +33,12 @@ public:
 private:
 	void BossAttack() override;
 private:
-
+	// ホーミング停止秒数（m_StateTimer がこの値を超えるまでだけ追尾）
+	float m_HomingEndTime = 0.2f;
+	
 	//攻撃開始位置.
 	DirectX::XMFLOAT3 m_StartPos;
 
 	enList m_List;
 };
+

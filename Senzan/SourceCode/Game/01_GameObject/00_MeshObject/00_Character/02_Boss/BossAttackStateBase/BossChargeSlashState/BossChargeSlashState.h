@@ -1,11 +1,11 @@
-#pragma once
+ï»¿#pragma once
 #include "..//BossAttackStateBase.h"
 
 #include "00_MeshObject/00_Character/02_Boss/BossIdolState/BossIdolState.h"
 
 
 /**********************************************************
-*	ƒ{ƒXUŒ‚—­‚ßUŒ‚.
+*	ãƒœã‚¹æ”»æ’ƒæºœã‚æ”»æ’ƒ.
 **/
 
 class BossChargeSlashState
@@ -20,13 +20,6 @@ public:
 		ChargeSlashToIdol,
 	};
 
-	enum class enParry : byte
-	{
-		none,
-		Flinch,			//ƒpƒŠƒB.
-		FlinchTimer,	//‹¯‚İó‘Ô’†.
-		FlinchToIdol,	//‹¯‚İ‚©‚ç‘Ò‹@‚Ö‚Ì‘JˆÚ.
-	};
 public:
 	BossChargeSlashState(Boss* owner);
 	~BossChargeSlashState() override;
@@ -39,36 +32,31 @@ public:
 
 	void BoneDraw();
 
-	void ParryTime() override;
-
-
 private:
 	void BossAttack() override;
 
-	//‰ŠúŠp“x‚ğİ’è‚·‚éŠÖ”.
+	//åˆæœŸè§’åº¦ã‚’è¨­å®šã™ã‚‹é–¢æ•°.
 	void SetInitialAngle(float angle)
 	{
 		m_RotationAngle = angle;
 	};
 private:
-	//ƒtƒF[ƒY‚ÌŠÇ—‚Ég‚¤.
+	//ãƒ•ã‚§ãƒ¼ã‚ºã®ç®¡ç†ã«ä½¿ã†.
 	enum class Phase
 	{
-		Charge,		//‚½‚ß.
-		Attack,		//UŒ‚(a‚è).
-		Cooldown	//d’¼.
+		Charge,		//ãŸã‚.
+		Attack,		//æ”»æ’ƒ(æ–¬ã‚Š).
+		Cooldown	//ç¡¬ç›´.
 	};
 private:
-	//UŒ‚ŠJn‚ÌˆÊ’u.
+	//æ”»æ’ƒé–‹å§‹æ™‚ã®ä½ç½®.
 	DirectX::XMFLOAT3 m_StartPos;
 	float m_RotationAngle;
 
-	//‰ÁZ‚µ‚Ä‚¢‚­ƒ^ƒCƒ}[•Ï”.
+	//åŠ ç®—ã—ã¦ã„ãã‚¿ã‚¤ãƒãƒ¼å¤‰æ•°.
 	float m_Timer = 0.0f;
 	float m_Timers = 60.0f;
 
 	enChargeSlashAnim m_List;
-
-	enParry m_Parry;
 
 };

@@ -10,9 +10,6 @@
 BossShoutState::BossShoutState(Boss* owner)
 	: BossAttackStateBase (owner)
     , m_pBossIdol()
-
-    , m_StartPos()
-
     , m_List(enShout::none)
 {
 }
