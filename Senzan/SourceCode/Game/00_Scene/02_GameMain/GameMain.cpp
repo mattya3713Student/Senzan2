@@ -22,6 +22,7 @@
 #include "System/Singleton/Debug\CollisionVisualizer\CollisionVisualizer.h"
 #include "SceneManager/SceneManager.h"
 #include "Singleton/PostEffectManager/PostEffectManager.h"
+#include "Game/04_Time/Time.h"
 
 #if _DEBUG
 #include "System/Singleton/ImGui/CImGuiManager.h"
@@ -37,8 +38,10 @@ GameMain::GameMain()
 	, m_upBoss		(std::make_unique<Boss>())
 	, m_upPlayer	(std::make_unique<Player>())
 	, m_upUI		(std::make_shared<UIGameMain>())
+    , m_TimeLimit   (10800.0f*Time::GetInstance().GetDeltaTime())
 {
 	Initialize();
+    Time::GetInstance().StartTimer(m_TimeLimit);
 }
 
 // デストラクタ.
@@ -80,14 +83,20 @@ void GameMain::Update()
 	m_upUI->SetCombo(m_upPlayer->GetCombo());
 	m_upUI->SetPlayerHP(m_upPlayer->GetMaxHP(), m_upPlayer->GetHP());
  	m_upUI->SetPlayerUlt(m_upPlayer->GetMaxUltValue(), m_upPlayer->GetUltValue());
+ 	m_upUI->SetTime(Time::GetInstance().GetTimerProgress());
     m_upUI->Update();
 
 #if _DEBUG
-    ImGui::Begin("Boss Debug");
+    ImGui::Begin("Gamemain Debug");
     bool gray = PostEffectManager::GetInstance().IsGray();
     if (ImGui::Checkbox("GrayScale", &gray)) {
         PostEffectManager::GetInstance().SetGray(gray);
     }
+    ImGui::Text("Time: %.3f", Time::GetInstance().GetTimerProgress());
+    if (ImGui::Button("Restart Timer")) {
+        Time::GetInstance().StartTimer(m_TimeLimit);
+    }
+    
     ImGui::End();
 #endif
 }
