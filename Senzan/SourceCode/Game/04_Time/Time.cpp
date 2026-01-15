@@ -47,6 +47,17 @@ void Time::Update()
 
     // 時間スケールを適用.
     m_DeltaTime *= m_WorldTimeScale;
+
+    // タイマー更新.
+    if (m_IsTimerActive) {
+        m_TimerNow += (m_DeltaTime); // TimeScaleの影響を受ける.
+        if (m_TimerMax <= m_TimerNow) {
+            m_TimerNow = 0.0f;
+            m_IsTimerActive = false;
+            m_TimerFinished = true; // 終了した瞬間を検知.
+            m_JustTimerFinished = true; // 終了した瞬間を検知.
+        }
+    }
 }
 
 // アプリが復帰したとき時間基準をリセットしてでかいDeltaTimeになるのを防ぐ.
@@ -144,4 +155,31 @@ void Time::SetWorldTimeScale(float NewTimeScale, float DurationSeconds, bool Ove
     {
         m_TimeScaleRestoreTime = 0.0f;
     }
+}
+
+void Time::StartTimer(float DurationSeconds) {
+    m_TimerNow = 0;
+    m_TimerMax = DurationSeconds;
+    m_IsTimerActive = true;
+    m_TimerFinished = false; 
+    m_JustTimerFinished = false; 
+}
+
+bool Time::IsTimerFinished()
+{
+    return m_TimerFinished;
+}
+
+bool Time::IsTimerJustFinished()
+{
+    if (m_JustTimerFinished) {
+        m_JustTimerFinished = false;
+        return true;
+    }
+    return false;
+}
+
+float Time::GetTimerProgress() const
+{
+    return m_TimerNow / m_TimerMax;
 }
