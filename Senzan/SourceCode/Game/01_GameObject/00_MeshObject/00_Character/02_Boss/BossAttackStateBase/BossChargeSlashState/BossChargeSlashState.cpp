@@ -26,7 +26,7 @@ BossChargeSlashState::~BossChargeSlashState()
 
 void BossChargeSlashState::Enter()
 {
-	m_currentTimer = 0.0f;
+	m_CurrentTime = 0.0f;
 
 	// 当たり判定を有効化.
 	m_pOwner->SetAttackColliderActive(true);

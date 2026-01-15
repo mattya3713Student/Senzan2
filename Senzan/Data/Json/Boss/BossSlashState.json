@@ -1,0 +1,19 @@
+{
+  "AnimSpeeds": {
+    "Attack": 1.0,
+    "Charge": 1.0,
+    "Exit": 1.0
+  },
+  "ColliderWindows": [
+    {
+      "BoneName": "boss_Hand_R",
+      "duration": 0.25,
+      "start": 0.15000000596046448
+    }
+  ],
+  "m_AttackAmount": 0.0,
+  "m_ChargeTime": 2.059999942779541,
+  "m_ColliderHeight": 0.0,
+  "m_ColliderWidth": 0.0,
+  "m_EndTime": 2.0
+}

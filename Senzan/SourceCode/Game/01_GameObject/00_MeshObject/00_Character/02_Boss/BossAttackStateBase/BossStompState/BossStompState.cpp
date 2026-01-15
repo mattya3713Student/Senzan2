@@ -2,6 +2,8 @@
 #include "00_MeshObject/00_Character/02_Boss/BossIdolState/BossIdolState.h"
 #include "00_MeshObject/00_Character/02_Boss/Boss.h"
 #include "Game/04_Time/Time.h"
+#include "System/Singleton/ImGui/CImGuiManager.h"
+#include "System/Utility/FileManager/FileManager.h"
 
 BossStompState::BossStompState(Boss* owner)
 	: BossAttackStateBase(owner)
@@ -16,6 +18,44 @@ BossStompState::BossStompState(Boss* owner)
 	, TransitionTimer(120.0f)
 	, m_UpSpeed(1.0f)
 {
+}
+
+void BossStompState::DrawImGui()
+{
+    ImGui::Begin(IMGUI_JP("BossStomp State"));
+    CImGuiManager::Slider<float>(IMGUI_JP("ジャンプ力"), m_JumpPower, 0.0f, 20.0f, true);
+    CImGuiManager::Slider<float>(IMGUI_JP("重力"), m_Gravity, 0.0f, 10.0f, true);
+    CImGuiManager::Slider<float>(IMGUI_JP("上昇速度倍率"), m_UpSpeed, 0.1f, 5.0f, true);
+    BossAttackStateBase::DrawImGui();
+    ImGui::End();
+}
+
+void BossStompState::LoadSettings()
+{
+    // 基底の既定設定を読み込む
+    BossAttackStateBase::LoadSettings();
+
+    // まずソースフォルダの設定ファイルを優先して読み込む
+    auto srcDir = std::filesystem::path(__FILE__).parent_path();
+    auto filePath = srcDir / GetSettingsFileName();
+    if (!std::filesystem::exists(filePath)) return;
+    json j = FileManager::JsonLoad(filePath);
+    if (j.contains("JumpPower")) m_JumpPower = j["JumpPower"].get<float>();
+    if (j.contains("Gravity")) m_Gravity = j["Gravity"].get<float>();
+    if (j.contains("UpSpeed")) m_UpSpeed = j["UpSpeed"].get<float>();
+}
+
+void BossStompState::SaveSettings() const
+{
+    // ベース設定を取得して派生設定を追加してソースフォルダに保存
+    json j = SerializeSettings();
+    j["JumpPower"] = m_JumpPower;
+    j["Gravity"] = m_Gravity;
+    j["UpSpeed"] = m_UpSpeed;
+
+    auto srcDir = std::filesystem::path(__FILE__).parent_path();
+    auto filePath = srcDir / GetSettingsFileName();
+    FileManager::JsonSave(filePath, j);
 }
 
 BossStompState::~BossStompState()

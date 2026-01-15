@@ -14,7 +14,7 @@ BossParryState::~BossParryState()
 
 void BossParryState::Enter()
 {
-    m_currentTimer = 0.0f;
+    m_CurrentTime = 0.0f;
 
     // パリィ中は攻撃判定を止める
     m_pOwner->SetAttackColliderActive(false);

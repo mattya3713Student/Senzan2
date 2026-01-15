@@ -1,6 +1,6 @@
-#pragma once
+ï»¿#pragma once
 
-#include "..//BossAttackStateBase.h"	//Šî’êƒNƒ‰ƒX.
+#include "..//BossAttackStateBase.h"	//åŸºåº•ã‚¯ãƒ©ã‚¹.
 
 class BossIdolState;
 class Boss;
@@ -11,10 +11,10 @@ class BossStompState final
 public:
 	enum class enAttack : byte
 	{
-		None,		//‰½‚à‚µ‚È‚¢.
-		Stomp,		//“¥‚İ‚Â‚¯UŒ‚‚ğ‚·‚é.
-		CoolTime,	//ƒN[ƒ‹ƒ^ƒCƒ€.
-		Trans		//Idol‚Éó‘Ô‘JˆÚ.
+		None,		//ä½•ã‚‚ã—ãªã„.
+		Stomp,		//è¸ã¿ã¤ã‘æ”»æ’ƒã‚’ã™ã‚‹.
+		CoolTime,	//ã‚¯ãƒ¼ãƒ«ã‚¿ã‚¤ãƒ .
+		Trans		//Idolã«çŠ¶æ…‹é·ç§».
 	};
 
 public:
@@ -28,33 +28,38 @@ public:
 	void Exit() override;
 
 	void BossAttack() override;
+    // ImGui ã¨è¨­å®šã®èª­ã¿æ›¸ã
+    void DrawImGui() override;
+    void LoadSettings() override;
+    void SaveSettings() const override;
+    std::filesystem::path GetSettingsFileName() const override { return std::filesystem::path("BossStompState.json"); }
 private:
 
 	enAttack m_List;
 
 	std::shared_ptr<BossIdolState> m_pIdol;
 	//====================================================
-	// “¥‚İ‚Â‚¯‚É•K—v‚É‚È‚éƒƒ“ƒo•Ï”‚ğ‘‚­.
+	// è¸ã¿ã¤ã‘ã«å¿…è¦ã«ãªã‚‹ãƒ¡ãƒ³ãƒå¤‰æ•°ã‚’æ›¸ã.
 	//====================================================
 	DirectX::XMFLOAT3 m_Velocity;
 
-	//ƒWƒƒƒ“ƒv‚Ì‰‘¬“x.
+	//ã‚¸ãƒ£ãƒ³ãƒ—ã®åˆé€Ÿåº¦.
 	float m_JumpPower;
-	//d—Í‰Á‘¬“x.
+	//é‡åŠ›åŠ é€Ÿåº¦.
 	float m_Gravity;
-	//ƒWƒƒƒ“ƒv’†‚Ìƒtƒ‰ƒO.
+	//ã‚¸ãƒ£ãƒ³ãƒ—ä¸­ã®ãƒ•ãƒ©ã‚°.
 	bool m_JumpFrag;
-	//’…’nƒtƒ‰ƒO.
-	//‚±‚Ì‚ÉŠÔ‚ğæ“¾‚µ‚Ä3•bŒã‚ÉIdol‚É‘JˆÚ“™‚ğ‘‚­.
+	//ç€åœ°ãƒ•ãƒ©ã‚°.
+	//ã“ã®æ™‚ã«æ™‚é–“ã‚’å–å¾—ã—ã¦3ç§’å¾Œã«Idolã«é·ç§»ç­‰ã‚’æ›¸ã.
 	bool m_GroundedFrag;
 	//===================================================
-	// ƒ^ƒCƒ}[•Ï”.
+	// ã‚¿ã‚¤ãƒãƒ¼å¤‰æ•°.
 	//===================================================
-	//ƒ^ƒCƒ}[‚Ì‰Šú‰»•Ï”.
+	//ã‚¿ã‚¤ãƒãƒ¼ã®åˆæœŸåŒ–å¤‰æ•°.
 	float m_Timer;
-	//‘JˆÚ‚³‚¹‚éƒ^ƒCƒ~ƒ“ƒO‚Ì•Ï”.
+	//é·ç§»ã•ã›ã‚‹ã‚¿ã‚¤ãƒŸãƒ³ã‚°ã®å¤‰æ•°.
 	float TransitionTimer;
 
-	//ã‚ª‚é‘¬“x‚ÌƒXƒs[ƒhİ’è—p.
+	//ä¸ŠãŒã‚‹é€Ÿåº¦ã®ã‚¹ãƒ”ãƒ¼ãƒ‰è¨­å®šç”¨.
 	float m_UpSpeed;
 };
