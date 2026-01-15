@@ -32,6 +32,10 @@ public:
 
 private:
 	void BossAttack() override;
+    void DrawImGui() override;
+    void LoadSettings() override;
+    void SaveSettings() const override;
+    std::filesystem::path GetSettingsFileName() const override { return std::filesystem::path("BossShoutState.json"); }
 private:
 	std::shared_ptr<BossIdolState> m_pBossIdol;
 

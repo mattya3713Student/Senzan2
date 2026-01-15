@@ -18,6 +18,7 @@ public:
 	enum class enList : byte
 	{
 		none,			//何もしない.
+		ChargeSlash,	//チャージ.
 		SlashAttack,	//斬る攻撃.
 		SlashIdol,		//斬る攻撃から待機.
 	};
@@ -30,11 +31,23 @@ public:
 	void LateUpdate() override;
 	void Draw() override;
 	void Exit() override;
-private:
-	void BossAttack() override;
+    // 設定の読み書き
+    void LoadSettings() override;
+    void SaveSettings() const override;
+    std::filesystem::path GetSettingsFileName() const override { return std::filesystem::path("BossSlashState.json"); }
+    // ImGui でスライダー等を表示してパラメータを調整できるようにする
+    void DrawImGui() override;
 private:
 	// ホーミング停止秒数（m_StateTimer がこの値を超えるまでだけ追尾）
 	float m_HomingEndTime = 0.2f;
+
+    // ImGui で設定する各種パラメータ
+    float m_SlashStart = 0.15f;
+    float m_SlashDuration = 0.25f;
+
+    float m_StepStart = 0.05f;
+    float m_StepDuration = 0.25f;
+    float m_StepSpeed = 60.0f;
 	
 	//攻撃開始位置.
 	DirectX::XMFLOAT3 m_StartPos;

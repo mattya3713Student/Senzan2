@@ -6,6 +6,7 @@
 #include "..//..//BossMoveState//BossMoveState.h"
 
 #include "00_MeshObject/00_Character/02_Boss/BossIdolState/BossIdolState.h"
+#include "System/Singleton/ImGui/CImGuiManager.h"
 
 BossShoutState::BossShoutState(Boss* owner)
 	: BossAttackStateBase (owner)
@@ -113,4 +114,29 @@ void BossShoutState::Exit()
 
 void BossShoutState::BossAttack()
 {
+}
+
+void BossShoutState::DrawImGui()
+{
+    ImGui::Begin(IMGUI_JP("BossShout State"));
+    BossAttackStateBase::DrawImGui();
+    ImGui::End();
+}
+
+void BossShoutState::LoadSettings()
+{
+    BossAttackStateBase::LoadSettings();
+    auto srcDir = std::filesystem::path(__FILE__).parent_path();
+    auto filePath = srcDir / GetSettingsFileName();
+    if (!std::filesystem::exists(filePath)) return;
+    json j = FileManager::JsonLoad(filePath);
+    // No shout-specific fields yet
+}
+
+void BossShoutState::SaveSettings() const
+{
+    json j = SerializeSettings();
+    auto srcDir = std::filesystem::path(__FILE__).parent_path();
+    auto filePath = srcDir / GetSettingsFileName();
+    FileManager::JsonSave(filePath, j);
 }
