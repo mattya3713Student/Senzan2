@@ -12,6 +12,7 @@
 #include "Game/01_GameObject/00_MeshObject/00_Character/00_Ground/Ground.h"	// 地面Static.
 #include "Game//01_GameObject//02_UIObject/UIGameMain/UIGameMain.h"
 #include "Game//01_GameObject//02_UIObject/UIGameOver/UIGameOver.h"
+#include "Game//01_GameObject//02_UIObject/UIEnding/UIEnding.h"
 #include "SceneManager/SceneManager.h" 
 #include "Game/05_InputDevice/Input.h"
 
@@ -25,6 +26,7 @@ MemeuTestScene::MemeuTestScene()
 	, m_TestSprite  (std::make_shared<UIObject>())
 	, m_upUIMain    (std::make_shared<UIGameMain>())
 	, m_upUIOver    ()
+    , m_upUIEnding  ()
 	, m_TimeLimit   (600.0f * Time::GetInstance().GetDeltaTime())
 {
 	Initialize();
@@ -68,7 +70,19 @@ void MemeuTestScene::Update()
 	if (Time::GetInstance().IsTimerJustFinished()) {
 		m_upUIOver = std::make_shared<UIGameOver>();
 	}
-	if ( m_upUIOver ) { m_upUIOver->Update(); }
+
+	if ( m_upUIOver )
+    {
+        m_upUIOver->Update();
+        if (Input::IsKeyDown(VK_SPACE)
+            || Input::IsKeyDown('C')
+            || Input::IsButtonDown(XInput::Key::B))
+        {
+            if (m_upUIOver->GetSelected() == m_upUIOver->Items::End) {
+                SceneManager::LoadScene(eList::Memeu);
+            }
+        }
+    }
 }
 
 void MemeuTestScene::LateUpdate()
@@ -76,6 +90,7 @@ void MemeuTestScene::LateUpdate()
 	CameraManager::GetInstance().LateUpdate();
 	m_upUIMain->LateUpdate();
 
+    if (m_upUIEnding) { m_upUIEnding->LateUpdate(); }
 	if (m_upUIOver) { m_upUIOver->LateUpdate(); }
 }
 
@@ -87,7 +102,8 @@ void MemeuTestScene::Draw()
 	Shadow::End();
 	m_pGround->Draw();
 	m_upUIMain->Draw();
-	if (m_upUIOver) { m_upUIOver->Draw(); }
+    if (m_upUIEnding) { m_upUIEnding->Draw(); }
+    if (m_upUIOver) { m_upUIOver->Draw(); }
 }
 
 HRESULT MemeuTestScene::LoadData()
