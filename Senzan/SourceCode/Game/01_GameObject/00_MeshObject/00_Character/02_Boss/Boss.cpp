@@ -29,6 +29,7 @@
 
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
 #include "System/Singleton/CameraManager/CameraManager.h"
+#include "System/Singleton/ImGui/CImGuiManager.h"
 
 
 constexpr float HP_Max = 10000.0f;
@@ -110,15 +111,12 @@ Boss::Boss()
 	auto slashCol = std::make_unique<CapsuleCollider>(m_spTransform);
 
 	m_pSlashCollider = slashCol.get();
-
 	m_pSlashCollider->SetMyMask(eCollisionGroup::Enemy_Attack);
-	m_pSlashCollider->SetTarGetTargetMask(eCollisionGroup::Player_Damage	);
-
+	m_pSlashCollider->SetTarGetTargetMask(eCollisionGroup::Player_Damage);
 	m_pSlashCollider->SetAttackAmount(10.0f); 
 	m_pSlashCollider->SetRadius(15.0f);         
 	m_pSlashCollider->SetHeight(40.0f);         
-	m_pSlashCollider->SetPositionOffset(0.0f, 10.0f, -30.0f); 
-
+	m_pSlashCollider->SetPositionOffset(0.0f, 0.0f, 0.0f); 
 	m_pSlashCollider->SetActive(false);
 	m_pSlashCollider->SetColor(Color::eColor::Red);
 
@@ -199,17 +197,72 @@ void Boss::LateUpdate()
 	// ステートマシーンの最終更新を実行.
 	m_State->LateUpdate();
 
-	// 衝突イベント処理を実行
-	HandleParryDetection();
-	HandleDamageDetection();
-	HandleAttackDetection();
-	HandleDodgeDetection();
+    // アクティブなコライダーがあれば対応するボーンから Transform を更新して外部供給する
+    if (m_pSlashCollider && m_pSlashCollider->GetActive()) {
+        // convert degree Euler offsets to quaternion
+        DirectX::XMFLOAT3 deg = m_SlashRotOffsetDeg;
+        DirectX::XMVECTOR rotRad = DirectX::XMVectorSet(DirectX::XMConvertToRadians(deg.x), DirectX::XMConvertToRadians(deg.y), DirectX::XMConvertToRadians(deg.z), 0.0f);
+        DirectX::XMVECTOR qx = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(1,0,0,0), DirectX::XMVectorGetX(rotRad));
+        DirectX::XMVECTOR qy = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(0,1,0,0), DirectX::XMVectorGetY(rotRad));
+        DirectX::XMVECTOR qz = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(0,0,1,0), DirectX::XMVectorGetZ(rotRad));
+        DirectX::XMVECTOR q = DirectX::XMQuaternionMultiply(DirectX::XMQuaternionMultiply(qz, qy), qx);
+        DirectX::XMFLOAT4 rotOffset; DirectX::XMStoreFloat4(&rotOffset, q);
+        UpdateColliderFromBone("boss_Hand_R", m_pSlashCollider, m_SlashBoneWorldTransform, true, rotOffset);
+    }
+    if (m_pStompCollider && m_pStompCollider->GetActive()) {
+        DirectX::XMFLOAT3 deg = m_StompRotOffsetDeg;
+        DirectX::XMVECTOR rotRad = DirectX::XMVectorSet(DirectX::XMConvertToRadians(deg.x), DirectX::XMConvertToRadians(deg.y), DirectX::XMConvertToRadians(deg.z), 0.0f);
+        DirectX::XMVECTOR qx = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(1,0,0,0), DirectX::XMVectorGetX(rotRad));
+        DirectX::XMVECTOR qy = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(0,1,0,0), DirectX::XMVectorGetY(rotRad));
+        DirectX::XMVECTOR qz = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(0,0,1,0), DirectX::XMVectorGetZ(rotRad));
+        DirectX::XMVECTOR q = DirectX::XMQuaternionMultiply(DirectX::XMQuaternionMultiply(qz, qy), qx);
+        DirectX::XMFLOAT4 rotOffset; DirectX::XMStoreFloat4(&rotOffset, q);
+        UpdateColliderFromBone("boss_pSphere28", m_pStompCollider, m_StompBoneWorldTransform, true, rotOffset);
+    }
+    if (m_pShoutCollider && m_pShoutCollider->GetActive()) {
+        DirectX::XMFLOAT3 deg = m_ShoutRotOffsetDeg;
+        DirectX::XMVECTOR rotRad = DirectX::XMVectorSet(DirectX::XMConvertToRadians(deg.x), DirectX::XMConvertToRadians(deg.y), DirectX::XMConvertToRadians(deg.z), 0.0f);
+        DirectX::XMVECTOR qx = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(1,0,0,0), DirectX::XMVectorGetX(rotRad));
+        DirectX::XMVECTOR qy = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(0,1,0,0), DirectX::XMVectorGetY(rotRad));
+        DirectX::XMVECTOR qz = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(0,0,1,0), DirectX::XMVectorGetZ(rotRad));
+        DirectX::XMVECTOR q = DirectX::XMQuaternionMultiply(DirectX::XMQuaternionMultiply(qz, qy), qx);
+        DirectX::XMFLOAT4 rotOffset; DirectX::XMStoreFloat4(&rotOffset, q);
+        UpdateColliderFromBone("boss_Shout", m_pShoutCollider, m_ShoutBoneWorldTransform, true, rotOffset);
+    }
+
+    // 衝突処理
+    HandleParryDetection();
+    HandleDamageDetection();
+    HandleAttackDetection();
+    HandleDodgeDetection();
 }
 
 void Boss::Draw()
 {
 	MeshObject::Draw();
 	m_State->Draw();
+
+    // ImGui: コライダー回転オフセット（度数法、X/Y/Z）
+#if _DEBUG
+    if (ImGui::Begin(IMGUI_JP("Boss Collider Offsets"))) {
+        ImGui::Text(IMGUI_JP("回転オフセット (度) - X:Pitch, Y:Yaw, Z:Roll"));
+        ImGui::DragFloat3(IMGUI_JP("Slash Rot (deg)"), &m_SlashRotOffsetDeg.x, 1.0f, -180.0f, 180.0f);
+        ImGui::DragFloat3(IMGUI_JP("Stomp Rot (deg)"), &m_StompRotOffsetDeg.x, 1.0f, -180.0f, 180.0f);
+        ImGui::DragFloat3(IMGUI_JP("Shout Rot (deg)"), &m_ShoutRotOffsetDeg.x, 1.0f, -180.0f, 180.0f);
+
+        // 現在のワールド回転（度）を表示
+        DirectX::XMFLOAT3 slashRot = m_SlashBoneWorldTransform.GetRotationDegrees();
+        DirectX::XMFLOAT3 stompRot = m_StompBoneWorldTransform.GetRotationDegrees();
+        DirectX::XMFLOAT3 shoutRot = m_ShoutBoneWorldTransform.GetRotationDegrees();
+        ImGui::Separator();
+        ImGui::Text(IMGUI_JP("Current Collider Rotation (deg)"));
+        ImGui::Text(IMGUI_JP("Slash:  X=%.1f  Y=%.1f  Z=%.1f"), slashRot.x, slashRot.y, slashRot.z);
+        ImGui::Text(IMGUI_JP("Stomp:  X=%.1f  Y=%.1f  Z=%.1f"), stompRot.x, stompRot.y, stompRot.z);
+        ImGui::Text(IMGUI_JP("Shout:  X=%.1f  Y=%.1f  Z=%.1f"), shoutRot.x, shoutRot.y, shoutRot.z);
+
+        ImGui::End();
+    }
+#endif
 }
 
 void Boss::Init()
@@ -416,85 +469,6 @@ ColliderBase* Boss::GetShoutCollider() const
 	return m_pShoutCollider;
 }
 
-void Boss::UpdateSlashColliderTransform()
-{
-	if (GetAttachMesh().expired() || !m_pSlashCollider) return;
-	auto skinMesh = std::dynamic_pointer_cast<SkinMesh>(GetAttachMesh().lock());
-	if (!skinMesh) return;
-
-	//ボーンの位置を命名.
-	const std::string targetBoneName = "boss_Hand_R";
-	DirectX::XMMATRIX bone_local_matrix;
-	if (!skinMesh->GetMatrixFromBone(targetBoneName.c_str(), &bone_local_matrix)) return;
-
-	DirectX::XMMATRIX boss_world_matrix = m_spTransform->GetWorldMatrix();
-
-	DirectX::XMMATRIX bone_world_matrix = bone_local_matrix * boss_world_matrix;
-
-	// ワールド位置を取得してキャッシュに保存
-	DirectX::XMVECTOR v_final_pos, v_final_quat, v_final_scale;
-	DirectX::XMMatrixDecompose(&v_final_scale, &v_final_quat, &v_final_pos, bone_world_matrix);
-	// store into Transform cache
-	DirectX::XMStoreFloat3(&m_SlashBoneWorldTransform.Position, v_final_pos);
-	DirectX::XMStoreFloat4(&m_SlashBoneWorldTransform.Quaternion, v_final_quat);
-	DirectX::XMStoreFloat3(&m_SlashBoneWorldTransform.Scale, v_final_scale);
-	m_SlashBoneWorldTransform.UpdateRotationFromQuaternion();
-
-	DirectX::XMVECTOR b_pos, b_quat, b_scale;
-	DirectX::XMMatrixDecompose(&b_scale, &b_quat, &b_pos, boss_world_matrix);
-
-	DirectX::XMVECTOR relative_pos = DirectX::XMVectorSubtract(v_final_pos, b_pos);
-	DirectX::XMVECTOR relative_quat = DirectX::XMQuaternionMultiply(v_final_quat, DirectX::XMQuaternionInverse(b_quat));
-
-	DirectX::XMFLOAT3 f_relative_pos;
-	DirectX::XMStoreFloat3(&f_relative_pos, relative_pos);
-
-	m_pSlashCollider->SetPositionOffset(f_relative_pos.x, f_relative_pos.y, f_relative_pos.z);
-
-	// 外部供給ポインタを設定（毎フレーム検索を避ける）
-	m_pSlashCollider->SetExternalTransformPointer(&m_SlashBoneWorldTransform);
-}
-
-void Boss::UpdateStompColliderTransform()
-{
-	if (GetAttachMesh().expired() || !m_pStompCollider) return;
-	auto skinMesh = std::dynamic_pointer_cast<SkinMesh>(GetAttachMesh().lock());
-	if (!skinMesh) return;
-
-	//ボーンの名前を命名.
-	const std::string TargetBoneName = "boss_pSphere28";
-
-	DirectX::XMFLOAT3 boneWorldPos{};
-	if (skinMesh->GetPosFromBone(TargetBoneName.c_str(), &boneWorldPos))
-	{
-		// キャッシュに保存 into Transform
-		m_StompBoneWorldTransform.Position = boneWorldPos;
-
-		// use boss world quaternion for orientation
-		DirectX::XMMATRIX bossWorldMatrix = m_spTransform->GetWorldMatrix();
-		DirectX::XMVECTOR b_pos, b_quat, b_scale;
-		DirectX::XMMatrixDecompose(&b_scale, &b_quat, &b_pos, bossWorldMatrix);
-		DirectX::XMStoreFloat4(&m_StompBoneWorldTransform.Quaternion, b_quat);
-		DirectX::XMStoreFloat3(&m_StompBoneWorldTransform.Scale, b_scale);
-		m_StompBoneWorldTransform.UpdateRotationFromQuaternion();
-
-		DirectX::XMVECTOR bossPosVec = bossWorldMatrix.r[3];
-
-		DirectX::XMFLOAT3 bossWorldPos;
-		DirectX::XMStoreFloat3(&bossWorldPos, bossPosVec);
-
-		//表示位置の計算.
-		float offsetX = boneWorldPos.x - bossWorldPos.x;
-		float offsetY = boneWorldPos.y - bossWorldPos.y;
-		float offsetZ = boneWorldPos.z - bossWorldPos.z;
-
-		m_pStompCollider->SetPositionOffset(offsetX, offsetY, offsetZ);
-
-		// 外部供給ポインタを設定
-		m_pStompCollider->SetExternalTransformPointer(&m_StompBoneWorldTransform);
-	}
-}
-
 void Boss::SetColliderActiveByName(const std::string& name, bool active)
 {
 	// NOTE: 文字列は typo を避けるため定数化推奨
@@ -513,4 +487,69 @@ void Boss::SetColliderActiveByName(const std::string& name, bool active)
 		if (auto* col = GetShoutCollider()) col->SetActive(active);
 		return;
 	}
+}
+
+bool Boss::UpdateColliderFromBone(
+    const std::string& boneName,
+    ColliderBase* collider,
+    Transform& outTransform,
+    bool updateRotation,
+    const DirectX::XMFLOAT4& rotationOffset)
+{
+    if (!collider || GetAttachMesh().expired()) return false;
+    auto skinMesh = std::dynamic_pointer_cast<SkinMesh>(GetAttachMesh().lock());
+    if (!skinMesh) return false;
+
+    DirectX::XMMATRIX bone_local_matrix;
+    if (!skinMesh->GetMatrixFromBone(boneName.c_str(), &bone_local_matrix))
+    {
+        DirectX::XMFLOAT3 boneWorldPos{};
+        if (!skinMesh->GetPosFromBone(boneName.c_str(), &boneWorldPos)) return false;
+        outTransform.Position = boneWorldPos;
+        DirectX::XMMATRIX bossWorldMatrix = m_spTransform->GetWorldMatrix();
+        if (updateRotation) {
+            DirectX::XMVECTOR b_pos, b_quat, b_scale;
+            DirectX::XMMatrixDecompose(&b_scale, &b_quat, &b_pos, bossWorldMatrix);
+            // apply rotation offset if provided
+            DirectX::XMVECTOR q_bone = b_quat;
+            DirectX::XMVECTOR q_offset = DirectX::XMLoadFloat4(&rotationOffset);
+            DirectX::XMVECTOR q_result = DirectX::XMQuaternionMultiply(q_offset, q_bone);
+            DirectX::XMStoreFloat4(&outTransform.Quaternion, q_result);
+            DirectX::XMStoreFloat3(&outTransform.Scale, b_scale);
+            outTransform.UpdateRotationFromQuaternion();
+        } else {
+            outTransform.Quaternion = DirectX::XMFLOAT4{0.0f, 0.0f, 0.0f, 1.0f};
+            outTransform.Scale = DirectX::XMFLOAT3{1.0f, 1.0f, 1.0f};
+        }
+        collider->SetExternalTransformPointer(&outTransform);
+        return true;
+    }
+
+    DirectX::XMMATRIX boss_world_matrix = m_spTransform->GetWorldMatrix();
+    DirectX::XMMATRIX bone_world_matrix = bone_local_matrix * boss_world_matrix;
+
+    DirectX::XMVECTOR v_final_pos, v_final_quat, v_final_scale;
+    DirectX::XMMatrixDecompose(&v_final_scale, &v_final_quat, &v_final_pos, bone_world_matrix);
+    DirectX::XMStoreFloat3(&outTransform.Position, v_final_pos);
+    if (updateRotation) {
+        // apply rotation offset
+        DirectX::XMVECTOR q_bone = v_final_quat;
+        DirectX::XMVECTOR q_offset = DirectX::XMLoadFloat4(&rotationOffset);
+        DirectX::XMVECTOR q_result = DirectX::XMQuaternionMultiply(q_offset, q_bone);
+        DirectX::XMStoreFloat4(&outTransform.Quaternion, q_result);
+        DirectX::XMStoreFloat3(&outTransform.Scale, v_final_scale);
+        outTransform.UpdateRotationFromQuaternion();
+    }
+
+    // compute relative position offset for collider
+    DirectX::XMVECTOR b_pos, b_quat, b_scale;
+    DirectX::XMMatrixDecompose(&b_scale, &b_quat, &b_pos, boss_world_matrix);
+    DirectX::XMVECTOR relative_pos = DirectX::XMVectorSubtract(v_final_pos, b_pos);
+    DirectX::XMFLOAT3 f_relative_pos; DirectX::XMStoreFloat3(&f_relative_pos, relative_pos);
+    collider->SetPositionOffset(f_relative_pos.x, f_relative_pos.y, f_relative_pos.z);
+    collider->SetExternalTransformPointer(&outTransform);
+
+
+
+    return true;
 }

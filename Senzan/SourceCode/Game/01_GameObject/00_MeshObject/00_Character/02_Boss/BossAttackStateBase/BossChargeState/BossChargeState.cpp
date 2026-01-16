@@ -44,10 +44,6 @@ void BossChargeState::Exit()
 	m_pOwner->SetAttackColliderActive(false);
 }
 
-void BossChargeState::BossAttack()
-{
-}
-
 void BossChargeState::DrawImGui()
 {
     ImGui::Begin(IMGUI_JP("BossCharge State"));

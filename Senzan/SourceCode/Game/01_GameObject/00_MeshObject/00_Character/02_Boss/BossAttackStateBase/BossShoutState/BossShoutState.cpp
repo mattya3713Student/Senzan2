@@ -112,10 +112,6 @@ void BossShoutState::Exit()
   
 }
 
-void BossShoutState::BossAttack()
-{
-}
-
 void BossShoutState::DrawImGui()
 {
     ImGui::Begin(IMGUI_JP("BossShout State"));

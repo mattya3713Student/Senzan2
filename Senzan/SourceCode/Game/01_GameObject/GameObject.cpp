@@ -253,3 +253,40 @@ float GameObject::GetDelta()
     }
 }
 
+// 目標方向へラープ回転.
+void GameObject::RotetToTarget(float TargetRote, float RotetionSpeed)
+{
+    DirectX::XMFLOAT3 current_rotation = m_spTransform->GetRotationDegrees();
+    float CurrentRote = current_rotation.y;
+    float deltaTime = GetDelta();
+
+    // 正規化.
+    TargetRote = MyMath::NormalizeAngleDegrees(TargetRote);
+    CurrentRote = MyMath::NormalizeAngleDegrees(CurrentRote);
+
+    // 正規化.
+    float angle_Diff = TargetRote - CurrentRote;
+    angle_Diff = MyMath::NormalizeAngleDegrees(angle_Diff);
+    float max_rotate_amount = RotetionSpeed * deltaTime;
+
+    current_rotation.y = CurrentRote;
+
+    // 適用.
+    if (std::fabsf(angle_Diff) <= max_rotate_amount)
+    {
+        // 差が1フレームの移動量以下なら、直接目標角度を設定
+        current_rotation.y = TargetRote;
+    }
+    else
+    {
+        // 目標の方向に向かって max_rotate_amount 分だけ回転
+        current_rotation.y += (angle_Diff > 0)
+            ? max_rotate_amount : -max_rotate_amount;
+    }
+
+    // 正規化.
+    current_rotation.y = MyMath::NormalizeAngleDegrees(current_rotation.y);
+
+    m_spTransform->SetRotationDegrees(current_rotation);
+}
+

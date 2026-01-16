@@ -33,8 +33,6 @@ public:
 	void BoneDraw();
 
 private:
-	void BossAttack() override;
-
 	//初期角度を設定する関数.
 	void SetInitialAngle(float angle)
 	{

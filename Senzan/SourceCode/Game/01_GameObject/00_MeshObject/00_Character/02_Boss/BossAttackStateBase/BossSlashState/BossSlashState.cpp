@@ -39,87 +39,78 @@ void BossSlashState::Enter()
 
     m_pOwner->SetAttackColliderActive(false);
 
-    // 斬撃当たり判定: 右手ボーン
-    ColliderWindow slashWindow;
-    slashWindow.BoneName = "boss_Hand_R";
-    slashWindow.Start = m_SlashStart;
-    slashWindow.Duration = m_SlashDuration;
-    m_ColliderWindows.push_back(slashWindow);
-
-	// 踏み込み
-    MovementWindow stepIn;
-    stepIn.Start = m_StepStart;
-    stepIn.Duration = m_StepDuration;
-    stepIn.Speed = m_StepSpeed;
-    m_MovementWindows.push_back(stepIn);
-
-	// 当たり判定は window 側で ON/OFF するので通常攻撃判定はOFF（念のため）
-	m_pOwner->SetAttackColliderActive(false);
 
 	// 初期位置を保存.
 	const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
 	DirectX::XMStoreFloat3(&m_StartPos, DirectX::XMLoadFloat3(&BossPosF));
 
-	m_List = enList::SlashAttack;
+	m_List = enList::ChargeSlash;
 }
 
 void BossSlashState::Update()
 {
     BossAttackStateBase::Update();
 
-
     const float dt = Time::GetInstance().GetDeltaTime();
-
-    //// ホーミング（一定時間まで）
-    //if (m_StateTimer <= m_HomingEndTime)
-    //{
-    //    const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
-    //    DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&BossPosF);
-
-    //    const DirectX::XMFLOAT3 PlayerPosF = m_pOwner->m_PlayerPos;
-    //    DirectX::XMVECTOR PlayerPosXM = DirectX::XMLoadFloat3(&PlayerPosF);
-
-    //    DirectX::XMVECTOR Direction = DirectX::XMVectorSubtract(PlayerPosXM, BossPosXM);
-    //    Direction = DirectX::XMVectorSetY(Direction, 0.0f);
-
-    //    float dx = DirectX::XMVectorGetX(Direction);
-    //    float dz = DirectX::XMVectorGetZ(Direction);
-    //    float angle_radian = std::atan2f(-dx, -dz);
-    //    m_pOwner->SetRotationY(angle_radian);
-    //}
-
+    
     UpdateBaseLogic(dt);
 
     switch (m_List)
     {
     case BossSlashState::enList::ChargeSlash:
+       
         if (m_CurrentTime >= m_ChargeTime)
         {
-            m_pOwner->ChangeAnim(Boss::enBossAnim::Charge);
             m_List = enList::SlashAttack;
         }
         break;
 
     case BossSlashState::enList::SlashAttack:
-        if (m_CurrentTime >= m_ChargeTime + m_AttackTime)
+        if (m_TransitionOnAnimEnd_Attack)
         {
-            m_List = enList::SlashIdol;
+            if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Slash))
+            {
+                m_List = enList::SlashIdol;
+                m_pOwner->ChangeAnim(Boss::enBossAnim::SlashToIdol);
+            }
+        }
+        else
+        {
+            if (m_CurrentTime >= m_ChargeTime + m_AttackTime)
+            {
+                m_List = enList::SlashIdol;
+                m_pOwner->ChangeAnim(Boss::enBossAnim::SlashToIdol);
+            }
         }
         break;
 
     case BossSlashState::enList::SlashIdol:
         // Idol遷移も時間で統一（余韻用に固定）
-        if (m_CurrentTime >= m_ChargeTime + m_AttackTime + m_EndTime)
+        if (m_TransitionOnAnimEnd_Exit)
         {
-            if (!m_IsDebugStop)
+            if (m_pOwner->IsAnimEnd(Boss::enBossAnim::SlashToIdol))
             {
-                m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
+                if (!m_IsDebugStop)
+                {
+                    m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
+                }
+                break;
             }
-            break;
+        }
+        else
+        {
+            if (m_CurrentTime >= m_ChargeTime + m_AttackTime + m_EndTime)
+            {
+                if (!m_IsDebugStop)
+                {
+                    m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
+                }
+                break;
+            }
+        }
 
     default:
         break;
-        }
     }
 
 }

@@ -95,9 +95,10 @@ void MattyaTestScene::Update()
     Input::Update();
 	m_upGround->Update();
 	m_upPlayer->SetTargetPos(m_upBoss.get()->GetPosition());
-	//m_upPlayer->Update();
+	m_upPlayer->Update();
     m_pCamera->Update();
 	m_upBoss->Update();
+	m_upBoss->SetTargetPos(m_upPlayer->GetPosition());
 
 	m_upUI->SetBossHP(m_upBoss->GetMaxHP(), m_upBoss->GetHP());
 	m_upUI->SetCombo(m_upPlayer->GetCombo());
@@ -109,7 +110,7 @@ void MattyaTestScene::Update()
 
 void MattyaTestScene::LateUpdate()
 {
-	//m_upPlayer->LateUpdate();
+	m_upPlayer->LateUpdate();
 	m_upBoss->LateUpdate();
 	CameraManager::GetInstance().LateUpdate();
 	
