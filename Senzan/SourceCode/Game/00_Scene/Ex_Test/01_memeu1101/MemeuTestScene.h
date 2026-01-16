@@ -11,6 +11,7 @@ class CameraBase;
 class DirectionLight;
 class UIGameMain;
 class UIGameOver;
+class UIEnding;
 
 #include <vector>
 
@@ -43,5 +44,6 @@ private:
 	std::shared_ptr<UIObject> m_TestSprite;
     std::shared_ptr<UIGameMain>	m_upUIMain;
     std::shared_ptr<UIGameOver>	m_upUIOver;
+    std::shared_ptr<UIEnding>	m_upUIEnding;
     float m_TimeLimit;
 };

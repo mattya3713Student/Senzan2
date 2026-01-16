@@ -32,6 +32,8 @@ public:
 
 	// タイマーを開始（秒単位で指定）.
 	void StartTimer(float DurationSeconds);
+    // タイマーを停止/再開.
+    void SwitchTimer();
 
 	//タイマーの進捗率を取得 (0.0 = 開始, 1.0 = 終了).
 	float GetTimerProgress() const;

@@ -165,6 +165,11 @@ void Time::StartTimer(float DurationSeconds) {
     m_JustTimerFinished = false; 
 }
 
+void Time::SwitchTimer()
+{
+    m_IsTimerActive  = !m_IsTimerActive;
+}
+
 bool Time::IsTimerFinished()
 {
     return m_TimerFinished;
