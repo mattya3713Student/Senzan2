@@ -22,7 +22,6 @@ public:
 	void Exit() override;
 
 	//攻撃を実行させる関数.
-	void BossAttack() override;
     void DrawImGui() override;
     void LoadSettings() override;
     void SaveSettings() const override;

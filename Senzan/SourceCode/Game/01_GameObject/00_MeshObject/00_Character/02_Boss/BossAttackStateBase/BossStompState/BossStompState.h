@@ -27,14 +27,14 @@ public:
 	void Draw() override;
 	void Exit() override;
 
-	void BossAttack() override;
     // ImGui と設定の読み書き
     void DrawImGui() override;
     void LoadSettings() override;
     void SaveSettings() const override;
     std::filesystem::path GetSettingsFileName() const override { return std::filesystem::path("BossStompState.json"); }
 private:
-
+    void BossAttack();
+private:
 	enAttack m_List;
 
 	std::shared_ptr<BossIdolState> m_pIdol;

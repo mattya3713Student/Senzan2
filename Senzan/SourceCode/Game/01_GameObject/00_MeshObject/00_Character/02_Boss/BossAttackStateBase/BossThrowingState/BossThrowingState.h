@@ -28,10 +28,8 @@ public:
     void LateUpdate() override;
     void Draw() override;
     void Exit() override;
-
 private:
-    void BossAttack() override;
-
+    void BossAttack();
 private:
     std::unique_ptr<SnowBall> m_pBall;
     enThrowing m_List;

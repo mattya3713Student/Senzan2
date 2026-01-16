@@ -31,7 +31,6 @@ public:
 	void Exit() override;
 
 private:
-	void BossAttack() override;
     void DrawImGui() override;
     void LoadSettings() override;
     void SaveSettings() const override;

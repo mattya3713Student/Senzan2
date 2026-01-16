@@ -1,19 +1,43 @@
 {
   "AnimSpeeds": {
-    "Attack": 1.0,
-    "Charge": 1.0,
-    "Exit": 1.0
+    "Attack": 5.0960001945495605,
+    "Charge": 1.0369999408721924,
+    "Exit": 0.7590000033378601
   },
   "ColliderWindows": [
     {
       "BoneName": "boss_Hand_R",
-      "duration": 0.25,
+      "duration": 2.0,
       "start": 0.15000000596046448
     }
   ],
+  "HomingEndTime": 0.20000000298023224,
+  "MovementWindows": [
+    {
+      "duration": 0.10000000149011612,
+      "easing": 0,
+      "speed": 60.0,
+      "start": 0.0
+    },
+    {
+      "duration": 0.30000001192092896,
+      "easing": 24,
+      "speed": 10.0,
+      "start": 1.2699999809265137
+    }
+  ],
+  "SlashDuration": 0.25,
+  "SlashStart": 0.15000000596046448,
+  "StepDuration": 0.25,
+  "StepSpeed": 60.0,
+  "StepStart": 0.05000000074505806,
   "m_AttackAmount": 0.0,
-  "m_ChargeTime": 2.059999942779541,
+  "m_AttackTime": 1.5379999876022339,
+  "m_ChargeTime": 1.3229999542236328,
   "m_ColliderHeight": 0.0,
   "m_ColliderWidth": 0.0,
-  "m_EndTime": 2.0
+  "m_EndTime": 6.052000045776367,
+  "m_TransitionOnAnimEnd_Attack": false,
+  "m_TransitionOnAnimEnd_Charge": false,
+  "m_TransitionOnAnimEnd_Exit": true
 }

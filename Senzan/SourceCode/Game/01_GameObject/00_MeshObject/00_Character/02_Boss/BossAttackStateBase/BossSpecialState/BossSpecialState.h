@@ -39,9 +39,7 @@ private:
 	//============================================================
 	//ジャンプの時にPlayerの追尾コードを書く関数. 
 	void JumpTime();
-	//アタック時関数.
-	void BossAttack() override;
-
+    void BossAttack();
 	void ChargeTime();
 private:
 	//============================================================

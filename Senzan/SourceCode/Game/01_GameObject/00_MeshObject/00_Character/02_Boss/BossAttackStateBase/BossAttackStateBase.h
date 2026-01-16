@@ -4,6 +4,7 @@
 #include "Game\03_Collision\00_Core\01_Capsule\CapsuleCollider.h"
 #include "System/Singleton/ImGui/CImGuiManager.h"
 #include "System/Utility/FileManager/FileManager.h"
+#include "System/Utility/Math/Easing/Easing.h"
 
 #include <memory>
 #include <string>
@@ -29,8 +30,18 @@ struct MovementWindow
     float Speed = 10.0f;   // 移動速度
     bool IsAct = false;    // 内部フラグ（移動中か）
 
-    void Reset() { IsAct = false; }
+    MyEasing::Type EasingType = MyEasing::Type::Liner;
+    float Distance = 1.0f; // 移動量係数（Speed * Duration に乗算）
+
+    // ランタイム用: 開始/終了位置と初期化フラグ（保存対象ではない）
+    DirectX::XMFLOAT3 StartPos{ 0.0f, 0.0f, 0.0f };
+    DirectX::XMFLOAT3 EndPos{ 0.0f, 0.0f, 0.0f };
+    bool Initialized = false;
+    DirectX::XMFLOAT3 LastEasedPos{ 0.0f, 0.0f, 0.0f };
+
+    void Reset() { IsAct = false; Initialized = false; }
 };
+
 
 // 当たり判定の発生時間を制御する
 struct ColliderWindow
@@ -74,9 +85,6 @@ public:
     // 各ステートで上書きしてファイル名を変更する
     virtual std::filesystem::path GetSettingsFileName() const { return std::filesystem::path("BossAttackState_Base.json"); }
 
-    //攻撃を実行させる関数.
-    virtual void BossAttack() {};
-
     // ステート遷移を許可するか (デバッグ停止時は拒否)
     bool CanChangeState() const override { return !m_IsDebugStop; }
 
@@ -96,6 +104,9 @@ protected:
 
     void UpdateBaseLogic(float dt); // 共通更新ロジック
 
+    // 派生クラスが移動の終点を独自に決めたい場合にオーバーライドする
+    virtual DirectX::XMFLOAT3 ComputeMovementEndPos(const MovementWindow& mv, const DirectX::XMFLOAT3& startPos, const DirectX::XMFLOAT3& targetPos) const;
+
 protected:
     //メンバ変数を作成.
     //アニメーションに必要なメンバ変数
@@ -114,14 +125,16 @@ protected:
     float m_AnimSpeedAttack = 1.0f; // 攻撃中
     float m_AnimSpeedExit = 1.0f;   // 余波
 
-
+    // 各フェーズの遷移方法フラグ: true = アニメ終了で遷移, false = 時間ベースで遷移
+    bool m_TransitionOnAnimEnd_Charge = false; // 溜め -> 攻撃
+    bool m_TransitionOnAnimEnd_Attack = false;  // 攻撃 -> 余韻
+    bool m_TransitionOnAnimEnd_Exit = false;    // 余韻 -> Idol / 次状態
 
     bool  m_IsDebugStop = false;         // デバッグ用停止フラグ
 
     std::shared_ptr<ColliderBase> m_pHitCollider;
     std::vector<GameObject*>      m_HitTargets;
 
-    DirectX::XMFLOAT3 m_TargetDir{ 0.0f, 0.0f, 0.0f };
     DirectX::XMFLOAT3 m_MotionVelocity{ 0.0f, 0.0f, 0.0f };
 
     DirectX::XMFLOAT3 m_StartPos{ 0.0f, 0.0f, 0.0f }; // 攻撃開始位置（共通）

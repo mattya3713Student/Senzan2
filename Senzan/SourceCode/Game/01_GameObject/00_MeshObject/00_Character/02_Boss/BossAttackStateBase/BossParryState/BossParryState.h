@@ -24,7 +24,6 @@ public:
     void Exit() override;
 
 private:
-    void BossAttack() override {}
 
     ParryPhase m_Phase;
 };

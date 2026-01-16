@@ -105,7 +105,3 @@ void BossChargeSlashState::BoneDraw()
 {
 }
 
-void BossChargeSlashState::BossAttack()
-{
-}
-
