@@ -18,8 +18,7 @@ CollisionVisualizer::CollisionVisualizer()
     CreateBoxResources(m_ShapeResources[ColliderBase::eShapeType::Box]);
     CreateSphereResources(m_ShapeResources[ColliderBase::eShapeType::Sphere], 12);
     CreateCapsuleResources(m_ShapeResources[ColliderBase::eShapeType::Capsule], 1.0f, 12);
-    // start enabled by default
-    m_Enabled = true;
+
     assert(!m_ShapeResources.empty() && "デバッグ描画リソースが作成されていません。");
 }
 
@@ -30,7 +29,6 @@ CollisionVisualizer::~CollisionVisualizer()
 // 描画する当たり判定の登録(毎フレーム登録).
 void CollisionVisualizer::RegisterCollider(const DebugColliderInfo& info)
 {
-    if (!m_Enabled) return; // ignore when visualization disabled
     m_DebugInfoQueue.push_back(info);
 }
 
@@ -150,7 +148,6 @@ void CollisionVisualizer::CreateD3D11Buffer(
 
 void CollisionVisualizer::Draw()
 {
-    if (!m_Enabled) return; // skip whole draw when disabled
     if (m_DebugInfoQueue.empty()) { return; }
 
     DirectX11& pDirectX11 = DirectX11::GetInstance();

@@ -9,11 +9,9 @@ class CameraBase;
 class DirectionLight;
 class CapsuleCollider;
 class UIGameMain;
-struct Transform; // forward for debug external transform
 
 
 #include <vector>
-#include <memory>
 
 
 /*********************************************
@@ -48,12 +46,5 @@ private:
 	std::unique_ptr<Boss>		m_upBoss;
 
 	std::shared_ptr<UIGameMain>	m_upUI;
-
-    // Debug external transform to drive collider rotation visualization
-    bool m_DebugUseExternalTransform = true;
-    float m_DebugRotDegX = 0.0f;
-    float m_DebugRotDegY = 0.0f;
-    float m_DebugRotDegZ = 0.0f;
-    std::unique_ptr<Transform> m_pDebugExternalTransform;
 
 };

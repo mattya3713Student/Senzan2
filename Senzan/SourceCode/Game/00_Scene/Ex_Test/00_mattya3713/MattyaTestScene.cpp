@@ -27,8 +27,6 @@
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
 #include "System/Singleton/ImGui/CImGuiManager.h"
 
-#include "System/Utility/Transform/Transform.h"
-
 #include "SceneManager/SceneManager.h"
 
 // コンストラクタ.
@@ -86,18 +84,6 @@ void MattyaTestScene::Initialize()
 		| eCollisionGroup::Player_JustDodge);
 
 	CollisionDetector::GetInstance().RegisterCollider(*m_TestAttackCollision);
-
-    // Create external transform used only for debug visualization of collider rotation
-    m_pDebugExternalTransform = std::make_unique<Transform>();
-    m_pDebugExternalTransform->Position = DirectX::XMFLOAT3(0.0f, 1.5f, 50.0f);
-    m_pDebugExternalTransform->Scale = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
-    m_pDebugExternalTransform->Quaternion = DirectX::XMFLOAT4(0.0f,0.0f,0.0f,1.0f);
-    m_pDebugExternalTransform->UpdateRotationFromQuaternion();
-
-    // By default set external transform pointer to the attack collider so debug rotation affects calculation
-    if (m_TestAttackCollision) {
-        m_TestAttackCollision->SetExternalTransformPointer(m_pDebugExternalTransform.get());
-    }
 }
 
 void MattyaTestScene::Create()
@@ -108,11 +94,11 @@ void MattyaTestScene::Update()
 {
     Input::Update();
 	m_upGround->Update();
-	//m_upPlayer->SetTargetPos(m_upBoss.get()->GetPosition());
-	//m_upPlayer->Update();
+	m_upPlayer->SetTargetPos(m_upBoss.get()->GetPosition());
+	m_upPlayer->Update();
     m_pCamera->Update();
-	//m_upBoss->Update();
-	//m_upBoss->SetTargetPos(m_upPlayer->GetPosition());
+	m_upBoss->Update();
+	m_upBoss->SetTargetPos(m_upPlayer->GetPosition());
 
 	m_upUI->SetBossHP(m_upBoss->GetMaxHP(), m_upBoss->GetHP());
 	m_upUI->SetCombo(m_upPlayer->GetCombo());
@@ -124,8 +110,8 @@ void MattyaTestScene::Update()
 
 void MattyaTestScene::LateUpdate()
 {
-	//m_upPlayer->LateUpdate();
-	//m_upBoss->LateUpdate();
+	m_upPlayer->LateUpdate();
+	m_upBoss->LateUpdate();
 	CameraManager::GetInstance().LateUpdate();
 	
 	if (m_upPlayer->GetHP() <= 0.f)
@@ -150,48 +136,13 @@ void MattyaTestScene::Draw()
 	m_upGround->DrawDepth();
 	Shadow::End();
 	m_upGround->Draw();
-	//m_upPlayer->Draw();
-	//m_upBoss->Draw();
+	m_upPlayer->Draw();
+	m_upBoss->Draw();
 
-    if (m_TestPressCollision && m_TestPressCollision->GetActive()) {
-        m_TestPressCollision->SetDebugInfo();
-    }
-    if (m_TestAttackCollision && m_TestAttackCollision->GetActive()) {
-        m_TestAttackCollision->SetDebugInfo();
-    }
+	m_TestPressCollision->SetDebugInfo();
+	m_TestAttackCollision->SetDebugInfo();
 
-#if _DEBUG
-    //if (ImGui::Begin(IMGUI_JP("MattyaTestScene Collider Debug"))) {
-    //    ImGui::Checkbox(IMGUI_JP("Use External Transform"), &m_DebugUseExternalTransform);
-    //    ImGui::DragFloat(IMGUI_JP("Debug Rot X (deg)"), &m_DebugRotDegX, 1.0f, -180.0f, 180.0f);
-    //    ImGui::DragFloat(IMGUI_JP("Debug Rot Y (deg)"), &m_DebugRotDegY, 1.0f, -180.0f, 180.0f);
-    //    ImGui::DragFloat(IMGUI_JP("Debug Rot Z (deg)"), &m_DebugRotDegZ, 1.0f, -180.0f, 180.0f);
-
-    //    // Apply to external transform quaternion
-    //    if (m_pDebugExternalTransform) {
-    //        DirectX::XMVECTOR rotRad = DirectX::XMVectorSet(
-    //            DirectX::XMConvertToRadians(m_DebugRotDegX),
-    //            DirectX::XMConvertToRadians(m_DebugRotDegY),
-    //            DirectX::XMConvertToRadians(m_DebugRotDegZ),
-    //            0.0f);
-    //        DirectX::XMVECTOR qx = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(1,0,0,0), DirectX::XMVectorGetX(rotRad));
-    //        DirectX::XMVECTOR qy = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(0,1,0,0), DirectX::XMVectorGetY(rotRad));
-    //        DirectX::XMVECTOR qz = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(0,0,1,0), DirectX::XMVectorGetZ(rotRad));
-    //        DirectX::XMVECTOR q = DirectX::XMQuaternionMultiply(DirectX::XMQuaternionMultiply(qz, qy), qx);
-    //        DirectX::XMStoreFloat4(&m_pDebugExternalTransform->Quaternion, q);
-    //        m_pDebugExternalTransform->UpdateRotationFromQuaternion();
-
-    //        if (m_DebugUseExternalTransform) {
-    //            if (m_TestAttackCollision) m_TestAttackCollision->SetExternalTransformPointer(m_pDebugExternalTransform.get());
-    //        }
-    //        else {
-    //            if (m_TestAttackCollision) m_TestAttackCollision->SetExternalTransformPointer(nullptr);
-    //        }
-    //    }
-
-    //    ImGui::End();
-    //}
-#endif
+	m_TestPressCollision->SetDebugInfo();
 
 	m_upUI->Draw();
 	CollisionVisualizer::GetInstance().Draw();

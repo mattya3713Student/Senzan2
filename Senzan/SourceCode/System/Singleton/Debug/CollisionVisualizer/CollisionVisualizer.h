@@ -51,10 +51,6 @@ class CollisionVisualizer
 {
 public:
     friend Singleton<CollisionVisualizer>;
-    
-    // Enable / disable visualization (avoids CPU work when disabled)
-    void SetEnabled(bool enabled) { m_Enabled = enabled; }
-    bool IsEnabled() const { return m_Enabled; }
 private:
 
     // 形状ごとのメッシュデータをまとめる構造体.
@@ -94,7 +90,6 @@ private:
     void CreateCapsuleResources(ShapeData& out_data, float HalfHeight = 0.5f, int Segments = 16);
 
 private:
-    bool m_Enabled = false; // whether visualization is active
     // このフレームで描画するリスト.
     std::vector<DebugColliderInfo> m_DebugInfoQueue;
 
