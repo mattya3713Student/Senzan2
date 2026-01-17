@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../../00_Base/SceneBase.h"
 
@@ -9,13 +9,15 @@ class CameraBase;
 class DirectionLight;
 class CapsuleCollider;
 class UIGameMain;
+struct Transform; // forward for debug external transform
 
 
 #include <vector>
+#include <memory>
 
 
 /*********************************************
-*	ƒQ[ƒ€ƒƒCƒ“‰æ‘œƒNƒ‰ƒX.
+*	ã‚²ãƒ¼ãƒ ãƒ¡ã‚¤ãƒ³ç”»åƒã‚¯ãƒ©ã‚¹.
 **/
 
 class MattyaTestScene
@@ -35,8 +37,8 @@ public:
 
 private:
 
-	std::shared_ptr<CameraBase>			m_pCamera;			// ƒJƒƒ‰.
-	std::shared_ptr<DirectionLight>		m_pLight;			// ƒ‰ƒCƒg
+	std::shared_ptr<CameraBase>			m_pCamera;			// ã‚«ãƒ¡ãƒ©.
+	std::shared_ptr<DirectionLight>		m_pLight;			// ãƒ©ã‚¤ãƒˆ
 
 	std::unique_ptr<CapsuleCollider>		m_TestPressCollision;
 	std::unique_ptr<CapsuleCollider>		m_TestAttackCollision;
@@ -46,5 +48,12 @@ private:
 	std::unique_ptr<Boss>		m_upBoss;
 
 	std::shared_ptr<UIGameMain>	m_upUI;
+
+    // Debug external transform to drive collider rotation visualization
+    bool m_DebugUseExternalTransform = true;
+    float m_DebugRotDegX = 0.0f;
+    float m_DebugRotDegY = 0.0f;
+    float m_DebugRotDegZ = 0.0f;
+    std::unique_ptr<Transform> m_pDebugExternalTransform;
 
 };
