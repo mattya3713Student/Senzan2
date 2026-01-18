@@ -344,6 +344,13 @@ void Boss::HandleDamageDetection()
 				// ダメージを適用 
 				ApplyDamage(info.AttackAmount);
 
+				// HP が 0 以下になったら死亡ステートへ遷移
+				if (m_HP <= 0.0f)
+				{
+					m_State->ChangeState(std::make_shared<BossDeadState>(this));
+					return;
+				}
+
 				Time::GetInstance().SetWorldTimeScale(0.1f, 0.016f * 5);
 				CameraManager::GetInstance().ShakeCamera(0.1f, 2.5f); // カメラを少し揺らす.
 

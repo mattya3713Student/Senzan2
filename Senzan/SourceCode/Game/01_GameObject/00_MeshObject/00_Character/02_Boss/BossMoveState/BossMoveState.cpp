@@ -165,35 +165,38 @@ void BossMoveState::Update()
 	m_pOwner->SetRotationY(angle);
 
 	// --------------------------------------------------------
-	// 4. 攻撃判定
+	// 4. 攻撃判定：距離に基づいて攻撃を選択
 	// --------------------------------------------------------
-	constexpr float AttackDelay = 1.0f;
+	constexpr float AttackDelay = 2.0f;  // クールダウン時間を2秒に延長
 	if (m_Timer >= AttackDelay)
 	{
 		float dist = XMVectorGetX(XMVector3Length(vLookAt));
 		std::vector<std::function<std::unique_ptr<StateBase<Boss>>()>> candidates;
 
+		// 近距離攻撃 (15m以内)
 		if (dist < 15.0f) {
 			candidates = {
-				//[this]() { return std::make_unique<BossSlashState>(m_pOwner); },
-				//[this]() { return std::make_unique<BossChargeState>(m_pOwner); },
-				//[this]() { return std::make_unique<BossStompState>(m_pOwner); }
-				//[this]() { return std::make_unique<BossShoutState>(m_pOwner); }
-
+				[this]() { return std::make_unique<BossSlashState>(m_pOwner); },
+				[this]() { return std::make_unique<BossChargeState>(m_pOwner); },
+				[this]() { return std::make_unique<BossStompState>(m_pOwner); },
+				[this]() { return std::make_unique<BossShoutState>(m_pOwner); }
 			};
 		}
-		//else if (dist < 40.0f) {
-		//	candidates = {
-		//		[this]() { return std::make_unique<BossThrowingState>(m_pOwner); },
-		//		[this]() { return std::make_unique<BossShoutState>(m_pOwner); }
-		//	};
-		//}
-		//else {
-		//	candidates = {
-		//		[this]() { return std::make_unique<BossSpecialState>(m_pOwner); },
-		//		[this]() { return std::make_unique<BossLaserState>(m_pOwner); }
-		//	};
-		//}
+		// 中距離攻撃 (15m～40m)
+		else if (dist < 40.0f) {
+			candidates = {
+				[this]() { return std::make_unique<BossThrowingState>(m_pOwner); },
+				[this]() { return std::make_unique<BossShoutState>(m_pOwner); },
+				[this]() { return std::make_unique<BossChargeSlashState>(m_pOwner); }
+			};
+		}
+		// 遠距離攻撃 (40m以上)
+		else {
+			candidates = {
+				[this]() { return std::make_unique<BossSpecialState>(m_pOwner); },
+				[this]() { return std::make_unique<BossThrowingState>(m_pOwner); }
+			};
+		}
 
 		if (!candidates.empty())
 		{
