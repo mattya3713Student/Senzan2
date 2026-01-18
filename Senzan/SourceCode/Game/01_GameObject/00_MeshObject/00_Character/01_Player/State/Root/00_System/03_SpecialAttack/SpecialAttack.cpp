@@ -62,8 +62,8 @@ void SpecialAttack::Enter()
 
 	// カメラを引く
 	auto& camera = CameraManager::GetInstance();
-	// Note: Actual camera pull back would require camera system extension
-	// For now, we'll just shake it for effect
+	// カメラシェイクで視覚的インパクトを与える
+	// Note: カメラズーム/引きの機能は現在未実装のため、シェイクで代替
 	camera.ShakeCamera(0.3f, 3.0f);
 }
 

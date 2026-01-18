@@ -57,14 +57,10 @@ void Parry::Update()
         // CameraManager::GetInstance().ZoomIn(targetDistance, duration);
     }
     
-    // �A�j���[�V�����I�����̏���
+    // アニメーション終了時の処理
     if (m_pOwner->IsAnimEnd(Player::eAnim::Parry)) {
-        if (!m_IsParrySuccessful) {
-            m_pOwner->ChangeState(PlayerState::eID::Idle); // ���s���� Idle �ɑJ��
-        }
-        else {
-            m_pOwner->ChangeState(PlayerState::eID::Idle); // 成功時も Idle に遷移
-        }
+        // 成功・失敗に関わらず Idle に遷移
+        m_pOwner->ChangeState(PlayerState::eID::Idle);
     }
 }
 
