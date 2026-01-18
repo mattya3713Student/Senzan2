@@ -31,6 +31,7 @@ public:
     void Exit() override;
 
 private:    
+    bool m_IsEnhancedAttack = false;  // 強化攻撃モードフラグ
 };
 
 } // namespace PlayerState

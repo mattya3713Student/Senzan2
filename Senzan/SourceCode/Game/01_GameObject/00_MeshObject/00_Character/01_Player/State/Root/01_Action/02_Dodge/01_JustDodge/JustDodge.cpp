@@ -19,7 +19,7 @@ JustDodge::~JustDodge()
 {
 }
 
-// ID‚ÌŽæ“¾.
+// IDï¿½ÌŽæ“¾.
 constexpr PlayerState::eID JustDodge::GetStateID() const
 {
 	return PlayerState::eID::JustDodge;
@@ -37,59 +37,62 @@ void JustDodge::Enter()
     m_pOwner->SetIsLoop(false);
     m_pOwner->SetAnimSpeed(JUSTDODGE_ANIM_SPEED);
     m_pOwner->ChangeAnim(Player::eAnim::Dodge);
+    
+    // ã‚¸ãƒ£ã‚¹ãƒˆå›žé¿æˆåŠŸæ™‚ã«å¼·åŒ–æ”»æ’ƒãƒ¢ãƒ¼ãƒ‰ã‚’æœ‰åŠ¹åŒ–
+    m_pOwner->m_IsEnhancedAttackMode = true;
 }
 
 void JustDodge::Update()
 {
     Dodge::Update();
 
-	// ƒfƒ‹ƒ^ƒ^ƒCƒ€‚ÌŒvŽZ.
+	// ï¿½fï¿½ï¿½ï¿½^ï¿½^ï¿½Cï¿½ï¿½ï¿½ÌŒvï¿½Z.
 	double animSpeed = MyMath::IsNearlyEqual(m_pOwner->m_AnimSpeed, 0.0) ? 0.0 : m_pOwner->m_AnimSpeed;
 	float deltaTime = static_cast<float>(animSpeed) * m_pOwner->GetDelta();
 
-	// ŽžŠÔ‚Æ‹——£‚ÌXV.
+	// ï¿½ï¿½ï¿½Ô‚Æ‹ï¿½ï¿½ï¿½ï¿½ÌXï¿½V.
 	m_currentTime += deltaTime;
-    // “ü—Í‚ðŽæ“¾.
+    // ï¿½ï¿½ï¿½Í‚ï¿½ï¿½æ“¾.
     DirectX::XMFLOAT2 input_vec = VirtualPad::GetInstance().GetAxisInput(VirtualPad::eGameAxisAction::Move);
 
-    // “ü—Í‚ª‚È‚¯‚ê‚Î‘Ò‹@‚Ö‘JˆÚ.
+    // ï¿½ï¿½ï¿½Í‚ï¿½ï¿½È‚ï¿½ï¿½ï¿½Î‘Ò‹@ï¿½Ö‘Jï¿½ï¿½.
     if (MyMath::IsVector2NearlyZero(input_vec, 0.f)) {
         m_pOwner->ChangeState(PlayerState::eID::Idle);
         return;
     }
 
-    // ‚»‚ê‚¼‚êƒxƒNƒgƒ‹‚ðŽæ“¾.
+    // ï¿½ï¿½ï¿½ê‚¼ï¿½ï¿½xï¿½Nï¿½gï¿½ï¿½ï¿½ï¿½ï¿½æ“¾.
     DirectX::XMFLOAT3 camera_forward_vec = CameraManager::GetInstance().GetCurrentCamera()->GetForwardVec();
     DirectX::XMFLOAT3 camera_right_vec = CameraManager::GetInstance().GetCurrentCamera()->GetRightVec();
     DirectX::XMVECTOR v_camera_forward = DirectX::XMLoadFloat3(&camera_forward_vec);
     DirectX::XMVECTOR v_camera_right = DirectX::XMLoadFloat3(&camera_right_vec);
 
-    // YÀ•W‚ðíœ.
+    // Yï¿½ï¿½ï¿½Wï¿½ï¿½ï¿½íœ.
     v_camera_forward = DirectX::XMVectorSetY(v_camera_forward, 0.0f);
     v_camera_right = DirectX::XMVectorSetY(v_camera_right, 0.0f);
 
-    // ³‹K‰».
+    // ï¿½ï¿½ï¿½Kï¿½ï¿½.
     v_camera_forward = DirectX::XMVector3Normalize(v_camera_forward);
     v_camera_right = DirectX::XMVector3Normalize(v_camera_right);
 
-    // “ü—Í‚ÆƒxƒNƒgƒ‹‚ð‡¬.
+    // ï¿½ï¿½ï¿½Í‚Æƒxï¿½Nï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½.
     DirectX::XMVECTOR v_movement_z = DirectX::XMVectorScale(v_camera_forward, input_vec.y);
     DirectX::XMVECTOR v_movement_x = DirectX::XMVectorScale(v_camera_right, input_vec.x);
 
-    // ÅI“I‚ÈˆÚ“®ƒxƒNƒgƒ‹‚ð‡¬.
+    // ï¿½ÅIï¿½Iï¿½ÈˆÚ“ï¿½ï¿½xï¿½Nï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½.
     DirectX::XMVECTOR v_final_move = DirectX::XMVectorAdd(v_movement_z, v_movement_x);
 
-    // ‘¬“x * delta * ŽžŠÔŽÚ“x.
+    // ï¿½ï¿½ï¿½x * delta * ï¿½ï¿½ï¿½ÔŽÚ“x.
     float speed_and_delta = m_pOwner->m_RunMoveSpeed * m_pOwner->GetDelta();
     v_final_move = DirectX::XMVectorScale(v_final_move, speed_and_delta);
     DirectX::XMFLOAT3 final_move;
     DirectX::XMStoreFloat3(&final_move, v_final_move);
 
-    // ˆÚ“®‰ÁŽZ.
+    // ï¿½Ú“ï¿½ï¿½ï¿½ï¿½Z.
     m_pOwner->m_MoveVec.x = final_move.x;
     m_pOwner->m_MoveVec.y = final_move.z;
 
-	// ‰ñ”ðŠ®—¹.
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½.
 	if (m_currentTime >= m_MaxTime)
 	{
 		m_pOwner->ChangeState(PlayerState::eID::Idle);

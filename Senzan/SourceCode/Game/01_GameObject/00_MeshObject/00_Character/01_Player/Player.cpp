@@ -52,6 +52,7 @@ Player::Player()
     , m_IsSuccessParry  ( false )
     , m_pAttackCollider ( nullptr )
     , m_IsJustDodgeTiming( false )
+    , m_IsEnhancedAttackMode( false )
     , m_TargetPos        ( { 0.f,0.f,0.f } )
     , m_DebugForcedState ( PlayerState::eID::None )
     , m_DebugRepeatOnExit( false )
@@ -356,7 +357,12 @@ void Player::HandleAttackDetection()
             if ((other_group & eCollisionGroup::Enemy_Damage) != eCollisionGroup::None)
             {
                 ++m_Combo;
-                m_CurrentUltValue += static_cast<float>(m_Combo) * 0.0f;
+                // ゲージ増加：コンボごとに100ポイント増加
+                m_CurrentUltValue += 100.0f * static_cast<float>(m_Combo);
+                if (m_CurrentUltValue > m_MaxUltValue)
+                {
+                    m_CurrentUltValue = m_MaxUltValue;
+                }
                 SetAttackColliderActive(false);
 
                 // 一フレーム1回.
@@ -387,8 +393,13 @@ void Player::HandleDodgeDetection()
             if (!otherCollider) { continue; }
 
             // MEMO : EnemyAttackに触れたとき.
-            m_IsJustDodgeTiming = true;;
-            m_CurrentUltValue += static_cast<float>(m_Combo) * 0.0f;
+            m_IsJustDodgeTiming = true;
+            // ゲージ増加：ジャスト回避成功で200ポイント増加
+            m_CurrentUltValue += 200.0f;
+            if (m_CurrentUltValue > m_MaxUltValue)
+            {
+                m_CurrentUltValue = m_MaxUltValue;
+            }
         }
     }
 }
@@ -420,7 +431,12 @@ void Player::HandleParryDetection()
                 SoundManager::GetInstance().Play("Parry");
                 m_IsSuccessParry = true;
                 
-                m_CurrentUltValue += static_cast<float>(m_Combo) * 0.0f;
+                // ゲージ増加：パリィ成功で300ポイント増加
+                m_CurrentUltValue += 300.0f;
+                if (m_CurrentUltValue > m_MaxUltValue)
+                {
+                    m_CurrentUltValue = m_MaxUltValue;
+                }
                 // 一フレーム1回.
                 return;
             }

@@ -48,6 +48,22 @@ void AttackCombo_0::Enter()
     m_pOwner->GetTransform()->RotateToDirection(diff_vec);
 
     m_pOwner->m_MoveVec = diff_vec;
+    
+    // ジャスト回避後の強化攻撃モードの場合、攻撃力とヒットストップを増加
+    if (m_pOwner->m_IsEnhancedAttackMode && m_pOwner->m_pAttackCollider)
+    {
+        m_pOwner->m_pAttackCollider->SetAttackAmount(20.0f);  // 通常の2倍
+        // ヒットストップ効果も強化（Time::SetWorldTimeScale使用）
+        m_IsEnhancedAttack = true;
+    }
+    else
+    {
+        if (m_pOwner->m_pAttackCollider)
+        {
+            m_pOwner->m_pAttackCollider->SetAttackAmount(10.0f);  // 通常
+        }
+        m_IsEnhancedAttack = false;
+    }
 }
 
 void AttackCombo_0::Update()
@@ -177,6 +193,13 @@ void AttackCombo_0::Exit()
     Combat::Exit();
     m_IsComboAccepted = false;
     m_pOwner->SetAttackColliderActive(false);
+    
+    // 強化攻撃モードを解除
+    if (m_IsEnhancedAttack)
+    {
+        m_pOwner->m_IsEnhancedAttackMode = false;
+        m_IsEnhancedAttack = false;
+    }
 }
 
 } // namespace PlayerState

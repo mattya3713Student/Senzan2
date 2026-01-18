@@ -4,8 +4,8 @@
 class Player;
 
 /**************************************************
-*	ƒvƒŒƒCƒ„[‚Ì•KE‹Z‚ÌƒXƒe[ƒg(”h¶).
-*	’S“–:•£˜e –¢—ˆ.
+*	ï¿½vï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½[ï¿½Ì•Kï¿½Eï¿½Zï¿½ÌƒXï¿½eï¿½[ï¿½g(ï¿½hï¿½ï¿½).
+*	ï¿½Sï¿½ï¿½:ï¿½ï¿½ï¿½e ï¿½ï¿½ï¿½ï¿½.
 **/
 
 namespace PlayerState {
@@ -15,7 +15,7 @@ namespace PlayerState {
         SpecialAttack(Player* owner);
         ~SpecialAttack();
 
-        // ID‚Ìæ“¾.
+        // IDï¿½Ìæ“¾.
         constexpr  PlayerState::eID GetStateID() const override;
 
         void Enter() override;
@@ -25,5 +25,7 @@ namespace PlayerState {
         void Exit() override;
 
     private:
+        float m_CurrentTime = 0.0f;      // çµŒéæ™‚é–“
+        bool m_IsHitboxActive = false;   // ãƒ’ãƒƒãƒˆãƒœãƒƒã‚¯ã‚¹ãŒã‚¢ã‚¯ãƒ†ã‚£ãƒ–ã‹
     };
 }
