@@ -9,7 +9,7 @@
 class Boss;
 class BossIdolState;
 
-class BossSpecialState
+class BossJumpOnlState
 	: public BossAttackStateBase
 {
 public:
@@ -24,8 +24,8 @@ public:
 	};
 
 public:
-	BossSpecialState(Boss* owner);
-	~BossSpecialState() override;
+	BossJumpOnlState(Boss* owner);
+	~BossJumpOnlState() override;
 
 	void Enter() override;
 	void Update() override;
@@ -39,9 +39,7 @@ private:
 	//============================================================
 	//ジャンプの時にPlayerの追尾コードを書く関数. 
 	void JumpTime();
-	//アタック時関数.
-	void BossAttack() override;
-
+    void BossAttack();
 	void ChargeTime();
 private:
 	//============================================================

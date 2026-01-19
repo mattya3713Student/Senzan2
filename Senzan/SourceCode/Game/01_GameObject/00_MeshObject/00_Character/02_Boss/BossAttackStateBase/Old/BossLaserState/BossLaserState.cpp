@@ -97,7 +97,3 @@ void BossLaserState::Exit()
     // 当たり判定を無効化.
     m_pOwner->SetAttackColliderActive(false);
 }
-
-void BossLaserState::BossAttack()
-{
-}

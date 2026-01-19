@@ -6,6 +6,7 @@
 #include "..//..//BossMoveState//BossMoveState.h"
 
 #include "00_MeshObject/00_Character/02_Boss/BossIdolState/BossIdolState.h"
+#include "System/Singleton/ImGui/CImGuiManager.h"
 
 BossShoutState::BossShoutState(Boss* owner)
 	: BossAttackStateBase (owner)
@@ -24,6 +25,8 @@ void BossShoutState::Enter()
     if (auto* shoutCol = m_pOwner->GetShoutCollider()) 
     {
         shoutCol->SetActive(true);
+        shoutCol->SetRadius(m_ShoutRadius);
+        shoutCol->SetAttackAmount(m_ShoutDamage);
     }
 
     // 当たり判定を有効化.
@@ -111,6 +114,35 @@ void BossShoutState::Exit()
   
 }
 
-void BossShoutState::BossAttack()
+void BossShoutState::DrawImGui()
 {
+    ImGui::Begin(IMGUI_JP("BossShout State"));
+    CImGuiManager::Slider<float>(IMGUI_JP("ダメージ量"), m_ShoutDamage, 0.0f, 50.0f, true);
+    CImGuiManager::Slider<float>(IMGUI_JP("範囲半径"), m_ShoutRadius, 5.0f, 60.0f, true);
+    CImGuiManager::Slider<float>(IMGUI_JP("ノックバック力"), m_KnockBackPower, 0.0f, 30.0f, true);
+    BossAttackStateBase::DrawImGui();
+    ImGui::End();
+}
+
+void BossShoutState::LoadSettings()
+{
+    BossAttackStateBase::LoadSettings();
+    auto srcDir = std::filesystem::path(__FILE__).parent_path();
+    auto filePath = srcDir / GetSettingsFileName();
+    if (!std::filesystem::exists(filePath)) return;
+    json j = FileManager::JsonLoad(filePath);
+    if (j.contains("ShoutDamage")) m_ShoutDamage = j["ShoutDamage"].get<float>();
+    if (j.contains("ShoutRadius")) m_ShoutRadius = j["ShoutRadius"].get<float>();
+    if (j.contains("KnockBackPower")) m_KnockBackPower = j["KnockBackPower"].get<float>();
+}
+
+void BossShoutState::SaveSettings() const
+{
+    json j = SerializeSettings();
+    j["ShoutDamage"] = m_ShoutDamage;
+    j["ShoutRadius"] = m_ShoutRadius;
+    j["KnockBackPower"] = m_KnockBackPower;
+    auto srcDir = std::filesystem::path(__FILE__).parent_path();
+    auto filePath = srcDir / GetSettingsFileName();
+    FileManager::JsonSave(filePath, j);
 }

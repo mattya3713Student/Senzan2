@@ -125,9 +125,6 @@ public:
 	// 他のColliderとの衝突.
 	virtual CollisionInfo CheckCollision(const ColliderBase& other) const = 0;
 
-	// 外部から座標供給ポインタを設定（毎フレームの検索を避けるため）。
-	inline void SetExternalTransformPointer(const Transform* p) noexcept { m_pExternalTransform = p; }
-
 protected:
 	// 形状ごとの衝突処理.
 	virtual CollisionInfo DispatchCollision(const SphereCollider& other) const = 0;
@@ -137,7 +134,7 @@ protected:
 protected:
 
 	std::weak_ptr<const Transform> m_wpTransform;	// 持ち主のトランスフォーム.
-	DirectX::XMFLOAT3	m_PositionOffset;		// オフセット位置.
+	DirectX::XMFLOAT3	m_PositionOffset;		    // オフセット位置.
 	bool				m_IsActive; 				// アクティブか否か.
 	float				m_AttackAmount; 			// 攻撃力.
 
@@ -148,7 +145,7 @@ protected:
 	// 検出された衝突情報のリスト.
 	std::vector<CollisionInfo> m_CollisionEvents;
 
-	// 外部供給のTransformポインタ（あれば GetPosition はこれを返す）。
+	// 外部供給のTransformポインタ.
 	const Transform* m_pExternalTransform = nullptr;
 
 public:
