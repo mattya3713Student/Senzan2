@@ -207,7 +207,38 @@ void Boss::LateUpdate()
         DirectX::XMVECTOR qz = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(0,0,1,0), DirectX::XMVectorGetZ(rotRad));
         DirectX::XMVECTOR q = DirectX::XMQuaternionMultiply(DirectX::XMQuaternionMultiply(qz, qy), qx);
         DirectX::XMFLOAT4 rotOffset; DirectX::XMStoreFloat4(&rotOffset, q);
-        UpdateColliderFromBone("boss_Hand_R", m_pSlashCollider, m_SlashBoneWorldTransform, true, rotOffset);
+
+        if (!m_pSlashBoneFrame) {
+            if (auto skin = std::dynamic_pointer_cast<SkinMesh>(GetAttachMesh().lock())) {
+                m_pSlashBoneFrame = skin->GetFrameByName("boss_Hand_R");
+            }
+        }
+
+        if (m_pSlashBoneFrame) {
+            MYFRAME* frame = (MYFRAME*)m_pSlashBoneFrame;
+            DirectX::XMMATRIX bone_local_matrix = D3DXMatrixToXMMatrix(frame->CombinedTransformationMatrix);
+            DirectX::XMMATRIX boss_world_matrix = m_spTransform->GetWorldMatrix();
+            DirectX::XMMATRIX bone_world_matrix = bone_local_matrix * boss_world_matrix;
+
+            DirectX::XMVECTOR v_final_pos, v_final_quat, v_final_scale;
+            DirectX::XMMatrixDecompose(&v_final_scale, &v_final_quat, &v_final_pos, bone_world_matrix);
+            DirectX::XMStoreFloat3(&m_SlashBoneWorldTransform.Position, v_final_pos);
+            
+            DirectX::XMVECTOR q_offset = DirectX::XMLoadFloat4(&rotOffset);
+            DirectX::XMVECTOR q_result = DirectX::XMQuaternionMultiply(q_offset, v_final_quat);
+            DirectX::XMStoreFloat4(&m_SlashBoneWorldTransform.Quaternion, q_result);
+            DirectX::XMStoreFloat3(&m_SlashBoneWorldTransform.Scale, v_final_scale);
+            m_SlashBoneWorldTransform.UpdateRotationFromQuaternion();
+
+            DirectX::XMVECTOR b_pos, b_quat, b_scale;
+            DirectX::XMMatrixDecompose(&b_scale, &b_quat, &b_pos, boss_world_matrix);
+            DirectX::XMVECTOR relative_pos = DirectX::XMVectorSubtract(v_final_pos, b_pos);
+            DirectX::XMFLOAT3 f_relative_pos; DirectX::XMStoreFloat3(&f_relative_pos, relative_pos);
+            m_pSlashCollider->SetPositionOffset(f_relative_pos.x, f_relative_pos.y, f_relative_pos.z);
+        }
+        else {
+            UpdateColliderFromBone("boss_Hand_R", m_pSlashCollider, m_SlashBoneWorldTransform, true, rotOffset);
+        }
     }
     if (m_pStompCollider && m_pStompCollider->GetActive()) {
         DirectX::XMFLOAT3 deg = m_StompRotOffsetDeg;
@@ -217,7 +248,38 @@ void Boss::LateUpdate()
         DirectX::XMVECTOR qz = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(0,0,1,0), DirectX::XMVectorGetZ(rotRad));
         DirectX::XMVECTOR q = DirectX::XMQuaternionMultiply(DirectX::XMQuaternionMultiply(qz, qy), qx);
         DirectX::XMFLOAT4 rotOffset; DirectX::XMStoreFloat4(&rotOffset, q);
-        UpdateColliderFromBone("boss_pSphere28", m_pStompCollider, m_StompBoneWorldTransform, true, rotOffset);
+
+        if (!m_pStompBoneFrame) {
+            if (auto skin = std::dynamic_pointer_cast<SkinMesh>(GetAttachMesh().lock())) {
+                m_pStompBoneFrame = skin->GetFrameByName("boss_pSphere28");
+            }
+        }
+
+        if (m_pStompBoneFrame) {
+            MYFRAME* frame = (MYFRAME*)m_pStompBoneFrame;
+            DirectX::XMMATRIX bone_local_matrix = D3DXMatrixToXMMatrix(frame->CombinedTransformationMatrix);
+            DirectX::XMMATRIX boss_world_matrix = m_spTransform->GetWorldMatrix();
+            DirectX::XMMATRIX bone_world_matrix = bone_local_matrix * boss_world_matrix;
+
+            DirectX::XMVECTOR v_final_pos, v_final_quat, v_final_scale;
+            DirectX::XMMatrixDecompose(&v_final_scale, &v_final_quat, &v_final_pos, bone_world_matrix);
+            DirectX::XMStoreFloat3(&m_StompBoneWorldTransform.Position, v_final_pos);
+
+            DirectX::XMVECTOR q_offset = DirectX::XMLoadFloat4(&rotOffset);
+            DirectX::XMVECTOR q_result = DirectX::XMQuaternionMultiply(q_offset, v_final_quat);
+            DirectX::XMStoreFloat4(&m_StompBoneWorldTransform.Quaternion, q_result);
+            DirectX::XMStoreFloat3(&m_StompBoneWorldTransform.Scale, v_final_scale);
+            m_StompBoneWorldTransform.UpdateRotationFromQuaternion();
+
+            DirectX::XMVECTOR b_pos, b_quat, b_scale;
+            DirectX::XMMatrixDecompose(&b_scale, &b_quat, &b_pos, boss_world_matrix);
+            DirectX::XMVECTOR relative_pos = DirectX::XMVectorSubtract(v_final_pos, b_pos);
+            DirectX::XMFLOAT3 f_relative_pos; DirectX::XMStoreFloat3(&f_relative_pos, relative_pos);
+            m_pStompCollider->SetPositionOffset(f_relative_pos.x, f_relative_pos.y, f_relative_pos.z);
+        }
+        else {
+            UpdateColliderFromBone("boss_pSphere28", m_pStompCollider, m_StompBoneWorldTransform, true, rotOffset);
+        }
     }
     if (m_pShoutCollider && m_pShoutCollider->GetActive()) {
         DirectX::XMFLOAT3 deg = m_ShoutRotOffsetDeg;
@@ -227,7 +289,38 @@ void Boss::LateUpdate()
         DirectX::XMVECTOR qz = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(0,0,1,0), DirectX::XMVectorGetZ(rotRad));
         DirectX::XMVECTOR q = DirectX::XMQuaternionMultiply(DirectX::XMQuaternionMultiply(qz, qy), qx);
         DirectX::XMFLOAT4 rotOffset; DirectX::XMStoreFloat4(&rotOffset, q);
-        UpdateColliderFromBone("boss_Shout", m_pShoutCollider, m_ShoutBoneWorldTransform, true, rotOffset);
+
+        if (!m_pShoutBoneFrame) {
+            if (auto skin = std::dynamic_pointer_cast<SkinMesh>(GetAttachMesh().lock())) {
+                m_pShoutBoneFrame = skin->GetFrameByName("boss_Shout");
+            }
+        }
+
+        if (m_pShoutBoneFrame) {
+            MYFRAME* frame = (MYFRAME*)m_pShoutBoneFrame;
+            DirectX::XMMATRIX bone_local_matrix = D3DXMatrixToXMMatrix(frame->CombinedTransformationMatrix);
+            DirectX::XMMATRIX boss_world_matrix = m_spTransform->GetWorldMatrix();
+            DirectX::XMMATRIX bone_world_matrix = bone_local_matrix * boss_world_matrix;
+
+            DirectX::XMVECTOR v_final_pos, v_final_quat, v_final_scale;
+            DirectX::XMMatrixDecompose(&v_final_scale, &v_final_quat, &v_final_pos, bone_world_matrix);
+            DirectX::XMStoreFloat3(&m_ShoutBoneWorldTransform.Position, v_final_pos);
+
+            DirectX::XMVECTOR q_offset = DirectX::XMLoadFloat4(&rotOffset);
+            DirectX::XMVECTOR q_result = DirectX::XMQuaternionMultiply(q_offset, v_final_quat);
+            DirectX::XMStoreFloat4(&m_ShoutBoneWorldTransform.Quaternion, q_result);
+            DirectX::XMStoreFloat3(&m_ShoutBoneWorldTransform.Scale, v_final_scale);
+            m_ShoutBoneWorldTransform.UpdateRotationFromQuaternion();
+
+            DirectX::XMVECTOR b_pos, b_quat, b_scale;
+            DirectX::XMMatrixDecompose(&b_scale, &b_quat, &b_pos, boss_world_matrix);
+            DirectX::XMVECTOR relative_pos = DirectX::XMVectorSubtract(v_final_pos, b_pos);
+            DirectX::XMFLOAT3 f_relative_pos; DirectX::XMStoreFloat3(&f_relative_pos, relative_pos);
+            m_pShoutCollider->SetPositionOffset(f_relative_pos.x, f_relative_pos.y, f_relative_pos.z);
+        }
+        else {
+            UpdateColliderFromBone("boss_Shout", m_pShoutCollider, m_ShoutBoneWorldTransform, true, rotOffset);
+        }
     }
 
     // 衝突処理
@@ -496,6 +589,8 @@ bool Boss::UpdateColliderFromBone(
     bool updateRotation,
     const DirectX::XMFLOAT4& rotationOffset)
 {
+
+
     if (!collider || GetAttachMesh().expired()) return false;
     auto skinMesh = std::dynamic_pointer_cast<SkinMesh>(GetAttachMesh().lock());
     if (!skinMesh) return false;
@@ -521,7 +616,6 @@ bool Boss::UpdateColliderFromBone(
             outTransform.Quaternion = DirectX::XMFLOAT4{0.0f, 0.0f, 0.0f, 1.0f};
             outTransform.Scale = DirectX::XMFLOAT3{1.0f, 1.0f, 1.0f};
         }
-        collider->SetExternalTransformPointer(&outTransform);
         return true;
     }
 
@@ -547,7 +641,6 @@ bool Boss::UpdateColliderFromBone(
     DirectX::XMVECTOR relative_pos = DirectX::XMVectorSubtract(v_final_pos, b_pos);
     DirectX::XMFLOAT3 f_relative_pos; DirectX::XMStoreFloat3(&f_relative_pos, relative_pos);
     collider->SetPositionOffset(f_relative_pos.x, f_relative_pos.y, f_relative_pos.z);
-    collider->SetExternalTransformPointer(&outTransform);
 
 
 

@@ -204,5 +204,10 @@ protected:
     DirectX::XMFLOAT3 m_SlashRotOffsetDeg{ 0.0f, 0.0f, 0.0f };
     DirectX::XMFLOAT3 m_StompRotOffsetDeg{ 0.0f, 0.0f, 0.0f };
     DirectX::XMFLOAT3 m_ShoutRotOffsetDeg{ 0.0f, 0.0f, 0.0f };
+
+    // ボーンフレームのキャッシュ
+    LPD3DXFRAME m_pSlashBoneFrame = nullptr;
+    LPD3DXFRAME m_pStompBoneFrame = nullptr;
+    LPD3DXFRAME m_pShoutBoneFrame = nullptr;
 };
 

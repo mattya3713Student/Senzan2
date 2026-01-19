@@ -30,7 +30,7 @@ void BossSlashState::Enter()
     m_CurrentTime = 0.0f;
     m_AnimSpeed = 0.0f;
 
-    m_pOwner->SetIsLoop(false);
+    m_pOwner->SetIsLoop(true);
     m_pOwner->SetAnimTime(0.0);
     m_pOwner->SetAnimSpeed(m_AnimSpeed);
 

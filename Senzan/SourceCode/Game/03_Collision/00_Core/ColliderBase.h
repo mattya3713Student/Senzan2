@@ -125,9 +125,6 @@ public:
 	// 他のColliderとの衝突.
 	virtual CollisionInfo CheckCollision(const ColliderBase& other) const = 0;
 
-	// 外部から座標供給ポインタを設定.
-	inline void SetExternalTransformPointer(const Transform* p) noexcept { m_pExternalTransform = p; }
-
 protected:
 	// 形状ごとの衝突処理.
 	virtual CollisionInfo DispatchCollision(const SphereCollider& other) const = 0;
