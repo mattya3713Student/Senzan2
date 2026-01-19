@@ -32,7 +32,7 @@ class BossStompState;       //踏みつけ攻撃
 class BossSlashState;       //斬る攻撃.
 class BossChargeSlashState; //溜め攻撃.
 class BossShoutState;       //叫び攻撃.
-class BossSpecialState;
+class BossJumpOnlState;
 class BossLaserState;
 class BossDeadState;
 
@@ -56,7 +56,7 @@ class Boss
     friend BossAttackStateBase;
     friend BossChargeSlashState;
     friend BossShoutState;
-    friend BossSpecialState;
+    friend BossJumpOnlState;
     friend BossLaserState;
     friend BossDeadState;
     friend BossChargeState;

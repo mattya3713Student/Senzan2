@@ -42,4 +42,9 @@ private:
 	float m_TransitionTimer = 60.0f;
 
 	enShout m_List;
+
+	// 叫び攻撃の設定.
+	float m_ShoutDamage = 10.0f;     // ダメージ量.
+	float m_ShoutRadius = 30.0f;     // 範囲半径.
+	float m_KnockBackPower = 15.0f;  // ノックバック力.
 };

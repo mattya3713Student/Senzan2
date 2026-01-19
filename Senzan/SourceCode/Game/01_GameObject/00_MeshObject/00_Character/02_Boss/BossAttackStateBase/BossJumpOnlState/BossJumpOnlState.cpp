@@ -1,4 +1,4 @@
-﻿#include "BossSpecialState.h"
+﻿#include "BossJumpOnlState.h"
 #include "Game/04_Time/Time.h"
 #include "00_MeshObject/00_Character/02_Boss/Boss.h"
 #include "00_MeshObject/00_Character/02_Boss/BossIdolState/BossIdolState.h"
@@ -7,7 +7,7 @@
 
 using namespace DirectX;
 
-BossSpecialState::BossSpecialState(Boss* owner)
+BossJumpOnlState::BossJumpOnlState(Boss* owner)
 	: BossAttackStateBase(owner)
 	, m_List(enSpecial::None)
 	, m_Velocity(0.0f, 0.0f, 0.0f)
@@ -27,11 +27,11 @@ BossSpecialState::BossSpecialState(Boss* owner)
 {
 }
 
-BossSpecialState::~BossSpecialState()
+BossJumpOnlState::~BossJumpOnlState()
 {
 }
 
-void BossSpecialState::Enter()
+void BossJumpOnlState::Enter()
 {
 	m_Timer = 0.0f;
 	m_Velocity = {};
@@ -42,32 +42,32 @@ void BossSpecialState::Enter()
 	m_pOwner->ChangeAnim(Boss::enBossAnim::Idol);
 }
 
-void BossSpecialState::Update()
+void BossJumpOnlState::Update()
 {
 	float deltaTime = Time::GetInstance().GetDeltaTime();
 
 	switch (m_List)
 	{
-	case BossSpecialState::enSpecial::None:
+	case BossJumpOnlState::enSpecial::None:
 		m_Velocity = {};
 		// 当たり判定を有効化.
 		m_pOwner->SetAttackColliderActive(true);
 		m_List = enSpecial::Charge;
 		break;
 
-	case BossSpecialState::enSpecial::Charge:
+	case BossJumpOnlState::enSpecial::Charge:
 		ChargeTime();
 		break;
 
-	case BossSpecialState::enSpecial::Jump:
+	case BossJumpOnlState::enSpecial::Jump:
 		JumpTime();
 		break;
 
-	case BossSpecialState::enSpecial::Attack:
+	case BossJumpOnlState::enSpecial::Attack:
 		BossAttack();
 		break;
 
-	case BossSpecialState::enSpecial::CoolTime:
+	case BossJumpOnlState::enSpecial::CoolTime:
 		m_Timer += deltaTime;
 		// SpecialToIdolアニメーションが終了したら遷移
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::SpecialToIdol))
@@ -76,7 +76,7 @@ void BossSpecialState::Update()
 		}
 		break;
 
-	case BossSpecialState::enSpecial::Trans:
+	case BossJumpOnlState::enSpecial::Trans:
 		m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
 		break;
 
@@ -85,15 +85,15 @@ void BossSpecialState::Update()
 	}
 }
 
-void BossSpecialState::LateUpdate()
+void BossJumpOnlState::LateUpdate()
 {
 }
 
-void BossSpecialState::Draw()
+void BossJumpOnlState::Draw()
 {
 }
 
-void BossSpecialState::Exit()
+void BossJumpOnlState::Exit()
 {
 	m_GroundedFrag = true;
 	m_SpecialFrag = false;
@@ -122,7 +122,7 @@ void BossSpecialState::Exit()
 	m_pOwner->SetAttackColliderActive(false);
 }
 
-void BossSpecialState::ChargeTime()
+void BossJumpOnlState::ChargeTime()
 {
 	float deltaTime = Time::GetInstance().GetDeltaTime();
 	m_Timer += deltaTime;
@@ -137,7 +137,7 @@ void BossSpecialState::ChargeTime()
 	}
 }
 
-void BossSpecialState::JumpTime()
+void BossJumpOnlState::JumpTime()
 {
 	if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Special_0))
 	{
@@ -171,7 +171,7 @@ void BossSpecialState::JumpTime()
 	}
 }
 
-void BossSpecialState::BossAttack()
+void BossJumpOnlState::BossAttack()
 {
 	float deltaTime = Time::GetInstance().GetDeltaTime();
 	const float floorY = 0.0f;

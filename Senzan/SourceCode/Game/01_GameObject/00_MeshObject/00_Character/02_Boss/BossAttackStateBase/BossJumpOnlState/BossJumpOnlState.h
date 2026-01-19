@@ -9,7 +9,7 @@
 class Boss;
 class BossIdolState;
 
-class BossSpecialState
+class BossJumpOnlState
 	: public BossAttackStateBase
 {
 public:
@@ -24,8 +24,8 @@ public:
 	};
 
 public:
-	BossSpecialState(Boss* owner);
-	~BossSpecialState() override;
+	BossJumpOnlState(Boss* owner);
+	~BossJumpOnlState() override;
 
 	void Enter() override;
 	void Update() override;

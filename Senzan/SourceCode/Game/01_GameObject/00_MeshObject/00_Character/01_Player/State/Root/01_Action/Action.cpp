@@ -23,6 +23,16 @@ void Action::Enter()
 
 void Action::Update()
 {
+	// 必殺技ボタンが押されたら（ゲージMAX時のみ）
+	if (VirtualPad::GetInstance().IsActionDown(VirtualPad::eGameAction::SpecialAttack))
+	{
+		if (m_pOwner->m_CurrentUltValue >= m_pOwner->m_MaxUltValue)
+		{
+			m_pOwner->ChangeState(PlayerState::eID::SpecialAttack);
+			return;
+		}
+	}
+
 	// 回避ボタンが押されたら.
 	if (VirtualPad::GetInstance().IsActionDown(VirtualPad::eGameAction::Dodge))
 	{

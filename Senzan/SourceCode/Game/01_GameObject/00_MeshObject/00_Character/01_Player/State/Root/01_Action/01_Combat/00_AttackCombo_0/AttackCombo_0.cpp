@@ -28,6 +28,15 @@ void AttackCombo_0::Enter()
 
     m_pOwner->SetIsLoop(false);
     m_pOwner->SetAnimTime(0.0);
+    
+    // ジャスト回避後の強化攻撃
+    if (m_pOwner->m_IsJustDodgeTiming) {
+        m_AnimSpeed *= 1.5f;  // アニメ速度アップ
+        m_pOwner->m_pAttackCollider->SetAttackAmount(20.0f);  // ダメージ2倍
+    } else {
+        m_pOwner->m_pAttackCollider->SetAttackAmount(10.0f);  // 通常ダメージ
+    }
+    
     m_pOwner->SetAnimSpeed(m_AnimSpeed);
     m_pOwner->ChangeAnim(Player::eAnim::Attack_0);
 

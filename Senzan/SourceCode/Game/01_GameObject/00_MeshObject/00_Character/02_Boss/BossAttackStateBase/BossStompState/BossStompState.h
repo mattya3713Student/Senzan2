@@ -62,4 +62,12 @@ private:
 
 	//上がる速度のスピード設定用.
 	float m_UpSpeed;
+
+	//====================================================
+	// 飛びかかり（前方移動）用メンバ変数.
+	//====================================================
+	float m_ForwardSpeed;           // 前方移動速度.
+	DirectX::XMFLOAT3 m_TargetPos;  // 目標位置（プレイヤー位置）.
+	DirectX::XMFLOAT3 m_StartPos_Stomp;   // 開始位置.
+	bool m_HasLanded;               // 着地済みフラグ（ダメージ1回のみ）.
 };

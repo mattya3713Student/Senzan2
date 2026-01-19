@@ -34,8 +34,6 @@ MattyaTestScene::MattyaTestScene()
 	: SceneBase()
 	, m_pCamera()
 	, m_pLight(std::make_shared<DirectionLight>())
-	, m_TestPressCollision(std::make_unique<CapsuleCollider>())
-	, m_TestAttackCollision(std::make_unique<CapsuleCollider>())
 	, m_upPlayer(std::make_unique<Player>())
 	, m_upBoss(std::make_unique<Boss>())
 	, m_upGround(std::make_unique<Ground>())
@@ -47,7 +45,6 @@ MattyaTestScene::MattyaTestScene()
 // デストラクタ.
 MattyaTestScene::~MattyaTestScene()
 {
-	CollisionDetector::GetInstance().UnregisterCollider(m_TestAttackCollision.get());
 }
 
 void MattyaTestScene::Initialize()
@@ -64,32 +61,6 @@ void MattyaTestScene::Initialize()
 
 	m_upGround = std::make_unique<Ground>();
 
-	//m_TestPressCollision->SetColor(Color::eColor::Cyan);
-	//m_TestPressCollision->SetHeight(60.0f);
-	//m_TestPressCollision->SetRadius(20.0f);
-	//m_TestPressCollision->SetPositionOffset(0.f,1.5f,0.f);
-	//m_TestPressCollision->SetMyMask(eCollisionGroup::Press);
-	//m_TestPressCollision->SetTarGetTargetMask(eCollisionGroup::Press);
-	//CollisionDetector::GetInstance().RegisterCollider(*m_TestPressCollision);
-
-    m_TestAttackCollision->SetColor(Color::eColor::Red);
-    m_TestAttackCollision->SetAttackAmount(50.0f);
-    m_TestAttackCollision->SetHeight(2.0f);
-    m_TestAttackCollision->SetRadius(0.5f);
-    // コライダー位置は外部 Transform (m_TestAttackTransform) に任せる
-    m_TestAttackCollision->SetPositionOffset(0.f, 0.f, 0.f);
-	m_TestAttackCollision->SetMyMask(eCollisionGroup::Enemy_Attack);
-
-    // 外部 Transform を初期化し、コライダーに参照ポインタを渡す
-    m_TestAttackTransform.Position = DirectX::XMFLOAT3(0.f, 1.5f, 50.f);
-    m_TestAttackTransform.Rotation = DirectX::XMFLOAT3(0.f, 0.f, 0.f);
-    m_TestAttackTransform.Scale = DirectX::XMFLOAT3(1.f, 1.f, 1.f);
-
-	m_TestAttackCollision->SetTarGetTargetMask(eCollisionGroup::Player_Damage 
-		| eCollisionGroup::Player_Dodge
-		| eCollisionGroup::Player_JustDodge);
-
-	CollisionDetector::GetInstance().RegisterCollider(*m_TestAttackCollision);
 }
 
 void MattyaTestScene::Create()
@@ -106,31 +77,6 @@ void MattyaTestScene::Update()
 	m_upBoss->Update();
 	m_upBoss->SetTargetPos(m_upPlayer->GetPosition());
 
-    // 毎フレーム m_TestAttackTransform を回転させる
-    {
-        float delta = Time::GetInstance().GetDeltaTime();
-        if (m_TestAttackAutoRotate)
-        {
-            float yawDelta = m_TestAttackRotationSpeed * delta;
-            m_TestAttackTransform.RotateDegrees(DirectX::XMFLOAT3(0.0f, yawDelta, 0.0f));
-        }
-        else
-        {
-            // 手動入力がある場合、UI側の値をTransformに直接反映
-            m_TestAttackTransform.Rotation = m_TestAttackRotationUI;
-            m_TestAttackTransform.UpdateRotationFromQuaternion();
-        }
-    }
-
-#if _DEBUG
-    // ImGui で回転制御
-    if (ImGui::Begin(IMGUI_JP("Test Attack Collider Control"))) {
-        ImGui::Checkbox(IMGUI_JP("Auto Rotate"), &m_TestAttackAutoRotate);
-        ImGui::DragFloat(IMGUI_JP("Rotation Speed (deg/s)"), &m_TestAttackRotationSpeed, 1.0f, -360.0f, 360.0f);
-        ImGui::DragFloat3(IMGUI_JP("Manual Rotation (deg)"), &m_TestAttackRotationUI.x, 1.0f, -360.0f, 360.0f);
-        ImGui::End();
-    }
-#endif
 
     m_upUI->SetBossHP(m_upBoss->GetMaxHP(), m_upBoss->GetHP());
 	m_upUI->SetCombo(m_upPlayer->GetCombo());
@@ -170,11 +116,6 @@ void MattyaTestScene::Draw()
 	m_upGround->Draw();
 	m_upPlayer->Draw();
 	m_upBoss->Draw();
-
-	m_TestPressCollision->SetDebugInfo();
-	m_TestAttackCollision->SetDebugInfo();
-
-	m_TestPressCollision->SetDebugInfo();
 
 	m_upUI->Draw();
 	CollisionVisualizer::GetInstance().Draw();
