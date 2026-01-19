@@ -149,6 +149,9 @@ protected:
 	const Transform* m_pExternalTransform = nullptr;
 
 public:
+	// 外部Transformを設定する（ボーンの回転を反映するために使用）
+	void SetExternalTransform(const Transform* pTransform) noexcept { m_pExternalTransform = pTransform; }
+	const Transform* GetExternalTransform() const noexcept { return m_pExternalTransform; }
 
 	//------------デバッグ描画用-----------.
 

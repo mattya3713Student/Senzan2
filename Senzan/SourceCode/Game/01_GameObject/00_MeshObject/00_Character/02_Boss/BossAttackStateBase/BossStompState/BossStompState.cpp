@@ -82,6 +82,7 @@ void BossStompState::Enter()
 	}
 
 
+
 	m_Velocity = { 0.0f, 0.0f, 0.0f };
 	m_GroundedFrag = true;
 	m_HasLanded = false;

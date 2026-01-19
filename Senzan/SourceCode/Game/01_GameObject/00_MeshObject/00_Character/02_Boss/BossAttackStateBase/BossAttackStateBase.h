@@ -33,6 +33,9 @@ struct MovementWindow
     MyEasing::Type EasingType = MyEasing::Type::Liner;
     float Distance = 1.0f; // 移動量係数（Speed * Duration に乗算）
 
+    // 追加: このウィンドウで移動を反転するか
+    bool Reverse = false;
+
     // ランタイム用: 開始/終了位置と初期化フラグ（保存対象ではない）
     DirectX::XMFLOAT3 StartPos{ 0.0f, 0.0f, 0.0f };
     DirectX::XMFLOAT3 EndPos{ 0.0f, 0.0f, 0.0f };
@@ -117,8 +120,11 @@ protected:
     // --- 共通攻撃パラメータ（設定値） ---
     float m_AttackAmount = 0.0f;   // 攻撃力（ダメージ）
     float m_AttackRange = 0.0f;    // 攻撃レンジ
-    float m_ColliderWidth = 0.0f;  // 当たり判定の幅
+    float m_ColliderWidth = 0.0f;  // 当たり判定の幅（半径）
     float m_ColliderHeight = 0.0f; // 当たり判定の高さ
+
+    // 統合コライダーに使用するボーン名（派生クラスで設定）
+    std::string m_AttackBoneName;
 
     // フェーズ用アニメ速度（倍率）
     float m_AnimSpeedCharge = 1.0f; // 溜め

@@ -10,20 +10,17 @@
 #include "BossAttackStateBase/BossAttackStateBase.h"
 #include "BossAttackStateBase/BossStompState/BossStompState.h"
 #include "BossAttackStateBase/BossSlashState/BossSlashState.h"
-#include "BossAttackStateBase/BossChargeSlashState/BossChargeSlashState.h"
 #include "BossAttackStateBase/BossShoutState/BossShoutState.h"
 
 #include "System/Utility/StateMachine/StateMachine.h"
 
 #include "BossAttackStateBase/BossJumpOnlState/BossJumpOnlState.h"
-#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossLaserState/BossLaserState.h"
 #include "BossAttackStateBase/BossParryState/BossParryState.h"
 
 #include "Resource/Mesh/02_Skin/SkinMesh.h"
 
 #include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossDeadState/BossDeadState.h"
 
-#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossChargeState/BossChargeState.h"
 
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossThrowingState/BossThrowingState.h"
 
@@ -196,13 +193,10 @@ void Boss::Update()
             IMGUI_JP("Idle"),
             IMGUI_JP("Move"),
             IMGUI_JP("Slash"),
-            IMGUI_JP("Charge"),
-            IMGUI_JP("ChargeSlash"),
             IMGUI_JP("Shout"),
-            IMGUI_JP("Special"),
+            IMGUI_JP("JumpOn"),
             IMGUI_JP("Stomp"),
             IMGUI_JP("Throwing"),
-            IMGUI_JP("Laser"),
             IMGUI_JP("Parry")
         };
 
@@ -214,14 +208,11 @@ void Boss::Update()
             case 0: m_State->ChangeState(std::make_shared<BossIdolState>(this)); break;
             case 1: m_State->ChangeState(std::make_shared<BossMoveState>(this)); break;
             case 2: m_State->ChangeState(std::make_shared<BossSlashState>(this)); break;
-            case 3: m_State->ChangeState(std::make_shared<BossChargeState>(this)); break;
-            case 4: m_State->ChangeState(std::make_shared<BossChargeSlashState>(this)); break;
-            case 5: m_State->ChangeState(std::make_shared<BossShoutState>(this)); break;
-            case 6: m_State->ChangeState(std::make_shared<BossJumpOnlState>(this)); break;
-            case 7: m_State->ChangeState(std::make_shared<BossStompState>(this)); break;
-            case 8: m_State->ChangeState(std::make_shared<BossThrowingState>(this)); break;
-            case 9: m_State->ChangeState(std::make_shared<BossLaserState>(this)); break;
-            case 10: m_State->ChangeState(std::make_shared<BossParryState>(this)); break;
+            case 3: m_State->ChangeState(std::make_shared<BossShoutState>(this)); break;
+            case 4: m_State->ChangeState(std::make_shared<BossJumpOnlState>(this)); break;
+            case 5: m_State->ChangeState(std::make_shared<BossStompState>(this)); break;
+            case 6: m_State->ChangeState(std::make_shared<BossThrowingState>(this)); break;
+            case 7: m_State->ChangeState(std::make_shared<BossParryState>(this)); break;
             default: break;
             }
         }
@@ -235,11 +226,6 @@ void Boss::Update()
     }
     ImGui::End();
 
-    // 既存のホットキーも維持
-    if (GetAsyncKeyState(VK_RETURN) & 0x0001)
-    {
-        m_State->ChangeState(std::make_shared<BossSlashState>(this));
-    }
 #endif
 }
 
@@ -267,7 +253,7 @@ void Boss::LateUpdate()
 
         if (!m_pSlashBoneFrame) {
             if (auto skin = std::dynamic_pointer_cast<SkinMesh>(GetAttachMesh().lock())) {
-                m_pSlashBoneFrame = skin->GetFrameByName("boss_Hand_R");
+                m_pSlashBoneFrame = skin->GetFrameByName("boss_Middle_R");
             }
         }
 
@@ -291,10 +277,12 @@ void Boss::LateUpdate()
             DirectX::XMMatrixDecompose(&b_scale, &b_quat, &b_pos, boss_world_matrix);
             DirectX::XMVECTOR relative_pos = DirectX::XMVectorSubtract(v_final_pos, b_pos);
             DirectX::XMFLOAT3 f_relative_pos; DirectX::XMStoreFloat3(&f_relative_pos, relative_pos);
-            m_pSlashCollider->SetPositionOffset(f_relative_pos.x, f_relative_pos.y, f_relative_pos.z);
+           // m_pSlashCollider->SetPositionOffset(f_relative_pos.x, f_relative_pos.y, f_relative_pos.z);
+            m_pSlashCollider->SetExternalTransform(&m_SlashBoneWorldTransform);
         }
         else {
             UpdateColliderFromBone("boss_Hand_R", m_pSlashCollider, m_SlashBoneWorldTransform, true, rotOffset);
+            m_pSlashCollider->SetExternalTransform(&m_SlashBoneWorldTransform);
         }
     }
     if (m_pStompCollider && m_pStompCollider->GetActive()) {
@@ -333,9 +321,11 @@ void Boss::LateUpdate()
             DirectX::XMVECTOR relative_pos = DirectX::XMVectorSubtract(v_final_pos, b_pos);
             DirectX::XMFLOAT3 f_relative_pos; DirectX::XMStoreFloat3(&f_relative_pos, relative_pos);
             m_pStompCollider->SetPositionOffset(f_relative_pos.x, f_relative_pos.y, f_relative_pos.z);
+            m_pStompCollider->SetExternalTransform(&m_StompBoneWorldTransform);
         }
         else {
             UpdateColliderFromBone("boss_pSphere28", m_pStompCollider, m_StompBoneWorldTransform, true, rotOffset);
+            m_pStompCollider->SetExternalTransform(&m_StompBoneWorldTransform);
         }
     }
     if (m_pShoutCollider && m_pShoutCollider->GetActive()) {
@@ -374,9 +364,11 @@ void Boss::LateUpdate()
             DirectX::XMVECTOR relative_pos = DirectX::XMVectorSubtract(v_final_pos, b_pos);
             DirectX::XMFLOAT3 f_relative_pos; DirectX::XMStoreFloat3(&f_relative_pos, relative_pos);
             m_pShoutCollider->SetPositionOffset(f_relative_pos.x, f_relative_pos.y, f_relative_pos.z);
+            m_pShoutCollider->SetExternalTransform(&m_ShoutBoneWorldTransform);
         }
         else {
             UpdateColliderFromBone("boss_Shout", m_pShoutCollider, m_ShoutBoneWorldTransform, true, rotOffset);
+            m_pShoutCollider->SetExternalTransform(&m_ShoutBoneWorldTransform);
         }
     }
 
