@@ -1,10 +1,7 @@
 ﻿#include "BossMoveState.h"
 #include "Game/04_Time/Time.h"
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossJumpOnlState/BossJumpOnlState.h"
-#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossChargeSlashState/BossChargeSlashState.h"
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossSlashState/BossSlashState.h"
-#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossChargeState/BossChargeState.h"
-#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossLaserState/BossLaserState.h"
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossShoutState/BossShoutState.h"
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossStompState/BossStompState.h"
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossThrowingState/BossThrowingState.h"
@@ -204,7 +201,6 @@ void BossMoveState::Update()
 			{
 			case 0: if (s_EnableSlash) candidates = { [this]() { return std::make_unique<BossSlashState>(m_pOwner); } }; break;
 			case 1: if (s_EnableStomp) candidates = { [this]() { return std::make_unique<BossStompState>(m_pOwner); } }; break;
-			case 2: if (s_EnableCharge) candidates = { [this]() { return std::make_unique<BossChargeState>(m_pOwner); } }; break;
 			case 3: if (s_EnableShout) candidates = { [this]() { return std::make_unique<BossShoutState>(m_pOwner); } }; break;
 			case 4: if (s_EnableThrowing) candidates = { [this]() { return std::make_unique<BossThrowingState>(m_pOwner); } }; break;
 			}
@@ -218,7 +214,6 @@ void BossMoveState::Update()
 			}
 			// Mid: Charge or Shout
 			else if (dist < s_MidRange) {
-				if (s_EnableCharge) candidates.push_back([this]() { return std::make_unique<BossChargeState>(m_pOwner); });
 				if (s_EnableShout) candidates.push_back([this]() { return std::make_unique<BossShoutState>(m_pOwner); });
 			}
 			// Far: Throwing or Stomp

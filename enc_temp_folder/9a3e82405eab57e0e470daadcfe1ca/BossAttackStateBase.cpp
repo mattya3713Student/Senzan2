@@ -95,7 +95,7 @@ void BossAttackStateBase::UpdateBaseLogic(float dt)
 
     // 動き更新 (イージング適用).
     for (auto& mv : m_MovementWindows)
-    
+    {
         if (!mv.IsAct && m_CurrentTime >= mv.Start)
         {
             mv.IsAct = true;
