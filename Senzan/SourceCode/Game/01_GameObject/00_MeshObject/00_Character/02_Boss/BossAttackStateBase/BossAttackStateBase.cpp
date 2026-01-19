@@ -84,6 +84,20 @@ void BossAttackStateBase::UpdateBaseLogic(float dt)
         if (!window.IsAct && m_CurrentTime >= window.Start)
 		{
 			m_pOwner->SetColliderActiveByName(window.BoneName, true);
+			// apply current state collider settings to the activated collider so UI changes take effect
+			{
+				ColliderBase* targetCol = nullptr;
+				if (window.BoneName == "boss_Hand_R") targetCol = m_pOwner->GetSlashCollider();
+				else if (window.BoneName == "boss_pSphere28") targetCol = m_pOwner->GetStompCollider();
+				else if (window.BoneName == "boss_Shout") targetCol = m_pOwner->GetShoutCollider();
+				if (targetCol) {
+					if (auto* cap = dynamic_cast<CapsuleCollider*>(targetCol)) {
+						cap->SetRadius(m_ColliderWidth);
+						cap->SetHeight(m_ColliderHeight);
+						cap->SetAttackAmount(m_AttackAmount);
+					}
+				}
+			}
 			window.IsAct = true;
 		}
         if (window.IsAct && !window.IsEnd && m_CurrentTime >= (window.Start + window.Duration))
@@ -95,7 +109,7 @@ void BossAttackStateBase::UpdateBaseLogic(float dt)
 
     // 動き更新 (イージング適用).
     for (auto& mv : m_MovementWindows)
-    
+    {
         if (!mv.IsAct && m_CurrentTime >= mv.Start)
         {
             mv.IsAct = true;
@@ -131,13 +145,31 @@ void BossAttackStateBase::UpdateBaseLogic(float dt)
                 mv.Initialized = true;
                 mv.LastEasedPos = mv.StartPos;
 
-                // 追加: 反転フラグが立っている場合、Start->End のベクトルを反転して EndPos を再設定
-                if (mv.Reverse) {
-                    DirectX::XMVECTOR v_start = DirectX::XMLoadFloat3(&mv.StartPos);
-                    DirectX::XMVECTOR v_end = DirectX::XMLoadFloat3(&mv.EndPos);
-                    DirectX::XMVECTOR v_delta = DirectX::XMVectorSubtract(v_end, v_start);
-                    DirectX::XMVECTOR v_inv_end = DirectX::XMVectorSubtract(v_start, v_delta);
-                    DirectX::XMStoreFloat3(&mv.EndPos, v_inv_end);
+                // 追加: 方向オフセットが有効なら、プレイヤー方向に対して指定角度だけ回転させた方向を EndPos とする
+                if (mv.UseDirectionOffset)
+                {
+                    // プレイヤー方向ベクトル（XZ）
+                    DirectX::XMVECTOR pos_v = DirectX::XMLoadFloat3(&mv.StartPos);
+                    DirectX::XMVECTOR target_v = DirectX::XMLoadFloat3(&pos_target);
+                    DirectX::XMVECTOR dir = DirectX::XMVectorSubtract(target_v, pos_v);
+                    // XZ 平面に投影
+                    DirectX::XMFLOAT3 fdir; DirectX::XMStoreFloat3(&fdir, dir);
+                    DirectX::XMFLOAT3 dir_xz = { fdir.x, 0.0f, fdir.z };
+                    DirectX::XMVECTOR v_dir_xz = DirectX::XMLoadFloat3(&dir_xz);
+                    float len_dir = DirectX::XMVectorGetX(DirectX::XMVector3Length(v_dir_xz));
+                    if (len_dir > EPSILON_E6)
+                    {
+                        DirectX::XMVECTOR dir_n = DirectX::XMVector3Normalize(v_dir_xz);
+                        // 回転角をラジアンで作成
+                        float rad = DirectX::XMConvertToRadians(mv.DirectionOffsetDeg);
+                        DirectX::XMVECTOR rot = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(0,1,0,0), rad);
+                        DirectX::XMVECTOR rotated = DirectX::XMVector3Rotate(dir_n, rot);
+                        // EndPos = StartPos + rotated * (Speed * Duration * Distance)
+                        DirectX::XMVECTOR move_amount = DirectX::XMVectorScale(rotated, mv.Speed * mv.Duration * mv.Distance);
+                        DirectX::XMVECTOR end_pos_v = DirectX::XMVectorAdd(pos_v, move_amount);
+                        DirectX::XMFLOAT3 fend; DirectX::XMStoreFloat3(&fend, end_pos_v);
+                        mv.EndPos = fend;
+                    }
                 }
 
                 // 回転.
@@ -300,12 +332,18 @@ void BossAttackStateBase::DrawImGui()
         // 移動量係数の編集
         ImGui::PushItemWidth(100);
         ImGui::DragFloat(IMGUI_JP("距離"), &mv.Distance, 0.01f, 0.0f, 1000.0f);
+        ImGui::PushItemWidth(100);
+        if (ImGui::Checkbox(IMGUI_JP("方向オフセットを使用"), &mv.UseDirectionOffset)) {
+            mv.Initialized = false;
+            mv.LastEasedPos = mv.StartPos;
+        }
+        ImGui::PushItemWidth(80);
+        ImGui::DragFloat(IMGUI_JP("方向オフセット(deg)"), &mv.DirectionOffsetDeg, 1.0f, -180.0f, 180.0f);
         ImGui::PopItemWidth();
-        ImGui::SameLine();
-        ImGui::Checkbox(IMGUI_JP("逆向きに移動"), &mv.Reverse);
         ImGui::SameLine();
         if (ImGui::Button(IMGUI_JP("削除"))) { m_MovementWindows.erase(m_MovementWindows.begin() + i); ImGui::PopID(); break; }
         ImGui::PopID();
+        ImGui::SameLine();
     }
     if (ImGui::Button(IMGUI_JP("移動ウィンドウを追加"))) { MovementWindow mv; mv.Start = 0.0f; mv.Duration = 0.2f; mv.Speed = 10.0f; m_MovementWindows.push_back(mv); }
 
@@ -387,8 +425,20 @@ void BossAttackStateBase::LoadSettings()
                 if (entry.contains("distance")) {
                     mv.Distance = entry["distance"].get<float>();
                 }
+                // 互換性: 旧フォーマットの "reverse" を読めるようにする
+                if (entry.contains("use_direction_offset")) {
+                    mv.UseDirectionOffset = entry["use_direction_offset"].get<bool>();
+                }
+                if (entry.contains("direction_offset_deg")) {
+                    mv.DirectionOffsetDeg = entry["direction_offset_deg"].get<float>();
+                }
                 if (entry.contains("reverse")) {
-                    mv.Reverse = entry["reverse"].get<bool>();
+                    bool rev = entry["reverse"].get<bool>();
+                    if (rev) {
+                        mv.UseDirectionOffset = true;
+                        // 旧 reverse の意味は 180deg 回転に等しい
+                        mv.DirectionOffsetDeg = 180.0f;
+                    }
                 }
                 m_MovementWindows.push_back(mv);
             }
@@ -436,7 +486,8 @@ void BossAttackStateBase::SaveSettings() const
         e["start"] = mv.Start;
         e["duration"] = mv.Duration;
         e["speed"] = mv.Speed;
-        e["reverse"] = mv.Reverse;
+        e["use_direction_offset"] = mv.UseDirectionOffset;
+        e["direction_offset_deg"] = mv.DirectionOffsetDeg;
         e["easing"] = static_cast<int>(mv.EasingType);
         e["distance"] = mv.Distance;
         j["MovementWindows"].push_back(e);
@@ -478,6 +529,9 @@ nlohmann::json BossAttackStateBase::SerializeSettings() const
         e["start"] = mv.Start;
         e["duration"] = mv.Duration;
         e["speed"] = mv.Speed;
+        e["distance"] = mv.Distance;
+        e["use_direction_offset"] = mv.UseDirectionOffset;
+        e["direction_offset_deg"] = mv.DirectionOffsetDeg;
         e["easing"] = static_cast<int>(mv.EasingType);
         j["MovementWindows"].push_back(e);
     }

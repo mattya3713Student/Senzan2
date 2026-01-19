@@ -13,24 +13,30 @@
   ],
   "MovementWindows": [
     {
+      "direction_offset_deg": 180.0,
+      "distance": 1.0,
       "duration": 0.4000000059604645,
       "easing": 24,
       "speed": 10.0,
-      "start": 1.2000000476837158
+      "start": 1.2000000476837158,
+      "use_direction_offset": false
     },
     {
+      "direction_offset_deg": 180.0,
+      "distance": 0.14000000059604645,
       "duration": 1.0,
       "easing": 0,
       "speed": 10.0,
-      "start": 0.0
+      "start": 0.0,
+      "use_direction_offset": true
     }
   ],
   "m_AttackAmount": 0.0,
   "m_AttackBoneName": "",
   "m_AttackTime": 0.9869999885559082,
   "m_ChargeTime": 1.3109999895095825,
-  "m_ColliderHeight": 0.0,
-  "m_ColliderWidth": 0.0,
+  "m_ColliderHeight": 18.993999481201172,
+  "m_ColliderWidth": 1.3960000276565552,
   "m_EndTime": 4.859000205993652,
   "m_TransitionOnAnimEnd_Attack": false,
   "m_TransitionOnAnimEnd_Charge": false,

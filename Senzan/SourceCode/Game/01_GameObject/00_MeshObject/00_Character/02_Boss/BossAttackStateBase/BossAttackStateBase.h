@@ -33,8 +33,10 @@ struct MovementWindow
     MyEasing::Type EasingType = MyEasing::Type::Liner;
     float Distance = 1.0f; // 移動量係数（Speed * Duration に乗算）
 
-    // 追加: このウィンドウで移動を反転するか
-    bool Reverse = false;
+    // 追加: このウィンドウで方向オフセットを使うか（XZ 平面）
+    bool UseDirectionOffset = false;
+    // 方向オフセット（度数法、XZ 平面での回転角）
+    float DirectionOffsetDeg = 0.0f;
 
     // ランタイム用: 開始/終了位置と初期化フラグ（保存対象ではない）
     DirectX::XMFLOAT3 StartPos{ 0.0f, 0.0f, 0.0f };
