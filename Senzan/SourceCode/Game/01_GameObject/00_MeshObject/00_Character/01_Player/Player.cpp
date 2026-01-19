@@ -386,9 +386,10 @@ void Player::HandleDodgeDetection()
             const ColliderBase* otherCollider = info.ColliderB;
             if (!otherCollider) { continue; }
 
-            // MEMO : EnemyAttackに触れたとき.
-            m_IsJustDodgeTiming = true;;
-            m_CurrentUltValue += static_cast<float>(m_Combo) * 0.0f;
+            // ジャスト回避成功
+            m_IsJustDodgeTiming = true;
+            // ゲージ増加
+            m_CurrentUltValue += 300.0f;
         }
     }
 }
@@ -420,7 +421,12 @@ void Player::HandleParryDetection()
                 SoundManager::GetInstance().Play("Parry");
                 m_IsSuccessParry = true;
                 
-                m_CurrentUltValue += static_cast<float>(m_Combo) * 0.0f;
+                // パリィ成功時のゲージ増加
+                m_CurrentUltValue += 500.0f;
+
+                // パリィ成功時のカメラ演出（シェイク）
+                CameraManager::GetInstance().ShakeCamera(0.15f, 0.3f);
+                
                 // 一フレーム1回.
                 return;
             }

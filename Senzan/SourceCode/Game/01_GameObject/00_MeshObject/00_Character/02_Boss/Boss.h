@@ -32,7 +32,7 @@ class BossStompState;       //踏みつけ攻撃
 class BossSlashState;       //斬る攻撃.
 class BossChargeSlashState; //溜め攻撃.
 class BossShoutState;       //叫び攻撃.
-class BossSpecialState;
+class BossJumpOnlState;
 class BossLaserState;
 class BossDeadState;
 
@@ -53,9 +53,10 @@ class Boss
     friend BossMoveState;
     friend BossStompState;
     friend BossSlashState;
+    friend BossAttackStateBase;
     friend BossChargeSlashState;
     friend BossShoutState;
-    friend BossSpecialState;
+    friend BossJumpOnlState;
     friend BossLaserState;
     friend BossDeadState;
     friend BossChargeState;
@@ -116,10 +117,6 @@ public:
     //アニメーション再生時に必要になるGet関数になっている.
     LPD3DXANIMATIONCONTROLLER GetAnimCtrl() const;
 
-    float boss_x = 0.f;
-    float boss_y = 0.f;
-    float boss_z = 0.f;
-
     void Hit();
 
     // 文字列でコライダーを操作できるようにする
@@ -154,10 +151,25 @@ protected:
     ColliderBase* GetStompCollider() const;
     //叫び攻撃.
     ColliderBase* GetShoutCollider() const;
-    //通常攻撃(ボーンの位置設定).
-    void UpdateSlashColliderTransform();
-    //ジャンプ(ボーンの位置設定).
-    void UpdateStompColliderTransform();
+
+    /*************************************************************
+    * @brief	ボスのワールド行列と掛け合わせてボーンのワールド行列を作成し、
+    *           指定コライダーの位置オフセットと外部 Transform ポインタを更新.
+    *           回転情報が必要ない場合は updateRotation=false を渡してください。
+    *           rotationOffset を渡すとボーン回転へ追加の回転を適用できます。
+    * @param[in]	boneName	：取得するボーン名.
+    * @param[in]	collider	：更新対象のコライダー.
+    * @param[in]	outTransform：ワールド Transform を格納するキャッシュ参照.
+    * @param[in]	updateRotation：true の場合 outTransform の回転/スケールも更新する（デフォルト true）
+    * @param[in]	rotationOffset：ボーン回転に乗算するクォータニオン回転オフセット（デフォルト: 単位クォータニオン）
+    * @return	true = 成功, false = 取得失敗または引数不正
+    * ************************************************************/
+    bool UpdateColliderFromBone(
+        const std::string& boneName,
+        ColliderBase* collider,
+        Transform& outTransform,
+        bool updateRotation = true,
+        const DirectX::XMFLOAT4& rotationOffset = DirectX::XMFLOAT4{0.0f,0.0f,0.0f,1.0f});
 
 protected:
     //ステートマシンのメンバ変数.
@@ -187,5 +199,15 @@ protected:
     // 外部供給用のワールドTransformキャッシュ（コライダーが毎フレームメッシュ検索しないようにする）
     Transform m_SlashBoneWorldTransform;
     Transform m_StompBoneWorldTransform;
+    Transform m_ShoutBoneWorldTransform;
+    // ImGui 用: コライダー回転オフセット (度数法で編集)
+    DirectX::XMFLOAT3 m_SlashRotOffsetDeg{ 0.0f, 0.0f, 0.0f };
+    DirectX::XMFLOAT3 m_StompRotOffsetDeg{ 0.0f, 0.0f, 0.0f };
+    DirectX::XMFLOAT3 m_ShoutRotOffsetDeg{ 0.0f, 0.0f, 0.0f };
+
+    // ボーンフレームのキャッシュ
+    LPD3DXFRAME m_pSlashBoneFrame = nullptr;
+    LPD3DXFRAME m_pStompBoneFrame = nullptr;
+    LPD3DXFRAME m_pShoutBoneFrame = nullptr;
 };
 
