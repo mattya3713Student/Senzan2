@@ -1,8 +1,8 @@
-#pragma once
+ï»¿#pragma once
 #include <DirectXMath.h>
 
 /**************************************************
-*	ƒQ[ƒ€ƒIƒuƒWƒFƒNƒgƒNƒ‰ƒX.
+*	ã‚²ãƒ¼ãƒ ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚¯ãƒ©ã‚¹.
 **************************************************/
 class GameObject
 {
@@ -16,30 +16,30 @@ public:
 
 public: 
 
-	// Transformæ“¾.
+	// Transformå–å¾—.
 	inline const std::shared_ptr<Transform>& GetTransform() const noexcept { return m_spTransform; }	
-	// ƒRƒs[.
+	// ã‚³ãƒ”ãƒ¼.
 	void SetTransform(const Transform& Transform);															
-	// shared‚ÌƒRƒs[.
+	// sharedã®ã‚³ãƒ”ãƒ¼.
 	inline void SetTransform(const std::shared_ptr<Transform>& transformPtr) { m_spTransform = transformPtr; }		
-	// shared‚ÌMove.
+	// sharedã®Move.
 	inline void SetTransform(std::shared_ptr<Transform>&& transformPtr) { m_spTransform = std::move(transformPtr); }
 	
 	//----------------------------------------.
-	// À•W‚ğæ“¾.
+	// åº§æ¨™ã‚’å–å¾—.
 	inline const DirectX::XMFLOAT3& GetPosition() const noexcept { return m_spTransform->Position; }
 	inline float GetPositionX() const noexcept { return m_spTransform->Position.x; }
 	inline float GetPositionY() const noexcept { return m_spTransform->Position.y; }
 	inline float GetPositionZ() const noexcept { return m_spTransform->Position.z; }
 
-	// À•W‚ğİ’è.
+	// åº§æ¨™ã‚’è¨­å®š.
 	void SetPosition(const DirectX::XMFLOAT3& Position);
 	void SetPosition(float X, float Y, float Z);
 	void SetPositionX(float X);
 	void SetPositionY(float Y);
 	void SetPositionZ(float Z);
 
-	// À•W‚ğ‰ÁZ. 
+	// åº§æ¨™ã‚’åŠ ç®—. 
 	void AddPosition(const DirectX::XMFLOAT3& Position);
 	void AddPosition(float X, float Y, float Z);
 	void AddPositionX(float X);
@@ -48,14 +48,14 @@ public:
 
 
 	//----------------------------------------.
-	// ‰ñ“]‚ğæ“¾.
+	// å›è»¢ã‚’å–å¾—.
 	inline const DirectX::XMFLOAT3& GetRotation() const noexcept { return m_spTransform->Rotation; }
 	inline float GetRotationX() const noexcept { return m_spTransform->Rotation.x; }
 	inline float GetRotationY() const noexcept { return m_spTransform->Rotation.y; }
 	inline float GetRotationZ() const noexcept { return m_spTransform->Rotation.z; }
 	inline const DirectX::XMFLOAT4& Quaternion() const noexcept { return m_spTransform->Quaternion; }
 
-	// ‰ñ“]‚ğİ’è.
+	// å›è»¢ã‚’è¨­å®š.
 	void SetRotation(const DirectX::XMFLOAT3& Rotation);
 	void SetRotation(float X, float Y, float Z);
 	void SetRotationX(float X);
@@ -65,13 +65,13 @@ public:
 
 
 	//----------------------------------------.
-	// Šgk‚ğæ“¾.
+	// æ‹¡ç¸®ã‚’å–å¾—.
 	inline const DirectX::XMFLOAT3& GetScale() const noexcept { return m_spTransform->Scale; }
 	inline float GetScaleX() const noexcept { return m_spTransform->Scale.x; }
 	inline float GetScaleY() const noexcept { return m_spTransform->Scale.y; }
 	inline float GetScaleZ() const noexcept { return m_spTransform->Scale.z; }
 
-	// Šgk‚ğİ’è.
+	// æ‹¡ç¸®ã‚’è¨­å®š.
 	void SetScale(const DirectX::XMFLOAT3& Scale);
 	void SetScale(float XYZ);
 	void SetScale(float X, float Y, float Z);
@@ -80,21 +80,24 @@ public:
 	void SetScaleZ(float Z);
 
 
-	// ƒ^ƒO‚ğæ“¾Eİ’è.
+	// ã‚¿ã‚°ã‚’å–å¾—ãƒ»è¨­å®š.
 	const std::string& GetTag()const;
 	void SetTag(const std::string& tag);
 
-	// ƒAƒNƒeƒBƒuó‘Ô‚ğ”»’èEİ’è.
+	// ã‚¢ã‚¯ãƒ†ã‚£ãƒ–çŠ¶æ…‹ã‚’åˆ¤å®šãƒ»è¨­å®š.
 	const bool IsActive()const;
 	void SetIsActive(const bool isActive);
 
-	// •`‰æ‚·‚é‚©”»’èEİ’è.
+	// æç”»ã™ã‚‹ã‹åˆ¤å®šãƒ»è¨­å®š.
 	const bool IsRenderActive()const;
 	void SetIsRenderActive(const bool isActive);
 	
-	// ¢ŠE‚ÌŠÔÚ“x‚ğİ’è.
+	// ä¸–ç•Œã®æ™‚é–“å°ºåº¦ã‚’è¨­å®š.
 	void SetTimeScale(const float NewTimeScale);
 	float GetTimeScale();
+
+    // ç›®æ¨™ã®è§’åº¦ã¸ãƒ©ãƒ¼ãƒ—å›è»¢.
+    void RotetToTarget(float TargetRote, float RotetionSpeed);
 
 protected:
 	float GetDelta();
@@ -103,7 +106,7 @@ protected:
 	std::shared_ptr<Transform> m_spTransform;
 	std::string			m_Tag;
 
-	// ŠÔ‚ÌÚ“x(’Êí1f, 2f‚Å“ñ”{‚ÌÚ“x‚Å“®‚­, -1‚Å¢ŠE‚ÌŠÔÚ“x‚ğg—p‚·‚é).
+	// æ™‚é–“ã®å°ºåº¦(é€šå¸¸1f, 2fã§äºŒå€ã®å°ºåº¦ã§å‹•ã, -1ã§ä¸–ç•Œã®æ™‚é–“å°ºåº¦ã‚’ä½¿ç”¨ã™ã‚‹).
 	float m_TimeScale;
 
 	bool m_IsActive;
