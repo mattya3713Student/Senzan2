@@ -225,6 +225,10 @@ protected:
     DirectX::XMFLOAT3 m_SlashRotOffsetDeg{ -7.0f, 0.0f, 0.0f };
     DirectX::XMFLOAT3 m_StompRotOffsetDeg{ 0.0f, 0.0f, 0.0f };
     DirectX::XMFLOAT3 m_ShoutRotOffsetDeg{ 0.0f, 0.0f, 0.0f };
+    // ImGui 用: コライダー座標オフセット（ステートに保存/読み込みする値と一致させる）
+    DirectX::XMFLOAT3 m_SlashPosOffset{ 0.0f, 0.0f, 0.0f };
+    DirectX::XMFLOAT3 m_StompPosOffset{ 0.0f, 0.0f, 0.0f };
+    DirectX::XMFLOAT3 m_ShoutPosOffset{ 0.0f, 0.0f, 0.0f };
 
     // ボーンフレームのキャッシュ
     LPD3DXFRAME m_pSlashBoneFrame = nullptr;
