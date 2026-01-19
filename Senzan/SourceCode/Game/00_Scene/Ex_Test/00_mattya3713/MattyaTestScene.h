@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include "../../00_Base/SceneBase.h"
-
 #include "System/Utility/Transform/Transform.h"
 
 class Ground;
@@ -36,21 +35,9 @@ private:
 	std::shared_ptr<CameraBase>			m_pCamera;			// カメラ.
 	std::shared_ptr<DirectionLight>		m_pLight;			// ライト
 
-	std::unique_ptr<CapsuleCollider>		m_TestPressCollision;
-	std::unique_ptr<CapsuleCollider>		m_TestAttackCollision;
-
 	std::unique_ptr<Ground>		m_upGround;
 	std::unique_ptr<Player>		m_upPlayer;
 	std::unique_ptr<Boss>		m_upBoss;
 
 	std::shared_ptr<UIGameMain>	m_upUI;
-
-	// 外部供給用の Transform (m_TestAttackCollision のワールド transform を制御)
-	Transform m_TestAttackTransform;
-
-	// ImGui 制御用 (デバッグのみ)
-	float m_TestAttackRotationSpeed = 90.0f; // deg/s
-	bool m_TestAttackAutoRotate = true;
-	DirectX::XMFLOAT3 m_TestAttackRotationUI = DirectX::XMFLOAT3(0.f, 0.f, 0.f);
-
 };

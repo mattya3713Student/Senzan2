@@ -28,11 +28,19 @@ public:
     void LateUpdate() override;
     void Draw() override;
     void Exit() override;
+
+    // ImGui と設定の読み書き
+    void DrawImGui() override;
+    void LoadSettings() override;
+    void SaveSettings() const override;
+    std::filesystem::path GetSettingsFileName() const override { return std::filesystem::path("BossThrowingState.json"); }
 private:
     void BossAttack();
 private:
     std::unique_ptr<SnowBall> m_pBall;
     enThrowing m_List;
     bool m_IsLaunched;
+    float m_BallHeight;   // 発射高さオフセット
+    float m_BallSpeed;    // 弾速（SnowBallへ渡す）
 };
 
