@@ -1,6 +1,8 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../../00_Base/SceneBase.h"
+
+#include "System/Utility/Transform/Transform.h"
 
 class Ground;
 class Player;
@@ -10,12 +12,8 @@ class DirectionLight;
 class CapsuleCollider;
 class UIGameMain;
 
-
-#include <vector>
-
-
 /*********************************************
-*	ƒQ[ƒ€ƒƒCƒ“‰æ‘œƒNƒ‰ƒX.
+*	ã‚²ãƒ¼ãƒ ãƒ¡ã‚¤ãƒ³ç”»åƒã‚¯ãƒ©ã‚¹.
 **/
 
 class MattyaTestScene
@@ -35,8 +33,8 @@ public:
 
 private:
 
-	std::shared_ptr<CameraBase>			m_pCamera;			// ƒJƒƒ‰.
-	std::shared_ptr<DirectionLight>		m_pLight;			// ƒ‰ƒCƒg
+	std::shared_ptr<CameraBase>			m_pCamera;			// ã‚«ãƒ¡ãƒ©.
+	std::shared_ptr<DirectionLight>		m_pLight;			// ãƒ©ã‚¤ãƒˆ
 
 	std::unique_ptr<CapsuleCollider>		m_TestPressCollision;
 	std::unique_ptr<CapsuleCollider>		m_TestAttackCollision;
@@ -46,5 +44,13 @@ private:
 	std::unique_ptr<Boss>		m_upBoss;
 
 	std::shared_ptr<UIGameMain>	m_upUI;
+
+	// å¤–éƒ¨ä¾›çµ¦ç”¨ã® Transform (m_TestAttackCollision ã®ãƒ¯ãƒ¼ãƒ«ãƒ‰ transform ã‚’åˆ¶å¾¡)
+	Transform m_TestAttackTransform;
+
+	// ImGui åˆ¶å¾¡ç”¨ (ãƒ‡ãƒãƒƒã‚°ã®ã¿)
+	float m_TestAttackRotationSpeed = 90.0f; // deg/s
+	bool m_TestAttackAutoRotate = true;
+	DirectX::XMFLOAT3 m_TestAttackRotationUI = DirectX::XMFLOAT3(0.f, 0.f, 0.f);
 
 };
