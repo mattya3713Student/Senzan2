@@ -49,6 +49,14 @@ void BossStompState::LoadSettings()
     if (j.contains("Gravity")) m_Gravity = j["Gravity"].get<float>();
     if (j.contains("UpSpeed")) m_UpSpeed = j["UpSpeed"].get<float>();
     if (j.contains("ForwardSpeed")) m_ForwardSpeed = j["ForwardSpeed"].get<float>();
+    if (j.contains("m_ColliderPositionOffset") && j["m_ColliderPositionOffset"].is_array() && m_pOwner) {
+        auto &arr = j["m_ColliderPositionOffset"];
+        if (arr.size() >= 3) {
+            m_pOwner->m_StompPosOffset.x = arr[0].get<float>();
+            m_pOwner->m_StompPosOffset.y = arr[1].get<float>();
+            m_pOwner->m_StompPosOffset.z = arr[2].get<float>();
+        }
+    }
 }
 
 void BossStompState::SaveSettings() const

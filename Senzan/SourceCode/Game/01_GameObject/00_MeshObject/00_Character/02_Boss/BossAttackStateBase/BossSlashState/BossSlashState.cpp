@@ -141,6 +141,10 @@ void BossSlashState::DrawImGui()
         CImGuiManager::Slider<float>(IMGUI_JP("斬撃オフセット X(deg)"), m_pOwner->m_SlashRotOffsetDeg.x, -180.0f, 180.0f, true);
         CImGuiManager::Slider<float>(IMGUI_JP("斬撃オフセット Y(deg)"), m_pOwner->m_SlashRotOffsetDeg.y, -180.0f, 180.0f, true);
         CImGuiManager::Slider<float>(IMGUI_JP("斬撃オフセット Z(deg)"), m_pOwner->m_SlashRotOffsetDeg.z, -180.0f, 180.0f, true);
+        // 位置オフセット
+        CImGuiManager::Slider<float>(IMGUI_JP("斬撃オフセット X(pos)"), m_pOwner->m_SlashPosOffset.x, -200.0f, 200.0f, true);
+        CImGuiManager::Slider<float>(IMGUI_JP("斬撃オフセット Y(pos)"), m_pOwner->m_SlashPosOffset.y, -200.0f, 200.0f, true);
+        CImGuiManager::Slider<float>(IMGUI_JP("斬撃オフセット Z(pos)"), m_pOwner->m_SlashPosOffset.z, -200.0f, 200.0f, true);
     }
 
     BossAttackStateBase::DrawImGui();
@@ -157,11 +161,22 @@ void BossSlashState::LoadSettings()
     }
     if (!std::filesystem::exists(filePath)) return;
     json j = FileManager::JsonLoad(filePath);
+    // 読み込んだ設定からコライダー位置オフセットがあれば Boss のデフォルト表示変数に適用
+    if (j.contains("m_ColliderPositionOffset") && j["m_ColliderPositionOffset"].is_array()) {
+        auto &arr = j["m_ColliderPositionOffset"];
+        if (arr.size() >= 3 && m_pOwner) {
+            m_pOwner->m_SlashPosOffset.x = arr[0].get<float>();
+            m_pOwner->m_SlashPosOffset.y = arr[1].get<float>();
+            m_pOwner->m_SlashPosOffset.z = arr[2].get<float>();
+        }
+    }
 }
 
 void BossSlashState::SaveSettings() const
 {
     // ベースの設定を取得して派生固有情報を追加して一度だけ保存する
+    // sync owner pos offset into state field so it is serialized
+    const_cast<BossSlashState*>(this)->m_ColliderPositionOffset = m_pOwner ? m_pOwner->m_SlashPosOffset : DirectX::XMFLOAT3{0,0,0};
     json j = SerializeSettings();
     auto srcDir = std::filesystem::path(__FILE__).parent_path();
     auto filePath = std::filesystem::current_path() / "Data" / "Json" / "Boss" / GetSettingsFileName();

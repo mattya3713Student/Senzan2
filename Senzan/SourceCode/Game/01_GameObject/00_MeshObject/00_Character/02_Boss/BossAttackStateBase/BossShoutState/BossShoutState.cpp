@@ -134,6 +134,14 @@ void BossShoutState::LoadSettings()
     if (j.contains("ShoutDamage")) m_ShoutDamage = j["ShoutDamage"].get<float>();
     if (j.contains("ShoutRadius")) m_ShoutRadius = j["ShoutRadius"].get<float>();
     if (j.contains("KnockBackPower")) m_KnockBackPower = j["KnockBackPower"].get<float>();
+    if (j.contains("m_ColliderPositionOffset") && j["m_ColliderPositionOffset"].is_array() && m_pOwner) {
+        auto &arr = j["m_ColliderPositionOffset"];
+        if (arr.size() >= 3) {
+            m_pOwner->m_ShoutPosOffset.x = arr[0].get<float>();
+            m_pOwner->m_ShoutPosOffset.y = arr[1].get<float>();
+            m_pOwner->m_ShoutPosOffset.z = arr[2].get<float>();
+        }
+    }
 }
 
 void BossShoutState::SaveSettings() const

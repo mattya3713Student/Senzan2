@@ -94,6 +94,7 @@ void BossAttackStateBase::UpdateBaseLogic(float dt)
 					if (auto* cap = dynamic_cast<CapsuleCollider*>(targetCol)) {
 						cap->SetRadius(m_ColliderWidth);
 						cap->SetHeight(m_ColliderHeight);
+                        cap->SetPositionOffset(m_ColliderPositionOffset.x, m_ColliderPositionOffset.y, m_ColliderPositionOffset.z);
 						cap->SetAttackAmount(m_AttackAmount);
 					}
 				}
@@ -392,6 +393,14 @@ void BossAttackStateBase::LoadSettings()
     if (j.contains("m_TransitionOnAnimEnd_Attack")) m_TransitionOnAnimEnd_Attack = j["m_TransitionOnAnimEnd_Attack"].get<bool>();
     if (j.contains("m_TransitionOnAnimEnd_Exit")) m_TransitionOnAnimEnd_Exit = j["m_TransitionOnAnimEnd_Exit"].get<bool>();
     if (j.contains("m_AttackBoneName")) m_AttackBoneName = j["m_AttackBoneName"].get<std::string>();
+    if (j.contains("m_ColliderPositionOffset") && j["m_ColliderPositionOffset"].is_array()) {
+        auto &arr = j["m_ColliderPositionOffset"];
+        if (arr.size() >= 3) {
+            m_ColliderPositionOffset.x = arr[0].get<float>();
+            m_ColliderPositionOffset.y = arr[1].get<float>();
+            m_ColliderPositionOffset.z = arr[2].get<float>();
+        }
+    }
     if (j.contains("AnimSpeeds") && j["AnimSpeeds"].is_object()) {
         auto& a = j["AnimSpeeds"];
         if (a.contains("Charge")) m_AnimSpeedCharge = a["Charge"].get<float>();
@@ -459,6 +468,8 @@ void BossAttackStateBase::SaveSettings() const
     j["m_AttackAmount"] = m_AttackAmount;
     j["m_ColliderWidth"] = m_ColliderWidth;
     j["m_ColliderHeight"] = m_ColliderHeight;
+    j["m_ColliderPositionOffset"] = { m_ColliderPositionOffset.x, m_ColliderPositionOffset.y, m_ColliderPositionOffset.z };
+    j["m_ColliderPositionOffset"] = { m_ColliderPositionOffset.x, m_ColliderPositionOffset.y, m_ColliderPositionOffset.z };
     j["m_EndTime"] = m_EndTime;
     j["m_AttackTime"] = m_AttackTime;
     j["m_ChargeTime"] = m_ChargeTime;

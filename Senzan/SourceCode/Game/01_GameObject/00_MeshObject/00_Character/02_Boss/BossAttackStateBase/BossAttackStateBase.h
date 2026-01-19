@@ -124,6 +124,7 @@ protected:
     float m_AttackRange = 0.0f;    // 攻撃レンジ
     float m_ColliderWidth = 0.0f;  // 当たり判定の幅（半径）
     float m_ColliderHeight = 0.0f; // 当たり判定の高さ
+    DirectX::XMFLOAT3 m_ColliderPositionOffset{ 0.0f, 0.0f, 0.0f }; // 当たり判定の座標オフセット
 
     // 統合コライダーに使用するボーン名（派生クラスで設定）
     std::string m_AttackBoneName;
