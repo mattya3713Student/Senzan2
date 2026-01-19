@@ -159,6 +159,10 @@ protected:
     void SetAttackBone(const std::string& boneName);
     // 攻撃コライダーのサイズを設定
     void SetAttackColliderSize(float radius, float height);
+    // 名前で指定したコライダーのサイズを設定
+    void SetColliderSizeByName(const std::string& name, float radius, float height);
+    // 名前で指定したコライダーの与えるダメージを設定
+    void SetColliderDamageByName(const std::string& name, float damage);
     // 攻撃コライダーのダメージを設定
     void SetAttackColliderDamage(float damage);
 
