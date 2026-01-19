@@ -26,15 +26,24 @@ public:
 	**************************************************************************/
     void ChangeState(std::shared_ptr<StateBase<FSM_Owner>> pNewState)
     {		
-		if (m_pCurrentState != nullptr)
-		{
-			m_pCurrentState->Exit();
-			m_pCurrentState = nullptr;
-		}
+        // 現在のステートが存在し、遷移を許可していない場合は変更を拒否する
+        if (m_pCurrentState != nullptr && !m_pCurrentState->CanChangeState())
+        {
+            return;
+        }
 
-		m_pCurrentState = pNewState;
+        if (m_pCurrentState != nullptr)
+        {
+            m_pCurrentState->Exit();
+            m_pCurrentState = nullptr;
+        }
 
-		m_pCurrentState->Enter();
+        m_pCurrentState = pNewState;
+
+        if (m_pCurrentState)
+        {
+            m_pCurrentState->Enter();
+        }
     }
 
 	// 更新処理.
@@ -51,7 +60,7 @@ public:
 	{
 		if (m_pCurrentState != nullptr)
 		{
-			m_pCurrentState->Update();
+			m_pCurrentState->LateUpdate();
 		}
 	}
 

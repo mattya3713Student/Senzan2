@@ -30,6 +30,7 @@ void swap(T& a, T& b)
 	a = b;
 	b = temp;
 }
+
 //範囲内に納める関数.
 template <typename T>
 const T& clamp(const T& val, const T& low, const T& high)
@@ -349,6 +350,38 @@ void SkinMesh::Render(LPD3DXANIMATIONCONTROLLER pAC)
 	m_pD3dxMesh->UpdateFrameMatrices(m_pD3dxMesh->m_pFrameRoot, &m);
 	DrawFrame(m_pD3dxMesh->m_pFrameRoot);
 }
+
+LPD3DXFRAME SkinMesh::FindFrame(LPD3DXFRAME frame, LPCSTR frameName)
+{
+	if (frame)
+	{
+		if (frame->Name && strcmp(frame->Name, frameName) == 0)
+		{
+			return frame;
+		}
+		if (frame->pFrameSibling)
+		{
+			LPD3DXFRAME found = FindFrame(frame->pFrameSibling, frameName);
+			if (found) return found;
+		}
+		if (frame->pFrameFirstChild)
+		{
+			LPD3DXFRAME found = FindFrame(frame->pFrameFirstChild, frameName);
+			if (found) return found;
+		}
+	}
+	return nullptr;
+}
+
+LPD3DXFRAME SkinMesh::GetFrameByName(LPCSTR frameName)
+{
+	if (m_pD3dxMesh && m_pD3dxMesh->m_pFrameRoot)
+	{
+		return FindFrame(m_pD3dxMesh->m_pFrameRoot, frameName);
+	}
+	return nullptr;
+}
+
 //-------------------------------------------------------------------------------------------------------------------------------------
 
 void SkinMesh::RenderDepth(const LPD3DXANIMATIONCONTROLLER pAC)
@@ -1343,3 +1376,4 @@ void SkinMesh::ConvertCharaMultiByteToUnicode(
 		str,
 		_TRUNCATE);
 }
+

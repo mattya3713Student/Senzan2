@@ -26,8 +26,6 @@ public:
 	void Draw() override;
 	void Exit() override;
 private:
-	void BossAttack() override;
-private:
 	std::shared_ptr<BossIdolState> m_pBossIdol;
 
 	enAnimChange m_AnimChange;
