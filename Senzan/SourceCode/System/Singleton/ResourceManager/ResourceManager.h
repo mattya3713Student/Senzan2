@@ -4,6 +4,7 @@
 #include "SpriteManager/SpriteManager.h"
 #include "SoundManager/SoundManager.h"
 #include "Effect/EffectResource.h"
+#include "EffectManager/EffekseerManager.h"
 
 /*******************************************
 *	アセット管理クラス.
@@ -55,6 +56,13 @@ public:
 	* @param name：取得したいスプライト2Dの名前.
 	************************************************/
 	static std::shared_ptr<Sprite2D> GetSprite2D(const std::string& name);
+
+
+	/************************************************
+	* @brief エフェクトを取得.
+	* @param name：取得したいエフェクトの名前.
+	************************************************/
+	static ::Effekseer::EffectRef GetEffect(const std::string& name);
 
 
 	/************************************************

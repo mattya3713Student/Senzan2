@@ -219,7 +219,7 @@ void Boss::Update()
 
         ImGui::SameLine();
         if (ImGui::Button(IMGUI_JP("Enter Slash (Hotkey)"))) {
-            m_State->ChangeState(std::make_shared<BossSlashState>(this));
+            m_State->ChangeState(std::make_shared<BossStompState>(this));
         }
         ImGui::End();
     }
