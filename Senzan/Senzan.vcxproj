@@ -117,7 +117,7 @@
       <LanguageStandard>stdcpp23</LanguageStandard>
       <AdditionalIncludeDirectories>SourceCode;SourceCode\Ggraphic;SourceCode\Resource;SourceCode\System;SourceCode\System\GameLoop;SourceCode\System\Singleton;SourceCode\System\Utility;SourceCode\Game\Scene;SourceCode\Game\01_GameObject;Data;Data/Library/Effekseer/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
       <EnableModules>true</EnableModules>
       <BuildStlModules>true</BuildStlModules>
@@ -164,7 +164,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="Data\Shader\PMX\Header.hlsli" />
-    <None Include="SourceCode\Resource\Effect\git認識用フォルダ" />
     <None Include="SourceCode\System\Utility\Assert\Assert.inl" />
     <None Include="SourceCode\System\Utility\Math\Easing\Easing.inl" />
     <None Include="SourceCode\System\Utility\Math\Math.inl" />

@@ -1,11 +1,12 @@
-#pragma once
+ï»¿#pragma once
 #include "../Movement.h"
+#include "System/Singleton/ResourceManager/EffectManager/EffekseerManager.h"
 
 class Player;
 
 /**************************************************
-*	ƒvƒŒƒCƒ„[‚Ì‘–‚é‚ÌƒXƒe[ƒg(”h¶).
-*	’S“–:•£˜e –¢—ˆ.
+*	ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®èµ°ã‚‹ã®ã‚¹ãƒ†ãƒ¼ãƒˆ(æ´¾ç”Ÿ).
+*	æ‹…å½“:æ·µè„‡ æœªæ¥.
 **/
 
 namespace PlayerState {
@@ -15,7 +16,7 @@ namespace PlayerState {
         Run(Player* owner);
         ~Run();
 
-        // ID‚Ìæ“¾.
+        // IDã®å–å¾—.
         constexpr PlayerState::eID GetStateID() const  override;
 
         void Enter() override;
@@ -25,9 +26,12 @@ namespace PlayerState {
         void Exit() override;
 
     private:
-        // ˆÚ“®•ûŒü‚ğZo.
+        // ç§»å‹•æ–¹å‘ã‚’ç®—å‡º.
         void CalculateMoveVec();
 
     private:
+        // ã‚¨ãƒ•ã‚§ã‚¯ãƒˆé–¢é€£
+        ::Effekseer::EffectRef m_DartEffect;      // ã‚¨ãƒ•ã‚§ã‚¯ãƒˆãƒªã‚½ãƒ¼ã‚¹
+        ::Effekseer::Handle m_EffectHandle = -1; // ã‚¨ãƒ•ã‚§ã‚¯ãƒˆãƒãƒ³ãƒ‰ãƒ«
     };
 }
