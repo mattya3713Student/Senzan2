@@ -72,7 +72,7 @@ void MattyaTestScene::Update()
     Input::Update();
 	m_upGround->Update();
 	m_upPlayer->SetTargetPos(m_upBoss.get()->GetPosition());
-	//m_upPlayer->Update();
+	m_upPlayer->Update();
     m_pCamera->Update();
 	m_upBoss->Update();
 	m_upBoss->SetTargetPos(m_upPlayer->GetPosition());

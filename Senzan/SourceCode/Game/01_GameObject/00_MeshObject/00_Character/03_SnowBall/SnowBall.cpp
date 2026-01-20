@@ -1,4 +1,4 @@
-#include "SnowBall.h"
+ï»¿#include "SnowBall.h"
 #include "Game/04_Time/Time.h"
 #include <algorithm>
 
@@ -8,9 +8,9 @@ SnowBall::SnowBall()
 {
 	AttachMesh(MeshManager::GetInstance().GetSkinMesh("snowball_nomal"));
 
-	// ‰ŠúˆÊ’u‚ğ‰æ–ÊŠO‚Ì‰“‚­‚Ö
+	// åˆæœŸä½ç½®ã‚’ç”»é¢å¤–ã®é ãã¸
 	Init_Pos = { 1000.0f, -1000.0f, 1000.0f };
-	DirectX::XMFLOAT3 scale = { 0.5f, 0.5f, 0.5f }; // ƒTƒCƒY‚ğ­‚µ‘å‚«‚­C³
+	DirectX::XMFLOAT3 scale = { 0.05f, 0.05f, 0.05f }; // ã‚µã‚¤ã‚ºã‚’å°‘ã—å¤§ããä¿®æ­£
 
 	m_spTransform->SetPosition(Init_Pos);
 	m_spTransform->SetScale(scale);
@@ -29,34 +29,34 @@ void SnowBall::Update()
 
 	if (!IsAction) return;
 
-	// 1. ŠÔ‚ÌXVideltaTime‚É—]Œv‚È”{—¦‚ğ‚©‚¯‚È‚¢j
+	// 1. æ™‚é–“ã®æ›´æ–°ï¼ˆdeltaTimeã«ä½™è¨ˆãªå€ç‡ã‚’ã‹ã‘ãªã„ï¼‰
 	float deltaTime = Time::GetInstance().GetDeltaTime();
 	ThrowingTime += deltaTime;
 
-	// t (0.0 ` 1.0) ‚ğŒvZ
+	// t (0.0 ï½ 1.0) ã‚’è¨ˆç®—
 	float t = ThrowingTime / Totle_ThrowingTime;
 	if (t >= 1.0f) t = 1.0f;
 
-	// 2. “ñŸƒxƒWƒF‹ÈüŒvZ
+	// 2. äºŒæ¬¡ãƒ™ã‚¸ã‚§æ›²ç·šè¨ˆç®—
 	XMVECTOR P0 = XMLoadFloat3(&Boss_Pos);
 	XMVECTOR P1 = XMLoadFloat3(&Current_Pos);
 	XMVECTOR P2 = XMLoadFloat3(&Player_Pos);
 
-	// “ñŸƒxƒWƒF‹Èü‚ÌŒö®F B(t) = (1-t)^2*P0 + 2(1-t)t*P1 + t^2*P2
+	// äºŒæ¬¡ãƒ™ã‚¸ã‚§æ›²ç·šã®å…¬å¼ï¼š B(t) = (1-t)^2*P0 + 2(1-t)t*P1 + t^2*P2
 	XMVECTOR A = XMVectorLerp(P0, P1, t);
 	XMVECTOR B = XMVectorLerp(P1, P2, t);
 	XMVECTOR NewPosVec = XMVectorLerp(A, B, t);
 
-	// 3. À•W‚Ì“K—p
+	// 3. åº§æ¨™ã®é©ç”¨
 	DirectX::XMFLOAT3 NewPosF;
 	XMStoreFloat3(&NewPosF, NewPosVec);
 	m_spTransform->SetPosition(NewPosF);
 
-	// 4. ’…’e”»’è
+	// 4. ç€å¼¾åˆ¤å®š
 	if (t >= 1.0f)
 	{
 		IsAction = false;
-		// ’…’eŒãA”ñ•\¦‚É‚·‚éê‡‚ÍˆÈ‰º‚ğ—LŒø‰»
+		// ç€å¼¾å¾Œã€éè¡¨ç¤ºã«ã™ã‚‹å ´åˆã¯ä»¥ä¸‹ã‚’æœ‰åŠ¹åŒ–
 		// IsVisible = false;
 	}
 }
@@ -91,12 +91,12 @@ void SnowBall::ResetPosition()
 void SnowBall::Launch()
 {
 	using namespace DirectX;
-	const float ArcHeight = 10.0f; // •ú•¨ü‚Ì‚‚³
+	const float ArcHeight = 10.0f; // æ”¾ç‰©ç·šã®é«˜ã•
 
 	XMVECTOR P0 = XMLoadFloat3(&Boss_Pos);
 	XMVECTOR P2 = XMLoadFloat3(&Player_Pos);
 
-	// ’†ŠÔ’n“_‚ğŒvZ‚µ‚Ä‚‚³‚ğo‚·
+	// ä¸­é–“åœ°ç‚¹ã‚’è¨ˆç®—ã—ã¦é«˜ã•ã‚’å‡ºã™
 	XMVECTOR MidPoint = XMVectorLerp(P0, P2, 0.5f);
 	XMVECTOR HeightOffset = XMVectorSet(0.0f, ArcHeight, 0.0f, 0.0f);
 
