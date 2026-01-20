@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../../00_Base/SceneBase.h"
 #include "02_UIObject/UIObject.h"
@@ -9,12 +9,15 @@ class MeshBase;
 class Boss;
 class CameraBase;
 class DirectionLight;
+class UIGameMain;
+class UIGameOver;
+class UIEnding;
 
 #include <vector>
 
 
 /*********************************************
-*	ƒQ[ƒ€ƒƒCƒ“‰æ‘œƒNƒ‰ƒX.
+*	ã‚²ãƒ¼ãƒ ãƒ¡ã‚¤ãƒ³ç”»åƒã‚¯ãƒ©ã‚¹.
 **/
 
 class MemeuTestScene
@@ -33,10 +36,14 @@ public:
 	HRESULT LoadData();
 
 private:
-	std::shared_ptr<CameraBase>			m_pCamera;			// ƒJƒƒ‰.
-	std::shared_ptr<DirectionLight>		m_pLight;			// ƒ‰ƒCƒg
+	std::shared_ptr<CameraBase>			m_pCamera;			// ã‚«ãƒ¡ãƒ©.
+	std::shared_ptr<DirectionLight>		m_pLight;			// ãƒ©ã‚¤ãƒˆ
 
 	std::unique_ptr<Ground>		m_pGround;
 
 	std::shared_ptr<UIObject> m_TestSprite;
+    std::shared_ptr<UIGameMain>	m_upUIMain;
+    std::shared_ptr<UIGameOver>	m_upUIOver;
+    std::shared_ptr<UIEnding>	m_upUIEnding;
+    float m_TimeLimit;
 };
