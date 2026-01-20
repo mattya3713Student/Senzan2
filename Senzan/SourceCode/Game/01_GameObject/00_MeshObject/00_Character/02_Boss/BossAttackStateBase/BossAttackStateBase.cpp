@@ -36,6 +36,24 @@ void BossAttackStateBase::Enter()
 {
     LoadSettings();
     m_CurrentTime = 0.0f;
+    
+    // ウィンドウフラグをリセット
+    for (auto& window : m_ColliderWindows)
+    {
+        window.Reset();
+    }
+    for (auto& mv : m_MovementWindows)
+    {
+        mv.Reset();
+    }
+    
+    // 全ての攻撃コライダーを最初に非アクティブにする
+    if (m_pOwner)
+    {
+        m_pOwner->SetColliderActiveByName("boss_Hand_R", false);
+        m_pOwner->SetColliderActiveByName("boss_pSphere28", false);
+        m_pOwner->SetColliderActiveByName("boss_Shout", false);
+    }
 }
 
 void BossAttackStateBase::Update()
@@ -81,6 +99,17 @@ void BossAttackStateBase::UpdateBaseLogic(float dt)
 	{
         if (window.IsEnd) { continue; }
 
+        // ジャストタイム判定更新（開始時間 - JustTime ～ 開始時間 の間 true）
+        float justWindowStart = window.Start - window.JustTime;
+        if (window.JustTime > 0.0f && m_CurrentTime >= justWindowStart && m_CurrentTime < window.Start)
+        {
+            window.IsJustWindow = true;
+        }
+        else
+        {
+            window.IsJustWindow = false;
+        }
+
         if (!window.IsAct && m_CurrentTime >= window.Start)
 		{
 			m_pOwner->SetColliderActiveByName(window.BoneName, true);
@@ -94,7 +123,12 @@ void BossAttackStateBase::UpdateBaseLogic(float dt)
 					if (auto* cap = dynamic_cast<CapsuleCollider*>(targetCol)) {
 						cap->SetRadius(m_ColliderWidth);
 						cap->SetHeight(m_ColliderHeight);
-                        cap->SetPositionOffset(m_ColliderPositionOffset.x, m_ColliderPositionOffset.y, m_ColliderPositionOffset.z);
+                        // ColliderWindow のオフセットを Boss の回転で回転させて適用
+                        DirectX::XMVECTOR bossQuat = DirectX::XMLoadFloat4(&m_pOwner->GetTransform()->Quaternion);
+                        DirectX::XMVECTOR v_offset = DirectX::XMLoadFloat3(&window.Offset);
+                        DirectX::XMVECTOR v_rotated = DirectX::XMVector3Rotate(v_offset, bossQuat);
+                        DirectX::XMFLOAT3 rotated; DirectX::XMStoreFloat3(&rotated, v_rotated);
+                        cap->SetPositionOffset(rotated.x, rotated.y, rotated.z);
 						cap->SetAttackAmount(m_AttackAmount);
 					}
 				}
@@ -217,6 +251,14 @@ void BossAttackStateBase::UpdateBaseLogic(float dt)
 
 void BossAttackStateBase::Exit()
 {
+    // 全ての攻撃コライダーを非アクティブにする
+    if (m_pOwner)
+    {
+        m_pOwner->SetColliderActiveByName("boss_Hand_R", false);
+        m_pOwner->SetColliderActiveByName("boss_pSphere28", false);
+        m_pOwner->SetColliderActiveByName("boss_Shout", false);
+    }
+    
     for (auto& w : m_ColliderWindows) { w.Reset(); }
     for (auto& w : m_MovementWindows) { w.Reset(); }
 
@@ -284,9 +326,14 @@ void BossAttackStateBase::DrawImGui()
         ImGui::PushID((int)i);
         // 開始時刻／継続時間
         ImGui::DragFloat(IMGUI_JP("開始時刻 (秒)"), &w.Start, 0.01f, 0.0f, m_EndTime);
-       // ImGui::SameLine();
         ImGui::DragFloat(IMGUI_JP("継続時間 (秒)"), &w.Duration, 0.01f, 0.0f, m_EndTime);
-       // ImGui::SameLine();
+        // オフセット編集（Bossのローカル座標系: X=横, Y=上, Z=前方）
+        float offset[3] = { w.Offset.x, w.Offset.y, w.Offset.z };
+        if (ImGui::DragFloat3(IMGUI_JP("オフセット (横/上/前)"), offset, 0.5f, -500.0f, 500.0f)) {
+            w.Offset.x = offset[0];
+            w.Offset.y = offset[1];
+            w.Offset.z = offset[2];
+        }
         // ボーン名編集
         char buf[128];
 #ifdef _MSC_VER
@@ -297,6 +344,10 @@ void BossAttackStateBase::DrawImGui()
         if (ImGui::InputText(IMGUI_JP("ボーン名"), buf, sizeof(buf))) {
             w.BoneName = std::string(buf);
         }
+        // ジャストタイム編集
+        ImGui::DragFloat(IMGUI_JP("ジャストタイム (秒)"), &w.JustTime, 0.01f, 0.0f, 5.0f);
+        // ジャスト判定状態表示
+        ImGui::Text(IMGUI_JP("ジャスト判定: %s"), w.IsJustWindow ? "ON" : "OFF");
         ImGui::SameLine();
         if (ImGui::Button(IMGUI_JP("削除"))) { m_ColliderWindows.erase(m_ColliderWindows.begin() + i); ImGui::PopID(); break; }
         ImGui::PopID();
@@ -393,14 +444,6 @@ void BossAttackStateBase::LoadSettings()
     if (j.contains("m_TransitionOnAnimEnd_Attack")) m_TransitionOnAnimEnd_Attack = j["m_TransitionOnAnimEnd_Attack"].get<bool>();
     if (j.contains("m_TransitionOnAnimEnd_Exit")) m_TransitionOnAnimEnd_Exit = j["m_TransitionOnAnimEnd_Exit"].get<bool>();
     if (j.contains("m_AttackBoneName")) m_AttackBoneName = j["m_AttackBoneName"].get<std::string>();
-    if (j.contains("m_ColliderPositionOffset") && j["m_ColliderPositionOffset"].is_array()) {
-        auto &arr = j["m_ColliderPositionOffset"];
-        if (arr.size() >= 3) {
-            m_ColliderPositionOffset.x = arr[0].get<float>();
-            m_ColliderPositionOffset.y = arr[1].get<float>();
-            m_ColliderPositionOffset.z = arr[2].get<float>();
-        }
-    }
     if (j.contains("AnimSpeeds") && j["AnimSpeeds"].is_object()) {
         auto& a = j["AnimSpeeds"];
         if (a.contains("Charge")) m_AnimSpeedCharge = a["Charge"].get<float>();
@@ -415,6 +458,16 @@ void BossAttackStateBase::LoadSettings()
                 w.Start = entry["start"].get<float>();
                 w.Duration = entry["duration"].get<float>();
                 if (entry.contains("BoneName")) w.BoneName = entry["BoneName"].get<std::string>();
+                // オフセット読み込み
+                if (entry.contains("offset") && entry["offset"].is_array() && entry["offset"].size() >= 3) {
+                    w.Offset.x = entry["offset"][0].get<float>();
+                    w.Offset.y = entry["offset"][1].get<float>();
+                    w.Offset.z = entry["offset"][2].get<float>();
+                }
+                // ジャストタイム読み込み
+                if (entry.contains("justTime")) {
+                    w.JustTime = entry["justTime"].get<float>();
+                }
                 m_ColliderWindows.push_back(w);
             }
         }
@@ -468,8 +521,6 @@ void BossAttackStateBase::SaveSettings() const
     j["m_AttackAmount"] = m_AttackAmount;
     j["m_ColliderWidth"] = m_ColliderWidth;
     j["m_ColliderHeight"] = m_ColliderHeight;
-    j["m_ColliderPositionOffset"] = { m_ColliderPositionOffset.x, m_ColliderPositionOffset.y, m_ColliderPositionOffset.z };
-    j["m_ColliderPositionOffset"] = { m_ColliderPositionOffset.x, m_ColliderPositionOffset.y, m_ColliderPositionOffset.z };
     j["m_EndTime"] = m_EndTime;
     j["m_AttackTime"] = m_AttackTime;
     j["m_ChargeTime"] = m_ChargeTime;
@@ -488,6 +539,8 @@ void BossAttackStateBase::SaveSettings() const
         e["start"] = w.Start;
         e["duration"] = w.Duration;
         e["BoneName"] = w.BoneName;
+        e["offset"] = { w.Offset.x, w.Offset.y, w.Offset.z };
+        e["justTime"] = w.JustTime;
         j["ColliderWindows"].push_back(e);
     }
 

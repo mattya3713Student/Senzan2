@@ -48,16 +48,27 @@ struct MovementWindow
 };
 
 
+
+
+
 // 当たり判定の発生時間を制御する
 struct ColliderWindow
 {
-    std::string BoneName;  // ボーン名
+    std::string BoneName;  // ボーン名（現在未使用、将来のボーン追跡用）
     float Start = 0.0f;    // 開始秒
     float Duration = 0.1f; // 持続秒
-    bool IsAct = false;    // 内部フラグ（判定開始済みか）
-    bool IsEnd = false;    // 内部フラグ（判定終了済みか）
+    
+    // 座標オフセット（Bossのローカル座標系: X=横, Y=上, Z=前方）
+    DirectX::XMFLOAT3 Offset{ 0.0f, 0.0f, 0.0f };
+    
+    // ジャストタイム（開始時間より何秒前からジャスト判定を有効にするか）
+    float JustTime = 0.0f;
+    
+    bool IsAct = false;       // 内部フラグ（判定開始済みか）
+    bool IsEnd = false;       // 内部フラグ（判定終了済みか）
+    bool IsJustWindow = false; // ジャスト判定フラグ（Start - JustTime ～ Start の間 true）
 
-    void Reset() { IsAct = false; IsEnd = false; }
+    void Reset() { IsAct = false; IsEnd = false; IsJustWindow = false; }
 };
 
 class BossAttackStateBase
@@ -124,7 +135,6 @@ protected:
     float m_AttackRange = 0.0f;    // 攻撃レンジ
     float m_ColliderWidth = 0.0f;  // 当たり判定の幅（半径）
     float m_ColliderHeight = 0.0f; // 当たり判定の高さ
-    DirectX::XMFLOAT3 m_ColliderPositionOffset{ 0.0f, 0.0f, 0.0f }; // 当たり判定の座標オフセット
 
     // 統合コライダーに使用するボーン名（派生クラスで設定）
     std::string m_AttackBoneName;

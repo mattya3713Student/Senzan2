@@ -255,25 +255,6 @@ DirectX::XMVECTOR CapsuleCollider::GetCulcCapsuleSegmentStart(const CapsuleColli
     const float height = capsule->GetHeight();
     const float half_segment_length = (height - 2.0f * radius) * 0.5f;
 
-    // 外部Transformが設定されている場合、その回転を使用する
-    if (capsule->m_pExternalTransform)
-    {
-        DirectX::XMVECTOR ext_pos = DirectX::XMLoadFloat3(&capsule->m_pExternalTransform->Position);
-        DirectX::XMVECTOR ext_quat = DirectX::XMLoadFloat4(&capsule->m_pExternalTransform->Quaternion);
-
-        // 回転行列を作成
-        DirectX::XMMATRIX mat_rotation = DirectX::XMMatrixRotationQuaternion(ext_quat);
-
-        // オフセットを回転させてから加算
-        DirectX::XMVECTOR v_offset = DirectX::XMLoadFloat3(&capsule->m_PositionOffset);
-        DirectX::XMVECTOR v_rotated_offset = DirectX::XMVector3TransformNormal(v_offset, mat_rotation);
-        DirectX::XMVECTOR v_center = DirectX::XMVectorAdd(ext_pos, v_rotated_offset);
-
-        // ローカル座標 (0, -half_segment_length, 0) を回転させて加算
-        DirectX::XMVECTOR v_local_start = DirectX::XMVectorSet(0.0f, -half_segment_length, 0.0f, 0.0f);
-        DirectX::XMVECTOR v_rotated_start = DirectX::XMVector3TransformNormal(v_local_start, mat_rotation);
-        return DirectX::XMVectorAdd(v_center, v_rotated_start);
-    }
 
     if (auto spTransform = capsule->m_wpTransform.lock())
     {
@@ -309,26 +290,6 @@ DirectX::XMVECTOR CapsuleCollider::GetCulcCapsuleSegmentEnd(const CapsuleCollide
     const float radius = capsule->GetRadius();
     const float height = capsule->GetHeight();
     const float half_segment_length = (height - 2.0f * radius) * 0.5f;
-
-    // 外部Transformが設定されている場合、その回転を使用する
-    if (capsule->m_pExternalTransform)
-    {
-        DirectX::XMVECTOR ext_pos = DirectX::XMLoadFloat3(&capsule->m_pExternalTransform->Position);
-        DirectX::XMVECTOR ext_quat = DirectX::XMLoadFloat4(&capsule->m_pExternalTransform->Quaternion);
-
-        // 回転行列を作成
-        DirectX::XMMATRIX mat_rotation = DirectX::XMMatrixRotationQuaternion(ext_quat);
-
-        // オフセットを回転させてから加算
-        DirectX::XMVECTOR v_offset = DirectX::XMLoadFloat3(&capsule->m_PositionOffset);
-        DirectX::XMVECTOR v_rotated_offset = DirectX::XMVector3TransformNormal(v_offset, mat_rotation);
-        DirectX::XMVECTOR v_center = DirectX::XMVectorAdd(ext_pos, v_rotated_offset);
-
-        // ローカル座標 (0, +half_segment_length, 0) を回転させて加算
-        DirectX::XMVECTOR v_local_end = DirectX::XMVectorSet(0.0f, half_segment_length, 0.0f, 0.0f);
-        DirectX::XMVECTOR v_rotated_end = DirectX::XMVector3TransformNormal(v_local_end, mat_rotation);
-        return DirectX::XMVectorAdd(v_center, v_rotated_end);
-    }
 
     if (auto spTransform = capsule->m_wpTransform.lock())
     {
@@ -493,36 +454,20 @@ void CapsuleCollider::SetDebugInfo()
 
     std::shared_ptr<const Transform> spParentTransform = m_wpTransform.lock();
 
-    // 優先: 外部供給Transformがあればそれを使って回転・位置を決定
-    DirectX::XMMATRIX mat_parent_no_scale = DirectX::XMMatrixIdentity();
-    if (m_pExternalTransform)
-    {
-        DirectX::XMVECTOR v_rotation = DirectX::XMLoadFloat4(&m_pExternalTransform->Quaternion);
-        DirectX::XMVECTOR v_translation = DirectX::XMLoadFloat3(&m_pExternalTransform->Position);
-        mat_parent_no_scale = DirectX::XMMatrixAffineTransformation(
-            DirectX::XMVectorSet(1.0f, 1.0f, 1.0f, 0.0f),
-            DirectX::XMVectorZero(),
-            v_rotation,
-            v_translation
-        );
-    }
-    else
-    {
-        // 親Transform から回転と位置を取得し、スケールを除いた行列を作成
-        DirectX::XMMATRIX mat_parent_world = spParentTransform
-            ? spParentTransform->GetWorldMatrix()
-            : DirectX::XMMatrixIdentity();
+    // 親Transform から回転と位置を取得し、スケールを除いた行列を作成
+    DirectX::XMMATRIX mat_parent_world = spParentTransform
+        ? spParentTransform->GetWorldMatrix()
+        : DirectX::XMMatrixIdentity();
 
-        DirectX::XMVECTOR v_scale, v_rotation, v_translation;
-        DirectX::XMMatrixDecompose(&v_scale, &v_rotation, &v_translation, mat_parent_world);
+    DirectX::XMVECTOR v_scale, v_rotation, v_translation;
+    DirectX::XMMatrixDecompose(&v_scale, &v_rotation, &v_translation, mat_parent_world);
 
-        mat_parent_no_scale = DirectX::XMMatrixAffineTransformation(
-            DirectX::XMVectorSet(1.0f, 1.0f, 1.0f, 0.0f),
-            DirectX::XMVectorZero(),
-            v_rotation,
-            v_translation
-        );
-    }
+    DirectX::XMMATRIX mat_parent_no_scale = DirectX::XMMatrixAffineTransformation(
+        DirectX::XMVectorSet(1.0f, 1.0f, 1.0f, 0.0f),
+        DirectX::XMVectorZero(),
+        v_rotation,
+        v_translation
+    );
 
     // オフセット行列.
     DirectX::XMMATRIX mat_offset = DirectX::XMMatrixTranslation(
