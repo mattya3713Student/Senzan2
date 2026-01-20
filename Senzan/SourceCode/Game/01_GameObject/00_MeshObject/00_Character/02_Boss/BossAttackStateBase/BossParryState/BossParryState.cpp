@@ -14,10 +14,7 @@ BossParryState::~BossParryState()
 
 void BossParryState::Enter()
 {
-    m_currentTimer = 0.0f;
-
-    // パリィ中は攻撃判定を止める
-    m_pOwner->SetAttackColliderActive(false);
+    m_CurrentTime = 0.0f;
 
     m_pOwner->SetAnimSpeed(3.0);
     m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchParis);
@@ -68,6 +65,4 @@ void BossParryState::Draw()
 
 void BossParryState::Exit()
 {
-    // 念のため攻撃判定はOFFのまま
-    m_pOwner->SetAttackColliderActive(false);
 }

@@ -34,8 +34,6 @@ MattyaTestScene::MattyaTestScene()
 	: SceneBase()
 	, m_pCamera()
 	, m_pLight(std::make_shared<DirectionLight>())
-	, m_TestPressCollision(std::make_unique<CapsuleCollider>())
-	, m_TestAttackCollision(std::make_unique<CapsuleCollider>())
 	, m_upPlayer(std::make_unique<Player>())
 	, m_upBoss(std::make_unique<Boss>())
 	, m_upGround(std::make_unique<Ground>())
@@ -47,7 +45,6 @@ MattyaTestScene::MattyaTestScene()
 // デストラクタ.
 MattyaTestScene::~MattyaTestScene()
 {
-	CollisionDetector::GetInstance().UnregisterCollider(m_TestAttackCollision.get());
 }
 
 void MattyaTestScene::Initialize()
@@ -64,26 +61,6 @@ void MattyaTestScene::Initialize()
 
 	m_upGround = std::make_unique<Ground>();
 
-	//m_TestPressCollision->SetColor(Color::eColor::Cyan);
-	//m_TestPressCollision->SetHeight(60.0f);
-	//m_TestPressCollision->SetRadius(20.0f);
-	//m_TestPressCollision->SetPositionOffset(0.f,1.5f,0.f);
-	//m_TestPressCollision->SetMyMask(eCollisionGroup::Press);
-	//m_TestPressCollision->SetTarGetTargetMask(eCollisionGroup::Press);
-	//CollisionDetector::GetInstance().RegisterCollider(*m_TestPressCollision);
-
-	m_TestAttackCollision->SetColor(Color::eColor::Red);
-	m_TestAttackCollision->SetAttackAmount(50.0f);
-	m_TestAttackCollision->SetHeight(2.0f);
-	m_TestAttackCollision->SetRadius(0.5f);
-	m_TestAttackCollision->SetPositionOffset(0.f,1.5f,50.f);
-	m_TestAttackCollision->SetMyMask(eCollisionGroup::Enemy_Attack);
-
-	m_TestAttackCollision->SetTarGetTargetMask(eCollisionGroup::Player_Damage 
-		| eCollisionGroup::Player_Dodge
-		| eCollisionGroup::Player_JustDodge);
-
-	CollisionDetector::GetInstance().RegisterCollider(*m_TestAttackCollision);
 }
 
 void MattyaTestScene::Create()
@@ -94,12 +71,19 @@ void MattyaTestScene::Update()
 {
     Input::Update();
 	m_upGround->Update();
-	m_upPlayer->SetTargetPos(m_upBoss.get()->GetPosition());
-	//m_upPlayer->Update();
-    m_pCamera->Update();
-	m_upBoss->Update();
+    // update boss first so it can set its just-window flag
+    m_upBoss->Update();
+    m_upBoss->SetTargetPos(m_upPlayer->GetPosition());
 
-	m_upUI->SetBossHP(m_upBoss->GetMaxHP(), m_upBoss->GetHP());
+    // propagate boss just-window flag to player
+    m_upPlayer->SetIsJustDodgeTiming(m_upBoss->IsAnyAttackJustWindow());
+
+    m_upPlayer->SetTargetPos(m_upBoss.get()->GetPosition());
+    //m_upPlayer->Update();
+    m_pCamera->Update();
+
+
+    m_upUI->SetBossHP(m_upBoss->GetMaxHP(), m_upBoss->GetHP());
 	m_upUI->SetCombo(m_upPlayer->GetCombo());
 	m_upUI->SetPlayerHP(m_upPlayer->GetMaxHP(), m_upPlayer->GetHP());
 	m_upUI->SetPlayerUlt(m_upPlayer->GetMaxUltValue(), m_upPlayer->GetUltValue());
@@ -109,7 +93,7 @@ void MattyaTestScene::Update()
 
 void MattyaTestScene::LateUpdate()
 {
-	//m_upPlayer->LateUpdate();
+	m_upPlayer->LateUpdate();
 	m_upBoss->LateUpdate();
 	CameraManager::GetInstance().LateUpdate();
 	
@@ -137,11 +121,6 @@ void MattyaTestScene::Draw()
 	m_upGround->Draw();
 	m_upPlayer->Draw();
 	m_upBoss->Draw();
-
-	m_TestPressCollision->SetDebugInfo();
-	m_TestAttackCollision->SetDebugInfo();
-
-	m_TestPressCollision->SetDebugInfo();
 
 	m_upUI->Draw();
 	CollisionVisualizer::GetInstance().Draw();

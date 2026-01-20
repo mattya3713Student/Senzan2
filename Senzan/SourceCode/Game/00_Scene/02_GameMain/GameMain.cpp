@@ -73,11 +73,16 @@ void GameMain::Create()
 void GameMain::Update()
 {
 	Input::Update();
-	m_upGround->Update();
-	m_upPlayer->SetTargetPos(m_upBoss->GetPosition());
-	m_upBoss->SetTargetPos(m_upPlayer->GetPosition());
-	m_upPlayer->Update();
-	m_upBoss->Update();
+    m_upGround->Update();
+    m_upBoss->Update();
+    m_upBoss->SetTargetPos(m_upPlayer->GetPosition());
+
+    // propagate boss just-window flag to player
+    m_upPlayer->SetIsJustDodgeTiming(m_upBoss->IsAnyAttackJustWindow());
+    Log::GetInstance().Info("", m_upBoss->IsAnyAttackJustWindow());
+
+    m_upPlayer->SetTargetPos(m_upBoss->GetPosition());
+    m_upPlayer->Update();
 
 	m_upUI->SetBossHP(m_upBoss->GetMaxHP(), m_upBoss->GetHP());
 	m_upUI->SetCombo(m_upPlayer->GetCombo());

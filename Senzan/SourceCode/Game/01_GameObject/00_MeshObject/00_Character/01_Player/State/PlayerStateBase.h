@@ -1,10 +1,10 @@
-#pragma once
+ï»¿#pragma once
 
 #include "System/Utility/StateMachine/StateBase.h"
 #include "PlayerStateID.h"
 
-// TODO : ‘O•ûéŒ¾‚Å‚æ‚¢
-//        ‚ªŠeƒXƒe[ƒg‚É‘‚­‚Ì‚ß‚ñ‚Ç‚­‚³‚¢‚©‚çinclude. 
+// TODO : å‰æ–¹å®£è¨€ã§ã‚ˆã„
+//        ãŒå„ã‚¹ãƒ†ãƒ¼ãƒˆã«æ›¸ãã®ã‚ã‚“ã©ãã•ã„ã‹ã‚‰include. 
 class Player;
 
 namespace PlayerState { 
@@ -13,28 +13,25 @@ class Root;
 
 
 /**************************************************
-*	ƒvƒŒƒCƒ„[‚Ìó‘Ô‚ÌŠî’ê(Base).
-*   StateBase‚ğŒp³‚µ‚ÄPlayer“Æ©‚ÌŠÖ”‚ğ‰B•Á‚·‚é.
-*	’S“–:•£˜e –¢—ˆ.
+*	ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®çŠ¶æ…‹ã®åŸºåº•(Base).
+*   StateBaseã‚’ç¶™æ‰¿ã—ã¦Playerç‹¬è‡ªã®é–¢æ•°ã‚’éš è”½ã™ã‚‹.
+*	æ‹…å½“:æ·µè„‡ æœªæ¥.
 **/
 class PlayerStateBase : public StateBase<Player>
 {
 public:
     PlayerStateBase(Player* owner);
 
-    // æ“¾Œn.
-    constexpr virtual PlayerState::eID GetStateID() const = 0;    // ƒXƒe[ƒgID‚Ìæ“¾.
+    // å–å¾—ç³».
+    constexpr virtual PlayerState::eID GetStateID() const = 0;    // ã‚¹ãƒ†ãƒ¼ãƒˆIDã®å–å¾—.
 
-    Player* GetPlayer() const;   // ƒI[ƒi[(ƒvƒŒƒCƒ„[)‚Ìæ“¾.
+    Player* GetPlayer() const;   // ã‚ªãƒ¼ãƒŠãƒ¼(ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼)ã®å–å¾—.
 	
 
 protected:
 
-    // ³–Ê‚Öƒ‰[ƒv‰ñ“].
+    // æ­£é¢ã¸ãƒ©ãƒ¼ãƒ—å›è»¢.
     void RotetToFront();
-
-    // –Ú•W‚ÌŠp“x‚Öƒ‰[ƒv‰ñ“].
-    void RotetToTarget(float TargetRote, float RotetionSpeed);
         
 private:
 

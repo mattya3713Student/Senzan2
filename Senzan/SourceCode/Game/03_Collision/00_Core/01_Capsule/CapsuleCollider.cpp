@@ -251,11 +251,13 @@ CollisionInfo CapsuleCollider::DispatchCollision(const BoxCollider& other) const
 // カプセルの中心線分の終点 P1 を「計算し」取得.
 DirectX::XMVECTOR CapsuleCollider::GetCulcCapsuleSegmentStart(const CapsuleCollider* capsule)
 {
+    const float radius = capsule->GetRadius();
+    const float height = capsule->GetHeight();
+    const float half_segment_length = (height - 2.0f * radius) * 0.5f;
+
 
     if (auto spTransform = capsule->m_wpTransform.lock())
     {
-        const float radius = capsule->GetRadius();
-        const float height = capsule->GetHeight();
         DirectX::XMMATRIX mat_parent_world = spTransform->GetWorldMatrix();
 
         DirectX::XMVECTOR scale, rotation, translation;
@@ -264,36 +266,33 @@ DirectX::XMVECTOR CapsuleCollider::GetCulcCapsuleSegmentStart(const CapsuleColli
         DirectX::XMMATRIX mat_no_scale = DirectX::XMMatrixRotationQuaternion(rotation);
         mat_no_scale = DirectX::XMMatrixMultiply(mat_no_scale, DirectX::XMMatrixTranslationFromVector(translation));
 
-        DirectX::XMMATRIX mat_offset = DirectX::XMMatrixTranslation(
-            capsule->m_PositionOffset.x, capsule->m_PositionOffset.y, capsule->m_PositionOffset.z
-        );
-        DirectX::XMMATRIX mat_combined_world = DirectX::XMMatrixMultiply(mat_offset, mat_no_scale);
+        // PositionOffset を親の回転で回転させてから中心に加算する
+        DirectX::XMVECTOR v_offset = DirectX::XMLoadFloat3(&capsule->m_PositionOffset);
+        // mat_no_scale は回転と位置を含む行列だが回転のみの行列を作成してオフセットを回転させる
+        DirectX::XMMATRIX mat_rotation = DirectX::XMMatrixRotationQuaternion(rotation);
+        DirectX::XMVECTOR v_rotated_offset = DirectX::XMVector3TransformNormal(v_offset, mat_rotation);
+        DirectX::XMVECTOR v_center = DirectX::XMVectorAdd(translation, v_rotated_offset);
 
-        const float half_segment_length = (height - 2.0f * radius) * 0.5f;
-
-        // ローカル座標 (0, -half_segment_length, 0) にワールド変換を適用.
-        DirectX::XMVECTOR v_local_start = DirectX::XMVectorSet(0.0f, -half_segment_length, 0.0f, 1.0f);
-
-        // ローカル開始点を親のワールド変換行列で変換. (結合行列を使用)
-        DirectX::XMVECTOR v_world_start = DirectX::XMVector3TransformCoord(v_local_start, mat_combined_world);
-
-        return v_world_start;
+        // ローカル座標 (0, -half_segment_length, 0) を回転だけ適用してワールドに変換し、中心に加算する
+        DirectX::XMVECTOR v_local_start = DirectX::XMVectorSet(0.0f, -half_segment_length, 0.0f, 0.0f);
+        DirectX::XMVECTOR v_rotated_local_start = DirectX::XMVector3TransformNormal(v_local_start, mat_rotation);
+        return DirectX::XMVectorAdd(v_center, v_rotated_local_start);
     }
 
     // 親Transformがない場合、オフセットなしのローカル座標を返す.
     const DirectX::XMFLOAT3 pos = capsule->GetPositionOffset();
-    const float half_segment_length = (capsule->GetHeight() / 2.0f - capsule->GetRadius());
     return DirectX::XMVectorSet(pos.x, pos.y - half_segment_length, pos.z, 1.0f);
 }
 
 // カプセルの中心線分の終点 P2 を「計算し」取得.
 DirectX::XMVECTOR CapsuleCollider::GetCulcCapsuleSegmentEnd(const CapsuleCollider* capsule)
 {
+    const float radius = capsule->GetRadius();
+    const float height = capsule->GetHeight();
+    const float half_segment_length = (height - 2.0f * radius) * 0.5f;
+
     if (auto spTransform = capsule->m_wpTransform.lock())
     {
-        const float radius = capsule->GetRadius();
-        const float height = capsule->GetHeight();
-
         DirectX::XMMATRIX mat_parent_world = spTransform->GetWorldMatrix();
 
         // 親のワールド行列からスケールを取り除き、回転と位置のみを取得.
@@ -303,24 +302,19 @@ DirectX::XMVECTOR CapsuleCollider::GetCulcCapsuleSegmentEnd(const CapsuleCollide
         DirectX::XMMATRIX mat_no_scale = DirectX::XMMatrixRotationQuaternion(rotation);
         mat_no_scale = DirectX::XMMatrixMultiply(mat_no_scale, DirectX::XMMatrixTranslationFromVector(translation));
 
-        DirectX::XMMATRIX mat_offset = DirectX::XMMatrixTranslation(
-            capsule->m_PositionOffset.x, capsule->m_PositionOffset.y, capsule->m_PositionOffset.z
-        );
-        DirectX::XMMATRIX mat_combined_world = DirectX::XMMatrixMultiply(mat_offset, mat_no_scale);
+        // PositionOffset を親の回転で回転させてから中心に加算する
+        DirectX::XMVECTOR v_offset = DirectX::XMLoadFloat3(&capsule->m_PositionOffset);
+        DirectX::XMMATRIX mat_rotation = DirectX::XMMatrixRotationQuaternion(rotation);
+        DirectX::XMVECTOR v_rotated_offset = DirectX::XMVector3TransformNormal(v_offset, mat_rotation);
+        DirectX::XMVECTOR v_center = DirectX::XMVectorAdd(translation, v_rotated_offset);
 
-        const float half_segment_length = (height - 2.0f * radius) * 0.5f;
-
-        // ローカル座標 (0, +half_segment_length, 0) にワールド変換を適用.
-        DirectX::XMVECTOR v_local_end = DirectX::XMVectorSet(0.0f, half_segment_length, 0.0f, 1.0f);
-
-        // ローカル終点を親のワールド変換行列で変換. (結合行列を使用)
-        DirectX::XMVECTOR v_world_end = DirectX::XMVector3TransformCoord(v_local_end, mat_combined_world);
-
-        return v_world_end;
+        // ローカル座標 (0, +half_segment_length, 0) を回転だけ適用してワールドに変換し、中心に加算する
+        DirectX::XMVECTOR v_local_end = DirectX::XMVectorSet(0.0f, half_segment_length, 0.0f, 0.0f);
+        DirectX::XMVECTOR v_rotated_local_end = DirectX::XMVector3TransformNormal(v_local_end, mat_rotation);
+        return DirectX::XMVectorAdd(v_center, v_rotated_local_end);
     }
     // 親Transformがない場合、オフセットなしのローカル座標を返す.
     const DirectX::XMFLOAT3 pos = capsule->GetPositionOffset();
-    const float half_segment_length = (capsule->GetHeight() / 2.0f - capsule->GetRadius());
     return DirectX::XMVectorSet(pos.x, pos.y + half_segment_length, pos.z, 1.0f);
 }
 
@@ -460,7 +454,7 @@ void CapsuleCollider::SetDebugInfo()
 
     std::shared_ptr<const Transform> spParentTransform = m_wpTransform.lock();
 
-    // 親の単位行列を作成.
+    // 親Transform から回転と位置を取得し、スケールを除いた行列を作成
     DirectX::XMMATRIX mat_parent_world = spParentTransform
         ? spParentTransform->GetWorldMatrix()
         : DirectX::XMMatrixIdentity();
@@ -468,12 +462,11 @@ void CapsuleCollider::SetDebugInfo()
     DirectX::XMVECTOR v_scale, v_rotation, v_translation;
     DirectX::XMMatrixDecompose(&v_scale, &v_rotation, &v_translation, mat_parent_world);
 
-    // スケールを(1, 1, 1)に固定し、回転と位置のみを適用した行列を再構築
     DirectX::XMMATRIX mat_parent_no_scale = DirectX::XMMatrixAffineTransformation(
-        DirectX::XMVectorSet(1.0f, 1.0f, 1.0f, 0.0f), // スケールを破棄し 1.0f を適用
+        DirectX::XMVectorSet(1.0f, 1.0f, 1.0f, 0.0f),
         DirectX::XMVectorZero(),
-        v_rotation,              // 親の回転を適用
-        v_translation            // 親の位置を適用
+        v_rotation,
+        v_translation
     );
 
     // オフセット行列.

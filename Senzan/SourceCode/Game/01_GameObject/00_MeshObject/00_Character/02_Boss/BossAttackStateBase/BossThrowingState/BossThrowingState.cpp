@@ -3,11 +3,16 @@
 #include "00_MeshObject/00_Character/02_Boss/BossIdolState/BossIdolState.h"
 #include "..//04_Time/Time.h"
 #include "00_MeshObject/00_Character/03_SnowBall/SnowBall.h"
+#include "System/Singleton/ImGui/CImGuiManager.h"
+#include "System/Utility/FileManager/FileManager.h"
 
 BossThrowingState::BossThrowingState(Boss* owner)
 	: BossAttackStateBase(owner)
 	, m_List(enThrowing::None)
 	, m_pBall(std::make_unique<SnowBall>())
+	, m_IsLaunched(false)
+	, m_BallHeight(5.0f)
+	, m_BallSpeed(1.0f)
 {
 }
 
@@ -42,7 +47,6 @@ void BossThrowingState::Update()
 	{
 	case enThrowing::None:
 		// 当たり判定を無効化.
-		m_pOwner->SetAttackColliderActive(true);
 		m_List = enThrowing::Anim;
 		break;
 
@@ -57,9 +61,9 @@ void BossThrowingState::Update()
 	case enThrowing::Attack:
 		if (!m_IsLaunched)
 		{
-			// 発射位置を調整（ボスの手元の高さ：約5.0f）
+			// 発射位置を調整（ボスの手元の高さ）
 			DirectX::XMFLOAT3 startPos = m_pOwner->GetPosition();
-			startPos.y += 5.0f;
+			startPos.y += m_BallHeight;
 
 			// 雪玉発射
 			m_pBall->Fire(m_pOwner->GetTargetPos(), startPos);
@@ -106,12 +110,40 @@ void BossThrowingState::Draw()
 
 void BossThrowingState::Exit()
 {
-	// 当たり判定を無効化.
-	m_pOwner->SetAttackColliderActive(false);
 }
 
 void BossThrowingState::BossAttack()
 {
 	m_pBall->Update();
+}
+
+void BossThrowingState::DrawImGui()
+{
+    ImGui::Begin(IMGUI_JP("BossThrowing State"));
+    CImGuiManager::Slider<float>(IMGUI_JP("発射高さ"), m_BallHeight, 0.0f, 15.0f, true);
+    CImGuiManager::Slider<float>(IMGUI_JP("弾速"), m_BallSpeed, 0.1f, 5.0f, true);
+    BossAttackStateBase::DrawImGui();
+    ImGui::End();
+}
+
+void BossThrowingState::LoadSettings()
+{
+    BossAttackStateBase::LoadSettings();
+    auto srcDir = std::filesystem::path(__FILE__).parent_path();
+    auto filePath = srcDir / GetSettingsFileName();
+    if (!std::filesystem::exists(filePath)) return;
+    json j = FileManager::JsonLoad(filePath);
+    if (j.contains("BallHeight")) m_BallHeight = j["BallHeight"].get<float>();
+    if (j.contains("BallSpeed")) m_BallSpeed = j["BallSpeed"].get<float>();
+}
+
+void BossThrowingState::SaveSettings() const
+{
+    json j = SerializeSettings();
+    j["BallHeight"] = m_BallHeight;
+    j["BallSpeed"] = m_BallSpeed;
+    auto srcDir = std::filesystem::path(__FILE__).parent_path();
+    auto filePath = srcDir / GetSettingsFileName();
+    FileManager::JsonSave(filePath, j);
 }
 

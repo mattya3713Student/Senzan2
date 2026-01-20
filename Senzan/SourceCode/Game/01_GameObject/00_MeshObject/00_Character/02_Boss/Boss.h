@@ -32,7 +32,7 @@ class BossStompState;       //踏みつけ攻撃
 class BossSlashState;       //斬る攻撃.
 class BossChargeSlashState; //溜め攻撃.
 class BossShoutState;       //叫び攻撃.
-class BossSpecialState;
+class BossJumpOnlState;
 class BossLaserState;
 class BossDeadState;
 
@@ -53,9 +53,10 @@ class Boss
     friend BossMoveState;
     friend BossStompState;
     friend BossSlashState;
+    friend BossAttackStateBase;
     friend BossChargeSlashState;
     friend BossShoutState;
-    friend BossSpecialState;
+    friend BossJumpOnlState;
     friend BossLaserState;
     friend BossDeadState;
     friend BossChargeState;
@@ -104,6 +105,9 @@ public:
     Boss();
     ~Boss() override;
 
+    void SetAnyAttackJustWindow(bool v) { m_IsAnyAttackJustWindow = v; }
+    bool IsAnyAttackJustWindow() const { return m_IsAnyAttackJustWindow; }
+
     void Update() override;
     void LateUpdate() override;
     void Draw() override;
@@ -115,10 +119,6 @@ public:
 
     //アニメーション再生時に必要になるGet関数になっている.
     LPD3DXANIMATIONCONTROLLER GetAnimCtrl() const;
-
-    float boss_x = 0.f;
-    float boss_y = 0.f;
-    float boss_z = 0.f;
 
     void Hit();
 
@@ -132,6 +132,8 @@ public:
     DirectX::XMFLOAT3 GetTargetPos() { return m_PlayerPos; }
 
 protected:
+    // 全攻撃判定オフ.
+    void OffAttackCollider();
 
     // 衝突_被ダメージ.
     void HandleDamageDetection() override;
@@ -143,10 +145,6 @@ protected:
     // 衝突_パリィ.
     void HandleParryDetection();
 
-
-    // 攻撃判定のActive
-    inline void SetAttackColliderActive(bool Active) const noexcept { m_pAttackCollider->SetActive(Active); }
-
     //当たり判定を取得する.
     //通常攻撃.
     ColliderBase* GetSlashCollider() const;
@@ -154,10 +152,39 @@ protected:
     ColliderBase* GetStompCollider() const;
     //叫び攻撃.
     ColliderBase* GetShoutCollider() const;
-    //通常攻撃(ボーンの位置設定).
-    void UpdateSlashColliderTransform();
-    //ジャンプ(ボーンの位置設定).
-    void UpdateStompColliderTransform();
+
+    // 統合された攻撃コライダー（各ステートがボーンを指定して使用）
+    ColliderBase* GetAttackCollider() const { return m_spAttackCollider; }
+
+    // 攻撃コライダーが追従するボーンを設定
+    void SetAttackBone(const std::string& boneName);
+    // 攻撃コライダーのサイズを設定
+    void SetAttackColliderSize(float radius, float height);
+    // 名前で指定したコライダーのサイズを設定
+    void SetColliderSizeByName(const std::string& name, float radius, float height);
+    // 名前で指定したコライダーの与えるダメージを設定
+    void SetColliderDamageByName(const std::string& name, float damage);
+    // 攻撃コライダーのダメージを設定
+    void SetAttackColliderDamage(float damage);
+
+    /*************************************************************
+    * @brief	ボスのワールド行列と掛け合わせてボーンのワールド行列を作成し、
+    *           指定コライダーの位置オフセットと外部 Transform ポインタを更新.
+    *           回転情報が必要ない場合は updateRotation=false を渡してください。
+    *           rotationOffset を渡すとボーン回転へ追加の回転を適用できます。
+    * @param[in]	boneName	：取得するボーン名.
+    * @param[in]	collider	：更新対象のコライダー.
+    * @param[in]	outTransform：ワールド Transform を格納するキャッシュ参照.
+    * @param[in]	updateRotation：true の場合 outTransform の回転/スケールも更新する（デフォルト true）
+    * @param[in]	rotationOffset：ボーン回転に乗算するクォータニオン回転オフセット（デフォルト: 単位クォータニオン）
+    * @return	true = 成功, false = 取得失敗または引数不正
+    * ************************************************************/
+    bool UpdateColliderFromBone(
+        const std::string& boneName,
+        ColliderBase* collider,
+        Transform& outTransform,
+        bool updateRotation = true,
+        const DirectX::XMFLOAT4& rotationOffset = DirectX::XMFLOAT4{0.0f,0.0f,0.0f,1.0f});
 
 protected:
     //ステートマシンのメンバ変数.
@@ -184,8 +211,13 @@ protected:
     ColliderBase* m_pStompCollider;
     ColliderBase* m_pShoutCollider;
 
-    // 外部供給用のワールドTransformキャッシュ（コライダーが毎フレームメッシュ検索しないようにする）
-    Transform m_SlashBoneWorldTransform;
-    Transform m_StompBoneWorldTransform;
+    // runtime flag indicating any attack's just window is active
+    bool m_IsAnyAttackJustWindow = false;
+
+    // 統合された攻撃コライダー（各ステートがボーンを指定）
+    ColliderBase* m_spAttackCollider = nullptr;
+    std::string m_AttackBoneName;  // 現在追従するボーン名
+    LPD3DXFRAME m_pAttackBoneFrame = nullptr;  // ボーンフレームキャッシュ
+    Transform m_AttackBoneWorldTransform;      // ワールドTransformキャッシュ
 };
 
