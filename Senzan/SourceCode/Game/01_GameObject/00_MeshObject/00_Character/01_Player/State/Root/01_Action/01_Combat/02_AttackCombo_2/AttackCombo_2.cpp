@@ -153,6 +153,9 @@ void AttackCombo_2::Update()
         }
         catch (...) {}
     }
+    if (ImGui::Button(IMGUI_JP("Restert"))) {
+        this->Enter();
+    }
 
     ImGui::End();
 

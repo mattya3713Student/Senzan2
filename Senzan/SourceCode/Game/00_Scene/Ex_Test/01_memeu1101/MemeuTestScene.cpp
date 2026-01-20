@@ -71,6 +71,7 @@ void MemeuTestScene::Update()
 		m_upUIOver = std::make_shared<UIGameOver>();
 	}
 
+#if _DEBUG
 	if ( m_upUIOver )
     {
         m_upUIOver->Update();
@@ -83,6 +84,7 @@ void MemeuTestScene::Update()
             }
         }
     }
+#endif // _DEBUG.
 }
 
 void MemeuTestScene::LateUpdate()

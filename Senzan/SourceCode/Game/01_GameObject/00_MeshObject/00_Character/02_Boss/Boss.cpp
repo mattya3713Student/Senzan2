@@ -140,7 +140,7 @@ Boss::Boss()
 	m_pStompCollider->SetHeight(15.0f);
 
 	m_pStompCollider->SetActive(false);
-	m_pStompCollider->SetColor(Color::eColor::Gray);
+	m_pStompCollider->SetColor(Color::eColor::Red);
 
 	m_upColliders->AddCollider(std::move(stompCol));
 
