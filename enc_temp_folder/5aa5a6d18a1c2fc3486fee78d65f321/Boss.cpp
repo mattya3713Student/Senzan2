@@ -153,7 +153,7 @@ Boss::Boss()
 	Shout_collider->SetRadius(1.0f);
 	Shout_collider->SetPositionOffset(0.f, 1.5f, 0.f);
 	Shout_collider->SetAttackAmount(10.f);
-	Shout_collider->SetMyMask(eCollisionGroup::Enemy_Attack & eCollisionGroup::BossPress);
+	Shout_collider->SetMyMask(eCollisionGroup::Enemy_Attack & eCollisionGroup::Press);
 	Shout_collider->SetTarGetTargetMask(eCollisionGroup::Press & eCollisionGroup::Player_Damage);
 
 	m_pShoutCollider->SetActive(false);
