@@ -7,8 +7,14 @@
   "ColliderWindows": [
     {
       "BoneName": "boss_Hand_R",
-      "duration": 6.052000045776367,
-      "start": 0.0
+      "duration": 0.10000000149011612,
+      "justTime": 0.5,
+      "offset": [
+        0.0,
+        0.0,
+        -20.0
+      ],
+      "start": 1.5
     }
   ],
   "MovementWindows": [
@@ -36,7 +42,7 @@
   "m_AttackTime": 0.9869999885559082,
   "m_ChargeTime": 1.3109999895095825,
   "m_ColliderHeight": 18.993999481201172,
-  "m_ColliderWidth": 1.3960000276565552,
+  "m_ColliderWidth": 13.965999603271484,
   "m_EndTime": 4.859000205993652,
   "m_TransitionOnAnimEnd_Attack": false,
   "m_TransitionOnAnimEnd_Charge": false,

@@ -129,6 +129,8 @@ public:
     DirectX::XMFLOAT3 GetTargetPos() { return m_PlayerPos; }
 
 protected:
+    // 全攻撃判定オフ.
+    void OffAttackCollider();
 
     // 衝突_被ダメージ.
     void HandleDamageDetection() override;
@@ -139,10 +141,6 @@ protected:
 
     // 衝突_パリィ.
     void HandleParryDetection();
-
-
-    // 攻撃判定のActive
-    inline void SetAttackColliderActive(bool Active) const noexcept { m_pAttackCollider->SetActive(Active); }
 
     //当たり判定を取得する.
     //通常攻撃.
@@ -215,24 +213,5 @@ protected:
     std::string m_AttackBoneName;  // 現在追従するボーン名
     LPD3DXFRAME m_pAttackBoneFrame = nullptr;  // ボーンフレームキャッシュ
     Transform m_AttackBoneWorldTransform;      // ワールドTransformキャッシュ
-    DirectX::XMFLOAT3 m_AttackRotOffsetDeg{ 0.0f, 0.0f, 0.0f }; // 回転オフセット
-
-    // 外部供給用のワールドTransformキャッシュ（コライダーが毎フレームメッシュ検索しないようにする）
-    Transform m_SlashBoneWorldTransform;
-    Transform m_StompBoneWorldTransform;
-    Transform m_ShoutBoneWorldTransform;
-    // ImGui 用: コライダー回転オフセット (度数法で編集)
-    DirectX::XMFLOAT3 m_SlashRotOffsetDeg{ -7.0f, 0.0f, 0.0f };
-    DirectX::XMFLOAT3 m_StompRotOffsetDeg{ 0.0f, 0.0f, 0.0f };
-    DirectX::XMFLOAT3 m_ShoutRotOffsetDeg{ 0.0f, 0.0f, 0.0f };
-    // ImGui 用: コライダー座標オフセット（ステートに保存/読み込みする値と一致させる）
-    DirectX::XMFLOAT3 m_SlashPosOffset{ 0.0f, 0.0f, 0.0f };
-    DirectX::XMFLOAT3 m_StompPosOffset{ 0.0f, 0.0f, 0.0f };
-    DirectX::XMFLOAT3 m_ShoutPosOffset{ 0.0f, 0.0f, 0.0f };
-
-    // ボーンフレームのキャッシュ
-    LPD3DXFRAME m_pSlashBoneFrame = nullptr;
-    LPD3DXFRAME m_pStompBoneFrame = nullptr;
-    LPD3DXFRAME m_pShoutBoneFrame = nullptr;
 };
 

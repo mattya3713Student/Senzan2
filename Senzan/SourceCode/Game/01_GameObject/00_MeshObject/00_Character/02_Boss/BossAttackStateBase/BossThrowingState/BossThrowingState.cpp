@@ -47,7 +47,6 @@ void BossThrowingState::Update()
 	{
 	case enThrowing::None:
 		// 当たり判定を無効化.
-		m_pOwner->SetAttackColliderActive(true);
 		m_List = enThrowing::Anim;
 		break;
 
@@ -111,8 +110,6 @@ void BossThrowingState::Draw()
 
 void BossThrowingState::Exit()
 {
-	// 当たり判定を無効化.
-	m_pOwner->SetAttackColliderActive(false);
 }
 
 void BossThrowingState::BossAttack()
