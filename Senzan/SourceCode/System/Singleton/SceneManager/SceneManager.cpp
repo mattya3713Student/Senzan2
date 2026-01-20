@@ -39,7 +39,7 @@ SceneManager::~SceneManager()
 void SceneManager::LoadData()
 {
 	// 最初にロードするシーンを環境に応じて決定
-	eList initial_scene = eList::AnimationTuning;
+	eList initial_scene = eList::GameMain;
 
 	// --- 環境ごとの初期シーン設定 ---
 
