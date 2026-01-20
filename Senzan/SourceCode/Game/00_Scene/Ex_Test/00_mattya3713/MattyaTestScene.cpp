@@ -71,11 +71,16 @@ void MattyaTestScene::Update()
 {
     Input::Update();
 	m_upGround->Update();
-	m_upPlayer->SetTargetPos(m_upBoss.get()->GetPosition());
-	m_upPlayer->Update();
+    // update boss first so it can set its just-window flag
+    m_upBoss->Update();
+    m_upBoss->SetTargetPos(m_upPlayer->GetPosition());
+
+    // propagate boss just-window flag to player
+    m_upPlayer->SetIsJustDodgeTiming(m_upBoss->IsAnyAttackJustWindow());
+
+    m_upPlayer->SetTargetPos(m_upBoss.get()->GetPosition());
+    m_upPlayer->Update();
     m_pCamera->Update();
-	m_upBoss->Update();
-	m_upBoss->SetTargetPos(m_upPlayer->GetPosition());
 
 
     m_upUI->SetBossHP(m_upBoss->GetMaxHP(), m_upBoss->GetHP());
