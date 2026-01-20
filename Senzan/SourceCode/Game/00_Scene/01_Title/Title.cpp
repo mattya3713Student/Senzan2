@@ -1,4 +1,4 @@
-#include "Title.h"
+ï»¿#include "Title.h"
 #include "02_UIObject/UIObject.h"
 #include "02_UIObject/UITitle/UITitle.h"
 #include "Game/05_InputDevice/Input.h"
@@ -24,8 +24,8 @@ void Title::Initialize()
 
 void Title::Create()
 {
-	SoundManager::GetInstance().Play("Sunlight—zŽË‚µ", true);
-	SoundManager::GetInstance().SetVolume("Sunlight—zŽË‚µ", 8000);
+	SoundManager::GetInstance().Play("Title", true);
+	SoundManager::GetInstance().SetVolume("Title", 8000);
 }
 
 void Title::Update()

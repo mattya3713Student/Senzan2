@@ -1,4 +1,4 @@
-#include "GameOver.h"
+ï»¿#include "GameOver.h"
 #include "02_UIObject/UIGameOver/UIGameOver.h"
 #include "Game/05_InputDevice/Input.h"
 #include "Singleton/ResourceManager/ResourceManager.h"
@@ -18,8 +18,8 @@ GameOver::~GameOver()
 
 void GameOver::Initialize()
 {
-	SoundManager::GetInstance().Play("•Â‚´‚µ‚½S", true);
-	SoundManager::GetInstance().SetVolume("•Â‚´‚µ‚½S", 9000);
+	SoundManager::GetInstance().Play("Over", true);
+	SoundManager::GetInstance().SetVolume("Over", 8000);
 }
 
 void GameOver::Create()
