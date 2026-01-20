@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../00_Base/SceneBase.h"
 
@@ -14,7 +14,7 @@ class UIGameMain;
 
 
 /*********************************************
-*	ƒQ[ƒ€ƒƒCƒ“‰æ‘œƒNƒ‰ƒX.
+*	ã‚²ãƒ¼ãƒ ãƒ¡ã‚¤ãƒ³ç”»åƒã‚¯ãƒ©ã‚¹.
 **/
 
 class GameMain
@@ -34,14 +34,15 @@ public:
 
 private:
 
-	std::shared_ptr<CameraBase>			m_spCamera;			// ƒJƒƒ‰.
-	std::shared_ptr<DirectionLight>		m_spLight;			// ƒ‰ƒCƒg
+	std::shared_ptr<CameraBase>			m_spCamera;			// ã‚«ãƒ¡ãƒ©.
+	std::shared_ptr<DirectionLight>		m_spLight;			// ãƒ©ã‚¤ãƒˆ
 
 	std::unique_ptr<Ground>		m_upGround;
 	
-	//ˆê“I‚È•\¦—p.
+	//ä¸€æ™‚çš„ãªè¡¨ç¤ºç”¨.
 	std::unique_ptr<Boss>		m_upBoss;
 	std::unique_ptr<Player>		m_upPlayer;
 
 	std::shared_ptr<UIGameMain>	m_upUI;
+    float m_TimeLimit;
 };
