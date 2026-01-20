@@ -253,3 +253,45 @@ float GameObject::GetDelta()
     }
 }
 
+// 目標方向へラープ回転.
+void GameObject::RotetToTarget(float TargetRote, float RotetionSpeed)
+{
+    // Use quaternion slerp to rotate smoothly around yaw without affecting pitch/roll.
+    float deltaTime = GetDelta();
+
+    // Normalize degrees
+    TargetRote = MyMath::NormalizeAngleDegrees(TargetRote);
+    DirectX::XMFLOAT3 current_rotation = m_spTransform->GetRotationDegrees();
+    float CurrentRote = MyMath::NormalizeAngleDegrees(current_rotation.y);
+
+    // Angle difference in degrees (normalized)
+    float angleDiffDeg = MyMath::NormalizeAngleDegrees(TargetRote - CurrentRote);
+    float maxRotateDeg = RotetionSpeed * deltaTime;
+
+    // If within one frame's rotation, snap to target.
+    float t = 0.0f;
+    if (std::fabsf(angleDiffDeg) <= maxRotateDeg)
+    {
+        t = 1.0f;
+    }
+    else
+    {
+        t = maxRotateDeg / std::fabsf(angleDiffDeg);
+        t = std::clamp(t, 0.0f, 1.0f);
+    }
+
+    // Current quaternion
+    DirectX::XMVECTOR q_current = DirectX::XMLoadFloat4(&m_spTransform->Quaternion);
+
+    // Target yaw in radians
+    float targetYawRad = DirectX::XMConvertToRadians(TargetRote);
+    DirectX::XMVECTOR q_target = DirectX::XMQuaternionRotationRollPitchYaw(0.0f, targetYawRad, 0.0f);
+
+    // Slerp and apply
+    DirectX::XMVECTOR q_result = DirectX::XMQuaternionSlerp(q_current, q_target, t);
+    q_result = DirectX::XMQuaternionNormalize(q_result);
+    DirectX::XMFLOAT4 qf;
+    DirectX::XMStoreFloat4(&qf, q_result);
+    m_spTransform->SetQuaternion(qf);
+}
+

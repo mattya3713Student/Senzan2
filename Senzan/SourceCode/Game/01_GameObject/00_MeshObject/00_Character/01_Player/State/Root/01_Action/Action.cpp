@@ -23,21 +23,31 @@ void Action::Enter()
 
 void Action::Update()
 {
-	// 回避ボタンが押されたら.
-	if (VirtualPad::GetInstance().IsActionDown(VirtualPad::eGameAction::Dodge))
+	// 必殺技ボタンが押されたら（ゲージMAX時のみ）
+	if (VirtualPad::GetInstance().IsActionDown(VirtualPad::eGameAction::SpecialAttack))
 	{
-		// ジャスト回避に派生.
-		if (m_pOwner->m_IsJustDodgeTiming)
+		if (m_pOwner->m_CurrentUltValue >= m_pOwner->m_MaxUltValue)
 		{
-			m_pOwner->ChangeState(PlayerState::eID::JustDodge);
+			m_pOwner->ChangeState(PlayerState::eID::SpecialAttack);
+			return;
 		}
-		// 回避に派生.	
-		else
-		{
-			m_pOwner->ChangeState(PlayerState::eID::DodgeExecute);
-		}
-		return;
 	}
+
+	// 回避ボタンが押されたら.
+    if (VirtualPad::GetInstance().IsActionDown(VirtualPad::eGameAction::Dodge))
+    {
+        // ジャスト回避に派生.
+        if (m_pOwner->m_IsJustDodgeTiming)
+        {
+            m_pOwner->ChangeState(PlayerState::eID::JustDodge);
+        }
+        // 回避に派生.    
+        else
+        {
+            m_pOwner->ChangeState(PlayerState::eID::DodgeExecute);
+        }
+        return;
+    }
 }
 
 void Action::LateUpdate()

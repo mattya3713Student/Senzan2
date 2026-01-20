@@ -32,9 +32,10 @@ bool ResourceManager::LoadSounds()
 
 bool ResourceManager::LoadEffects()
 {
-	/*if (EffectResource::GetInstance().Create()	== false) { return false; }
-	if (EffectResource::GetInstance().LoadData()	== false) { return false; }*/
-	
+	// EffectResourceを使ってData/Effectフォルダから全エフェクトを読み込む
+	if (EffectResource::GetInstance().Create() == false) { return false; }
+	if (EffectResource::GetInstance().LoadData() == false) { return false; }
+
 	return true;
 }
 
@@ -58,6 +59,14 @@ std::shared_ptr<SkinMesh> ResourceManager::GetSkinMesh(const std::string& name)
 std::shared_ptr<Sprite2D> ResourceManager::GetSprite2D(const std::string& name)
 {
 	return SpriteManager::GetSprite2D(name);
+}
+
+//------------------------------------------------------------------------.
+
+::Effekseer::EffectRef ResourceManager::GetEffect(const std::string& name)
+{
+	// EffectResourceから取得
+	return EffectResource::GetResource(name);
 }
 
 //------------------------------------------------------------------------.

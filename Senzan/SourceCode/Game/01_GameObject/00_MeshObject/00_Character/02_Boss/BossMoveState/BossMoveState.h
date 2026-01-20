@@ -1,15 +1,15 @@
-#pragma once
+ï»¿#pragma once
 
-//Šî’êƒNƒ‰ƒX.
+//åŸºåº•ã‚¯ãƒ©ã‚¹.
 #include "System/Utility/StateMachine/StateBase.h"
 #include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/Boss.h"
 #include "Game\03_Collision\00_Core\01_Capsule\CapsuleCollider.h"
 
-//‘O•ûéŒ¾.
+//å‰æ–¹å®£è¨€.
 class Time;
 
 //---------------------
-//ƒ{ƒX‚ÌUŒ‚‚Ì‘O•ûéŒ¾.
+//ãƒœã‚¹ã®æ”»æ’ƒã®å‰æ–¹å®£è¨€.
 //---------------------
 class BossSlashState;
 class BossChargeState;
@@ -17,14 +17,14 @@ class BossChargeSlashState;
 class BossLaserState;
 class BossShoutState;
 class BossSlashState;
-class BossSpecialState;
+class BossJumpOnlState;
 class BossStompState;
 class BossThrowingState;
 
 #include <random>
 
 /******************************************************************************
-*	ƒ{ƒX‚Ì“®ì(¶‰EˆÚ“®EƒvƒŒƒCƒ„[‚ğˆÍ‚Ş‚æ‚¤‚É”¼‰~‚ğ•`‚­).
+*	ãƒœã‚¹ã®å‹•ä½œ(å·¦å³ç§»å‹•ãƒ»ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’å›²ã‚€ã‚ˆã†ã«åŠå††ã‚’æã).
 **/
 
 class BossMoveState final
@@ -33,10 +33,10 @@ class BossMoveState final
 public:
 	enum class DistanceAttack : byte
 	{
-		Melee,	//‹ß‹——£.
-		Mid,	//’†‹——£.
-		Long,	//‰“‹——£.
-		None,	//‰½‚à‚µ‚È‚¢.
+		Melee,	//è¿‘è·é›¢.
+		Mid,	//ä¸­è·é›¢.
+		Long,	//é è·é›¢.
+		None,	//ä½•ã‚‚ã—ãªã„.
 	};
 
 	enum class MovePhase : byte
@@ -52,32 +52,32 @@ public:
 	BossMoveState(Boss* owner);
 	~BossMoveState();
 
-	//Å‰‚É“ü‚é.
+	//æœ€åˆã«å…¥ã‚‹.
 	void Enter() override;
-	//“®ì.
+	//å‹•ä½œ.
 	void Update() override;
-	//‚©‚©‚È‚­‚Ä‚¢‚¢.
+	//ã‹ã‹ãªãã¦ã„ã„.
 	void LateUpdate() override;
-	//•`‰æ.
+	//æç”».
 	void Draw() override;
-	//I‚í‚é‚Æ‚«‚Éˆê‰ñ‚¾‚¯“ü‚é.
+	//çµ‚ã‚ã‚‹ã¨ãã«ä¸€å›ã ã‘å…¥ã‚‹.
 	void Exit() override;
 
 	//void DrawBone();
 
 public:
-	//‰ŠúŠp“x‚ğİ’è‚·‚éŠÖ”.
+	//åˆæœŸè§’åº¦ã‚’è¨­å®šã™ã‚‹é–¢æ•°.
 	void SetInitialAngle(float angle);
 private:
-	//Œ»İ‚Ìƒ{ƒX‚Ì‰ñ“]“x‚ğŠm”F‚·‚é.
+	//ç¾åœ¨ã®ãƒœã‚¹ã®å›è»¢åº¦ã‚’ç¢ºèªã™ã‚‹.
 	float m_RotationAngle;
 	double m_RotationSpeed;
-	float m_rotationDirection;	//1.0f:‡•ûŒü, -1.0:‹t•ûŒü.
+	float m_rotationDirection;	//1.0f:é †æ–¹å‘, -1.0:é€†æ–¹å‘.
 
-	int							m_AnimNo;	//ƒAƒjƒ[ƒVƒ‡ƒ“”Ô†.
-	double						m_AnimSpeed = 0.0001;// ƒAƒjƒ[ƒVƒ‡ƒ“‘¬“x.
-	double						m_AnimTimer;// ƒAƒjƒ\ƒVƒ‡ƒ“Œo‰ßŠÔ.
-	DirectX::XMFLOAT3			m_BonePos;	// ƒ{[ƒ“À•W.
+	int							m_AnimNo;	//ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ç•ªå·.
+	double						m_AnimSpeed = 0.0001;// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³é€Ÿåº¦.
+	double						m_AnimTimer;// ã‚¢ãƒ‹ãƒ¡â€•ã‚·ãƒ§ãƒ³çµŒéæ™‚é–“.
+	DirectX::XMFLOAT3			m_BonePos;	// ãƒœãƒ¼ãƒ³åº§æ¨™.
 
 	float m_BaseAngle;
 
@@ -86,12 +86,24 @@ private:
 	float m_Timer = 0.0f;
 	float m_SecondTimer = 120.0f;
 
-	std::unique_ptr<BossSpecialState>		m_pAttack;
+	std::unique_ptr<BossJumpOnlState>		m_pAttack;
 	std::unique_ptr<BossSlashState>			m_pSlash;
-	std::unique_ptr<BossChargeState>		m_pCharge;
-	std::unique_ptr<BossLaserState>			m_pLaser;
 	std::unique_ptr<BossStompState>			m_pStomp;
 	std::unique_ptr<BossThrowingState>		m_pThrowing;
 	std::unique_ptr<BossShoutState>			m_pShout;
 
+	// === ãƒ‡ãƒãƒƒã‚°ç”¨è·é›¢è¨­å®š ===
+	static inline float s_NearRange = 15.0f;      // è¿‘è·é›¢ã®é–¾å€¤
+	static inline float s_MidRange = 35.0f;       // ä¸­è·é›¢ã®é–¾å€¤
+	static inline float s_AttackDelay = 1.0f;     // æ”»æ’ƒé–‹å§‹ã¾ã§ã®é…å»¶
+
+	// === æ”»æ’ƒæœ‰åŠ¹/ç„¡åŠ¹ãƒ•ãƒ©ã‚° ===
+	static inline bool s_EnableSlash = true;      // æ–¬ã‚Šæ”»æ’ƒ
+	static inline bool s_EnableStomp = true;      // é£›ã³ã‹ã‹ã‚Šæ”»æ’ƒ
+	static inline bool s_EnableCharge = true;     // æºœã‚æ”»æ’ƒ
+	static inline bool s_EnableShout = true;      // å«ã³æ”»æ’ƒ
+	static inline bool s_EnableThrowing = true;   // æŠ•æ“²æ”»æ’ƒ
+
+	// === ãƒ‡ãƒãƒƒã‚°å¼·åˆ¶æ”»æ’ƒé¸æŠ ===
+	static inline int s_ForceAttackIndex = -1;    // -1: ãƒ©ãƒ³ãƒ€ãƒ , 0-4: å¼·åˆ¶é¸æŠ
 };
