@@ -168,11 +168,16 @@ inline const DirectX::XMFLOAT3 ColliderBase::GetPosition() const noexcept
 	// 外部供給Transformが設定されていればそれを使う（ワールド座標）
 	if (m_pExternalTransform)
 	{
-		// 外部Transformはワールド座標を表す想定。オフセットを加算して戻す。
+		// 外部Transformはワールド座標を表す想定。
+		// オフセットを外部Transformの回転で回転させてから加算（ローカル空間での調整が可能）
 		DirectX::XMVECTOR v_position = DirectX::XMLoadFloat3(&m_pExternalTransform->Position);
 		DirectX::XMVECTOR v_offset = DirectX::XMLoadFloat3(&m_PositionOffset);
+		
+		// 外部Transformの回転でオフセットを回転
+		DirectX::XMVECTOR v_quat = DirectX::XMLoadFloat4(&m_pExternalTransform->Quaternion);
+		DirectX::XMVECTOR v_rotated_offset = DirectX::XMVector3Rotate(v_offset, v_quat);
 
-		DirectX::XMVECTOR v_result_pos = DirectX::XMVectorAdd(v_position, v_offset);
+		DirectX::XMVECTOR v_result_pos = DirectX::XMVectorAdd(v_position, v_rotated_offset);
 
 		DirectX::XMFLOAT3 result_pos = {};
 		DirectX::XMStoreFloat3(&result_pos, v_result_pos);
