@@ -296,7 +296,6 @@
     <None Include="SourceCode\System\Utility\Math\Easing\Easing.inl" />
     <None Include="SourceCode\System\Utility\Math\Math.inl" />
     <None Include="SourceCode\System\Utility\String\FilePath\FilePath.inl" />
-    <None Include="SourceCode\Resource\Effect\git認識用フォルダ" />
     <None Include="tools\add_author_header.py" />
   </ItemGroup>
   <ItemGroup>

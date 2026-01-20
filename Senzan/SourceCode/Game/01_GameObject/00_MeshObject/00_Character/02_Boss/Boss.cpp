@@ -148,13 +148,13 @@ Boss::Boss()
 
 	m_pShoutCollider = Shout_collider.get(); 
 
-	Shout_collider->SetColor(Color::eColor::Cyan);
-	Shout_collider->SetHeight(1.0f);
-	Shout_collider->SetRadius(1.0f);
-	Shout_collider->SetPositionOffset(0.f, 1.5f, 0.f);
-	Shout_collider->SetAttackAmount(10.f);
-	Shout_collider->SetMyMask(eCollisionGroup::Enemy_Attack & eCollisionGroup::BossPress);
-	Shout_collider->SetTarGetTargetMask(eCollisionGroup::Press & eCollisionGroup::Player_Damage);
+	m_pShoutCollider->SetColor(Color::eColor::Cyan);
+	m_pShoutCollider->SetHeight(1.0f);
+	m_pShoutCollider->SetRadius(1.0f);
+	m_pShoutCollider->SetPositionOffset(0.f, 1.5f, 0.f);
+	m_pShoutCollider->SetAttackAmount(10.f);
+	m_pShoutCollider->SetMyMask(eCollisionGroup::BossPress);
+	m_pShoutCollider->SetTarGetTargetMask(eCollisionGroup::Press | eCollisionGroup::Player_Damage);
 
 	m_pShoutCollider->SetActive(false);
 	m_upColliders->AddCollider(std::move(Shout_collider));
@@ -219,60 +219,10 @@ void Boss::Update()
 
         ImGui::SameLine();
         if (ImGui::Button(IMGUI_JP("Enter Slash (Hotkey)"))) {
-            m_State->ChangeState(std::make_shared<BossShoutState>(this));
+            m_State->ChangeState(std::make_shared<BossStompState>(this));
         }
-        ImGui::Separator();
-        if (ImGui::CollapsingHeader(IMGUI_JP("コライダー設定 (実行時)")))
-        {
-            // Slash collider
-            if (auto* col = GetSlashCollider()) {
-                DirectX::XMFLOAT3 off = col->GetPositionOffset();
-                float offs[3] = { off.x, off.y, off.z };
-                if (ImGui::DragFloat3(IMGUI_JP("Slash オフセット"), offs, 0.1f)) {
-                    col->SetPositionOffset(offs[0], offs[1], offs[2]);
-                }
-                float r = col->GetRadius();
-                if (ImGui::DragFloat(IMGUI_JP("Slash 半径"), &r, 0.1f, 0.0f, 1000.0f)) col->SetRadius(r);
-                float h = col->GetHeight();
-                if (ImGui::DragFloat(IMGUI_JP("Slash 高さ"), &h, 0.1f, 0.0f, 1000.0f)) col->SetHeight(h);
-                float dmg = col->GetAttackAmount();
-                if (ImGui::DragFloat(IMGUI_JP("Slash ダメージ"), &dmg, 0.1f, 0.0f, 9999.0f)) col->SetAttackAmount(dmg);
-            }
-
-            // Stomp collider
-            if (auto* col = GetStompCollider()) {
-                DirectX::XMFLOAT3 off = col->GetPositionOffset();
-                float offs[3] = { off.x, off.y, off.z };
-                if (ImGui::DragFloat3(IMGUI_JP("Stomp オフセット"), offs, 0.1f)) {
-                    col->SetPositionOffset(offs[0], offs[1], offs[2]);
-                }
-                float r = col->GetRadius();
-                if (ImGui::DragFloat(IMGUI_JP("Stomp 半径"), &r, 0.1f, 0.0f, 1000.0f)) col->SetRadius(r);
-                float h = col->GetHeight();
-                if (ImGui::DragFloat(IMGUI_JP("Stomp 高さ"), &h, 0.1f, 0.0f, 1000.0f)) col->SetHeight(h);
-                float dmg = col->GetAttackAmount();
-                if (ImGui::DragFloat(IMGUI_JP("Stomp ダメージ"), &dmg, 0.1f, 0.0f, 9999.0f)) col->SetAttackAmount(dmg);
-            }
-
-            // Shout collider
-            if (auto* col = GetShoutCollider()) {
-                DirectX::XMFLOAT3 off = col->GetPositionOffset();
-                float offs[3] = { off.x, off.y, off.z };
-                if (ImGui::DragFloat3(IMGUI_JP("Shout オフセット"), offs, 0.1f)) {
-                    col->SetPositionOffset(offs[0], offs[1], offs[2]);
-                }
-                float r = col->GetRadius();
-                if (ImGui::DragFloat(IMGUI_JP("Shout 半径"), &r, 0.1f, 0.0f, 1000.0f)) col->SetRadius(r);
-                float h = col->GetHeight();
-                if (ImGui::DragFloat(IMGUI_JP("Shout 高さ"), &h, 0.1f, 0.0f, 1000.0f)) col->SetHeight(h);
-                float dmg = col->GetAttackAmount();
-                if (ImGui::DragFloat(IMGUI_JP("Shout ダメージ"), &dmg, 0.1f, 0.0f, 9999.0f)) col->SetAttackAmount(dmg);
-            }
-        }
-        ImGui::Text(IMGUI_JP("Note: attack states expose per-state ImGui when active."));
+        ImGui::End();
     }
-    ImGui::End();
-
 #endif
 }
 
@@ -299,10 +249,6 @@ void Boss::Draw()
 {
 	MeshObject::Draw();
 	m_State->Draw();
-
-
-    
-
 }
 
 void Boss::Init()

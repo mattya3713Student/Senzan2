@@ -53,8 +53,6 @@ void DodgeExecute::Enter()
 void DodgeExecute::Update()
 {
 	Dodge::Update();
-
-	Log::GetInstance().Info("", m_pOwner->m_AnimSpeed);
 }
 
 void DodgeExecute::LateUpdate()
@@ -72,7 +70,7 @@ void DodgeExecute::LateUpdate()
 	}
 
 	// デルタタイムの計算.
-	double animSpeed = MyMath::IsNearlyEqual(m_pOwner->m_AnimSpeed, 0.0) ? 0.0 : m_pOwner->m_AnimSpeed;
+	double animSpeed = MyMath::IsNearlyEqual(m_pOwner->m_AnimSpeed, 0.0) ? 1.0 : m_pOwner->m_AnimSpeed;
 	float deltaTime = static_cast<float>(animSpeed) * m_pOwner->GetDelta();
 
 	// 時間と距離の更新.

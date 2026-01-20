@@ -105,6 +105,9 @@ public:
     Boss();
     ~Boss() override;
 
+    void SetAnyAttackJustWindow(bool v) { m_IsAnyAttackJustWindow = v; }
+    bool IsAnyAttackJustWindow() const { return m_IsAnyAttackJustWindow; }
+
     void Update() override;
     void LateUpdate() override;
     void Draw() override;
@@ -207,6 +210,9 @@ protected:
     ColliderBase* m_pSlashCollider;
     ColliderBase* m_pStompCollider;
     ColliderBase* m_pShoutCollider;
+
+    // runtime flag indicating any attack's just window is active
+    bool m_IsAnyAttackJustWindow = false;
 
     // 統合された攻撃コライダー（各ステートがボーンを指定）
     ColliderBase* m_spAttackCollider = nullptr;
