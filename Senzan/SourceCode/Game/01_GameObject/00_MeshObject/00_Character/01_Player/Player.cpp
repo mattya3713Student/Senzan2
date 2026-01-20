@@ -322,7 +322,7 @@ void Player::HandleDamageDetection()
                 // 状態をノックバックに遷移させる
                 ChangeState(PlayerState::eID::KnockBack);
 
-			CameraManager::GetInstance().ShakeCamera(0.5f, 4.5f); // カメラを少し揺らす.
+			    CameraManager::GetInstance().ShakeCamera(0.5f, 4.5f); // カメラを少し揺らす.
 
                 // 1フレームに1回.
                 return;

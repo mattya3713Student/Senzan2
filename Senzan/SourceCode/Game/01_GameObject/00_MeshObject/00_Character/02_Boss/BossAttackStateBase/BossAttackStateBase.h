@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 #include <filesystem>
+#include <algorithm>
 
 /*****************************************************************
 *    ボスの攻撃ベースクラス(基底クラス).
@@ -157,4 +158,5 @@ protected:
     DirectX::XMFLOAT3 m_MotionVelocity{ 0.0f, 0.0f, 0.0f };
 
     DirectX::XMFLOAT3 m_StartPos{ 0.0f, 0.0f, 0.0f }; // 攻撃開始位置（共通）
+    // (no global registry) instances update Boss::IsJustWindow flag directly
 };

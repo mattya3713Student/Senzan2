@@ -13,6 +13,7 @@ BossAttackStateBase::BossAttackStateBase(Boss* owner)
     , m_pTransform(std::make_shared<Transform>())
 {
 }
+// nothing extra here
 
 DirectX::XMFLOAT3 BossAttackStateBase::ComputeMovementEndPos(const MovementWindow& mv, const DirectX::XMFLOAT3& startPos, const DirectX::XMFLOAT3& targetPos) const
 {
@@ -95,7 +96,8 @@ void BossAttackStateBase::UpdateBaseLogic(float dt)
     m_pOwner->SetAnimSpeed(currentAnimSpeed);
 
     // 当たり判定更新.
-	for (auto& window : m_ColliderWindows)
+    bool anyJust = false;
+    for (auto& window : m_ColliderWindows)
 	{
         if (window.IsEnd) { continue; }
 
@@ -104,6 +106,7 @@ void BossAttackStateBase::UpdateBaseLogic(float dt)
         if (window.JustTime > 0.0f && m_CurrentTime >= justWindowStart && m_CurrentTime < window.Start)
         {
             window.IsJustWindow = true;
+            anyJust = true;
         }
         else
         {
@@ -141,6 +144,10 @@ void BossAttackStateBase::UpdateBaseLogic(float dt)
 			window.IsEnd = true;
 		}
 	}
+
+    if (m_pOwner) {
+        m_pOwner->SetAnyAttackJustWindow(anyJust);
+    }
 
     // 動き更新 (イージング適用).
     for (auto& mv : m_MovementWindows)

@@ -17,8 +17,6 @@ BossIdolState::~BossIdolState()
 
 void BossIdolState::Enter()
 {
-
-
 	m_pOwner->SetIsLoop(true);
 	m_pOwner->SetAnimSpeed(m_AnimSpeed);
 	//待機アニメションを再生.
@@ -27,45 +25,41 @@ void BossIdolState::Enter()
 
 void BossIdolState::Update()
 {
-	// 1. ボスとプレイヤーの座標を取得
-	const DirectX::XMFLOAT3& BossPosF = m_pOwner->GetPosition();
-	DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&BossPosF);
+    // 1. ボスとプレイヤーの座標を取得
+    const DirectX::XMFLOAT3& BossPosF = m_pOwner->GetPosition();
+    DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&BossPosF);
 
-	const DirectX::XMFLOAT3& PlayerPosF = m_pOwner->m_PlayerPos;
-	DirectX::XMVECTOR PlayerPosXM = DirectX::XMLoadFloat3(&PlayerPosF);
+    const DirectX::XMFLOAT3& PlayerPosF = m_pOwner->m_PlayerPos;
+    DirectX::XMVECTOR PlayerPosXM = DirectX::XMLoadFloat3(&PlayerPosF);
 
-	// --------------------------------------------------------
-	// 2. プレイヤーの方を向く処理 (常に実行)
-	// --------------------------------------------------------
-	// ボスからプレイヤーへのベクトルを計算
-	DirectX::XMVECTOR LookAtVec = DirectX::XMVectorSubtract(PlayerPosXM, BossPosXM);
+    // --------------------------------------------------------
+    // 2. プレイヤーの方を向く処理 (常に実行)
+    // --------------------------------------------------------
+    // ボスからプレイヤーへのベクトルを計算
+    DirectX::XMVECTOR LookAtVec = DirectX::XMVectorSubtract(PlayerPosXM, BossPosXM);
 
-	float dx = DirectX::XMVectorGetX(LookAtVec);
-	float dz = DirectX::XMVectorGetZ(LookAtVec);
+    float dx = DirectX::XMVectorGetX(LookAtVec);
+    float dz = DirectX::XMVectorGetZ(LookAtVec);
 
-	// 前回の修正を反映：モデルが逆を向く場合は -dx, -dz にする
-	// もしこれで正解ならこのまま、まだ逆なら dx, dz に戻してください
-	float angle_radian = std::atan2f(-dx, -dz);
+    // 前回の修正を反映：モデルが逆を向く場合は -dx, -dz にする
+    // もしこれで正解ならこのまま、まだ逆なら dx, dz に戻してください
+    float angle_radian = std::atan2f(-dx, -dz);
 
-	m_pOwner->SetRotationY(angle_radian);
-	// --------------------------------------------------------
+    m_pOwner->SetRotationY(angle_radian);
+    // --------------------------------------------------------
 
-	// 3. 距離の判定
-	DirectX::XMVECTOR DistancePosXM = DirectX::XMVectorSubtract(PlayerPosXM, BossPosXM);
-	float DistanceSq = DirectX::XMVectorGetX(DirectX::XMVector3LengthSq(DistancePosXM));
+    // 3. 距離の判定
+    DirectX::XMVECTOR DistancePosXM = DirectX::XMVectorSubtract(PlayerPosXM, BossPosXM);
+    float DistanceSq = DirectX::XMVectorGetX(DirectX::XMVector3LengthSq(DistancePosXM));
 
-	constexpr float Ten = 30.0f;
-	const float IDLE_RANGE_SQ = Ten * Ten;
 
-	if (DistanceSq <= IDLE_RANGE_SQ)
-	{
-		// 既に上で回転は計算しているので、initalAngleとして再利用可能
-		auto MoveState = std::make_shared<BossMoveState>(m_pOwner);
-		// MoveState->SetInitialAngle(angle_radian); // 必要であれば渡す
+    // 既に上で回転は計算しているので、initalAngleとして再利用可能
+    auto MoveState = std::make_shared<BossMoveState>(m_pOwner);
+    // MoveState->SetInitialAngle(angle_radian); // 必要であれば渡す
 
-		m_pOwner->GetStateMachine()->ChangeState(MoveState);
-		return;
-	}
+    m_pOwner->GetStateMachine()->ChangeState(MoveState);
+    return;
+
 }
 
 void BossIdolState::LateUpdate()
