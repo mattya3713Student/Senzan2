@@ -79,7 +79,7 @@ void MattyaTestScene::Update()
     m_upPlayer->SetIsJustDodgeTiming(m_upBoss->IsAnyAttackJustWindow());
 
     m_upPlayer->SetTargetPos(m_upBoss.get()->GetPosition());
-    m_upPlayer->Update();
+    //m_upPlayer->Update();
     m_pCamera->Update();
 
 

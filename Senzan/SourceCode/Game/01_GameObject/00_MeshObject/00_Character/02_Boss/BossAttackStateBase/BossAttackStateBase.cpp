@@ -13,7 +13,6 @@ BossAttackStateBase::BossAttackStateBase(Boss* owner)
     , m_pTransform(std::make_shared<Transform>())
 {
 }
-// nothing extra here
 
 DirectX::XMFLOAT3 BossAttackStateBase::ComputeMovementEndPos(const MovementWindow& mv, const DirectX::XMFLOAT3& startPos, const DirectX::XMFLOAT3& targetPos) const
 {
