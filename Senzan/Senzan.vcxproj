@@ -82,7 +82,8 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>L_PC</PreprocessorDefinitions>
+      <PreprocessorDefinitions>
+      </PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>;SourceCode;Data</AdditionalIncludeDirectories>
     </ClCompile>
@@ -97,7 +98,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>L_PC</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>;SourceCode</AdditionalIncludeDirectories>
     </ClCompile>
@@ -112,7 +113,8 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>MEMEU_PC</PreprocessorDefinitions>
+      <PreprocessorDefinitions>
+      </PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp23</LanguageStandard>
       <AdditionalIncludeDirectories>SourceCode;SourceCode\Ggraphic;SourceCode\Resource;SourceCode\System;SourceCode\System\GameLoop;SourceCode\System\Singleton;SourceCode\System\Utility;SourceCode\Game\Scene;SourceCode\Game\01_GameObject;Data;Data/Library/Effekseer/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -139,12 +141,12 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>MATTYA_PC</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp23</LanguageStandard>
       <AdditionalIncludeDirectories>SourceCode;SourceCode\Ggraphic;SourceCode\Resource;SourceCode\System;SourceCode\System\GameLoop;SourceCode\System\Singleton;SourceCode\System\Utility;SourceCode\Game\Scene;SourceCode\Game\01_GameObject;Data;Data/Library/Effekseer/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
       <EnableModules>true</EnableModules>
       <BuildStlModules>true</BuildStlModules>
@@ -272,6 +274,7 @@
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossMoveState\BossMoveState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\04_BackGround\BackGround.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\03_SnowBall\SnowBall.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\05_SkyDome\SkyDome.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\Character.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\MeshObject.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\01_SpriteObject\CSpriteObject.cpp" />
@@ -367,6 +370,7 @@
     <ClInclude Include="SourceCode\Constant.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\Ex_Test\04_AnimationTuning\AnimationTuningScene.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossParryState\BossParryState.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\05_SkyDome\SkyDome.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\Select\Select.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\UIGameMain\UIGameMain.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\04_BackGround\BackGround.h" />

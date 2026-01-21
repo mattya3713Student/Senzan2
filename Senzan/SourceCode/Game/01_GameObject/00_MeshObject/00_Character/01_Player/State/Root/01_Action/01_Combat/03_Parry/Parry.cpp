@@ -1,4 +1,4 @@
-#include "Parry.h"
+ï»¿#include "Parry.h"
 
 #include "Game/01_GameObject/00_MeshObject/00_Character/01_Player/Player.h"
 
@@ -11,7 +11,7 @@ Parry::~Parry()
 {
 }
 
-// ID‚Ìæ“¾.
+// IDã®å–å¾—.
 constexpr PlayerState::eID Parry::GetStateID() const
 {
 	return PlayerState::eID::Parry;
@@ -19,13 +19,16 @@ constexpr PlayerState::eID Parry::GetStateID() const
 
 void Parry::Enter()
 {
+    SoundManager::GetInstance().Play("ReadyParry"); 
+    SoundManager::GetInstance().SetVolume("ReadyParry",8500); 
+
     m_pOwner->SetDamageColliderActive(false);
     m_pOwner->SetParryColliderActive(true);
 
 
     m_IsParrySuccessful = false;
 
-    // ƒAƒjƒ[ƒVƒ‡ƒ“İ’è
+    // ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³è¨­å®š
     m_pOwner->SetIsLoop(false);
     m_pOwner->SetAnimTime(0.0f);
     m_pOwner->SetAnimSpeed(1.0f);
@@ -36,10 +39,10 @@ void Parry::Update()
 {
     Combat::Update();
     
-    // ƒAƒjƒ[ƒVƒ‡ƒ“I—¹‚Ìˆ—
+    // ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³çµ‚äº†æ™‚ã®å‡¦ç†
     if (m_pOwner->IsAnimEnd(Player::eAnim::Parry)) {
         if (!m_IsParrySuccessful) {
-            m_pOwner->ChangeState(PlayerState::eID::Idle); // ¸”s‚à Idle ‚É‘JˆÚ
+            m_pOwner->ChangeState(PlayerState::eID::Idle); // å¤±æ•—æ™‚ã‚‚ Idle ã«é·ç§»
         }
     }
 }

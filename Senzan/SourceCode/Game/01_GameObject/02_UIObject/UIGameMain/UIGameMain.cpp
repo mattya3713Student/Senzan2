@@ -20,7 +20,7 @@ namespace {
 
 	static const ComboColor kComboColorTable[] =
 	{
-		{ 0.0f, ColorPreset::White },
+		{ 0.0f, ColorPreset::White4 },
 		{ 0.3f, ColorPreset::TitleCyan },
 		{ 0.6f, ColorPreset::Green },
 		{ 1.0f, ColorPreset::WarmYellow },
@@ -64,6 +64,7 @@ void UIGameMain::Create()
 			m_BossDamage.InitRate = ui->GetScaleX();
 		}
 		else if (ui->GetUIName() == "ULTGauge_0") {
+            ui->SetScaleX(0.0f);
 			m_PlayerUlt.InitRate = ui->GetScaleX();
 		}
 		else if (ui->GetUIName() == "HPGauge_1") {
@@ -140,7 +141,7 @@ void UIGameMain::Update()
 			ui->SetScaleX(m_BossDamage.InitRate * m_BossDamage.Rate);
 		}
 		else if (ui->GetUIName() == "ULTGauge_0") {
-			ui->SetScaleX(m_PlayerUlt.InitRate * m_PlayerUlt.Rate);
+			ui->SetScaleX(m_PlayerUlt.Rate);
 		}
 		else if (ui->GetUIName() == "HPGauge_1") {
 			ui->SetScaleX(m_PlayerHP.InitRate * m_PlayerHP.Rate);

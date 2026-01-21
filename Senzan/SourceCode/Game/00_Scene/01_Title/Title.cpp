@@ -38,6 +38,8 @@ void Title::Update()
 	||	Input::IsKeyDown('C')
 	||	Input::IsButtonDown(XInput::Key::B))
 	{
+        SoundManager::GetInstance().Play("Decide");
+        SoundManager::GetInstance().SetVolume("Decide",8000);
 		if (m_pUI->GetSelected() == m_pUI->Items::Start) {
 			SceneManager::LoadScene(eList::GameMain);
 			return;
