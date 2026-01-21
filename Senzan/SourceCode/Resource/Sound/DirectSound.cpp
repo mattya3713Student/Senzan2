@@ -1,4 +1,4 @@
-#include "DirectSound.h"
+ï»¿#include "DirectSound.h"
 
 DirectSound::DirectSound()
     : m_lpSoundBuffer(nullptr)
@@ -16,13 +16,13 @@ bool DirectSound::Init(const std::wstring& path, LPDIRECTSOUND8 lpSoundInterface
 
     WaveData wavData;
 
-    // WAVƒtƒ@ƒCƒ‹‚Ì“Ç‚İ‚İ
+    // WAVãƒ•ã‚¡ã‚¤ãƒ«ã®èª­ã¿è¾¼ã¿
     if (!LoadWavFile(path, &wavData))
     {
         return false;
     }
 
-    // ƒoƒbƒtƒ@î•ñ‚Ìİ’è
+    // ãƒãƒƒãƒ•ã‚¡æƒ…å ±ã®è¨­å®š
     DSBUFFERDESC dsbd;
     ZeroMemory(&dsbd, sizeof(DSBUFFERDESC));
     dsbd.dwSize = sizeof(DSBUFFERDESC);
@@ -31,14 +31,14 @@ bool DirectSound::Init(const std::wstring& path, LPDIRECTSOUND8 lpSoundInterface
     dsbd.guid3DAlgorithm = DS3DALG_DEFAULT;
     dsbd.lpwfxFormat = &wavData.WavFormat;
 
-    // ƒZƒJƒ“ƒ_ƒŠƒoƒbƒtƒ@ì¬
+    // ã‚»ã‚«ãƒ³ãƒ€ãƒªãƒãƒƒãƒ•ã‚¡ä½œæˆ
     if (FAILED(lpSoundInterface->CreateSoundBuffer(&dsbd, &m_lpSoundBuffer, NULL)))
     {
         delete[] wavData.SoundBuffer;
         return false;
     }
 
-    // ”gŒ`ƒf[ƒ^‚ğƒZƒJƒ“ƒ_ƒŠƒoƒbƒtƒ@‚É‘‚«‚Ş
+    // æ³¢å½¢ãƒ‡ãƒ¼ã‚¿ã‚’ã‚»ã‚«ãƒ³ãƒ€ãƒªãƒãƒƒãƒ•ã‚¡ã«æ›¸ãè¾¼ã‚€
     void* bufferPtr = nullptr;
     DWORD bufferSize = 0;
     if (FAILED(m_lpSoundBuffer->Lock(0, wavData.Size, &bufferPtr, &bufferSize, NULL, NULL, 0)))
@@ -51,7 +51,7 @@ bool DirectSound::Init(const std::wstring& path, LPDIRECTSOUND8 lpSoundInterface
 
     m_lpSoundBuffer->Unlock(bufferPtr, bufferSize, NULL, 0);
 
-    // ˆêƒoƒbƒtƒ@‚Ì‰ğ•ú
+    // ä¸€æ™‚ãƒãƒƒãƒ•ã‚¡ã®è§£æ”¾
     delete[] wavData.SoundBuffer;
 
     return true;
@@ -71,7 +71,7 @@ void DirectSound::Play(bool isLoop)
 {
     if (!m_lpSoundBuffer) return;
 
-    // Ä¶ˆÊ’u‚ğÅ‰‚É–ß‚µ‚Ä‚©‚çÄ¶
+    // å†ç”Ÿä½ç½®ã‚’æœ€åˆã«æˆ»ã—ã¦ã‹ã‚‰å†ç”Ÿ
     ResetPosition();
 
     DWORD flags = isLoop ? DSBPLAY_LOOPING : 0;
@@ -98,8 +98,8 @@ void DirectSound::SetVolume(int volume)
 {
     if (!m_lpSoundBuffer) return;
 
-    // DirectSound‚Ì‰¹—Ê‚Í -10000(–³‰¹) ` 0(Å‘å)
-    // ˆø”‚Ì 0 ` 10000 ‚ğ“KØ‚È”ÍˆÍ‚É•ÏŠ·
+    // DirectSoundã®éŸ³é‡ã¯ -10000(ç„¡éŸ³) ï½ 0(æœ€å¤§)
+    // å¼•æ•°ã® 0 ï½ 10000 ã‚’é©åˆ‡ãªç¯„å›²ã«å¤‰æ›
     LONG dsVolume = static_cast<LONG>(volume) - 10000;
     if (dsVolume < DSBVOLUME_MIN) dsVolume = DSBVOLUME_MIN;
     if (dsVolume > DSBVOLUME_MAX) dsVolume = DSBVOLUME_MAX;
