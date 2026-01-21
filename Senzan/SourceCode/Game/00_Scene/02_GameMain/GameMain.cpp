@@ -1,7 +1,8 @@
 ﻿#include "GameMain.h"
 
-#include "Game/01_GameObject/00_MeshObject/00_Character/00_Ground/Ground.h"	// 地面Static.
-
+#include "Game/01_GameObject/00_MeshObject/00_Character/00_Ground/Ground.h"
+#include "Game/01_GameObject/00_MeshObject/00_Character/05_SkyDome/SkyDome.h"
+    
 #include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/Boss.h"
 #include "Game/01_GameObject/00_MeshObject/00_Character/01_Player/Player.h"
 
@@ -36,6 +37,8 @@
 GameMain::GameMain()
 	: SceneBase		()
 	, m_spCamera	( nullptr )
+    , m_upGround    (std::make_unique<Ground>())
+    , m_upSkyDome   (std::make_unique<SkyDome>())
 	, m_spLight		(std::make_shared<DirectionLight>())
 	, m_upBoss		(std::make_unique<Boss>())
 	, m_upPlayer	(std::make_unique<Player>())
@@ -60,8 +63,6 @@ void GameMain::Initialize()
 	m_spLight->SetDirection(DirectX::XMFLOAT3(1.5f, 1.f, -1.f));
 	LightManager::AttachDirectionLight(m_spLight);
 
-	m_upGround = std::make_unique<Ground>();
-
 	// カメラ設定.
 	m_spCamera = std::make_shared<LockOnCamera>(std::ref(*m_upPlayer), std::ref(*m_upBoss));
 	CameraManager::GetInstance().SetCamera(m_spCamera);
@@ -79,15 +80,23 @@ void GameMain::Update()
     Input::Update();
     if (m_upBoss->GetHP() <= 0 && !m_upUIEnding) {
         m_upUIEnding = std::make_shared<UIEnding>();
+        SoundManager::Stop("Main");
+        SoundManager::Play("Ending");
+        SoundManager::SetVolume("Ending", 8000);
     }
     else if ((m_upPlayer->GetHP() <= 0 || Time::GetInstance().IsTimerJustFinished()) && !m_upUIOver) {
         m_upUIOver = std::make_shared<UIGameOver>();
+        SoundManager::Stop("Main");
+        SoundManager::Play("Over");
+        SoundManager::SetVolume("Over", 8000);
     }
 
     if (m_upUIOver || m_upUIEnding)
     {
+        bool decidecontinue = true;
         if (m_upUIOver) {
             m_upUIOver->Update();
+            decidecontinue = m_upUIOver->GetSelected();
         }
         else {
             m_upUIEnding->Update();
@@ -97,15 +106,23 @@ void GameMain::Update()
             || Input::IsKeyDown('C')
             || Input::IsButtonDown(XInput::Key::B))
         {
-            SoundManager::GetInstance().Play("Decide");
-            SoundManager::GetInstance().SetVolume("Decide", 8000);
-            SceneManager::LoadScene(eList::Title);
+            if (!decidecontinue) {
+                SoundManager::GetInstance().Play("Decide");
+                SoundManager::GetInstance().SetVolume("Decide", 8000);
+                SceneManager::LoadScene(eList::GameMain);
+            }
+            else{
+                SoundManager::GetInstance().Play("Decide");
+                SoundManager::GetInstance().SetVolume("Decide", 8000);
+                SceneManager::LoadScene(eList::Title);
+            }
         }
         UIUpdate();
         return;
     }
 
 	m_upGround->Update();
+    m_upSkyDome->Update();
 	m_upBoss->Update();
 	m_upBoss->SetTargetPos(m_upPlayer->GetPosition());
 
@@ -157,6 +174,7 @@ void GameMain::Draw()
 	}
 
 	m_upGround->Draw();
+    m_upSkyDome->Draw();
 	m_upBoss->Draw();
 	m_upPlayer->Draw();
 
@@ -174,7 +192,9 @@ void GameMain::Draw()
         else { m_upUIEnding->Draw(); }
     }
 
+#if _DEBUG
 	CollisionVisualizer::GetInstance().Draw();
+#endif // _DEBUG
 }
 
 HRESULT GameMain::LoadData()

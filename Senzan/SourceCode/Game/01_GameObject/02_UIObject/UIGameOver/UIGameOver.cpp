@@ -1,4 +1,4 @@
-#include "UIGameOver.h"
+﻿#include "UIGameOver.h"
 #include "02_UIObject/UILoader/UILoader.h"
 #include "02_UIObject/Select/Select.h"
 #include "Utility/Color/Color.h"
@@ -16,6 +16,9 @@ UIGameOver::UIGameOver()
 	, m_SelectAlpha	( m_InitAlpha )
 	, m_AnimReturn	( false )
 	, m_AnimeSpeed	( 0.3f )
+    , m_GlobalAlpha ( 0.0f )
+    , m_IsFadeIn    ( true )
+    , m_FadeSpeed   ( 1.5f )
 {
 	UILoader::LoadFromJson("Data\\Image\\Sprite\\UIData\\GameOver.json", m_pUIs);
 	SelectCreate();
@@ -44,6 +47,24 @@ void UIGameOver::SelectCreate()
 
 void UIGameOver::Update()
 {
+    if (m_IsFadeIn)
+    {
+        m_GlobalAlpha += Time::GetInstance().GetDeltaTime() * m_FadeSpeed;
+        if (m_GlobalAlpha >= 1.0f) {
+            m_GlobalAlpha = 1.0f;
+            m_IsFadeIn = false;
+        }
+        for (auto& ui : m_pUIs)
+        {
+            if (ui->GetUIName() == "White_0") {
+                ui->SetColor(ColorUtil::RGBA(ColorPreset::Black3, m_GlobalAlpha));
+            }
+            else {
+                ui->SetColor(ColorUtil::RGBA(ColorPreset::White3, m_GlobalAlpha));
+            }
+        }
+    }
+
 	SelectUpdate();
 	for (auto& ui : m_pUIs)
 	{
