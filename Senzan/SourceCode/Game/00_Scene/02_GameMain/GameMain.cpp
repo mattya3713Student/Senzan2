@@ -62,8 +62,8 @@ void GameMain::Initialize()
 	m_spCamera = std::make_shared<LockOnCamera>(std::ref(*m_upPlayer), std::ref(*m_upBoss));
 	CameraManager::GetInstance().SetCamera(m_spCamera);
 
-	SoundManager::GetInstance().Play("8-bit_Aggressive1", true);
-	SoundManager::GetInstance().SetVolume("8-bit_Aggressive1", 9000);
+	SoundManager::GetInstance().Play("Main", true);
+	SoundManager::GetInstance().SetVolume("Main", 8000);
 }
 
 void GameMain::Create()
