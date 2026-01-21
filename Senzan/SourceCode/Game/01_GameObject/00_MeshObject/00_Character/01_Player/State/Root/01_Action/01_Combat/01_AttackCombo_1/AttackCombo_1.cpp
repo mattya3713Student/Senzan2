@@ -28,6 +28,9 @@ constexpr PlayerState::eID AttackCombo_1::GetStateID() const
 
 void AttackCombo_1::Enter()
 {
+    SoundManager::GetInstance().Play("Swing");
+    SoundManager::GetInstance().SetVolume("Swing", 7000);
+
     Combat::Enter();
 
     m_pOwner->SetIsLoop(false);

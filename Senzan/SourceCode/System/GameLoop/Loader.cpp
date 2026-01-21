@@ -52,9 +52,9 @@ void Loader::Draw()
     DirectX11::GetInstance().SetDepth(false);
     m_pBackGroundObject->Draw();
     m_pTextObject->Draw();
+
     DirectX11::GetInstance().SetDepth(true);
 
-    // 画面に表示.
     DirectX11::GetInstance().Present();
 }
 
