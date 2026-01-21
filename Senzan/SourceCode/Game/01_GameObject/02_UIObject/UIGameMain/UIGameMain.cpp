@@ -20,7 +20,7 @@ namespace {
 
 	static const ComboColor kComboColorTable[] =
 	{
-		{ 0.0f, ColorPreset::White },
+		{ 0.0f, ColorPreset::White4 },
 		{ 0.3f, ColorPreset::TitleCyan },
 		{ 0.6f, ColorPreset::Green },
 		{ 1.0f, ColorPreset::WarmYellow },

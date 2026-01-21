@@ -3,6 +3,7 @@
 #include "../00_Base/SceneBase.h"
 
 class Ground;
+class SkyDome;
 class Player;
 class MeshBase;
 class Boss;
@@ -35,7 +36,7 @@ public:
 	HRESULT LoadData();
 
 private:
-    void UIUpdate();
+	void UIUpdate();
 
 private:
 
@@ -43,13 +44,14 @@ private:
 	std::shared_ptr<DirectionLight>		m_spLight;			// ライト
 
 	std::unique_ptr<Ground>		m_upGround;
+	std::unique_ptr<SkyDome>	m_upSkyDome;
 	
 	//一時的な表示用.
 	std::unique_ptr<Boss>		m_upBoss;
 	std::unique_ptr<Player>		m_upPlayer;
 
 	std::shared_ptr<UIGameMain>	m_upUI;
-    std::shared_ptr<UIGameOver> m_upUIOver;
-    std::shared_ptr<UIEnding>   m_upUIEnding;
-    float m_TimeLimit;
+	std::shared_ptr<UIGameOver> m_upUIOver;
+	std::shared_ptr<UIEnding>   m_upUIEnding;
+	float m_TimeLimit;
 };

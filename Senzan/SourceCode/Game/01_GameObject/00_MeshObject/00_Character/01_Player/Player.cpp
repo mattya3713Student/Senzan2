@@ -33,7 +33,11 @@
 
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
 #include "System/Singleton/CameraManager/CameraManager.h"
+#include "Graphic/DirectX/DirectX11/DirectX11.h"
 
+namespace {
+    ::Effekseer::Handle m_EffectHandle = -1;
+}
 Player::Player()
 	: Character         ()
 	, m_RootState       ( std::make_unique<PlayerState::Root>(this) )
@@ -175,6 +179,8 @@ void Player::Update()
 	m_RootState->Update();
 
 	m_IsJustDodgeTiming = false;
+
+    EffekseerManager::GetInstance().GetManager()->Update();
 }
 
 void Player::LateUpdate()
@@ -206,6 +212,9 @@ void Player::Draw()
 	Character::Draw();
 
 	m_spTransform->SetRotationY(GetRotation().y - D3DXToRadian(180.0f));
+
+    EffekseerManager::GetInstance().RenderHandle(m_EffectHandle, CameraManager::GetInstance().GetCurrentCamera().get());
+
 }
 
 // ノック中か.
@@ -358,6 +367,12 @@ void Player::HandleAttackDetection()
 
 			if ((other_group & eCollisionGroup::Enemy_Damage) != eCollisionGroup::None)
 			{
+                auto effect = EffectResource::GetResource("Hit2");
+
+                m_EffectHandle =
+                    EffekseerManager::GetInstance().GetManager()
+                    ->Play(effect, info.ContactPoint.x, info.ContactPoint.y + 1.5f, info.ContactPoint.z);
+
 				SoundManager::GetInstance().Play("Hit1");
 				SoundManager::GetInstance().SetVolume("Hit1", 9000);
 

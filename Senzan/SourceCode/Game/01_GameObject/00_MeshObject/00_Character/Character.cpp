@@ -96,7 +96,7 @@ void Character::ApplyDamage(float damageAmount)
 	// if (m_InvincibleTimer > 0.0f) return;
 
 	// HPを減らす
-	m_HP -= damageAmount*100;
+	m_HP -= damageAmount;
 	// 修正後：0.0f と m_MaxHP の間に収める
 	m_HP = std::clamp(m_HP - damageAmount, 0.0f, m_MaxHP);
 

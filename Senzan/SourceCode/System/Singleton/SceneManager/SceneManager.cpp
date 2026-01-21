@@ -15,6 +15,7 @@
 #include "Game/00_Scene/Ex_Test/02_L/LTestScene.h"
 #include "Game/00_Scene/Ex_Test/03_UIEditor/UIEditor.h"
 #include "Game/00_Scene/Ex_Test/04_AnimationTuning/AnimationTuningScene.h"
+#include "System/Singleton/ResourceManager/EffectManager/EffekseerManager.h"
 
 #if _DEBUG
 #include "ImGui/CImGuiManager.h"

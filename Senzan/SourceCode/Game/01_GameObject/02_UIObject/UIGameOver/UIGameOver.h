@@ -1,8 +1,8 @@
-#pragma once
+ï»¿#pragma once
 #include "02_UIObject/UIObject.h"
 
 /*********************************************
-*	ƒQ[ƒ€ƒI[ƒo[UIƒNƒ‰ƒX.
+*	ã‚²ãƒ¼ãƒ ã‚ªãƒ¼ãƒãƒ¼UIã‚¯ãƒ©ã‚¹.
 **/
 class Select;
 
@@ -25,22 +25,22 @@ public:
 	void Draw();
 
 	/****************************************
-	* @brief ‘I‘ğ’†‚ÌUI€–Ú‚ğæ“¾.
+	* @brief é¸æŠä¸­ã®UIé …ç›®ã‚’å–å¾—.
 	****************************************/
 	Items GetSelected();
 
 private:
-	// ‘I‘ğˆ¶¬.
+	// é¸æŠè‚¢ç”Ÿæˆ.
 	void SelectCreate();
-	// ‘I‘ğˆXV.
+	// é¸æŠè‚¢æ›´æ–°.
 	void SelectUpdate();
-	// ‘I‘ğˆ’xXV.
-	//	‘–¸—p.
+	// é¸æŠè‚¢é…æ›´æ–°.
+	//	èµ°æŸ»ç”¨.
 	void SelectLateUpdate(std::shared_ptr<UIObject> ui);
-	// ƒAƒjƒ[ƒVƒ‡ƒ“‰Šú‰».
-	//	İ’è‚µ‚½‚¢UI€–Ú.
+	// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³åˆæœŸåŒ–.
+	//	è¨­å®šã—ãŸã„UIé …ç›®.
 	void InitAnim(Items item);
-	// ƒAƒjƒ[ƒVƒ‡ƒ“XV.
+	// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³æ›´æ–°.
 	void AnimUpdate();
 
 private:
@@ -53,4 +53,7 @@ private:
 	bool	m_AnimReturn;
 	float	m_InitAlpha;
 	float	m_SelectAlpha;
+    float   m_GlobalAlpha;
+    bool    m_IsFadeIn;
+    float   m_FadeSpeed;
 };
