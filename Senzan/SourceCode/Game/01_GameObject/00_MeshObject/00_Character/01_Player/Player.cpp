@@ -308,8 +308,11 @@ void Player::HandleDamageDetection()
 
             if ((other_group & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None)
             {
+                SoundManager::GetInstance().Play("Damage");
+                SoundManager::GetInstance().SetVolume("Damage",7000);
+
                 // 既にスタン中や無敵時間であれば処理を中断
-                if (IsKnockBack() || IsDead() || IsDead()) { continue; }
+                if (IsKnockBack() || IsDead()) { continue; }
 
                 m_Combo = 0;
 
@@ -355,6 +358,9 @@ void Player::HandleAttackDetection()
 
             if ((other_group & eCollisionGroup::Enemy_Damage) != eCollisionGroup::None)
             {
+                SoundManager::GetInstance().Play("Hit1");
+                SoundManager::GetInstance().SetVolume("Hit1", 9000);
+
                 ++m_Combo;
                 m_CurrentUltValue += static_cast<float>(m_Combo) * 0.0f;
                 SetAttackColliderActive(false);
@@ -419,6 +425,7 @@ void Player::HandleParryDetection()
             if ((other_group & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None)
             {
                 SoundManager::GetInstance().Play("Parry");
+                SoundManager::GetInstance().SetVolume("Parry",7000);
                 m_IsSuccessParry = true;
                 
                 // パリィ成功時のゲージ増加

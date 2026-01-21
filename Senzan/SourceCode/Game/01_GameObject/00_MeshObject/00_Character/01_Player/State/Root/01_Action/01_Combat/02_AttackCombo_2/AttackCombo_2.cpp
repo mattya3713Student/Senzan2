@@ -31,6 +31,9 @@ constexpr PlayerState::eID AttackCombo_2::GetStateID() const
 
 void AttackCombo_2::Enter()
 {
+    SoundManager::GetInstance().Play("Swing");
+    SoundManager::GetInstance().SetVolume("Swing", 7000);
+
     Combat::Enter();
 
     // アニメーション設定.

@@ -1,4 +1,4 @@
-#include "UITitle.h"
+﻿#include "UITitle.h"
 #include "02_UIObject/UILoader/UILoader.h"
 #include "02_UIObject/Select/Select.h"
 #include "Utility/Color/Color.h"
@@ -85,6 +85,8 @@ void UITitle::SelectUpdate()
 		if (m_Select == Items::Start) { return; }
 		InitAnim(Items::Start);
 		m_IsSelected = true;
+        SoundManager::Play("Selector");
+        SoundManager::SetVolume("Selector", 7500);
 	}
 	else if (Input::IsKeyDown('S')
 	||	Input::IsKeyDown(VK_DOWN)
@@ -93,6 +95,8 @@ void UITitle::SelectUpdate()
 		if (m_Select == Items::End) { return; }
 		InitAnim(Items::End);
 		m_IsSelected = true;
+        SoundManager::Play("Selector");
+        SoundManager::SetVolume("Selector",7500);
 	}
 	
 	AnimUpdate();

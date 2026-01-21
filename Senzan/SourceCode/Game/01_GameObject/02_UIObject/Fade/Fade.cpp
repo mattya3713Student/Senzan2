@@ -10,7 +10,7 @@ Fade::Fade()
     , m_IsFadeCompleted ( false )
 {
     // フェード画像を接続.
-    AttachSprite(SpriteManager::GetSprite2D("White"));
+    AttachSprite(SpriteManager::GetSprite2D("Black"));
 }
 
 //-------------------------------------------------------------------------.
@@ -62,7 +62,7 @@ void Fade::StartFade(const FadeType type)
 
     // FadeInなら0.0f開始.
     // FadeOutなら1.0f開始.
-    m_Color.w = type == FadeType::FadeIn ? 0.0f : 1.0f;
+    m_Color.w = (type == FadeType::FadeIn) ? 1.0f : 0.0f;
 }
 
 const bool Fade::IsFading() const

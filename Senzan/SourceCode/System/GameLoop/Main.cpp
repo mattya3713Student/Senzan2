@@ -8,6 +8,7 @@
 #include "Graphic/DirectX/DirectX9/DirectX9.h"
 #include "Graphic/DirectX/DirectX11/DirectX11.h"
 #include "Singleton/PostEffectManager/PostEffectManager.h"
+#include "02_UIObject/Fade/FadeManager.h"
 
 #include "System/Singleton/ImGui/CImGuiManager.h"
 
@@ -79,7 +80,6 @@ void Main::Create()
 // 更新処理.
 void Main::Update()
 {
-    // ImGuiの新しいフレームを開始する (描画の前に)
     CImGuiManager::NewFrameSetting();
 
     DebugImgui();
@@ -164,7 +164,8 @@ void Main::Loop()
     const float loadUpdateInterval = 1.0f / 60.0f; // 読み込み更新の間隔 (60FPS目安).
     float accumulatedTime = 0.0f;
 
-    while (!m_pResourceLoader->IsLoadCompletion()) {
+    while (!m_pResourceLoader->IsLoadCompletion()
+        || !FadeManager::GetInstance().IsFading()) {
         DWORD currentTime = timeGetTime();                 // 現在の時間を取得.
         float deltaTime = (currentTime - lastTime) / 1000.0f; // ミリ秒から秒に変換.
         lastTime = currentTime;                            // 前の時間を更新.
@@ -177,7 +178,18 @@ void Main::Loop()
             m_pResourceLoader->Update();
             m_pResourceLoader->Draw();
         }
+
+        if (m_pResourceLoader->IsLoadCompletion()) {
+            FadeManager::GetInstance().StartFade(Fade::FadeType::FadeOut);
+        }
     }
+    while (!FadeManager::GetInstance().IsFadeCompleted(Fade::FadeType::FadeOut))
+    {
+        FadeManager::GetInstance().Update();
+        FadeManager::GetInstance().Draw();
+        DirectX11::GetInstance().Present();
+    }
+
 
     // データの読み込みが終わったらゲームを構築.
     Create();
@@ -320,6 +332,7 @@ void Main::IsExitGame()
 
 void Main::DebugImgui()
 {
+#if _DEBUG
     ImGui::Begin("Performance Monitor");
 
     // 基本的なFPS表示.
@@ -370,4 +383,5 @@ void Main::DebugImgui()
     ImGui::Separator();
 
     ImGui::End();
+#endif
 }
