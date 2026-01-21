@@ -2,10 +2,12 @@
 
 #include "Game/01_GameObject/00_MeshObject/00_Character/00_Ground/Ground.h"	// 地面Static.
 
-#include "Game//01_GameObject//00_MeshObject//00_Character//02_Boss//Boss.h"
-#include "Game//01_GameObject//00_MeshObject//00_Character//01_Player//Player.h"
+#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/Boss.h"
+#include "Game/01_GameObject/00_MeshObject/00_Character/01_Player/Player.h"
 
-#include "Game//01_GameObject//02_UIObject/UIGameMain/UIGameMain.h"
+#include "Game/01_GameObject/02_UIObject/UIGameMain/UIGameMain.h"
+#include "Game/01_GameObject/02_UIObject/UIGameOver/UIGameOver.h"
+#include "Game/01_GameObject/02_UIObject/UIEnding/UIEnding.h"
 
 #include "Game/02_Camera/CameraBase.h"
 #include "Game/02_Camera/LockOnCamera/LockOnCamera.h"
@@ -19,7 +21,7 @@
 
 #include "System/Singleton/CameraManager/CameraManager.h"
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
-#include "System/Singleton/Debug\CollisionVisualizer\CollisionVisualizer.h"
+#include "System/Singleton/Debug/CollisionVisualizer/CollisionVisualizer.h"
 #include "SceneManager/SceneManager.h"
 #include "Singleton/PostEffectManager/PostEffectManager.h"
 #include "Game/04_Time/Time.h"
@@ -38,10 +40,12 @@ GameMain::GameMain()
 	, m_upBoss		(std::make_unique<Boss>())
 	, m_upPlayer	(std::make_unique<Player>())
 	, m_upUI		(std::make_shared<UIGameMain>())
-    , m_TimeLimit   (10800.0f*Time::GetInstance().GetDeltaTime())
+	, m_TimeLimit   (10800.0f*Time::GetInstance().GetDeltaTime())
+    , m_upUIOver    ()
+    , m_upUIEnding  ()
 {
 	Initialize();
-    Time::GetInstance().StartTimer(m_TimeLimit);
+	Time::GetInstance().StartTimer(m_TimeLimit);
 }
 
 // デストラクタ.
@@ -72,37 +76,59 @@ void GameMain::Create()
 
 void GameMain::Update()
 {
-	Input::Update();
-    m_upGround->Update();
-    m_upBoss->Update();
-    m_upBoss->SetTargetPos(m_upPlayer->GetPosition());
+    Input::Update();
+    if (m_upBoss->GetHP() <= 0 && !m_upUIEnding) {
+        m_upUIEnding = std::make_shared<UIEnding>();
+    }
+    else if ((m_upPlayer->GetHP() <= 0 || Time::GetInstance().IsTimerJustFinished()) && !m_upUIOver) {
+        m_upUIOver = std::make_shared<UIGameOver>();
+    }
 
-    // propagate boss just-window flag to player
-    m_upPlayer->SetIsJustDodgeTiming(m_upBoss->IsAnyAttackJustWindow());
-    Log::GetInstance().Info("", m_upBoss->IsAnyAttackJustWindow());
+    if (m_upUIOver || m_upUIEnding)
+    {
+        if (m_upUIOver) {
+            m_upUIOver->Update();
+        }
+        else {
+            m_upUIEnding->Update();
+        }
 
-    m_upPlayer->SetTargetPos(m_upBoss->GetPosition());
-    m_upPlayer->Update();
+        if (Input::IsKeyDown(VK_SPACE)
+            || Input::IsKeyDown('C')
+            || Input::IsButtonDown(XInput::Key::B))
+        {
+            SoundManager::GetInstance().Play("Decide");
+            SoundManager::GetInstance().SetVolume("Decide", 8000);
+            SceneManager::LoadScene(eList::Title);
+        }
+        UIUpdate();
+        return;
+    }
 
-	m_upUI->SetBossHP(m_upBoss->GetMaxHP(), m_upBoss->GetHP());
-	m_upUI->SetCombo(m_upPlayer->GetCombo());
-	m_upUI->SetPlayerHP(m_upPlayer->GetMaxHP(), m_upPlayer->GetHP());
- 	m_upUI->SetPlayerUlt(m_upPlayer->GetMaxUltValue(), m_upPlayer->GetUltValue());
- 	m_upUI->SetTime(Time::GetInstance().GetTimerProgress());
-    m_upUI->Update();
+	m_upGround->Update();
+	m_upBoss->Update();
+	m_upBoss->SetTargetPos(m_upPlayer->GetPosition());
+
+	// propagate boss just-window flag to player
+	m_upPlayer->SetIsJustDodgeTiming(m_upBoss->IsAnyAttackJustWindow());
+	Log::GetInstance().Info("", m_upBoss->IsAnyAttackJustWindow());
+
+	m_upPlayer->SetTargetPos(m_upBoss->GetPosition());
+	m_upPlayer->Update();
+    UIUpdate();
 
 #if _DEBUG
-    ImGui::Begin("Gamemain Debug");
-    bool gray = PostEffectManager::GetInstance().IsGray();
-    if (ImGui::Checkbox("GrayScale", &gray)) {
-        PostEffectManager::GetInstance().SetGray(gray);
-    }
-    ImGui::Text("Time: %.3f", Time::GetInstance().GetTimerProgress());
-    if (ImGui::Button("Restart Timer")) {
-        Time::GetInstance().StartTimer(m_TimeLimit);
-    }
-    
-    ImGui::End();
+	ImGui::Begin("Gamemain Debug");
+	bool gray = PostEffectManager::GetInstance().IsGray();
+	if (ImGui::Checkbox("GrayScale", &gray)) {
+		PostEffectManager::GetInstance().SetGray(gray);
+	}
+	ImGui::Text("Time: %.3f", Time::GetInstance().GetTimerProgress());
+	if (ImGui::Button("Restart Timer")) {
+		Time::GetInstance().StartTimer(m_TimeLimit);
+	}
+	
+	ImGui::End();
 #endif
 }
 
@@ -121,28 +147,34 @@ void GameMain::LateUpdate()
 
 void GameMain::Draw()
 {
-    Shadow::Begin();
-    m_upGround->DrawDepth();
-    Shadow::End();
+	Shadow::Begin();
+	m_upGround->DrawDepth();
+	Shadow::End();
 
-    const bool useGray = PostEffectManager::GetInstance().IsGray();
-    if (useGray) {
-        PostEffectManager::GetInstance().BeginSceneRender();
+	const bool useGray = PostEffectManager::GetInstance().IsGray();
+	if (useGray) {
+		PostEffectManager::GetInstance().BeginSceneRender();
+	}
+
+	m_upGround->Draw();
+	m_upBoss->Draw();
+	m_upPlayer->Draw();
+
+	m_upPlayer->Draw();
+
+	if (useGray) {
+		PostEffectManager::GetInstance().DrawToBackBuffer();
+	}
+
+	m_upUI->Draw();
+
+    if (m_upUIOver || m_upUIEnding)
+    {
+        if (m_upUIOver) { m_upUIOver->Draw(); }
+        else { m_upUIEnding->Draw(); }
     }
 
-    m_upGround->Draw();
-    m_upBoss->Draw();
-    m_upPlayer->Draw();
-
-    m_upPlayer->Draw();
-
-    if (useGray) {
-        PostEffectManager::GetInstance().DrawToBackBuffer();
-    }
-
-    m_upUI->Draw();
-
-    CollisionVisualizer::GetInstance().Draw();
+	CollisionVisualizer::GetInstance().Draw();
 }
 
 HRESULT GameMain::LoadData()
@@ -150,4 +182,14 @@ HRESULT GameMain::LoadData()
 	// ここで実際のロード処理を行うか、Create()に集約されているのであればE_NOTIMPLのままでもよい
 	// 現在のGameMainではCreate()でほとんどのInit/Load処理が行われているようです
 	return S_OK; // 成功を返す
+}
+
+void GameMain::UIUpdate()
+{
+    m_upUI->SetBossHP(m_upBoss->GetMaxHP(), m_upBoss->GetHP());
+    m_upUI->SetCombo(m_upPlayer->GetCombo());
+    m_upUI->SetPlayerHP(m_upPlayer->GetMaxHP(), m_upPlayer->GetHP());
+    m_upUI->SetPlayerUlt(m_upPlayer->GetMaxUltValue(), m_upPlayer->GetUltValue());
+    m_upUI->SetTime(Time::GetInstance().GetTimerProgress());
+    m_upUI->Update();
 }
