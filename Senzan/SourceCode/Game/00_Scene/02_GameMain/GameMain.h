@@ -9,6 +9,8 @@ class Boss;
 class CameraBase;
 class DirectionLight;
 class UIGameMain;
+class UIGameOver;
+class UIEnding;
 
 #include <vector>
 
@@ -33,6 +35,9 @@ public:
 	HRESULT LoadData();
 
 private:
+    void UIUpdate();
+
+private:
 
 	std::shared_ptr<CameraBase>			m_spCamera;			// カメラ.
 	std::shared_ptr<DirectionLight>		m_spLight;			// ライト
@@ -44,5 +49,7 @@ private:
 	std::unique_ptr<Player>		m_upPlayer;
 
 	std::shared_ptr<UIGameMain>	m_upUI;
+    std::shared_ptr<UIGameOver> m_upUIOver;
+    std::shared_ptr<UIEnding>   m_upUIEnding;
     float m_TimeLimit;
 };

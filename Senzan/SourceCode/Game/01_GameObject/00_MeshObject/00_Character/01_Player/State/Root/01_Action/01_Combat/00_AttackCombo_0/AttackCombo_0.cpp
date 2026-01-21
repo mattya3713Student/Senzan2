@@ -64,9 +64,10 @@ void AttackCombo_0::Enter()
 
 void AttackCombo_0::Update()
 {
+    static bool isStop = false;
+#if _DEBUG
     ImGui::Begin(IMGUI_JP("AttackCombo_0 デバッグ"));
 
-    static bool isStop = false;
     ImGui::Checkbox(IMGUI_JP("ストップ"), &isStop);
 
     RenderColliderWindowsUI("AttackCombo_0 Collider Windows");
@@ -136,6 +137,7 @@ void AttackCombo_0::Update()
     }
 
     ImGui::End();
+#endif
 
     if (!isStop)
     {
