@@ -277,6 +277,7 @@ void BossAttackStateBase::DrawImGui()
     // ImGui を用いた攻撃パラメータ編集パネル
     // このパネルからダメージ、当たり判定サイズ、フェーズ毎のアニメ速度
     // などのパラメータを調整できます。実行時のみの編集用です。
+#if _DEBUG
 	if (!ImGui::Begin(IMGUI_JP("Boss Attack State"))) {
 		ImGui::End();
 		return;
@@ -427,6 +428,7 @@ void BossAttackStateBase::DrawImGui()
     }
 
     ImGui::End();
+#endif
 }
 
 void BossAttackStateBase::LoadSettings()

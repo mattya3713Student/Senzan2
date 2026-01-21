@@ -132,12 +132,14 @@ void BossSlashState::Exit()
 
 void BossSlashState::DrawImGui()
 {
+#if _DEBUG
     ImGui::Begin(IMGUI_JP("ボス斬撃設定"));
     ImGui::Separator();
 
     // オフセットは ColliderWindow で管理するため、ここでは基底クラスのImGuiのみ呼ぶ
     BossAttackStateBase::DrawImGui();
     ImGui::End();
+#endif
 }
 
 void BossSlashState::LoadSettings()

@@ -31,6 +31,9 @@ constexpr PlayerState::eID AttackCombo_2::GetStateID() const
 
 void AttackCombo_2::Enter()
 {
+    SoundManager::GetInstance().Play("Swing");
+    SoundManager::GetInstance().SetVolume("Swing", 7000);
+
     Combat::Enter();
 
     // アニメーション設定.
@@ -85,9 +88,10 @@ void AttackCombo_2::Enter()
 
 void AttackCombo_2::Update()
 {
+    static bool isStop = false;
+#if _DEBUG
     ImGui::Begin(IMGUI_JP("AttackCombo_2 デバッグ"));
 
-    static bool isStop = false;
     ImGui::Checkbox(IMGUI_JP("ストップ"), &isStop);
 
     RenderColliderWindowsUI("AttackCombo_2 Collider Windows");
@@ -158,6 +162,7 @@ void AttackCombo_2::Update()
     }
 
     ImGui::End();
+#endif
 
     if (!isStop)
     {

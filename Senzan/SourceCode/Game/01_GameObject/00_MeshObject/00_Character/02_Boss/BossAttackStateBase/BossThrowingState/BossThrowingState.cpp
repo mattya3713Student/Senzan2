@@ -119,11 +119,13 @@ void BossThrowingState::BossAttack()
 
 void BossThrowingState::DrawImGui()
 {
+#if _DEBUG
     ImGui::Begin(IMGUI_JP("BossThrowing State"));
     CImGuiManager::Slider<float>(IMGUI_JP("発射高さ"), m_BallHeight, 0.0f, 15.0f, true);
     CImGuiManager::Slider<float>(IMGUI_JP("弾速"), m_BallSpeed, 0.1f, 5.0f, true);
     BossAttackStateBase::DrawImGui();
     ImGui::End();
+#endif
 }
 
 void BossThrowingState::LoadSettings()

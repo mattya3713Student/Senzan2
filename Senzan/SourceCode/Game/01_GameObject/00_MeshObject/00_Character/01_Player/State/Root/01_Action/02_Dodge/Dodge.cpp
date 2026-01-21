@@ -94,6 +94,7 @@ void Dodge::Enter()
 	m_pOwner->GetTransform()->RotateToDirection(final_move_3d);
 
 	SoundManager::GetInstance().Play("Dodge");
+	SoundManager::GetInstance().SetVolume("Dodge", 8500);
 }
 
 void Dodge::Update()

@@ -77,6 +77,10 @@ private:
 	std::unique_ptr<SceneBase> 		m_pScene;
 	Buffer* m_pBuffer;		// 次シーンへインスタンスを入れるバッファー.
 
+    eList m_NextSceneID;     // 次に遷移する予定のシーン ID.
+    bool  m_IsSceneChanging; // シーン切り替え中フラグ.
+    bool m_StartFade;        // 初回のみフェードしない.
+
 #if _DEBUG
 	eList m_CurrentSceneID;
 	eList m_DebugFirstScene;	// デバッグ時に最初に起動させるシーン.

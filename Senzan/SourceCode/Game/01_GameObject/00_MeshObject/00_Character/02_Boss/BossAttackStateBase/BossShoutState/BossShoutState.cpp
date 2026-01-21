@@ -136,12 +136,14 @@ void BossShoutState::Exit()
 
 void BossShoutState::DrawImGui()
 {
+#if _DEBUG
     ImGui::Begin(IMGUI_JP("BossShout State"));
     CImGuiManager::Slider<float>(IMGUI_JP("ダメージ量"), m_ShoutDamage, 0.0f, 50.0f, true);
     CImGuiManager::Slider<float>(IMGUI_JP("範囲半径"), m_ShoutRadius, 5.0f, 60.0f, true);
     CImGuiManager::Slider<float>(IMGUI_JP("ノックバック力"), m_KnockBackPower, 0.0f, 30.0f, true);
     BossAttackStateBase::DrawImGui();
     ImGui::End();
+#endif  
 }
 
 void BossShoutState::LoadSettings()

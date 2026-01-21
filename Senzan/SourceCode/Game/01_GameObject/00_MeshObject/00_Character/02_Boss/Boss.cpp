@@ -66,7 +66,7 @@ Boss::Boss()
 	m_spTransform->SetScale(scale);
 	m_spTransform->SetRotationDegrees(Rotation);
 
-	m_MaxHP = 1000000.f;
+	m_MaxHP = 5000.f;
 	m_HP = m_MaxHP;
 
 	// 攻撃の追加.
@@ -152,7 +152,7 @@ Boss::Boss()
 	m_pShoutCollider->SetHeight(1.0f);
 	m_pShoutCollider->SetRadius(1.0f);
 	m_pShoutCollider->SetPositionOffset(0.f, 1.5f, 0.f);
-	m_pShoutCollider->SetAttackAmount(10.f);
+	m_pShoutCollider->SetAttackAmount(100.f);
 	m_pShoutCollider->SetMyMask(eCollisionGroup::BossPress);
 	m_pShoutCollider->SetTarGetTargetMask(eCollisionGroup::Press | eCollisionGroup::Player_Damage);
 
@@ -334,6 +334,8 @@ void Boss::HandleDamageDetection()
 			{
 				// ダメージを適用 
 				ApplyDamage(info.AttackAmount);
+                SoundManager::Play("Damage");
+                SoundManager::SetVolume("Damage", 9000);
 
 				Time::GetInstance().SetWorldTimeScale(0.1f, 0.016f * 5);
 				CameraManager::GetInstance().ShakeCamera(0.1f, 2.5f); // カメラを少し揺らす.
