@@ -1,14 +1,14 @@
-#include "Ground.h"
+ï»¿#include "Ground.h"
 
 Ground::Ground()
 	: MeshObject()
 {
-	// ƒƒbƒVƒ…‚ÌƒAƒ^ƒbƒ`.
+	// ãƒ¡ãƒƒã‚·ãƒ¥ã®ã‚¢ã‚¿ãƒƒãƒ.
 	auto mesh = ResourceManager::GetStaticMesh("Ground");
-	_ASSERT_EXPR(mesh != nullptr, "ƒƒbƒVƒ…‚ÌŽæ“¾‚ÉŽ¸”s");
+	_ASSERT_EXPR(mesh != nullptr, "ãƒ¡ãƒƒã‚·ãƒ¥ã®å–å¾—ã«å¤±æ•—");
 	AttachMesh(mesh);
-	// ƒXƒP[ƒ‹‚ÌÝ’è.
-	m_spTransform->Scale = { 10.0f, 1.0f, 10.0f };
+	// ã‚¹ã‚±ãƒ¼ãƒ«ã®è¨­å®š.
+	m_spTransform->Scale = { 100.0f, 1.0f, 100.0f };
 	m_IsLight = false;
 	m_IsShadow = false;
 }

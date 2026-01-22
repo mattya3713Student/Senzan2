@@ -15,6 +15,7 @@
 #include "Game/00_Scene/Ex_Test/02_L/LTestScene.h"
 #include "Game/00_Scene/Ex_Test/03_UIEditor/UIEditor.h"
 #include "Game/00_Scene/Ex_Test/04_AnimationTuning/AnimationTuningScene.h"
+#include "System/Singleton/ResourceManager/EffectManager/EffekseerManager.h"
 
 #if _DEBUG
 #include "ImGui/CImGuiManager.h"
@@ -22,8 +23,11 @@
 
 
 SceneManager::SceneManager()
-	: m_pScene	( std::make_unique<GameMain>() )
+	: m_pScene	( std::make_unique<Title>() )
 	, m_pBuffer	( nullptr )
+    ,m_NextSceneID(eList::MAX)
+    ,m_IsSceneChanging(false)
+    , m_StartFade   (true)
 
 #if _DEBUG
 	, m_DebugFirstScene()
@@ -39,7 +43,7 @@ SceneManager::~SceneManager()
 void SceneManager::LoadData()
 {
 	// 最初にロードするシーンを環境に応じて決定
-	eList initial_scene = eList::GameMain;
+	eList initial_scene = eList::Title;
 
 	// --- 環境ごとの初期シーン設定 ---
 
@@ -62,14 +66,60 @@ void SceneManager::LoadData()
 #endif 
 #endif // _DEBUG.
 
-	LoadScene(initial_scene);
+    // フェードイン開始
+    FadeManager::GetInstance().StartFade(Fade::FadeType::FadeIn);
+
+    // 初回ロード処理.
+    if (m_StartFade) {
+        MakeScene(initial_scene); // 直接作成.
+        if (m_pScene) {
+            m_pScene->Create();
+        }
+        m_StartFade = false;      // 次回からはフェードを有効にする.
+    }
+    else {
+        LoadScene(initial_scene);
+    }
 }
 
 void SceneManager::Update()
 {
-	SceneManager& pI = GetInstance();
-	pI.m_pScene->Update();
-	pI.m_pScene->LateUpdate();
+    SceneManager& pI = GetInstance();
+    FadeManager& fade = FadeManager::GetInstance();
+
+    // シーン切り替え中の処理.
+    if (pI.m_IsSceneChanging)
+    {
+        // 画面が暗くなったらシーンを差し替える.
+        if (fade.IsFadeCompleted(Fade::FadeType::FadeOut))
+        {
+            pI.m_pScene.reset();
+            pI.MakeScene(pI.m_NextSceneID);
+
+            if (pI.m_pScene) {
+                pI.m_pScene->Create();
+            }
+
+            // 新しいシーンの準備ができたらフェードイン開始.
+            fade.StartFade(Fade::FadeType::FadeIn);
+        }
+
+        // 画面が明るくなったら遷移完了.
+        if (fade.IsFadeCompleted(Fade::FadeType::FadeIn))
+        {
+            pI.m_IsSceneChanging = false;
+        }
+    }
+
+    // フェード自体の更新.
+    fade.Update();
+
+    // シーンの更新 (遷移中も更新を続けるか、止めるかは仕様に合わせて調整).
+    // 一般的には遷移中は Update を止めることが多いです.
+    if (!pI.m_IsSceneChanging && pI.m_pScene) {
+        pI.m_pScene->Update();
+        pI.m_pScene->LateUpdate();
+    }
 	
 #if _DEBUG
 	ImGui::Begin("Scene");
@@ -97,16 +147,19 @@ void SceneManager::Draw()
 {
 	SceneManager& pI = GetInstance();
 	pI.m_pScene->Draw();
+    FadeManager::GetInstance().Draw();
 }
 
 void SceneManager::LoadScene(eList Scene)
 {
-	SceneManager& pI = GetInstance();
-	pI.m_pScene.reset();
+    SceneManager& pI = GetInstance();
+    if (pI.m_IsSceneChanging) return;
 
-	//シーン作成.
-	pI.MakeScene(Scene);
-	pI.m_pScene->Create();
+    pI.m_NextSceneID = Scene;
+    pI.m_IsSceneChanging = true;
+
+    // 「暗くする」ので FadeOut を指定
+    FadeManager::GetInstance().StartFade(Fade::FadeType::FadeOut);
 }
 
 //シーン作成.

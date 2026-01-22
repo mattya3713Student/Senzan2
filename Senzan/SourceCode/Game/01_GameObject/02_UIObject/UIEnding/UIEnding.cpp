@@ -1,4 +1,4 @@
-#include "UIEnding.h"
+﻿#include "UIEnding.h"
 #include "02_UIObject/UILoader/UILoader.h"
 #include "02_UIObject/Select/Select.h"
 #include "Utility/Color/Color.h"
@@ -15,6 +15,9 @@ UIEnding::UIEnding()
 	, m_SelectAlpha	( m_InitAlpha )
 	, m_AnimReturn	( false )
 	, m_AnimeSpeed	( 0.3f )
+    , m_GlobalAlpha ( 0.0f )
+    , m_IsFadeIn    ( true )
+    , m_FadeSpeed   ( 1.5f )
 {
 	UILoader::LoadFromJson("Data\\Image\\Sprite\\UIData\\Ending.json", m_pUIs);
 	SelectCreate();
@@ -42,6 +45,19 @@ void UIEnding::SelectCreate()
 
 void UIEnding::Update()
 {
+    if (m_IsFadeIn)
+    {
+        m_GlobalAlpha += Time::GetInstance().GetDeltaTime() * m_FadeSpeed;
+        if (m_GlobalAlpha >= 1.0f) {
+            m_GlobalAlpha = 1.0f;
+            m_IsFadeIn = false;
+        }
+        for (auto& ui : m_pUIs)
+        {
+            ui->SetColor(ColorUtil::RGBA(ColorPreset::White3, m_GlobalAlpha));
+        }
+    }
+
 	SelectUpdate();
 	for (auto& ui : m_pUIs)
 	{
