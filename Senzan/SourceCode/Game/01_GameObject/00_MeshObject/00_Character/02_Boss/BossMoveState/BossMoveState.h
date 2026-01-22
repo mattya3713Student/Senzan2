@@ -88,8 +88,6 @@ private:
 
 	std::unique_ptr<BossJumpOnlState>		m_pAttack;
 	std::unique_ptr<BossSlashState>			m_pSlash;
-	std::unique_ptr<BossChargeState>		m_pCharge;
-	std::unique_ptr<BossLaserState>			m_pLaser;
 	std::unique_ptr<BossStompState>			m_pStomp;
 	std::unique_ptr<BossThrowingState>		m_pThrowing;
 	std::unique_ptr<BossShoutState>			m_pShout;

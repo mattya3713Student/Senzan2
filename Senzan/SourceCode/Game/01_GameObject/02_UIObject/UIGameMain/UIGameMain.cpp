@@ -1,4 +1,4 @@
-#include "UIGameMain.h"
+ï»¿#include "UIGameMain.h"
 #include "02_UIObject/UILoader/UILoader.h"
 #include "Utility/Color/Color.h"
 
@@ -20,7 +20,7 @@ namespace {
 
 	static const ComboColor kComboColorTable[] =
 	{
-		{ 0.0f, ColorPreset::White },
+		{ 0.0f, ColorPreset::White4 },
 		{ 0.3f, ColorPreset::TitleCyan },
 		{ 0.6f, ColorPreset::Green },
 		{ 1.0f, ColorPreset::WarmYellow },
@@ -64,6 +64,7 @@ void UIGameMain::Create()
 			m_BossDamage.InitRate = ui->GetScaleX();
 		}
 		else if (ui->GetUIName() == "ULTGauge_0") {
+            ui->SetScaleX(0.0f);
 			m_PlayerUlt.InitRate = ui->GetScaleX();
 		}
 		else if (ui->GetUIName() == "HPGauge_1") {
@@ -91,8 +92,8 @@ void UIGameMain::Update()
 	m_PlayerHP.Before	= m_PlayerHP.Now;
 	m_PlayerUlt.Before	= m_PlayerUlt.Now;
 
-	// ƒfƒoƒbƒO—p‚ÌImGui.
-	//	UI‚ÌƒfƒoƒbƒOˆÈŠO‚Å’Ê‚·‚Æ•\¦‚Éê’ê—‚ªo‚é‚Ì‚ÅÁ‚·.
+	// ãƒ‡ãƒãƒƒã‚°ç”¨ã®ImGui.
+	//	UIã®ãƒ‡ãƒãƒƒã‚°ä»¥å¤–ã§é€šã™ã¨è¡¨ç¤ºã«é½Ÿé½¬ãŒå‡ºã‚‹ã®ã§æ¶ˆã™.
 #if 0
 	// --- ImGui Debug ---.
 	ImGui::Begin("UI Gauge Debug");
@@ -140,7 +141,7 @@ void UIGameMain::Update()
 			ui->SetScaleX(m_BossDamage.InitRate * m_BossDamage.Rate);
 		}
 		else if (ui->GetUIName() == "ULTGauge_0") {
-			ui->SetScaleX(m_PlayerUlt.InitRate * m_PlayerUlt.Rate);
+			ui->SetScaleX(m_PlayerUlt.Rate);
 		}
 		else if (ui->GetUIName() == "HPGauge_1") {
 			ui->SetScaleX(m_PlayerHP.InitRate * m_PlayerHP.Rate);
@@ -149,7 +150,7 @@ void UIGameMain::Update()
 			ui->SetScaleX(m_PlayerDamage.InitRate * m_PlayerDamage.Rate);
 		}
 		else if (ui->GetUIName() == "ClockSec_0") {
-			ui->SetRotationZ(m_ClockSecInitRot * m_ClockSecNow);
+			ui->SetRotationZ(m_ClockSecNow);
 		}
 		else if (ui->GetUIName() == "Number0_0") {
 			ui->AttachSprite(ResourceManager::GetSprite2D("Number" + std::to_string((m_Combo / 10) % 10)));
@@ -203,9 +204,9 @@ void UIGameMain::SetCombo(int num)
 
 //-----------------------------------------------------------------------.
 
-void UIGameMain::SetTime(float max, float now)
+void UIGameMain::SetTime(float progress)
 {
-	m_ClockSecNow = m_ClockSecInitRot * (now / max);
+	m_ClockSecNow = m_ClockSecInitRot * progress;
 }
 
 //-----------------------------------------------------------------------.
@@ -213,7 +214,7 @@ void UIGameMain::SetTime(float max, float now)
 void UIGameMain::SetPlayerHP(float max, float now)
 {
 	m_PlayerHP.Set(max, now);
-	// ‚±‚±‚ÅÔ‚ğ’Ç]ŠJn‚³‚¹‚é.
+	// ã“ã“ã§èµ¤ã‚’è¿½å¾“é–‹å§‹ã•ã›ã‚‹.
 	if (m_PlayerHP.IsChanged)
 	{
 		m_PlayerDamage.StartFollow(
@@ -234,7 +235,7 @@ void UIGameMain::SetPlayerUlt(float max, float now)
 void UIGameMain::SetBossHP(float max, float now)
 {
 	m_BossHP.Set(max, now);
-	// ‚±‚±‚ÅÔ‚ğ’Ç]ŠJn‚³‚¹‚é.
+	// ã“ã“ã§èµ¤ã‚’è¿½å¾“é–‹å§‹ã•ã›ã‚‹.
 	if (m_BossHP.IsChanged)
 	{
 		m_BossDamage.StartFollow(

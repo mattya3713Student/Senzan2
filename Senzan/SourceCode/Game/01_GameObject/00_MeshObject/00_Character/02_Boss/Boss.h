@@ -105,6 +105,9 @@ public:
     Boss();
     ~Boss() override;
 
+    void SetAnyAttackJustWindow(bool v) { m_IsAnyAttackJustWindow = v; }
+    bool IsAnyAttackJustWindow() const { return m_IsAnyAttackJustWindow; }
+
     void Update() override;
     void LateUpdate() override;
     void Draw() override;
@@ -129,6 +132,8 @@ public:
     DirectX::XMFLOAT3 GetTargetPos() { return m_PlayerPos; }
 
 protected:
+    // 全攻撃判定オフ.
+    void OffAttackCollider();
 
     // 衝突_被ダメージ.
     void HandleDamageDetection() override;
@@ -140,10 +145,6 @@ protected:
     // 衝突_パリィ.
     void HandleParryDetection();
 
-
-    // 攻撃判定のActive
-    inline void SetAttackColliderActive(bool Active) const noexcept { m_pAttackCollider->SetActive(Active); }
-
     //当たり判定を取得する.
     //通常攻撃.
     ColliderBase* GetSlashCollider() const;
@@ -151,6 +152,20 @@ protected:
     ColliderBase* GetStompCollider() const;
     //叫び攻撃.
     ColliderBase* GetShoutCollider() const;
+
+    // 統合された攻撃コライダー（各ステートがボーンを指定して使用）
+    ColliderBase* GetAttackCollider() const { return m_spAttackCollider; }
+
+    // 攻撃コライダーが追従するボーンを設定
+    void SetAttackBone(const std::string& boneName);
+    // 攻撃コライダーのサイズを設定
+    void SetAttackColliderSize(float radius, float height);
+    // 名前で指定したコライダーのサイズを設定
+    void SetColliderSizeByName(const std::string& name, float radius, float height);
+    // 名前で指定したコライダーの与えるダメージを設定
+    void SetColliderDamageByName(const std::string& name, float damage);
+    // 攻撃コライダーのダメージを設定
+    void SetAttackColliderDamage(float damage);
 
     /*************************************************************
     * @brief	ボスのワールド行列と掛け合わせてボーンのワールド行列を作成し、
@@ -196,18 +211,13 @@ protected:
     ColliderBase* m_pStompCollider;
     ColliderBase* m_pShoutCollider;
 
-    // 外部供給用のワールドTransformキャッシュ（コライダーが毎フレームメッシュ検索しないようにする）
-    Transform m_SlashBoneWorldTransform;
-    Transform m_StompBoneWorldTransform;
-    Transform m_ShoutBoneWorldTransform;
-    // ImGui 用: コライダー回転オフセット (度数法で編集)
-    DirectX::XMFLOAT3 m_SlashRotOffsetDeg{ 0.0f, 0.0f, 0.0f };
-    DirectX::XMFLOAT3 m_StompRotOffsetDeg{ 0.0f, 0.0f, 0.0f };
-    DirectX::XMFLOAT3 m_ShoutRotOffsetDeg{ 0.0f, 0.0f, 0.0f };
+    // runtime flag indicating any attack's just window is active
+    bool m_IsAnyAttackJustWindow = false;
 
-    // ボーンフレームのキャッシュ
-    LPD3DXFRAME m_pSlashBoneFrame = nullptr;
-    LPD3DXFRAME m_pStompBoneFrame = nullptr;
-    LPD3DXFRAME m_pShoutBoneFrame = nullptr;
+    // 統合された攻撃コライダー（各ステートがボーンを指定）
+    ColliderBase* m_spAttackCollider = nullptr;
+    std::string m_AttackBoneName;  // 現在追従するボーン名
+    LPD3DXFRAME m_pAttackBoneFrame = nullptr;  // ボーンフレームキャッシュ
+    Transform m_AttackBoneWorldTransform;      // ワールドTransformキャッシュ
 };
 

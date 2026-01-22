@@ -1,4 +1,4 @@
-#include "MemeuTestScene.h"
+ï»¿#include "MemeuTestScene.h"
 
 #include "System/Singleton/CameraManager/CameraManager.h"
 #include "Game/02_Camera/CameraBase.h"
@@ -9,33 +9,43 @@
 #include "Graphic/Light/DirectionLight/DirectionLight.h"
 #include "Graphic/Light/LightManager.h"
 
-#include "Game/01_GameObject/00_MeshObject/00_Character/00_Ground/Ground.h"	// ’n–ÊStatic.
+#include "Game/01_GameObject/00_MeshObject/00_Character/00_Ground/Ground.h"	// åœ°é¢Static.
+#include "Game/01_GameObject/02_UIObject/UIGameMain/UIGameMain.h"
+#include "Game/01_GameObject/02_UIObject/UIGameOver/UIGameOver.h"
+#include "Game/01_GameObject/02_UIObject/UIEnding/UIEnding.h"
+#include "SceneManager/SceneManager.h" 
+#include "Game/05_InputDevice/Input.h"
 
-#include <algorithm> // std::min ‚Ì‚½‚ß‚É•K—v
+#include <algorithm> // std::min ã®ãŸã‚ã«å¿…è¦
 
-// ƒRƒ“ƒXƒgƒ‰ƒNƒ^.
+// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿.
 MemeuTestScene::MemeuTestScene()
 	: SceneBase()
-	, m_pCamera(std::make_shared<ThirdPersonCamera>())
-	, m_pLight(std::make_shared<DirectionLight>())
-	, m_TestSprite(std::make_shared<UIObject>())
+	, m_pCamera     (std::make_shared<ThirdPersonCamera>())
+	, m_pLight      (std::make_shared<DirectionLight>())
+	, m_TestSprite  (std::make_shared<UIObject>())
+	, m_upUIMain    (std::make_shared<UIGameMain>())
+	, m_upUIOver    ()
+    , m_upUIEnding  ()
+	, m_TimeLimit   (600.0f * Time::GetInstance().GetDeltaTime())
 {
 	Initialize();
+	Time::GetInstance().StartTimer(m_TimeLimit);
 }
 
-// ƒfƒXƒgƒ‰ƒNƒ^.
+// ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿.
 MemeuTestScene::~MemeuTestScene()
 {
 }
 
 void MemeuTestScene::Initialize()
 {
-	// ƒJƒƒ‰İ’è.
+	// ã‚«ãƒ¡ãƒ©è¨­å®š.
 	m_pCamera->SetPosition(DirectX::XMFLOAT3(0.0f, 5.0f, -5.0f));
 	m_pCamera->SetLook(DirectX::XMFLOAT3(0.0f, 2.0f, 5.0f));
 	CameraManager::GetInstance().SetCamera(m_pCamera);
 
-	// ƒ‰ƒCƒgİ’è.
+	// ãƒ©ã‚¤ãƒˆè¨­å®š.
 	m_pLight->SetDirection(DirectX::XMFLOAT3(1.5f, 1.f, -1.f));
 	LightManager::AttachDirectionLight(m_pLight);
 
@@ -50,14 +60,40 @@ void MemeuTestScene::Create()
 
 void MemeuTestScene::Update()
 {
+	Input::Update();
+	m_upUIMain->SetTime(Time::GetInstance().GetTimerProgress());
+	m_upUIMain->Update();
+
 	m_pGround->Update();
 
+
+	if (Time::GetInstance().IsTimerJustFinished()) {
+		m_upUIOver = std::make_shared<UIGameOver>();
+	}
+
+#if _DEBUG
+	if ( m_upUIOver )
+    {
+        m_upUIOver->Update();
+        if (Input::IsKeyDown(VK_SPACE)
+            || Input::IsKeyDown('C')
+            || Input::IsButtonDown(XInput::Key::B))
+        {
+            if (m_upUIOver->GetSelected() == m_upUIOver->Items::End) {
+                SceneManager::LoadScene(eList::Memeu);
+            }
+        }
+    }
+#endif // _DEBUG.
 }
 
 void MemeuTestScene::LateUpdate()
 {
 	CameraManager::GetInstance().LateUpdate();
+	m_upUIMain->LateUpdate();
 
+    if (m_upUIEnding) { m_upUIEnding->LateUpdate(); }
+	if (m_upUIOver) { m_upUIOver->LateUpdate(); }
 }
 
 
@@ -67,11 +103,14 @@ void MemeuTestScene::Draw()
 	m_pGround->DrawDepth();
 	Shadow::End();
 	m_pGround->Draw();
+	m_upUIMain->Draw();
+    if (m_upUIEnding) { m_upUIEnding->Draw(); }
+    if (m_upUIOver) { m_upUIOver->Draw(); }
 }
 
 HRESULT MemeuTestScene::LoadData()
 {
-	// ‚±‚±‚ÅÀÛ‚Ìƒ[ƒhˆ—‚ğs‚¤‚©ACreate()‚ÉW–ñ‚³‚ê‚Ä‚¢‚é‚Ì‚Å‚ ‚ê‚ÎE_NOTIMPL‚Ì‚Ü‚Ü‚Å‚à‚æ‚¢
-	// Œ»İ‚ÌGameMain‚Å‚ÍCreate()‚Å‚Ù‚Æ‚ñ‚Ç‚ÌInit/Loadˆ—‚ªs‚í‚ê‚Ä‚¢‚é‚æ‚¤‚Å‚·
-	return S_OK; // ¬Œ÷‚ğ•Ô‚·
+	// ã“ã“ã§å®Ÿéš›ã®ãƒ­ãƒ¼ãƒ‰å‡¦ç†ã‚’è¡Œã†ã‹ã€Create()ã«é›†ç´„ã•ã‚Œã¦ã„ã‚‹ã®ã§ã‚ã‚Œã°E_NOTIMPLã®ã¾ã¾ã§ã‚‚ã‚ˆã„
+	// ç¾åœ¨ã®GameMainã§ã¯Create()ã§ã»ã¨ã‚“ã©ã®Init/Loadå‡¦ç†ãŒè¡Œã‚ã‚Œã¦ã„ã‚‹ã‚ˆã†ã§ã™
+	return S_OK; // æˆåŠŸã‚’è¿”ã™
 }

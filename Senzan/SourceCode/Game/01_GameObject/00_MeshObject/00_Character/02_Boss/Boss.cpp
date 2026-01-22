@@ -10,20 +10,17 @@
 #include "BossAttackStateBase/BossAttackStateBase.h"
 #include "BossAttackStateBase/BossStompState/BossStompState.h"
 #include "BossAttackStateBase/BossSlashState/BossSlashState.h"
-#include "BossAttackStateBase/BossChargeSlashState/BossChargeSlashState.h"
 #include "BossAttackStateBase/BossShoutState/BossShoutState.h"
 
 #include "System/Utility/StateMachine/StateMachine.h"
 
 #include "BossAttackStateBase/BossJumpOnlState/BossJumpOnlState.h"
-#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossLaserState/BossLaserState.h"
 #include "BossAttackStateBase/BossParryState/BossParryState.h"
 
 #include "Resource/Mesh/02_Skin/SkinMesh.h"
 
 #include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossDeadState/BossDeadState.h"
 
-#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossChargeState/BossChargeState.h"
 
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossThrowingState/BossThrowingState.h"
 
@@ -69,7 +66,7 @@ Boss::Boss()
 	m_spTransform->SetScale(scale);
 	m_spTransform->SetRotationDegrees(Rotation);
 
-	m_MaxHP = 1000000.f;
+	m_MaxHP = 5000.f;
 	m_HP = m_MaxHP;
 
 	// 攻撃の追加.
@@ -143,7 +140,7 @@ Boss::Boss()
 	m_pStompCollider->SetHeight(15.0f);
 
 	m_pStompCollider->SetActive(false);
-	m_pStompCollider->SetColor(Color::eColor::Gray);
+	m_pStompCollider->SetColor(Color::eColor::Red);
 
 	m_upColliders->AddCollider(std::move(stompCol));
 
@@ -151,18 +148,18 @@ Boss::Boss()
 
 	m_pShoutCollider = Shout_collider.get(); 
 
-	Shout_collider->SetColor(Color::eColor::White);
-	Shout_collider->SetHeight(75.0f);
-	Shout_collider->SetRadius(50.0f);
-	Shout_collider->SetPositionOffset(0.f, 1.5f, 0.f);
-	Shout_collider->SetAttackAmount(10.f);
-	Shout_collider->SetMyMask(eCollisionGroup::Enemy_Attack); 
-	Shout_collider->SetTarGetTargetMask(eCollisionGroup::Player_Attack);
+	m_pShoutCollider->SetColor(Color::eColor::Cyan);
+	m_pShoutCollider->SetHeight(1.0f);
+	m_pShoutCollider->SetRadius(1.0f);
+	m_pShoutCollider->SetPositionOffset(0.f, 1.5f, 0.f);
+	m_pShoutCollider->SetAttackAmount(100.f);
+	m_pShoutCollider->SetMyMask(eCollisionGroup::BossPress);
+	m_pShoutCollider->SetTarGetTargetMask(eCollisionGroup::Press | eCollisionGroup::Player_Damage);
 
 	m_pShoutCollider->SetActive(false);
 	m_upColliders->AddCollider(std::move(Shout_collider));
 
-    m_State->ChangeState(std::make_shared<BossSlashState>(this));
+    m_State->ChangeState(std::make_shared<BossStompState>(this));
     /* BossSlashState
  BossChargeState
  BossChargeSlashState
@@ -196,13 +193,10 @@ void Boss::Update()
             IMGUI_JP("Idle"),
             IMGUI_JP("Move"),
             IMGUI_JP("Slash"),
-            IMGUI_JP("Charge"),
-            IMGUI_JP("ChargeSlash"),
             IMGUI_JP("Shout"),
-            IMGUI_JP("Special"),
+            IMGUI_JP("JumpOn"),
             IMGUI_JP("Stomp"),
             IMGUI_JP("Throwing"),
-            IMGUI_JP("Laser"),
             IMGUI_JP("Parry")
         };
 
@@ -214,31 +208,20 @@ void Boss::Update()
             case 0: m_State->ChangeState(std::make_shared<BossIdolState>(this)); break;
             case 1: m_State->ChangeState(std::make_shared<BossMoveState>(this)); break;
             case 2: m_State->ChangeState(std::make_shared<BossSlashState>(this)); break;
-            case 3: m_State->ChangeState(std::make_shared<BossChargeState>(this)); break;
-            case 4: m_State->ChangeState(std::make_shared<BossChargeSlashState>(this)); break;
-            case 5: m_State->ChangeState(std::make_shared<BossShoutState>(this)); break;
-            case 6: m_State->ChangeState(std::make_shared<BossJumpOnlState>(this)); break;
-            case 7: m_State->ChangeState(std::make_shared<BossStompState>(this)); break;
-            case 8: m_State->ChangeState(std::make_shared<BossThrowingState>(this)); break;
-            case 9: m_State->ChangeState(std::make_shared<BossLaserState>(this)); break;
-            case 10: m_State->ChangeState(std::make_shared<BossParryState>(this)); break;
+            case 3: m_State->ChangeState(std::make_shared<BossShoutState>(this)); break;
+            case 4: m_State->ChangeState(std::make_shared<BossJumpOnlState>(this)); break;
+            case 5: m_State->ChangeState(std::make_shared<BossStompState>(this)); break;
+            case 6: m_State->ChangeState(std::make_shared<BossThrowingState>(this)); break;
+            case 7: m_State->ChangeState(std::make_shared<BossParryState>(this)); break;
             default: break;
             }
         }
 
         ImGui::SameLine();
         if (ImGui::Button(IMGUI_JP("Enter Slash (Hotkey)"))) {
-            m_State->ChangeState(std::make_shared<BossSlashState>(this));
+            m_State->ChangeState(std::make_shared<BossStompState>(this));
         }
-
-        ImGui::Text(IMGUI_JP("Note: attack states expose per-state ImGui when active."));
-    }
-    ImGui::End();
-
-    // 既存のホットキーも維持
-    if (GetAsyncKeyState(VK_RETURN) & 0x0001)
-    {
-        m_State->ChangeState(std::make_shared<BossSlashState>(this));
+        ImGui::End();
     }
 #endif
 }
@@ -254,132 +237,7 @@ void Boss::LateUpdate()
 	// ステートマシーンの最終更新を実行.
 	m_State->LateUpdate();
 
-    // アクティブなコライダーがあれば対応するボーンから Transform を更新して外部供給する
-    if (m_pSlashCollider && m_pSlashCollider->GetActive()) {
-        // convert degree Euler offsets to quaternion
-        DirectX::XMFLOAT3 deg = m_SlashRotOffsetDeg;
-        DirectX::XMVECTOR rotRad = DirectX::XMVectorSet(DirectX::XMConvertToRadians(deg.x), DirectX::XMConvertToRadians(deg.y), DirectX::XMConvertToRadians(deg.z), 0.0f);
-        DirectX::XMVECTOR qx = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(1,0,0,0), DirectX::XMVectorGetX(rotRad));
-        DirectX::XMVECTOR qy = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(0,1,0,0), DirectX::XMVectorGetY(rotRad));
-        DirectX::XMVECTOR qz = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(0,0,1,0), DirectX::XMVectorGetZ(rotRad));
-        DirectX::XMVECTOR q = DirectX::XMQuaternionMultiply(DirectX::XMQuaternionMultiply(qz, qy), qx);
-        DirectX::XMFLOAT4 rotOffset; DirectX::XMStoreFloat4(&rotOffset, q);
-
-        if (!m_pSlashBoneFrame) {
-            if (auto skin = std::dynamic_pointer_cast<SkinMesh>(GetAttachMesh().lock())) {
-                m_pSlashBoneFrame = skin->GetFrameByName("boss_Hand_R");
-            }
-        }
-
-        if (m_pSlashBoneFrame) {
-            MYFRAME* frame = (MYFRAME*)m_pSlashBoneFrame;
-            DirectX::XMMATRIX bone_local_matrix = D3DXMatrixToXMMatrix(frame->CombinedTransformationMatrix);
-            DirectX::XMMATRIX boss_world_matrix = m_spTransform->GetWorldMatrix();
-            DirectX::XMMATRIX bone_world_matrix = bone_local_matrix * boss_world_matrix;
-
-            DirectX::XMVECTOR v_final_pos, v_final_quat, v_final_scale;
-            DirectX::XMMatrixDecompose(&v_final_scale, &v_final_quat, &v_final_pos, bone_world_matrix);
-            DirectX::XMStoreFloat3(&m_SlashBoneWorldTransform.Position, v_final_pos);
-            
-            DirectX::XMVECTOR q_offset = DirectX::XMLoadFloat4(&rotOffset);
-            DirectX::XMVECTOR q_result = DirectX::XMQuaternionMultiply(q_offset, v_final_quat);
-            DirectX::XMStoreFloat4(&m_SlashBoneWorldTransform.Quaternion, q_result);
-            DirectX::XMStoreFloat3(&m_SlashBoneWorldTransform.Scale, v_final_scale);
-            m_SlashBoneWorldTransform.UpdateRotationFromQuaternion();
-
-            DirectX::XMVECTOR b_pos, b_quat, b_scale;
-            DirectX::XMMatrixDecompose(&b_scale, &b_quat, &b_pos, boss_world_matrix);
-            DirectX::XMVECTOR relative_pos = DirectX::XMVectorSubtract(v_final_pos, b_pos);
-            DirectX::XMFLOAT3 f_relative_pos; DirectX::XMStoreFloat3(&f_relative_pos, relative_pos);
-            m_pSlashCollider->SetPositionOffset(f_relative_pos.x, f_relative_pos.y, f_relative_pos.z);
-        }
-        else {
-            UpdateColliderFromBone("boss_Hand_R", m_pSlashCollider, m_SlashBoneWorldTransform, true, rotOffset);
-        }
-    }
-    if (m_pStompCollider && m_pStompCollider->GetActive()) {
-        DirectX::XMFLOAT3 deg = m_StompRotOffsetDeg;
-        DirectX::XMVECTOR rotRad = DirectX::XMVectorSet(DirectX::XMConvertToRadians(deg.x), DirectX::XMConvertToRadians(deg.y), DirectX::XMConvertToRadians(deg.z), 0.0f);
-        DirectX::XMVECTOR qx = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(1,0,0,0), DirectX::XMVectorGetX(rotRad));
-        DirectX::XMVECTOR qy = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(0,1,0,0), DirectX::XMVectorGetY(rotRad));
-        DirectX::XMVECTOR qz = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(0,0,1,0), DirectX::XMVectorGetZ(rotRad));
-        DirectX::XMVECTOR q = DirectX::XMQuaternionMultiply(DirectX::XMQuaternionMultiply(qz, qy), qx);
-        DirectX::XMFLOAT4 rotOffset; DirectX::XMStoreFloat4(&rotOffset, q);
-
-        if (!m_pStompBoneFrame) {
-            if (auto skin = std::dynamic_pointer_cast<SkinMesh>(GetAttachMesh().lock())) {
-                m_pStompBoneFrame = skin->GetFrameByName("boss_pSphere28");
-            }
-        }
-
-        if (m_pStompBoneFrame) {
-            MYFRAME* frame = (MYFRAME*)m_pStompBoneFrame;
-            DirectX::XMMATRIX bone_local_matrix = D3DXMatrixToXMMatrix(frame->CombinedTransformationMatrix);
-            DirectX::XMMATRIX boss_world_matrix = m_spTransform->GetWorldMatrix();
-            DirectX::XMMATRIX bone_world_matrix = bone_local_matrix * boss_world_matrix;
-
-            DirectX::XMVECTOR v_final_pos, v_final_quat, v_final_scale;
-            DirectX::XMMatrixDecompose(&v_final_scale, &v_final_quat, &v_final_pos, bone_world_matrix);
-            DirectX::XMStoreFloat3(&m_StompBoneWorldTransform.Position, v_final_pos);
-
-            DirectX::XMVECTOR q_offset = DirectX::XMLoadFloat4(&rotOffset);
-            DirectX::XMVECTOR q_result = DirectX::XMQuaternionMultiply(q_offset, v_final_quat);
-            DirectX::XMStoreFloat4(&m_StompBoneWorldTransform.Quaternion, q_result);
-            DirectX::XMStoreFloat3(&m_StompBoneWorldTransform.Scale, v_final_scale);
-            m_StompBoneWorldTransform.UpdateRotationFromQuaternion();
-
-            DirectX::XMVECTOR b_pos, b_quat, b_scale;
-            DirectX::XMMatrixDecompose(&b_scale, &b_quat, &b_pos, boss_world_matrix);
-            DirectX::XMVECTOR relative_pos = DirectX::XMVectorSubtract(v_final_pos, b_pos);
-            DirectX::XMFLOAT3 f_relative_pos; DirectX::XMStoreFloat3(&f_relative_pos, relative_pos);
-            m_pStompCollider->SetPositionOffset(f_relative_pos.x, f_relative_pos.y, f_relative_pos.z);
-        }
-        else {
-            UpdateColliderFromBone("boss_pSphere28", m_pStompCollider, m_StompBoneWorldTransform, true, rotOffset);
-        }
-    }
-    if (m_pShoutCollider && m_pShoutCollider->GetActive()) {
-        DirectX::XMFLOAT3 deg = m_ShoutRotOffsetDeg;
-        DirectX::XMVECTOR rotRad = DirectX::XMVectorSet(DirectX::XMConvertToRadians(deg.x), DirectX::XMConvertToRadians(deg.y), DirectX::XMConvertToRadians(deg.z), 0.0f);
-        DirectX::XMVECTOR qx = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(1,0,0,0), DirectX::XMVectorGetX(rotRad));
-        DirectX::XMVECTOR qy = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(0,1,0,0), DirectX::XMVectorGetY(rotRad));
-        DirectX::XMVECTOR qz = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(0,0,1,0), DirectX::XMVectorGetZ(rotRad));
-        DirectX::XMVECTOR q = DirectX::XMQuaternionMultiply(DirectX::XMQuaternionMultiply(qz, qy), qx);
-        DirectX::XMFLOAT4 rotOffset; DirectX::XMStoreFloat4(&rotOffset, q);
-
-        if (!m_pShoutBoneFrame) {
-            if (auto skin = std::dynamic_pointer_cast<SkinMesh>(GetAttachMesh().lock())) {
-                m_pShoutBoneFrame = skin->GetFrameByName("boss_Shout");
-            }
-        }
-
-        if (m_pShoutBoneFrame) {
-            MYFRAME* frame = (MYFRAME*)m_pShoutBoneFrame;
-            DirectX::XMMATRIX bone_local_matrix = D3DXMatrixToXMMatrix(frame->CombinedTransformationMatrix);
-            DirectX::XMMATRIX boss_world_matrix = m_spTransform->GetWorldMatrix();
-            DirectX::XMMATRIX bone_world_matrix = bone_local_matrix * boss_world_matrix;
-
-            DirectX::XMVECTOR v_final_pos, v_final_quat, v_final_scale;
-            DirectX::XMMatrixDecompose(&v_final_scale, &v_final_quat, &v_final_pos, bone_world_matrix);
-            DirectX::XMStoreFloat3(&m_ShoutBoneWorldTransform.Position, v_final_pos);
-
-            DirectX::XMVECTOR q_offset = DirectX::XMLoadFloat4(&rotOffset);
-            DirectX::XMVECTOR q_result = DirectX::XMQuaternionMultiply(q_offset, v_final_quat);
-            DirectX::XMStoreFloat4(&m_ShoutBoneWorldTransform.Quaternion, q_result);
-            DirectX::XMStoreFloat3(&m_ShoutBoneWorldTransform.Scale, v_final_scale);
-            m_ShoutBoneWorldTransform.UpdateRotationFromQuaternion();
-
-            DirectX::XMVECTOR b_pos, b_quat, b_scale;
-            DirectX::XMMatrixDecompose(&b_scale, &b_quat, &b_pos, boss_world_matrix);
-            DirectX::XMVECTOR relative_pos = DirectX::XMVectorSubtract(v_final_pos, b_pos);
-            DirectX::XMFLOAT3 f_relative_pos; DirectX::XMStoreFloat3(&f_relative_pos, relative_pos);
-            m_pShoutCollider->SetPositionOffset(f_relative_pos.x, f_relative_pos.y, f_relative_pos.z);
-        }
-        else {
-            UpdateColliderFromBone("boss_Shout", m_pShoutCollider, m_ShoutBoneWorldTransform, true, rotOffset);
-        }
-    }
-
+    // コライダーのオフセット適用は各ステートの UpdateBaseLogic で行う
     // 衝突処理
     HandleParryDetection();
     HandleDamageDetection();
@@ -391,10 +249,6 @@ void Boss::Draw()
 {
 	MeshObject::Draw();
 	m_State->Draw();
-
-
-    
-
 }
 
 void Boss::Init()
@@ -447,6 +301,11 @@ void Boss::SetTargetPos(const DirectX::XMFLOAT3 Player_Pos)
 	m_PlayerPos = Player_Pos;
 }
 
+void Boss::OffAttackCollider() {
+    m_pSlashCollider->SetActive(false);
+    m_pStompCollider->SetActive(false);
+    m_pShoutCollider->SetActive(false);
+}
 
 // 衝突_被ダメージ.
 void Boss::HandleDamageDetection()
@@ -475,6 +334,8 @@ void Boss::HandleDamageDetection()
 			{
 				// ダメージを適用 
 				ApplyDamage(info.AttackAmount);
+                SoundManager::Play("Damage");
+                SoundManager::SetVolume("Damage", 9000);
 
 				Time::GetInstance().SetWorldTimeScale(0.1f, 0.016f * 5);
 				CameraManager::GetInstance().ShakeCamera(0.1f, 2.5f); // カメラを少し揺らす.
@@ -510,7 +371,7 @@ void Boss::HandleAttackDetection()
 
 			if ((other_group & eCollisionGroup::Player_Damage) != eCollisionGroup::None)
 			{
-				SetAttackColliderActive(false);
+                OffAttackCollider();
 
 				// 1フレームに1回.
 				return;
@@ -684,14 +545,6 @@ bool Boss::UpdateColliderFromBone(
         outTransform.UpdateRotationFromQuaternion();
     }
 
-    // compute relative position offset for collider
-    DirectX::XMVECTOR b_pos, b_quat, b_scale;
-    DirectX::XMMatrixDecompose(&b_scale, &b_quat, &b_pos, boss_world_matrix);
-    DirectX::XMVECTOR relative_pos = DirectX::XMVectorSubtract(v_final_pos, b_pos);
-    DirectX::XMFLOAT3 f_relative_pos; DirectX::XMStoreFloat3(&f_relative_pos, relative_pos);
-    collider->SetPositionOffset(f_relative_pos.x, f_relative_pos.y, f_relative_pos.z);
-
-
-
+    // オフセットは各ステートの ColliderWindow で管理
     return true;
 }

@@ -49,6 +49,8 @@ private:
 	float m_Gravity;
 	//ジャンプ中のフラグ.
 	bool m_JumpFrag;
+	// 前フレームの Y 値を保持してスムーズに移動させる
+	// float m_LastY; // 一時無効化: Y 制御オフ
 	//着地フラグ.
 	//この時に時間を取得して3秒後にIdolに遷移等を書く.
 	bool m_GroundedFrag;
@@ -62,6 +64,28 @@ private:
 
 	//上がる速度のスピード設定用.
 	float m_UpSpeed;
+    // timers / flags
+    // 待機してからアニメ速度を遅くする設定
+    float m_WaitSeconds = 0.4f;
+    float m_SlowAnimSpeed = 0.5f;
+    // 事前にスロー化するためのタイマー
+    // float m_PreloadTimer = 0.0f;
+    // bool  m_HasPreSlowed = false;
+    bool  m_AnimSlowed = false;
+    bool  m_IsMoving = false;
+    // 連続待ち用タイマー
+    float m_StateTimer = 0.0f;
+    /* 上昇/下降関連を一時無効化
+    // ゆったり上がるフェーズ制御
+    float m_AscentTime;       // 上昇にかける時間
+    float m_AscentTimer;      // 上昇タイマー
+    bool  m_IsInFallPhase;    // 落下フェーズに移行したか
+
+    // 落下フェーズの水平加速
+    float m_FallAccel;        // 水平加速量
+    float m_CurrentHorizSpeed;// 現在の水平速度
+    float m_MaxFallHorizSpeed;// 最大水平速度
+    */
 
 	//====================================================
 	// 飛びかかり（前方移動）用メンバ変数.

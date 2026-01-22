@@ -28,6 +28,9 @@ constexpr PlayerState::eID AttackCombo_1::GetStateID() const
 
 void AttackCombo_1::Enter()
 {
+    SoundManager::GetInstance().Play("Swing");
+    SoundManager::GetInstance().SetVolume("Swing", 7000);
+
     Combat::Enter();
 
     m_pOwner->SetIsLoop(false);
@@ -70,9 +73,10 @@ void AttackCombo_1::Enter()
 void AttackCombo_1::Update()
 {
 
+    static bool isStop = false;
+#if _DEBUG
     ImGui::Begin(IMGUI_JP("AttackCombo_1 デバッグ"));
 
-    static bool isStop = false;
     ImGui::Checkbox(IMGUI_JP("ストップ"), &isStop);
 
     RenderColliderWindowsUI("AttackCombo_1 Collider Windows");
@@ -139,8 +143,12 @@ void AttackCombo_1::Update()
         }
         catch (...) {}
     }
+    if (ImGui::Button(IMGUI_JP("Restert"))) {
+        this->Enter();
+    }
 
     ImGui::End();
+#endif
 
     if (!isStop)
     {
