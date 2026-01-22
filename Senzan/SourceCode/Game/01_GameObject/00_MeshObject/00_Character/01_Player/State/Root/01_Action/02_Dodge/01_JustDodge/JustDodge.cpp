@@ -1,9 +1,10 @@
-#include "JustDodge.h"
+ï»¿#include "JustDodge.h"
 
 #include "00_MeshObject/00_Character/01_Player/Player.h"
 
 #include "Game/05_InputDevice/VirtualPad.h"
 #include "System/Singleton/CameraManager/CameraManager.h"
+#include "System/Singleton/PostEffectManager/PostEffectManager.h"
 
 #include "../Dodge.h"
 
@@ -19,7 +20,7 @@ JustDodge::~JustDodge()
 {
 }
 
-// ID‚ÌŽæ“¾.
+// IDã®å–å¾—.
 constexpr PlayerState::eID JustDodge::GetStateID() const
 {
 	return PlayerState::eID::JustDodge;
@@ -32,64 +33,60 @@ void JustDodge::Enter()
 	m_Distance = 250.f;
 	m_MaxTime = 1.8f;
 
-    Time::GetInstance().SetWorldTimeScale(0.1f, 1.5f);
+    Time::GetInstance().SetWorldTimeScale(0.1f, 1.5f, true);
 
     m_pOwner->SetIsLoop(false);
     m_pOwner->SetAnimSpeed(JUSTDODGE_ANIM_SPEED);
     m_pOwner->ChangeAnim(Player::eAnim::Dodge);
+
+    PostEffectManager::GetInstance().SetGray(true);
 }
 
 void JustDodge::Update()
 {
-    Dodge::Update();
+    //Dodge::Update();
 
-	// ƒfƒ‹ƒ^ƒ^ƒCƒ€‚ÌŒvŽZ.
+	// ãƒ‡ãƒ«ã‚¿ã‚¿ã‚¤ãƒ ã®è¨ˆç®—.
 	double animSpeed = MyMath::IsNearlyEqual(m_pOwner->m_AnimSpeed, 0.0) ? 0.0 : m_pOwner->m_AnimSpeed;
 	float deltaTime = static_cast<float>(animSpeed) * m_pOwner->GetDelta();
 
-	// ŽžŠÔ‚Æ‹——£‚ÌXV.
+	// æ™‚é–“ã¨è·é›¢ã®æ›´æ–°.
 	m_currentTime += deltaTime;
-    // “ü—Í‚ðŽæ“¾.
+    // å…¥åŠ›ã‚’å–å¾—.
     DirectX::XMFLOAT2 input_vec = VirtualPad::GetInstance().GetAxisInput(VirtualPad::eGameAxisAction::Move);
 
-    // “ü—Í‚ª‚È‚¯‚ê‚Î‘Ò‹@‚Ö‘JˆÚ.
-    if (MyMath::IsVector2NearlyZero(input_vec, 0.f)) {
-        m_pOwner->ChangeState(PlayerState::eID::Idle);
-        return;
-    }
-
-    // ‚»‚ê‚¼‚êƒxƒNƒgƒ‹‚ðŽæ“¾.
+    // ãã‚Œãžã‚Œãƒ™ã‚¯ãƒˆãƒ«ã‚’å–å¾—.
     DirectX::XMFLOAT3 camera_forward_vec = CameraManager::GetInstance().GetCurrentCamera()->GetForwardVec();
     DirectX::XMFLOAT3 camera_right_vec = CameraManager::GetInstance().GetCurrentCamera()->GetRightVec();
     DirectX::XMVECTOR v_camera_forward = DirectX::XMLoadFloat3(&camera_forward_vec);
     DirectX::XMVECTOR v_camera_right = DirectX::XMLoadFloat3(&camera_right_vec);
 
-    // YÀ•W‚ðíœ.
+    // Yåº§æ¨™ã‚’å‰Šé™¤.
     v_camera_forward = DirectX::XMVectorSetY(v_camera_forward, 0.0f);
     v_camera_right = DirectX::XMVectorSetY(v_camera_right, 0.0f);
 
-    // ³‹K‰».
+    // æ­£è¦åŒ–.
     v_camera_forward = DirectX::XMVector3Normalize(v_camera_forward);
     v_camera_right = DirectX::XMVector3Normalize(v_camera_right);
 
-    // “ü—Í‚ÆƒxƒNƒgƒ‹‚ð‡¬.
+    // å…¥åŠ›ã¨ãƒ™ã‚¯ãƒˆãƒ«ã‚’åˆæˆ.
     DirectX::XMVECTOR v_movement_z = DirectX::XMVectorScale(v_camera_forward, input_vec.y);
     DirectX::XMVECTOR v_movement_x = DirectX::XMVectorScale(v_camera_right, input_vec.x);
 
-    // ÅI“I‚ÈˆÚ“®ƒxƒNƒgƒ‹‚ð‡¬.
+    // æœ€çµ‚çš„ãªç§»å‹•ãƒ™ã‚¯ãƒˆãƒ«ã‚’åˆæˆ.
     DirectX::XMVECTOR v_final_move = DirectX::XMVectorAdd(v_movement_z, v_movement_x);
 
-    // ‘¬“x * delta * ŽžŠÔŽÚ“x.
+    // é€Ÿåº¦ * delta * æ™‚é–“å°ºåº¦.
     float speed_and_delta = m_pOwner->m_RunMoveSpeed * m_pOwner->GetDelta();
     v_final_move = DirectX::XMVectorScale(v_final_move, speed_and_delta);
     DirectX::XMFLOAT3 final_move;
     DirectX::XMStoreFloat3(&final_move, v_final_move);
 
-    // ˆÚ“®‰ÁŽZ.
+    // ç§»å‹•åŠ ç®—.
     m_pOwner->m_MoveVec.x = final_move.x;
     m_pOwner->m_MoveVec.y = final_move.z;
 
-	// ‰ñ”ðŠ®—¹.
+	// å›žé¿å®Œäº†.
 	if (m_currentTime >= m_MaxTime)
 	{
 		m_pOwner->ChangeState(PlayerState::eID::Idle);
@@ -111,6 +108,7 @@ void JustDodge::Draw()
 void JustDodge::Exit()
 {
 	Dodge::Exit();
+    PostEffectManager::GetInstance().SetGray(false);
 }
 
 } // PlayerState.

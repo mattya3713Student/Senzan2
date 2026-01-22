@@ -23,16 +23,16 @@ void CollisionDetector::ExecuteCollisionDetection()
             ColliderBase* colliderB = m_Colliders[j];
             if (!colliderA || !colliderB) { continue; }
             if (!colliderA->GetActive() || !colliderB->GetActive()) { continue; }
-#if 0
+#if 1
 
             eCollisionGroup group_a = colliderA->GetMyMask();
             eCollisionGroup group_b = colliderB->GetMyMask();
 
-            bool is_pattern1 = (group_a & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None &&
-                (group_b & eCollisionGroup::Player_JustDodge) != eCollisionGroup::None;
+            bool is_pattern1 = (group_a & eCollisionGroup::Press) != eCollisionGroup::None &&
+                (group_b & eCollisionGroup::BossPress) != eCollisionGroup::None;
 
-            bool is_pattern2 = (group_a & eCollisionGroup::Player_JustDodge) != eCollisionGroup::None &&
-                (group_b & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None;
+            bool is_pattern2 = (group_a & eCollisionGroup::BossPress) != eCollisionGroup::None &&
+                (group_b & eCollisionGroup::Press) != eCollisionGroup::None;
 
             // パターン1 または パターン2 の時に実行
             if (is_pattern1 || is_pattern2)
@@ -57,8 +57,9 @@ void CollisionDetector::ExecuteCollisionDetection()
             // Collider B への情報追加.
             CollisionInfo info_reverse = info;
 
-            // 法線ベクトルを反転.
+            // 法線ベクトルを反転 (反対方向を与える).
             DirectX::XMVECTOR v_normal_reverse = DirectX::XMLoadFloat3(&info.Normal);
+            v_normal_reverse = DirectX::XMVectorNegate(v_normal_reverse);
             DirectX::XMStoreFloat3(&info_reverse.Normal, v_normal_reverse);
 
             // ポインタを入れ替え.

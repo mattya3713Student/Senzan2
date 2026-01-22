@@ -1,21 +1,21 @@
-#pragma once
+ï»¿#pragma once
 
 #include <dsound.h>
 #include <mmsystem.h>
 #include <string>
 
-// DirectSound‚¨‚æ‚Ñƒ}ƒ‹ƒ`ƒƒfƒBƒAAPI—p‚Ìƒ‰ƒCƒuƒ‰ƒŠƒŠƒ“ƒN
+// DirectSoundãŠã‚ˆã³ãƒãƒ«ãƒãƒ¡ãƒ‡ã‚£ã‚¢APIç”¨ã®ãƒ©ã‚¤ãƒ–ãƒ©ãƒªãƒªãƒ³ã‚¯
 #pragma comment(lib, "dsound.lib")
 #pragma comment(lib, "winmm.lib")
 
 /******************************************************************
-* CDirectSoundƒNƒ‰ƒX.
-* ŒÂ•Ê‚Ì‰¹ºƒf[ƒ^iƒZƒJƒ“ƒ_ƒŠƒoƒbƒtƒ@j‚ğŠÇ—‚·‚éƒNƒ‰ƒX.
+* CDirectSoundã‚¯ãƒ©ã‚¹.
+* å€‹åˆ¥ã®éŸ³å£°ãƒ‡ãƒ¼ã‚¿ï¼ˆã‚»ã‚«ãƒ³ãƒ€ãƒªãƒãƒƒãƒ•ã‚¡ï¼‰ã‚’ç®¡ç†ã™ã‚‹ã‚¯ãƒ©ã‚¹.
 ******************************************************************/
 class DirectSound
 {
 public:
-    // WAVƒtƒ@ƒCƒ‹‰ğÍ—p\‘¢‘Ì
+    // WAVãƒ•ã‚¡ã‚¤ãƒ«è§£æç”¨æ§‹é€ ä½“
     struct WaveData
     {
         WAVEFORMATEX WavFormat;
@@ -29,25 +29,25 @@ public:
     DirectSound();
     ~DirectSound();
 
-    // ‰Šú‰»iƒtƒ@ƒCƒ‹ƒpƒX‚ÆDirectSoundƒCƒ“ƒ^[ƒtƒF[ƒX‚ğó‚¯æ‚éj
+    // åˆæœŸåŒ–ï¼ˆãƒ•ã‚¡ã‚¤ãƒ«ãƒ‘ã‚¹ã¨DirectSoundã‚¤ãƒ³ã‚¿ãƒ¼ãƒ•ã‚§ãƒ¼ã‚¹ã‚’å—ã‘å–ã‚‹ï¼‰
     bool Init(const std::wstring& path, LPDIRECTSOUND8 lpSoundInterface);
 
-    // ‰ğ•ú
+    // è§£æ”¾
     void Release();
 
-    // Ä¶
+    // å†ç”Ÿ
     void Play(bool isLoop);
-    // ’â~
+    // åœæ­¢
     void Stop();
-    // Ä¶ˆÊ’u‚ğÅ‰‚É–ß‚·
+    // å†ç”Ÿä½ç½®ã‚’æœ€åˆã«æˆ»ã™
     void ResetPosition();
-    // ‰¹—Ê’²® (0 ` 10000)
+    // éŸ³é‡èª¿æ•´ (0 ï½ 10000)
     void SetVolume(int volume);
 
 private:
-    // WAVƒtƒ@ƒCƒ‹‚Ì“Ç‚İ‚İ
+    // WAVãƒ•ã‚¡ã‚¤ãƒ«ã®èª­ã¿è¾¼ã¿
     bool LoadWavFile(const std::wstring& fileName, WaveData* outWaveData);
 
 private:
-    LPDIRECTSOUNDBUFFER m_lpSoundBuffer;    // ƒZƒJƒ“ƒ_ƒŠƒoƒbƒtƒ@
+    LPDIRECTSOUNDBUFFER m_lpSoundBuffer;    // ã‚»ã‚«ãƒ³ãƒ€ãƒªãƒãƒƒãƒ•ã‚¡
 };

@@ -145,11 +145,7 @@ protected:
 	// 検出された衝突情報のリスト.
 	std::vector<CollisionInfo> m_CollisionEvents;
 
-	// 外部供給のTransformポインタ.
-	const Transform* m_pExternalTransform = nullptr;
-
 public:
-
 	//------------デバッグ描画用-----------.
 
 	virtual void SetDebugInfo() = 0;
@@ -162,20 +158,6 @@ protected:
 // 座標を取得する.
 inline const DirectX::XMFLOAT3 ColliderBase::GetPosition() const noexcept
 {
-	// 外部供給Transformが設定されていればそれを使う（ワールド座標）
-	if (m_pExternalTransform)
-	{
-		// 外部Transformはワールド座標を表す想定。オフセットを加算して戻す。
-		DirectX::XMVECTOR v_position = DirectX::XMLoadFloat3(&m_pExternalTransform->Position);
-		DirectX::XMVECTOR v_offset = DirectX::XMLoadFloat3(&m_PositionOffset);
-
-		DirectX::XMVECTOR v_result_pos = DirectX::XMVectorAdd(v_position, v_offset);
-
-		DirectX::XMFLOAT3 result_pos = {};
-		DirectX::XMStoreFloat3(&result_pos, v_result_pos);
-		return result_pos;
-	}
-
 	if (auto spTransform = m_wpTransform.lock())
 	{
 		DirectX::XMVECTOR v_position = DirectX::XMLoadFloat3(&spTransform->Position);

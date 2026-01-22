@@ -51,7 +51,6 @@ void BossJumpOnlState::Update()
 	case BossJumpOnlState::enSpecial::None:
 		m_Velocity = {};
 		// 当たり判定を有効化.
-		m_pOwner->SetAttackColliderActive(true);
 		m_List = enSpecial::Charge;
 		break;
 
@@ -95,31 +94,28 @@ void BossJumpOnlState::Draw()
 
 void BossJumpOnlState::Exit()
 {
-	m_GroundedFrag = true;
-	m_SpecialFrag = false;
-	m_AttackTimer = 0.0f;
+    m_GroundedFrag = true;
+    m_SpecialFrag = false;
+    m_AttackTimer = 0.0f;
 
-	// 終了時にプレイヤーの方を向き直す
-	const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
-	DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&BossPosF);
+    // 終了時にプレイヤーの方を向き直す
+    const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
+    DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&BossPosF);
 
-	const DirectX::XMFLOAT3 PlayerPosF = m_pOwner->GetTargetPos();
-	DirectX::XMVECTOR PlayerPosXM = DirectX::XMLoadFloat3(&PlayerPosF);
+    const DirectX::XMFLOAT3 PlayerPosF = m_pOwner->GetTargetPos();
+    DirectX::XMVECTOR PlayerPosXM = DirectX::XMLoadFloat3(&PlayerPosF);
 
-	DirectX::XMVECTOR Direction = DirectX::XMVectorSubtract(PlayerPosXM, BossPosXM);
-	Direction = DirectX::XMVectorSetY(Direction, 0.0f);
+    DirectX::XMVECTOR Direction = DirectX::XMVectorSubtract(PlayerPosXM, BossPosXM);
+    Direction = DirectX::XMVectorSetY(Direction, 0.0f);
 
-	if (XMVectorGetX(XMVector3LengthSq(Direction)) > 0.0001f)
-	{
-		float dx = DirectX::XMVectorGetX(Direction);
-		float dz = DirectX::XMVectorGetZ(Direction);
-		// プレイヤーの方向を正面にする
-		float angle_radian = std::atan2f(dx, dz) + XM_PI;
-		m_pOwner->SetRotationY(angle_radian);
-	}
-
-	// 当たり判定を有効化.
-	m_pOwner->SetAttackColliderActive(false);
+    if (XMVectorGetX(XMVector3LengthSq(Direction)) > 0.0001f)
+    {
+        float dx = DirectX::XMVectorGetX(Direction);
+        float dz = DirectX::XMVectorGetZ(Direction);
+        // プレイヤーの方向を正面にする
+        float angle_radian = std::atan2f(dx, dz) + XM_PI;
+        m_pOwner->SetRotationY(angle_radian);
+    }
 }
 
 void BossJumpOnlState::ChargeTime()
@@ -179,15 +175,15 @@ void BossJumpOnlState::BossAttack()
 	const float One = 1.0f;
 	const float MinusOne = -1.0f;
 
-	XMFLOAT3 CurrentPos = m_pOwner->GetPosition();
-	XMFLOAT3 TargetPosF = m_pOwner->GetTargetPos();
+    DirectX::XMFLOAT3 CurrentPos = m_pOwner->GetPosition();
+    DirectX::XMFLOAT3 TargetPosF = m_pOwner->GetTargetPos();
 	TargetPosF.y += PlayerYOffset;
 
-	XMVECTOR BossPosVec = XMLoadFloat3(&CurrentPos);
-	XMVECTOR PlayerPosVec = XMLoadFloat3(&TargetPosF);
+    DirectX::XMVECTOR BossPosVec = XMLoadFloat3(&CurrentPos);
+    DirectX::XMVECTOR PlayerPosVec = XMLoadFloat3(&TargetPosF);
 
 	// 距離判定と高さ判定による終了処理
-	float DistanceToPlayer = XMVectorGetX(XMVector3Length(XMVectorSubtract(PlayerPosVec, BossPosVec)));
+	float DistanceToPlayer = DirectX::XMVectorGetX(DirectX::XMVector3Length(DirectX::XMVectorSubtract(PlayerPosVec, BossPosVec)));
 
 	// 修正：プレイヤーとの距離が近い(2.5f以下)か、地面に付いたら攻撃終了
 	if (CurrentPos.y <= floorY + 0.1f || DistanceToPlayer <= 2.5f)
@@ -202,33 +198,33 @@ void BossJumpOnlState::BossAttack()
 	}
 
 	// 追尾（ホーミング）計算
-	XMVECTOR CurrentDir = XMLoadFloat3(&m_TargetDirection);
-	XMVECTOR finalMoveDir;
+    DirectX::XMVECTOR CurrentDir = DirectX::XMLoadFloat3(&m_TargetDirection);
+    DirectX::XMVECTOR finalMoveDir;
 
 	float trackingThreshold = 15.0f;
 
 	if (DistanceToPlayer > trackingThreshold)
 	{
-		XMVECTOR ToPlayerDir = XMVector3Normalize(XMVectorSubtract(PlayerPosVec, BossPosVec));
+        DirectX::XMVECTOR ToPlayerDir = DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(PlayerPosVec, BossPosVec));
 
 		float lerpFactor = 1.0f * deltaTime;
-		XMVECTOR TargetStepDir = XMVectorLerp(CurrentDir, ToPlayerDir, lerpFactor);
-		TargetStepDir = XMVector3Normalize(TargetStepDir);
+        DirectX::XMVECTOR TargetStepDir = DirectX::XMVectorLerp(CurrentDir, ToPlayerDir, lerpFactor);
+		TargetStepDir = DirectX::XMVector3Normalize(TargetStepDir);
 
-		XMVECTOR DotProduct = XMVector3Dot(CurrentDir, TargetStepDir);
-		float cosTheta = XMVectorGetX(DotProduct);
+        DirectX::XMVECTOR DotProduct = DirectX::XMVector3Dot(CurrentDir, TargetStepDir);
+		float cosTheta = DirectX::XMVectorGetX(DotProduct);
 		float AngleRad = acosf(std::max(MinusOne, std::min(One, cosTheta)));
 
-		float maxTurnRadians = XMConvertToRadians(m_MaxTrackingAngle) * deltaTime;
+		float maxTurnRadians = DirectX::XMConvertToRadians(m_MaxTrackingAngle) * deltaTime;
 
 		if (AngleRad > maxTurnRadians)
 		{
-			XMVECTOR rotationAxis = XMVector3Cross(CurrentDir, TargetStepDir);
-			if (XMVectorGetX(XMVector3LengthSq(rotationAxis)) > 0.0001f)
+			XMVECTOR rotationAxis = DirectX::XMVector3Cross(CurrentDir, TargetStepDir);
+			if (DirectX::XMVectorGetX(DirectX::XMVector3LengthSq(rotationAxis)) > 0.0001f)
 			{
-				rotationAxis = XMVector3Normalize(rotationAxis);
-				XMMATRIX rotationMatrix = XMMatrixRotationAxis(rotationAxis, maxTurnRadians);
-				finalMoveDir = XMVector3TransformNormal(CurrentDir, rotationMatrix);
+				rotationAxis = DirectX::XMVector3Normalize(rotationAxis);
+                DirectX::XMMATRIX rotationMatrix = DirectX::XMMatrixRotationAxis(rotationAxis, maxTurnRadians);
+				finalMoveDir = DirectX::XMVector3TransformNormal(CurrentDir, rotationMatrix);
 			}
 			else { finalMoveDir = CurrentDir; }
 		}
@@ -240,15 +236,15 @@ void BossJumpOnlState::BossAttack()
 		finalMoveDir = CurrentDir;
 	}
 
-	finalMoveDir = XMVector3Normalize(finalMoveDir);
-	XMStoreFloat3(&m_TargetDirection, finalMoveDir);
+	finalMoveDir = DirectX::XMVector3Normalize(finalMoveDir);
+	DirectX::XMStoreFloat3(&m_TargetDirection, finalMoveDir);
 
 	// 移動実行
-	XMVECTOR moveVector = XMVectorScale(finalMoveDir, m_AttackMoveSpeed * deltaTime);
-	XMVECTOR newBossPosVec = XMVectorAdd(BossPosVec, moveVector);
+    DirectX::XMVECTOR moveVector = DirectX::XMVectorScale(finalMoveDir, m_AttackMoveSpeed * deltaTime);
+    DirectX::XMVECTOR newBossPosVec = DirectX::XMVectorAdd(BossPosVec, moveVector);
 
-	XMFLOAT3 newBossPos;
-	XMStoreFloat3(&newBossPos, newBossPosVec);
+    DirectX::XMFLOAT3 newBossPos;
+    DirectX::XMStoreFloat3(&newBossPos, newBossPosVec);
 
 	// 地面を突き抜けないように制限
 	if (newBossPos.y < floorY) newBossPos.y = floorY;

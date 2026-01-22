@@ -40,18 +40,7 @@ public:
 private:
 	// ホーミング停止秒数（m_StateTimer がこの値を超えるまでだけ追尾）
 	float m_HomingEndTime = 0.2f;
-
-    // ImGui で設定する各種パラメータ
-    float m_SlashStart = 0.15f;
-    float m_SlashDuration = 0.25f;
-
-    float m_StepStart = 0.05f;
-    float m_StepDuration = 0.25f;
-    float m_StepSpeed = 60.0f;
-	
-	//攻撃開始位置.
-	DirectX::XMFLOAT3 m_StartPos;
-
+    
 	enList m_List;
 };
 

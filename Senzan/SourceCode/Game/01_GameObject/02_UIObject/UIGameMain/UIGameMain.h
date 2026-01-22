@@ -1,9 +1,9 @@
-#pragma once
+ï»¿#pragma once
 #include "02_UIObject/UIObject.h"
 #include "Game//04_Time//Time.h"
 
 /*********************************************
-*	ƒQ[ƒ€ƒƒCƒ“UIƒNƒ‰ƒX.
+*	ã‚²ãƒ¼ãƒ ãƒ¡ã‚¤ãƒ³UIã‚¯ãƒ©ã‚¹.
 **/
 
 class UIGameMain
@@ -17,7 +17,7 @@ class UIGameMain
 		float InitRate = 1.0f;
 		float Rate = 1.0f;
 
-		// ó‘Ô.
+		// çŠ¶æ…‹.
 		bool IsChanged = false;
 		bool IsDelay = false;
 		bool IsEasing = false;
@@ -30,7 +30,7 @@ class UIGameMain
 		float EaseStart = 0.0f;
 		float EaseEnd = 0.0f;
 
-		// delayiÔ—pj.
+		// delayï¼ˆèµ¤ç”¨ï¼‰.
 		float DelayTime = 0.0f;
 		float DelayMax = 0.4f;
 
@@ -52,50 +52,49 @@ public:
 	void Create();
 
 	/******************************************************
-	* @brief ƒRƒ“ƒ{”‚ğİ’è.
-	* @param num	ƒRƒ“ƒ{”.
+	* @brief ã‚³ãƒ³ãƒœæ•°ã‚’è¨­å®š.
+	* @param num	ã‚³ãƒ³ãƒœæ•°.
 	******************************************************/
 	void SetCombo(int num);
 
 
 	/******************************************************
-	* @brief ŠÔ‚ğİ’è.
-	* @param max	Å‘åŠÔ.
-	* @param now	Œ»ŠÔ.
+	* @brief æ™‚é–“ã‚’è¨­å®š.
+	* @param progress é€²æ—çŠ¶æ³.
 	******************************************************/
-	void SetTime(float max, float now);
+	void SetTime(float progress);
 
 
 	/******************************************************
-	* @brief ƒvƒŒƒCƒ„[HP‚ğİ’è.
-	* @param max	Å‘åƒXƒe[ƒ^ƒX.
-	* @param now	Œ»ƒXƒe[ƒ^ƒX.
+	* @brief ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼HPã‚’è¨­å®š.
+	* @param max	æœ€å¤§ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹.
+	* @param now	ç¾ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹.
 	******************************************************/
 	void SetPlayerHP(float max,float now);
 
 
 	/******************************************************
-	* @brief ƒvƒŒƒCƒ„[Ult‚ğİ’è.
-	* @param max	Å‘åƒXƒe[ƒ^ƒX.
-	* @param now	Œ»ƒXƒe[ƒ^ƒX.
+	* @brief ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼Ultã‚’è¨­å®š.
+	* @param max	æœ€å¤§ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹.
+	* @param now	ç¾ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹.
 	******************************************************/
 	void SetPlayerUlt(float max, float now);
 
 
 	/******************************************************
-	* @brief ƒ{ƒXHP‚ğİ’è.
-	* @param max	Å‘åƒXƒe[ƒ^ƒX.
-	* @param now	Œ»ƒXƒe[ƒ^ƒX.
+	* @brief ãƒœã‚¹HPã‚’è¨­å®š.
+	* @param max	æœ€å¤§ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹.
+	* @param now	ç¾ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹.
 	******************************************************/
 	void SetBossHP(float max, float now);
 private:
-	// F•âŠÔŠÖ”.
+	// è‰²è£œé–“é–¢æ•°.
 	DirectX::XMFLOAT4 LerpColor(
 		const DirectX::XMFLOAT4& a,
 		const DirectX::XMFLOAT4& b,
 		float t);
 
-	// ƒRƒ“ƒ{”‚É‰‚¶‚Ä•ÏF.
+	// ã‚³ãƒ³ãƒœæ•°ã«å¿œã˜ã¦å¤‰è‰².
 	DirectX::XMFLOAT4 GetComboColor(int combo);
 
 private:
@@ -118,7 +117,7 @@ private:
 	Gauge m_BossDamage;
 
 #if _DEBUG
-	// Debug—p.
+	// Debugç”¨.
 	float m_DebugPlayerHP = 1.0f;
 	float m_DebugPlayerUlt = 1.0f;
 	float m_DebugBossHP = 1.0f;

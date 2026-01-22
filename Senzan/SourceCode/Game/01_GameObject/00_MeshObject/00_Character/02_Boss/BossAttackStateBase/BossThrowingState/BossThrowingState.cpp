@@ -47,7 +47,6 @@ void BossThrowingState::Update()
 	{
 	case enThrowing::None:
 		// 当たり判定を無効化.
-		m_pOwner->SetAttackColliderActive(true);
 		m_List = enThrowing::Anim;
 		break;
 
@@ -111,8 +110,6 @@ void BossThrowingState::Draw()
 
 void BossThrowingState::Exit()
 {
-	// 当たり判定を無効化.
-	m_pOwner->SetAttackColliderActive(false);
 }
 
 void BossThrowingState::BossAttack()
@@ -122,11 +119,13 @@ void BossThrowingState::BossAttack()
 
 void BossThrowingState::DrawImGui()
 {
+#if _DEBUG
     ImGui::Begin(IMGUI_JP("BossThrowing State"));
     CImGuiManager::Slider<float>(IMGUI_JP("発射高さ"), m_BallHeight, 0.0f, 15.0f, true);
     CImGuiManager::Slider<float>(IMGUI_JP("弾速"), m_BallSpeed, 0.1f, 5.0f, true);
     BossAttackStateBase::DrawImGui();
     ImGui::End();
+#endif
 }
 
 void BossThrowingState::LoadSettings()

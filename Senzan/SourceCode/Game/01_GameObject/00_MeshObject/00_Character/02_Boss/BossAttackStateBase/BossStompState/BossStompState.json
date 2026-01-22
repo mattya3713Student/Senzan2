@@ -1,0 +1,23 @@
+{
+  "AnimSpeeds": {
+    "Attack": 1.0,
+    "Charge": 1.0,
+    "Exit": 1.0
+  },
+  "ColliderWindows": [],
+  "ForwardSpeed": 15.0,
+  "Gravity": 3.1510000228881836,
+  "JumpPower": 5.0,
+  "MovementWindows": [],
+  "UpSpeed": 1.0,
+  "m_AttackAmount": 0.0,
+  "m_AttackBoneName": "",
+  "m_AttackTime": 0.0,
+  "m_ChargeTime": 0.0,
+  "m_ColliderHeight": 0.0,
+  "m_ColliderWidth": 0.0,
+  "m_EndTime": 2.0,
+  "m_TransitionOnAnimEnd_Attack": false,
+  "m_TransitionOnAnimEnd_Charge": false,
+  "m_TransitionOnAnimEnd_Exit": false
+}

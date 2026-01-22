@@ -1,4 +1,4 @@
-#include "Ending.h"
+ï»¿#include "Ending.h"
 #include "02_UIObject/UIEnding/UIEnding.h"
 #include "Game/05_InputDevice/Input.h"
 #include "Singleton/ResourceManager/ResourceManager.h"
@@ -18,8 +18,8 @@ Ending::~Ending()
 
 void Ending::Initialize()
 {
-	SoundManager::GetInstance().Play("‰F’ˆ”òsm‚ªÅŒã‚ÉŒ©‚½‚à‚Ì", true);
-	SoundManager::GetInstance().SetVolume("‰F’ˆ”òsm‚ªÅŒã‚ÉŒ©‚½‚à‚Ì", 9000);
+	SoundManager::GetInstance().Play("Ending", true);
+	SoundManager::GetInstance().SetVolume("Ending", 8000);
 }
 
 void Ending::Create()
