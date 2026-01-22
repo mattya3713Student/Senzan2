@@ -121,17 +121,17 @@ void GameMain::Update()
         return;
     }
 
-	m_upGround->Update();
     m_upSkyDome->Update();
+    m_upGround->Update();
 	m_upBoss->Update();
 	m_upBoss->SetTargetPos(m_upPlayer->GetPosition());
 
-	// propagate boss just-window flag to player
-	m_upPlayer->SetIsJustDodgeTiming(m_upBoss->IsAnyAttackJustWindow());
-	Log::GetInstance().Info("", m_upBoss->IsAnyAttackJustWindow());
+    // propagate boss just-window flag to player
+    m_upPlayer->SetIsJustDodgeTiming(m_upBoss->IsAnyAttackJustWindow());
 
-	m_upPlayer->SetTargetPos(m_upBoss->GetPosition());
-	m_upPlayer->Update();
+    m_upPlayer->SetTargetPos(m_upBoss.get()->GetPosition());
+    m_upPlayer->Update();
+
     UIUpdate();
 
 #if _DEBUG
@@ -151,14 +151,15 @@ void GameMain::Update()
 
 void GameMain::LateUpdate()
 {
+	// 衝突検出を先に実行（衝突イベントを生成）
+	CollisionDetector::GetInstance().ExecuteCollisionDetection();
+
+	// その後でLateUpdate（衝突イベントを処理）
 	m_upPlayer->LateUpdate();
 	m_upBoss->LateUpdate();
 	CameraManager::GetInstance().LateUpdate();
 
 	m_upUI->LateUpdate();
-
-	CollisionDetector::GetInstance().ExecuteCollisionDetection();
-
 }
 
 

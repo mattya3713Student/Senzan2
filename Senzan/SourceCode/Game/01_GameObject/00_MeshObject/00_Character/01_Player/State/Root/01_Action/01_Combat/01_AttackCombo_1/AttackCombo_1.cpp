@@ -182,10 +182,8 @@ void AttackCombo_1::LateUpdate()
 {
     Combat::LateUpdate();
 
-    float dt = m_pOwner->GetDelta();
-    m_currentTime += dt;
-
     // movement similar to others (optional)
+    float dt = m_pOwner->GetDelta();
     DirectX::XMFLOAT3 moveDirection = { m_pOwner->m_MoveVec.x, 0.0f, m_pOwner->m_MoveVec.z };
     float movement_speed = m_Distance / m_ComboEndTime;
     float move_amount = movement_speed * dt;

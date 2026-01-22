@@ -158,7 +158,10 @@ Player::Player()
 
 Player::~Player()
 {
-	CollisionDetector::GetInstance().UnregisterCollider(*m_upColliders);
+    if (m_upColliders)
+    {
+        CollisionDetector::GetInstance().UnregisterCollider(*m_upColliders);
+    }
 }
 
 void Player::Update()
@@ -215,6 +218,21 @@ void Player::Draw()
 
     EffekseerManager::GetInstance().RenderHandle(m_EffectHandle, CameraManager::GetInstance().GetCurrentCamera().get());
 
+	// UI用エフェクト描画（スクリーン座標系）
+	if (m_UIEffectHandle != -1)
+	{
+		// エフェクトがまだ再生中かチェック
+		if (EffekseerManager::GetInstance().GetManager()->Exists(m_UIEffectHandle))
+		{
+			EffekseerManager::GetInstance().UpdateHandle(m_UIEffectHandle);
+			EffekseerManager::GetInstance().RenderHandleUI(m_UIEffectHandle);
+		}
+		else
+		{
+			// 再生終了したのでハンドルをリセット
+			m_UIEffectHandle = -1;
+		}
+	}
 }
 
 // ノック中か.
@@ -411,6 +429,15 @@ void Player::HandleDodgeDetection()
 			m_IsJustDodgeTiming = true;
 			// ゲージ増加
 			m_CurrentUltValue += 300.0f;
+
+			// UI用エフェクト再生（画面中央に黄色い閃光）
+			auto effect = EffectResource::GetResource("Hit2"); // TODO: JustDodgeFlash用エフェクトに差し替え
+			if (effect != nullptr)
+			{
+				float screenX = static_cast<float>(WND_W) * 0.5f;
+				float screenY = static_cast<float>(WND_H) * 0.5f;
+				m_UIEffectHandle = EffekseerManager::GetInstance().GetManager()->Play(effect, screenX, screenY, 0.0f);
+			}
 		}
 	}
 }
