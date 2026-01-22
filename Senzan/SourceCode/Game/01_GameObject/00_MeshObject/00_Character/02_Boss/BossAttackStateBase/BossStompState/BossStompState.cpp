@@ -17,19 +17,14 @@ BossStompState::BossStompState(Boss* owner)
 	, m_Timer(0.0f)
 	, TransitionTimer(120.0f)
 	, m_UpSpeed(1.0f)
-	/*
-	, m_AscentTime(0.6f)
-	, m_AscentTimer(0.0f)
-	, m_IsInFallPhase(false)
-	, m_FallAccel(60.0f)
-	, m_CurrentHorizSpeed(0.0f)
-	, m_MaxFallHorizSpeed(80.0f)
-	*/
+
 	, m_ForwardSpeed(15.0f)
 	, m_TargetPos(0.0f, 0.0f, 0.0f)
 	, m_StartPos_Stomp(0.0f, 0.0f, 0.0f)
 	, m_HasLanded(false)
 {
+    // 初期設定をファイルから読み込む（存在すれば上書き）
+    try { LoadSettings(); } catch (...) {}
 }
 
 void BossStompState::DrawImGui()
@@ -40,12 +35,24 @@ void BossStompState::DrawImGui()
     CImGuiManager::Slider<float>(IMGUI_JP("上昇速度倍率"), m_UpSpeed, 0.1f, 5.0f, true);
     CImGuiManager::Slider<float>(IMGUI_JP("前方移動速度"), m_ForwardSpeed, 0.0f, 30.0f, true);
     CImGuiManager::Slider<float>(IMGUI_JP("遅延秒数"), m_WaitSeconds, 0.0f, 5.0f, true);
+    // legacy pre-slow removed
     CImGuiManager::Slider<float>(IMGUI_JP("遅延中アニメ速度"), m_SlowAnimSpeed, 0.0f, 2.0f, true);
     // pre-slow removed; use m_WaitSeconds / m_SlowAnimSpeed
     // 上昇/落下パラメータは一時無効化
     // CImGuiManager::Slider<float>(IMGUI_JP("上昇時間"), m_AscentTime, 0.0f, 5.0f, true);
     // CImGuiManager::Slider<float>(IMGUI_JP("落下水平加速"), m_FallAccel, 0.0f, 200.0f, true);
     // CImGuiManager::Slider<float>(IMGUI_JP("落下最大速度"), m_MaxFallHorizSpeed, 0.0f, 200.0f, true);
+    // 手動の保存/読み込みボタン
+    if (ImGui::Button(IMGUI_JP("Load"))) {
+        try { LoadSettings(); }
+        catch (...) {}
+    }
+    ImGui::SameLine();
+    if (ImGui::Button(IMGUI_JP("Save"))) {
+        try { SaveSettings(); }
+        catch (...) {}
+    }
+
     BossAttackStateBase::DrawImGui();
     ImGui::End();
 }
@@ -68,10 +75,7 @@ void BossStompState::LoadSettings()
     if (j.contains("ForwardSpeed")) m_ForwardSpeed = j["ForwardSpeed"].get<float>();
     if (j.contains("WaitSeconds")) m_WaitSeconds = j["WaitSeconds"].get<float>();
     if (j.contains("SlowAnimSpeed")) m_SlowAnimSpeed = j["SlowAnimSpeed"].get<float>();
-    // 上昇/落下パラメータは一時無効化
-    // if (j.contains("AscentTime")) m_AscentTime = j["AscentTime"].get<float>();
-    // if (j.contains("FallAccel")) m_FallAccel = j["FallAccel"].get<float>();
-    // if (j.contains("MaxFallHorizSpeed")) m_MaxFallHorizSpeed = j["MaxFallHorizSpeed"].get<float>();
+    // no additional parameters
     // オフセットは ColliderWindow で管理
 }
 
@@ -85,10 +89,7 @@ void BossStompState::SaveSettings() const
     j["ForwardSpeed"] = m_ForwardSpeed;
     j["WaitSeconds"] = m_WaitSeconds;
     j["SlowAnimSpeed"] = m_SlowAnimSpeed;
-    // 上昇/落下パラメータは一時無効化
-    // j["AscentTime"] = m_AscentTime;
-    // j["FallAccel"] = m_FallAccel;
-    // j["MaxFallHorizSpeed"] = m_MaxFallHorizSpeed;
+    // no additional parameters
 
     auto filePath = GetSettingsFileName();
     if (!filePath.is_absolute()) {
@@ -136,7 +137,7 @@ void BossStompState::Enter()
 	m_TargetPos.y = 0.0f; // 地面高さに固定.
 
 	//溜めアニメーション開始.
-    m_pOwner->SetAnimSpeed(1.0);
+    m_pOwner->SetAnimSpeed(2.0);
     m_pOwner->ChangeAnim(Boss::enBossAnim::Special_0);
 
 }
@@ -165,6 +166,18 @@ void BossStompState::Update()
 			m_pOwner->SetAnimSpeed(1.0f);
 			m_pOwner->ChangeAnim(Boss::enBossAnim::Special_1);
 			m_List = enAttack::Stomp;
+			// setup movement easing parameters
+			m_MoveTimer = 0.0f;
+			// compute horizontal distance & direction toward player
+			DirectX::XMFLOAT3 bossPos = m_pOwner->GetPosition();
+			DirectX::XMFLOAT3 playerPos = m_pOwner->m_PlayerPos;
+			playerPos.y = 0.0f; bossPos.y = 0.0f;
+			DirectX::XMVECTOR vBoss = DirectX::XMLoadFloat3(&bossPos);
+			DirectX::XMVECTOR vPlayer = DirectX::XMLoadFloat3(&playerPos);
+			DirectX::XMVECTOR vDiff = DirectX::XMVectorSubtract(vPlayer, vBoss);
+			float dist = DirectX::XMVectorGetX(DirectX::XMVector3Length(vDiff));
+			m_Distance = dist;
+			DirectX::XMStoreFloat3(&m_MoveVec, DirectX::XMVector3Normalize(DirectX::XMVectorSetY(vDiff, 0.0f)));
 			if (pStompCollider) {
 				pStompCollider->SetRadius(30.0f);
 				pStompCollider->SetAttackAmount(15.0f);
@@ -175,6 +188,9 @@ void BossStompState::Update()
 	case BossStompState::enAttack::Stomp:
 		// 移動中のみ BossAttack を実行
 		if (m_IsMoving) {
+			// advance move timer
+			m_MoveTimer += Time::GetInstance().GetDeltaTime();
+			// run BossAttack which now performs eased movement based on m_MoveTimer/m_MoveDuration
 			BossAttack();
 		}
 
@@ -182,6 +198,7 @@ void BossStompState::Update()
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Special_1) && m_IsMoving)
 		{
 			m_IsMoving = false;
+            m_pOwner->SetAnimSpeed(2.0f);
 			m_pOwner->ChangeAnim(Boss::enBossAnim::SpecialToIdol);
 			m_List = enAttack::CoolTime;
 			// 無効化されていた stomp コライダーをオフ
@@ -216,54 +233,46 @@ void BossStompState::Draw()
 void BossStompState::Exit()
 {
 	m_GroundedFrag = true;
+	// 保存: 実行時に ImGui 等で変更した設定を永続化
+	try { SaveSettings(); } catch (...) {}
 	// m_pOwner->SetPositionY(0.0f);
 }
 
 void BossStompState::BossAttack()
 {
-	float deltaTime = Time::GetInstance().GetDeltaTime();
+    float dt = Time::GetInstance().GetDeltaTime();
 
-    // 重力や Y 更新は一時的に無効化 (デバッグ用)
-    // m_Velocity.y -= m_Gravity * deltaTime;
+    // progress for movement easing (0..1)
+    float progress = m_MoveDuration > 0.0f ? (m_MoveTimer / m_MoveDuration) : 1.0f;
+    if (progress > 1.0f) progress = 1.0f;
 
-    // float currentY = m_pOwner->GetPositionY();
-    // float nextY = currentY + (m_Velocity.y * m_UpSpeed);
+    // easeOut quad: 1 - (1-x)^2
+    auto easeOut = [](float x) { return 1.0f - (1.0f - x) * (1.0f - x); };
 
-    // 前方移動（XZ平面）: プレイヤーの現在位置へ追従するように更新
-    DirectX::XMFLOAT3 bossPos = m_pOwner->GetPosition();
-    DirectX::XMVECTOR vBoss = DirectX::XMLoadFloat3(&bossPos);
+    float eased = easeOut(progress);
+    float prev = easeOut(std::max(0.0f, progress - dt / (m_MoveDuration > 0.0f ? m_MoveDuration : 1.0f)));
 
-    // 更新: ターゲットを毎フレームプレイヤーの現在位置に更新
-    DirectX::XMFLOAT3 playerPos = m_pOwner->m_PlayerPos;
-    playerPos.y = 0.0f;
-    DirectX::XMVECTOR vPlayer = DirectX::XMLoadFloat3(&playerPos);
+    float frameDistance = m_Distance * (eased - prev);
 
-    DirectX::XMVECTOR vDir = DirectX::XMVectorSubtract(vPlayer, vBoss);
-    vDir = DirectX::XMVectorSetY(vDir, 0.0f);
+    DirectX::XMFLOAT3 movement = {
+        m_MoveVec.x * frameDistance,
+        0.0f,
+        m_MoveVec.z * frameDistance
+    };
 
-    // 跳躍中のみ前方へ突進する
-    float distSq = DirectX::XMVectorGetX(DirectX::XMVector3LengthSq(vDir));
+    m_pOwner->AddPosition(movement);
 
-    // 上昇/落下ロジックは一時無効化。水平方向のみ追従する既存ロジックを保持
-    if (distSq > 0.01f)
+    // If movement finished, ensure flags / list updated
+    if (progress >= 1.0f)
     {
-        vDir = DirectX::XMVector3Normalize(vDir);
-        float horizSpeed = m_ForwardSpeed; // 恒速で追従
-        DirectX::XMVECTOR vMove = DirectX::XMVectorScale(vDir, horizSpeed * deltaTime);
-        DirectX::XMFLOAT3 move; DirectX::XMStoreFloat3(&move, vMove);
-
-        bossPos.x += move.x;
-        bossPos.z += move.z;
-        m_pOwner->SetPositionX(bossPos.x);
-        m_pOwner->SetPositionZ(bossPos.z);
-
-        float dx = move.x;
-        float dz = move.z;
-        float angle_radian = std::atan2f(-dx, -dz);
-        m_pOwner->SetRotationY(angle_radian);
+        m_IsMoving = false;
+        // trigger transition to SpecialToIdol if not already
+        if (m_List == enAttack::Stomp)
+        {
+            m_pOwner->ChangeAnim(Boss::enBossAnim::SpecialToIdol);
+            m_List = enAttack::CoolTime;
+            auto* pStompCollider = m_pOwner->GetStompCollider();
+            if (pStompCollider) pStompCollider->SetActive(false);
+        }
     }
-
-    // 地面判定と Y 更新は無効化
-    // if (nextY <= 0.0f) { ... }
-    // m_LastY = nextY;
 }
