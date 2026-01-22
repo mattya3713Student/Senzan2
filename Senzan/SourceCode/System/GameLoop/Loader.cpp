@@ -2,15 +2,22 @@
 #include "Graphic/DirectX/DirectX11/DirectX11.h"
 #include "System/Singleton/ResourceManager/ResourceManager.h"
 #include "02_UIObject/UIObject.h"
+#include "Utility/Math/Random/Random.h"
 #include <chrono>
 
 Loader::Loader()
 	: m_IsLoadResult        ()
 	, m_pBackGroundImage    ( std::make_shared<Sprite2D>() )
 	, m_pTextImage          ( std::make_shared<Sprite2D>() )
+	, m_pLineImage          ( std::make_shared<Sprite2D>() )
 	, m_pBackGroundObject   ( std::make_unique<UIObject>() )
 	, m_pTextObject         ( std::make_unique<UIObject>() )
 	, m_TextAlpha           ( 1.0f )
+    , m_Lines               ( 5 )
+    , m_LineInitTickness    ( 0.01f )
+    , m_LineGenerateRate    ( 0.09f )
+    , m_LineDecAlpha        ( 0.01f )
+    , m_LineDecTickness     ( 0.0002f )
 {
 }
 
@@ -25,21 +32,38 @@ Loader::~Loader()
 void Loader::LoadData()
 {
 	// 画像の読み込み.
-	m_pBackGroundImage->Initialize("Data\\Image\\Loading\\LoadingBackImg.png");
+	m_pBackGroundImage->Initialize("Data\\Image\\Sprite\\Other\\Black.png");
 	m_pTextImage->Initialize("Data\\Image\\Loading\\LoadingTextImg.png");
-	
+    m_pLineImage->Initialize("Data\\Image\\Sprite\\Other\\White.png");
+
+
 	// 画像を接続.
 	m_pBackGroundObject->AttachSprite(m_pBackGroundImage);
-	m_pTextObject->AttachSprite(m_pTextImage);   
+	m_pTextObject->AttachSprite(m_pTextImage);
+
+    for (int i = 0; i < m_Lines; ++i) {
+        auto line = std::make_shared<UIObject>();
+        line->AttachSprite(m_pLineImage);
+        line->SetAlpha(i * -m_LineGenerateRate);
+        m_pWhiteLine.push_back(line);
+    }
 }
 
 //-------------------------------------------------------------------.
 
 void Loader::Update()
 {
-	m_TextAlpha -= 0.01f;
-	if (m_TextAlpha <= 0.0f) { m_TextAlpha = 1.0f; }
-	m_pTextObject->SetAlpha(m_TextAlpha);    
+    m_TextAlpha -= 0.01f;
+    if (m_TextAlpha <= 0.0f) { m_TextAlpha = 1.0f; }
+    m_pTextObject->SetAlpha(m_TextAlpha);
+
+    for (auto& line : m_pWhiteLine) {
+        line->SetAlpha(line->GetAlpha() - m_LineDecAlpha);
+        line->SetScaleY(line->GetScaleY() - m_LineDecTickness);
+        if (line->GetAlpha() <= -(m_Lines * m_LineGenerateRate)) {
+            LineInit(line);
+        }
+    }
 }
 
 //-------------------------------------------------------------------.
@@ -48,13 +72,16 @@ void Loader::Draw()
 {
 	//バックバッファをクリアにする.
 	DirectX11::GetInstance().ClearBackBuffer();
-
 	DirectX11::GetInstance().SetDepth(false);
+
 	m_pBackGroundObject->Draw();
 	m_pTextObject->Draw();
 
-	DirectX11::GetInstance().SetDepth(true);
+    for (auto& line : m_pWhiteLine) {
+        line->Draw();
+    }
 
+	DirectX11::GetInstance().SetDepth(true);
 	DirectX11::GetInstance().Present();
 }
 
@@ -100,4 +127,21 @@ bool Loader::LoadSounds()
 bool Loader::LoadEffects()
 {
 	return ResourceManager::LoadEffects();
+}
+
+//-------------------------------------------------------------------.
+
+void Loader::LineInit(std::shared_ptr<UIObject> obje)
+{
+    // アルファをマイナス値で初期化することで「出現までの待機時間」とする
+    // m_LineGenerateRateを使って待ち時間の幅を調節
+    obje->SetAlpha(1.0f);
+    obje->SetScaleY(m_LineInitTickness);
+    obje->SetScaleX(3.0f);
+
+    float range = 400.0f;
+    obje->SetPosition(MyRand::GetRandomPercentage(-range, range),
+        MyRand::GetRandomPercentage(-range, range), 0.0f);
+
+    obje->SetRotationZ(MyRand::GetRandomPercentage(0.0f, 3.14f));
 }
