@@ -33,404 +33,426 @@
 
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
 #include "System/Singleton/CameraManager/CameraManager.h"
+#include "Graphic/DirectX/DirectX11/DirectX11.h"
 
+namespace {
+    ::Effekseer::Handle m_EffectHandle = -1;
+}
 Player::Player()
 	: Character         ()
 	, m_RootState       ( std::make_unique<PlayerState::Root>(this) )
-    , m_StateRefMap     ( )
-    , m_NextStateID     ( PlayerState::eID::None )
-    , m_IsStateChangeRequest    ( false )
-    , m_MoveVec         ( { 0.f,0.f,0.f } )
-    , m_Combo           ( 0 )
-    , m_CurrentUltValue ( 0.0f )
-    , m_MaxUltValue     ( 10000.0f )
-    , m_IsKnockBack     ( false )
-    , m_KnockBackVec    ( { 0.f,0.f,0.f } )
-    , m_KnockBackPower  ( 0.f )
-    , m_IsDead          ( false )
-    , m_RunMoveSpeed    ( 50.f )
-    , m_IsSuccessParry  ( false )
-    , m_pAttackCollider ( nullptr )
-    , m_IsJustDodgeTiming( false )
-    , m_TargetPos        ( { 0.f,0.f,0.f } )
-    , m_DebugForcedState ( PlayerState::eID::None )
-    , m_DebugRepeatOnExit( false )
-    , m_DebugWasInForcedState( false )
+	, m_StateRefMap     ( )
+	, m_NextStateID     ( PlayerState::eID::None )
+	, m_IsStateChangeRequest    ( false )
+	, m_MoveVec         ( { 0.f,0.f,0.f } )
+	, m_Combo           ( 0 )
+	, m_CurrentUltValue ( 0.0f )
+	, m_MaxUltValue     ( 10000.0f )
+	, m_IsKnockBack     ( false )
+	, m_KnockBackVec    ( { 0.f,0.f,0.f } )
+	, m_KnockBackPower  ( 0.f )
+	, m_IsDead          ( false )
+	, m_RunMoveSpeed    ( 50.f )
+	, m_IsSuccessParry  ( false )
+	, m_pAttackCollider ( nullptr )
+	, m_IsJustDodgeTiming( false )
+	, m_TargetPos        ( { 0.f,0.f,0.f } )
+	, m_DebugForcedState ( PlayerState::eID::None )
+	, m_DebugRepeatOnExit( false )
+	, m_DebugWasInForcedState( false )
 {
-    // ステートの初期化.
-    InitializeStateRefMap();
+	// ステートの初期化.
+	InitializeStateRefMap();
 
-    // メッシュのアタッチ.
-    auto mesh = ResourceManager::GetSkinMesh("player");
-    _ASSERT_EXPR(mesh != nullptr, "メッシュの取得に失敗");
-    AttachMesh(mesh);
+	// メッシュのアタッチ.
+	auto mesh = ResourceManager::GetSkinMesh("player");
+	_ASSERT_EXPR(mesh != nullptr, "メッシュの取得に失敗");
+	AttachMesh(mesh);
 
-    //デバック確認のため.
-    DirectX::XMFLOAT3 pos = { 0.f, 0.f, -20.f };
-    m_spTransform->SetPosition(pos);
+	//デバック確認のため.
+	DirectX::XMFLOAT3 pos = { 0.f, 0.f, -20.f };
+	m_spTransform->SetPosition(pos);
 
-    DirectX::XMFLOAT3 scale = { 3.f, 3.f, 3.f };
-    m_spTransform->SetScale(scale);
+	DirectX::XMFLOAT3 scale = { 3.f, 3.f, 3.f };
+	m_spTransform->SetScale(scale);
 
-    m_MaxHP = 100.f;
-    m_HP = m_MaxHP;
+	m_MaxHP = 100.f;
+	m_HP = m_MaxHP;
 
-    // 被ダメの追加.
-    std::unique_ptr<CapsuleCollider> damage_collider = std::make_unique<CapsuleCollider>(m_spTransform);
+	// 被ダメの追加.
+	std::unique_ptr<CapsuleCollider> damage_collider = std::make_unique<CapsuleCollider>(m_spTransform);
 
-    m_pDamageCollider = damage_collider.get();
+	m_pDamageCollider = damage_collider.get();
 
-    damage_collider->SetColor(Color::eColor::Yellow);
-    damage_collider->SetHeight(2.0f);
-    damage_collider->SetRadius(0.5f);
-    damage_collider->SetPositionOffset(0.f, 1.5f, 0.f);
-    damage_collider->SetMyMask(eCollisionGroup::Player_Damage);
-    damage_collider->SetTarGetTargetMask(eCollisionGroup::Enemy_Attack);
+	damage_collider->SetColor(Color::eColor::Yellow);
+	damage_collider->SetHeight(2.0f);
+	damage_collider->SetRadius(0.5f);
+	damage_collider->SetPositionOffset(0.f, 1.5f, 0.f);
+	damage_collider->SetMyMask(eCollisionGroup::Player_Damage);
+	damage_collider->SetTarGetTargetMask(eCollisionGroup::Enemy_Attack);
 
-    m_upColliders->AddCollider(std::move(damage_collider));
+	m_upColliders->AddCollider(std::move(damage_collider));
 
-    // パリィの追加.
-    std::unique_ptr<CapsuleCollider> parry_collider = std::make_unique<CapsuleCollider>(m_spTransform);
+	// パリィの追加.
+	std::unique_ptr<CapsuleCollider> parry_collider = std::make_unique<CapsuleCollider>(m_spTransform);
 
-    m_pParryCollider = parry_collider.get();
+	m_pParryCollider = parry_collider.get();
 
-    parry_collider->SetActive(false);
-    parry_collider->SetColor(Color::eColor::Green);
-    parry_collider->SetHeight(2.0f);
-    parry_collider->SetRadius(0.5f);
-    parry_collider->SetPositionOffset(0.f, 1.5f, 0.f);
-    parry_collider->SetMyMask(eCollisionGroup::Player_Parry);
-    parry_collider->SetTarGetTargetMask(eCollisionGroup::Enemy_Attack);
+	parry_collider->SetActive(false);
+	parry_collider->SetColor(Color::eColor::Green);
+	parry_collider->SetHeight(2.0f);
+	parry_collider->SetRadius(0.5f);
+	parry_collider->SetPositionOffset(0.f, 1.5f, 0.f);
+	parry_collider->SetMyMask(eCollisionGroup::Player_Parry);
+	parry_collider->SetTarGetTargetMask(eCollisionGroup::Enemy_Attack);
 
-    m_upColliders->AddCollider(std::move(parry_collider));
+	m_upColliders->AddCollider(std::move(parry_collider));
 
-    // ジャスト回避の追加.
-    std::unique_ptr<CapsuleCollider> justdodge_collider = std::make_unique<CapsuleCollider>(m_spTransform);
+	// ジャスト回避の追加.
+	std::unique_ptr<CapsuleCollider> justdodge_collider = std::make_unique<CapsuleCollider>(m_spTransform);
 
-    justdodge_collider->SetColor(Color::eColor::Gray);
-    justdodge_collider->SetHeight(45.0f);
-    justdodge_collider->SetRadius(45.0f);
-    justdodge_collider->SetPositionOffset(0.f, 1.5f, 0.f);
-    justdodge_collider->SetMyMask(eCollisionGroup::Player_JustDodge);
-    justdodge_collider->SetTarGetTargetMask(eCollisionGroup::Enemy_Attack);
+	justdodge_collider->SetColor(Color::eColor::Gray);
+	justdodge_collider->SetHeight(45.0f);
+	justdodge_collider->SetRadius(45.0f);
+	justdodge_collider->SetPositionOffset(0.f, 1.5f, 0.f);
+	justdodge_collider->SetMyMask(eCollisionGroup::Player_JustDodge);
+	justdodge_collider->SetTarGetTargetMask(eCollisionGroup::Enemy_Attack);
 
-    m_upColliders->AddCollider(std::move(justdodge_collider));
+	m_upColliders->AddCollider(std::move(justdodge_collider));
 
-    // 押し戻しの追加.
-    std::unique_ptr<CapsuleCollider> pressCollider = std::make_unique<CapsuleCollider>(m_spTransform);
+	// 押し戻しの追加.
+	std::unique_ptr<CapsuleCollider> pressCollider = std::make_unique<CapsuleCollider>(m_spTransform);
 
-    pressCollider->SetColor(Color::eColor::Cyan);
-    pressCollider->SetHeight(3.0f);
-    pressCollider->SetRadius(1.0f);
-    pressCollider->SetPositionOffset(0.f, 1.5f, 0.f);
-    pressCollider->SetMyMask(eCollisionGroup::Press);
-    pressCollider->SetTarGetTargetMask(eCollisionGroup::BossPress);
+	pressCollider->SetColor(Color::eColor::Cyan);
+	pressCollider->SetHeight(3.0f);
+	pressCollider->SetRadius(1.0f);
+	pressCollider->SetPositionOffset(0.f, 1.5f, 0.f);
+	pressCollider->SetMyMask(eCollisionGroup::Press);
+	pressCollider->SetTarGetTargetMask(eCollisionGroup::BossPress);
 
-    m_upColliders->AddCollider(std::move(pressCollider));
+	m_upColliders->AddCollider(std::move(pressCollider));
 
-    // 攻撃の追加.
-    std::unique_ptr<CapsuleCollider> attackCollider = std::make_unique<CapsuleCollider>(m_spTransform);
+	// 攻撃の追加.
+	std::unique_ptr<CapsuleCollider> attackCollider = std::make_unique<CapsuleCollider>(m_spTransform);
 
-    m_pAttackCollider = attackCollider.get();
+	m_pAttackCollider = attackCollider.get();
 
-    attackCollider->SetActive(false);
-    attackCollider->SetColor(Color::eColor::Red);
-    attackCollider->SetAttackAmount(10.0f);
-    attackCollider->SetHeight(3.0f);
-    attackCollider->SetRadius(1.0f);
-    attackCollider->SetPositionOffset(0.f, 1.5f, 2.f);
-    attackCollider->SetMyMask(eCollisionGroup::Player_Attack);
-    attackCollider->SetTarGetTargetMask(eCollisionGroup::Enemy_Damage);
+	attackCollider->SetActive(false);
+	attackCollider->SetColor(Color::eColor::Red);
+	attackCollider->SetAttackAmount(100.0f);
+	attackCollider->SetHeight(3.0f);
+	attackCollider->SetRadius(1.0f);
+	attackCollider->SetPositionOffset(0.f, 1.5f, 2.f);
+	attackCollider->SetMyMask(eCollisionGroup::Player_Attack);
+	attackCollider->SetTarGetTargetMask(eCollisionGroup::Enemy_Damage);
 
-    m_upColliders->AddCollider(std::move(attackCollider));
+	m_upColliders->AddCollider(std::move(attackCollider));
 
-    // If other attack colliders existed before, they should be registered similarly.
+	// If other attack colliders existed before, they should be registered similarly.
 
-    CollisionDetector::GetInstance().RegisterCollider(*m_upColliders);
+	CollisionDetector::GetInstance().RegisterCollider(*m_upColliders);
 
-    // 各ステートの初期化.
-    m_RootState.get()->Enter();
+	// 各ステートの初期化.
+	m_RootState.get()->Enter();
 }
 
 Player::~Player()
 {
-    CollisionDetector::GetInstance().UnregisterCollider(*m_upColliders);
+	CollisionDetector::GetInstance().UnregisterCollider(*m_upColliders);
 }
 
 void Player::Update()
 {
-    Character::Update();
+	Character::Update();
 
-    m_IsSuccessParry = false;
+	m_IsSuccessParry = false;
 
-    // ステート遷移のチェック.
-    if (m_NextStateID != PlayerState::eID::None)
-    {
-        m_RootState->ChangeState(m_NextStateID);
-        m_NextStateID = PlayerState::eID::None;
-    }
+	// ステート遷移のチェック.
+	if (m_NextStateID != PlayerState::eID::None)
+	{
+		m_RootState->ChangeState(m_NextStateID);
+		m_NextStateID = PlayerState::eID::None;
+	}
 	if (!m_RootState) {
 		return;
 	}
 	m_RootState->Update();
 
-    m_IsJustDodgeTiming = false;
+	m_IsJustDodgeTiming = false;
+
+    EffekseerManager::GetInstance().GetManager()->Update();
 }
 
 void Player::LateUpdate()
 {
-    Character::LateUpdate();
+	Character::LateUpdate();
 
-    if (!m_RootState) {
-        return;
-    }
+	if (!m_RootState) {
+		return;
+	}
 
-    // ステートマシーンの最終更新を実行.
-    m_RootState->LateUpdate();
+	// ステートマシーンの最終更新を実行.
+	m_RootState->LateUpdate();
 
-    // 押し戻し.
-    HandleCollisionResponse();
+	// 押し戻し.
+	HandleCollisionResponse();
 
-    // 衝突イベント処理を実行
-    HandleParryDetection();
-    HandleDamageDetection();
-    HandleAttackDetection();
-    HandleDodgeDetection();
+	// 衝突イベント処理を実行
+	HandleParryDetection();
+	HandleDamageDetection();
+	HandleAttackDetection();
+	HandleDodgeDetection();
 }
 
 void Player::Draw()
 {
-    // モデルの関係で前後反転.
-    m_spTransform->SetRotationY(GetRotation().y + D3DXToRadian(180.0f));
+	// モデルの関係で前後反転.
+	m_spTransform->SetRotationY(GetRotation().y + D3DXToRadian(180.0f));
 
-    Character::Draw();
+	Character::Draw();
 
-    m_spTransform->SetRotationY(GetRotation().y - D3DXToRadian(180.0f));
+	m_spTransform->SetRotationY(GetRotation().y - D3DXToRadian(180.0f));
+
+    EffekseerManager::GetInstance().RenderHandle(m_EffectHandle, CameraManager::GetInstance().GetCurrentCamera().get());
+
 }
 
 // ノック中か.
 bool Player::IsKnockBack() const noexcept
 {
-    return m_IsKnockBack;
+	return m_IsKnockBack;
 }
 
 // 死亡中か.
 bool Player::IsDead() const noexcept
 {
-    return m_IsDead;
+	return m_IsDead;
 }
 
 bool Player::IsParry() const noexcept
 {
-    return m_IsSuccessParry;
+	return m_IsSuccessParry;
 }
 
 // ポーズ中か.
 bool Player::IsPaused() const noexcept
 {
-    return false;
+	return false;
 }
 
 // ステートの変更.
 void Player::ChangeState(PlayerState::eID id)
 {
-    m_NextStateID = id;
-    //m_RootState.get()->ChangeState(id);
+	m_NextStateID = id;
+	//m_RootState.get()->ChangeState(id);
 }
 
 std::reference_wrapper<PlayerStateBase> Player::GetStateReference(PlayerState::eID id)
 {
-    try
-    {
-        auto it = m_StateRefMap.find(id);
+	try
+	{
+		auto it = m_StateRefMap.find(id);
 
-        if (it == m_StateRefMap.end())
-        {
-            throw std::out_of_range("PlayerStateID not mapped (ID: " + std::to_string(static_cast<int>(id)) + ")");
-        }
+		if (it == m_StateRefMap.end())
+		{
+			throw std::out_of_range("PlayerStateID not mapped (ID: " + std::to_string(static_cast<int>(id)) + ")");
+		}
 
-        return it->second();
-    }
-    catch (const std::exception& e)
-    {
-        std::string message = "Player::GetStateReference failed (ID: " + std::to_string(static_cast<int>(id)) + "): " + e.what();
-        //Debug::Warning(message.c_str());
-        throw;
-    }
+		return it->second();
+	}
+	catch (const std::exception& e)
+	{
+		std::string message = "Player::GetStateReference failed (ID: " + std::to_string(static_cast<int>(id)) + "): " + e.what();
+		//Debug::Warning(message.c_str());
+		throw;
+	}
 }
 
 // マッピングを初期化するヘルパー関数.
 void Player::InitializeStateRefMap()
 {
-    // --- Systemステート ---.
-    m_StateRefMap[PlayerState::eID::Pause]          = [this] { return m_RootState->GetPauseStateRef(); };
-    m_StateRefMap[PlayerState::eID::KnockBack]      = [this] { return m_RootState->GetKnockBackStateRef(); };
-    m_StateRefMap[PlayerState::eID::Dead]           = [this] { return m_RootState->GetDeadStateRef(); };
-    m_StateRefMap[PlayerState::eID::SpecialAttack]  = [this] { return m_RootState->GetSpecialAttackStateRef(); };
+	// --- Systemステート ---.
+	m_StateRefMap[PlayerState::eID::Pause]          = [this] { return m_RootState->GetPauseStateRef(); };
+	m_StateRefMap[PlayerState::eID::KnockBack]      = [this] { return m_RootState->GetKnockBackStateRef(); };
+	m_StateRefMap[PlayerState::eID::Dead]           = [this] { return m_RootState->GetDeadStateRef(); };
+	m_StateRefMap[PlayerState::eID::SpecialAttack]  = [this] { return m_RootState->GetSpecialAttackStateRef(); };
 
-    // --- Movementステート ---.
-    m_StateRefMap[PlayerState::eID::Idle]           = [this] { return m_RootState->GetIdleStateRef(); };
-    m_StateRefMap[PlayerState::eID::Run]            = [this] { return m_RootState->GetRunStateRef(); };
+	// --- Movementステート ---.
+	m_StateRefMap[PlayerState::eID::Idle]           = [this] { return m_RootState->GetIdleStateRef(); };
+	m_StateRefMap[PlayerState::eID::Run]            = [this] { return m_RootState->GetRunStateRef(); };
 
-    // --- Dodgeステート ---.
-    m_StateRefMap[PlayerState::eID::DodgeExecute]   = [this] { return m_RootState->GetDodgeExecuteStateRef(); };
-    m_StateRefMap[PlayerState::eID::JustDodge]      = [this] { return m_RootState->GetJustDodgeStateRef(); };
+	// --- Dodgeステート ---.
+	m_StateRefMap[PlayerState::eID::DodgeExecute]   = [this] { return m_RootState->GetDodgeExecuteStateRef(); };
+	m_StateRefMap[PlayerState::eID::JustDodge]      = [this] { return m_RootState->GetJustDodgeStateRef(); };
 
-    // --- Combatステート ---.
-    m_StateRefMap[PlayerState::eID::AttackCombo_0]  = [this] { return m_RootState->GetCombo0StateRef(); };
-    m_StateRefMap[PlayerState::eID::AttackCombo_1]  = [this] { return m_RootState->GetCombo1StateRef(); };
-    m_StateRefMap[PlayerState::eID::AttackCombo_2]  = [this] { return m_RootState->GetCombo2StateRef(); };
-    m_StateRefMap[PlayerState::eID::Parry]          = [this] { return m_RootState->GetParryStateRef(); };
+	// --- Combatステート ---.
+	m_StateRefMap[PlayerState::eID::AttackCombo_0]  = [this] { return m_RootState->GetCombo0StateRef(); };
+	m_StateRefMap[PlayerState::eID::AttackCombo_1]  = [this] { return m_RootState->GetCombo1StateRef(); };
+	m_StateRefMap[PlayerState::eID::AttackCombo_2]  = [this] { return m_RootState->GetCombo2StateRef(); };
+	m_StateRefMap[PlayerState::eID::Parry]          = [this] { return m_RootState->GetParryStateRef(); };
 }
 
 // 衝突_被ダメージ.
 void Player::HandleDamageDetection()
 {
-    if (!m_upColliders) return;
+	if (!m_upColliders) return;
 
-    const auto& internal_colliders = m_upColliders->GetInternalColliders();
+	const auto& internal_colliders = m_upColliders->GetInternalColliders();
 
-    for (const auto& collider_ptr : internal_colliders)
-    {
-        const ColliderBase* current_collider = collider_ptr.get();
+	for (const auto& collider_ptr : internal_colliders)
+	{
+		const ColliderBase* current_collider = collider_ptr.get();
 
-        if ((current_collider->GetMyMask() & eCollisionGroup::Player_Damage) == eCollisionGroup::None) {
-            continue;
-        }
+		if ((current_collider->GetMyMask() & eCollisionGroup::Player_Damage) == eCollisionGroup::None) {
+			continue;
+		}
 
-        for (const CollisionInfo& info : current_collider->GetCollisionEvents())
-        {
-            if (!info.IsHit) continue;
-            const ColliderBase* otherCollider = info.ColliderB;
-            if (!otherCollider) { continue; }
+		for (const CollisionInfo& info : current_collider->GetCollisionEvents())
+		{
+			if (!info.IsHit) continue;
+			const ColliderBase* otherCollider = info.ColliderB;
+			if (!otherCollider) { continue; }
 
-            eCollisionGroup other_group = otherCollider->GetMyMask();
+			eCollisionGroup other_group = otherCollider->GetMyMask();
 
-            if ((other_group & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None)
-            {
-                // 既にスタン中や無敵時間であれば処理を中断
-                if (IsKnockBack() || IsDead() || IsDead()) { continue; }
+			if ((other_group & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None)
+			{
+				SoundManager::GetInstance().Play("Damage");
+				SoundManager::GetInstance().SetVolume("Damage",7000);
 
-                m_Combo = 0;
+				// 既にスタン中や無敵時間であれば処理を中断
+				if (IsKnockBack() || IsDead()) { continue; }
 
-                // ダメージを適用 
-                ApplyDamage(info.AttackAmount);
+				m_Combo = 0;
 
-                m_KnockBackVec = info.Normal;
-                m_KnockBackPower = 100.f;
+				// ダメージを適用 
+				ApplyDamage(info.AttackAmount);
 
-                // 状態をノックバックに遷移させる
-                ChangeState(PlayerState::eID::KnockBack);
+				m_KnockBackVec = info.Normal;
+				m_KnockBackPower = 100.f;
 
-			    CameraManager::GetInstance().ShakeCamera(0.5f, 4.5f); // カメラを少し揺らす.
+				// 状態をノックバックに遷移させる
+				ChangeState(PlayerState::eID::KnockBack);
 
-                // 1フレームに1回.
-                return;
-            }
-        }
-    }
+				CameraManager::GetInstance().ShakeCamera(0.5f, 4.5f); // カメラを少し揺らす.
+
+				// 1フレームに1回.
+				return;
+			}
+		}
+	}
 }
 
 void Player::HandleAttackDetection()
 {
-    if (!m_upColliders) return;
+	if (!m_upColliders) return;
 
-    const auto& internal_colliders = m_upColliders->GetInternalColliders();
+	const auto& internal_colliders = m_upColliders->GetInternalColliders();
 
-    for (const auto& collider_ptr : internal_colliders)
-    {
-        const ColliderBase* current_collider = collider_ptr.get();
+	for (const auto& collider_ptr : internal_colliders)
+	{
+		const ColliderBase* current_collider = collider_ptr.get();
 
-        if ((current_collider->GetMyMask() & eCollisionGroup::Player_Attack) == eCollisionGroup::None) {
-            continue;
-        }
+		if ((current_collider->GetMyMask() & eCollisionGroup::Player_Attack) == eCollisionGroup::None) {
+			continue;
+		}
 
-        for (const CollisionInfo& info : current_collider->GetCollisionEvents())
-        {
-            if (!info.IsHit) continue;
-            const ColliderBase* otherCollider = info.ColliderB;
-            if (!otherCollider) { continue; }
+		for (const CollisionInfo& info : current_collider->GetCollisionEvents())
+		{
+			if (!info.IsHit) continue;
+			const ColliderBase* otherCollider = info.ColliderB;
+			if (!otherCollider) { continue; }
 
-            eCollisionGroup other_group = otherCollider->GetMyMask();
+			eCollisionGroup other_group = otherCollider->GetMyMask();
 
-            if ((other_group & eCollisionGroup::Enemy_Damage) != eCollisionGroup::None)
-            {
-                ++m_Combo;
-                m_CurrentUltValue += static_cast<float>(m_Combo) * 0.0f;
-                SetAttackColliderActive(false);
+			if ((other_group & eCollisionGroup::Enemy_Damage) != eCollisionGroup::None)
+			{
+                auto effect = EffectResource::GetResource("Hit2");
 
-                // 一フレーム1回.
-                return;
-            }
-        }
-    }
+                m_EffectHandle =
+                    EffekseerManager::GetInstance().GetManager()
+                    ->Play(effect, info.ContactPoint.x, info.ContactPoint.y + 1.5f, info.ContactPoint.z);
+
+				SoundManager::GetInstance().Play("Hit1");
+				SoundManager::GetInstance().SetVolume("Hit1", 9000);
+
+				++m_Combo;
+				m_CurrentUltValue = std::clamp(m_CurrentUltValue + (static_cast<float>(m_Combo) * 5.f), 0.0f, m_MaxUltValue);
+				SetAttackColliderActive(false);
+
+				// 一フレーム1回.
+				return;
+			}
+		}
+	}
 }
 
 void Player::HandleDodgeDetection()
 {
-    if (!m_upColliders) return;
+	if (!m_upColliders) return;
 
-    const auto& internal_colliders = m_upColliders->GetInternalColliders();
+	const auto& internal_colliders = m_upColliders->GetInternalColliders();
 
-    for (const auto& collider_ptr : internal_colliders)
-    {
-        const ColliderBase* current_collider = collider_ptr.get();
+	for (const auto& collider_ptr : internal_colliders)
+	{
+		const ColliderBase* current_collider = collider_ptr.get();
 
-        if ((current_collider->GetMyMask() & eCollisionGroup::Player_JustDodge) == eCollisionGroup::None) {
-            continue;
-        }
+		if ((current_collider->GetMyMask() & eCollisionGroup::Player_JustDodge) == eCollisionGroup::None) {
+			continue;
+		}
 
-        for (const CollisionInfo& info : current_collider->GetCollisionEvents())
-        {
-            if (!info.IsHit) continue;
-            const ColliderBase* otherCollider = info.ColliderB;
-            if (!otherCollider) { continue; }
+		for (const CollisionInfo& info : current_collider->GetCollisionEvents())
+		{
+			if (!info.IsHit) continue;
+			const ColliderBase* otherCollider = info.ColliderB;
+			if (!otherCollider) { continue; }
 
-            // ジャスト回避成功
-            m_IsJustDodgeTiming = true;
-            // ゲージ増加
-            m_CurrentUltValue += 300.0f;
-        }
-    }
+			// ジャスト回避成功
+			m_IsJustDodgeTiming = true;
+			// ゲージ増加
+			m_CurrentUltValue += 300.0f;
+		}
+	}
 }
 
 void Player::HandleParryDetection()
 {
-    if (!m_upColliders) return;
+	if (!m_upColliders) return;
 
-    const auto& internal_colliders = m_upColliders->GetInternalColliders();
+	const auto& internal_colliders = m_upColliders->GetInternalColliders();
 
-    for (const auto& collider_ptr : internal_colliders)
-    {
-        const ColliderBase* current_collider = collider_ptr.get();
+	for (const auto& collider_ptr : internal_colliders)
+	{
+		const ColliderBase* current_collider = collider_ptr.get();
 
-        if ((current_collider->GetMyMask() & eCollisionGroup::Player_Parry) == eCollisionGroup::None) {
-            continue;
-        }
+		if ((current_collider->GetMyMask() & eCollisionGroup::Player_Parry) == eCollisionGroup::None) {
+			continue;
+		}
 
-        for (const CollisionInfo& info : current_collider->GetCollisionEvents())
-        {
-            if (!info.IsHit) continue;
-            const ColliderBase* otherCollider = info.ColliderB;
-            if (!otherCollider) { continue; }
+		for (const CollisionInfo& info : current_collider->GetCollisionEvents())
+		{
+			if (!info.IsHit) continue;
+			const ColliderBase* otherCollider = info.ColliderB;
+			if (!otherCollider) { continue; }
 
-            eCollisionGroup other_group = otherCollider->GetMyMask();
+			eCollisionGroup other_group = otherCollider->GetMyMask();
 
-            if ((other_group & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None)
-            {
-                SoundManager::GetInstance().Play("Parry");
-                m_IsSuccessParry = true;
-                
-                // パリィ成功時のゲージ増加
-                m_CurrentUltValue += 500.0f;
+			if ((other_group & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None)
+			{
+				SoundManager::GetInstance().Play("Parry");
+				SoundManager::GetInstance().SetVolume("Parry",7000);
+				m_IsSuccessParry = true;
+				
+				// パリィ成功時のゲージ増加
+				m_CurrentUltValue += 500.0f;
 
-                // パリィ成功時のカメラ演出（シェイク）
-                CameraManager::GetInstance().ShakeCamera(0.15f, 0.3f);
-                
-                // 一フレーム1回.
-                return;
-            }
-        }
-    }
+				// パリィ成功時のカメラ演出（シェイク）
+				CameraManager::GetInstance().ShakeCamera(0.15f, 0.3f);
+				
+				// 一フレーム1回.
+				return;
+			}
+		}
+	}
 }
 

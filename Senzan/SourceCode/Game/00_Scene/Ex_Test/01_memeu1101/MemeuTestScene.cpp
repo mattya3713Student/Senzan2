@@ -10,9 +10,9 @@
 #include "Graphic/Light/LightManager.h"
 
 #include "Game/01_GameObject/00_MeshObject/00_Character/00_Ground/Ground.h"	// 地面Static.
-#include "Game//01_GameObject//02_UIObject/UIGameMain/UIGameMain.h"
-#include "Game//01_GameObject//02_UIObject/UIGameOver/UIGameOver.h"
-#include "Game//01_GameObject//02_UIObject/UIEnding/UIEnding.h"
+#include "Game/01_GameObject/02_UIObject/UIGameMain/UIGameMain.h"
+#include "Game/01_GameObject/02_UIObject/UIGameOver/UIGameOver.h"
+#include "Game/01_GameObject/02_UIObject/UIEnding/UIEnding.h"
 #include "SceneManager/SceneManager.h" 
 #include "Game/05_InputDevice/Input.h"
 

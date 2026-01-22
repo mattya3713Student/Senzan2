@@ -44,6 +44,7 @@ void BossMoveState::Update()
 	using namespace DirectX;
 
 	// === ImGui Debug Window ===
+#if _DEBUG
 	ImGui::Begin(IMGUI_JP("Boss Attack Debug"));
 	
 	ImGui::Text(IMGUI_JP("=== Distance Settings ==="));
@@ -75,6 +76,7 @@ void BossMoveState::Update()
 	else ImGui::TextColored(ImVec4(0,1,0,1), "-> Far");
 	
 	ImGui::End();
+#endif
 
 	float delta = Time::GetInstance().GetDeltaTime();
 

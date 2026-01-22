@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "..\GameObject.h"
+#include "ResourceManager/SoundManager/SoundManager.h"
 
 class Sprite2D;
 

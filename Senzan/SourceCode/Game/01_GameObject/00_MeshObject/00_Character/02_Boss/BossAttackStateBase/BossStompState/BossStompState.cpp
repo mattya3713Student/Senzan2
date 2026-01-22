@@ -29,6 +29,7 @@ BossStompState::BossStompState(Boss* owner)
 
 void BossStompState::DrawImGui()
 {
+#if _DEBUG
     ImGui::Begin(IMGUI_JP("BossStomp State"));
     CImGuiManager::Slider<float>(IMGUI_JP("ジャンプ力"), m_JumpPower, 0.0f, 200.0f, true);
     CImGuiManager::Slider<float>(IMGUI_JP("重力"), m_Gravity, 0.0f, 10.0f, true);
@@ -55,6 +56,7 @@ void BossStompState::DrawImGui()
 
     BossAttackStateBase::DrawImGui();
     ImGui::End();
+#endif
 }
 
 void BossStompState::LoadSettings()
