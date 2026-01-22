@@ -129,6 +129,7 @@ void BossStompState::Enter()
 
 	float dx = DirectX::XMVectorGetX(Direction);
 	float dz = DirectX::XMVectorGetZ(Direction);
+
 	float angle_radian = std::atan2f(-dx, -dz);
 	m_pOwner->SetRotationY(angle_radian);
 
