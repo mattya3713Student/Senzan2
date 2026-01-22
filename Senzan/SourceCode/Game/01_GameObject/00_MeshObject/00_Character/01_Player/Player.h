@@ -172,6 +172,7 @@ protected:
 	
 	//---Dodge関連---.
 	bool				m_IsJustDodgeTiming; // ジャスト回避のタイミング.
+	::Effekseer::Handle m_UIEffectHandle = -1; // UI用エフェクトハンドル.
 
 	//--- Debug: force state 再入場用 ---.
 	PlayerState::eID    m_DebugForcedState;     // None == 無効.
