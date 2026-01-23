@@ -2,6 +2,8 @@
 #include "System/Singleton/SingletonTemplate.h"
 #include "Game/02_Camera/CameraBase.h"
 
+class LockOnCamera;
+
 /************************************
 *   カメラ管理クラス.
 ************************************/
@@ -22,6 +24,9 @@ public:
 
 	// カメラを揺らす.
 	void ShakeCamera(float duration, float magnitude);
+
+	// パリィカメラ演出を開始.
+	void StartParryCamera();
 
 	// カメラの更新.
 	void LateUpdate();

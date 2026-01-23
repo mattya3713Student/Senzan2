@@ -102,13 +102,18 @@ class Boss
     };
 
 public:
-    Boss();
-    ~Boss() override;
+Boss();
+~Boss() override;
 
-    void SetAnyAttackJustWindow(bool v) { m_IsAnyAttackJustWindow = v; }
-    bool IsAnyAttackJustWindow() const { return m_IsAnyAttackJustWindow; }
+void SetAnyAttackJustWindow(bool v) { m_IsAnyAttackJustWindow = v; }
+bool IsAnyAttackJustWindow() const { return m_IsAnyAttackJustWindow; }
 
-    void Update() override;
+// パリィ被弾通知（外部から呼び出す）.
+void OnParried();
+// パリィ被弾フラグを取得.
+bool IsParried() const { return m_IsParried; }
+
+void Update() override;
     void LateUpdate() override;
     void Draw() override;
 
@@ -223,6 +228,9 @@ protected:
 
     // runtime flag indicating any attack's just window is active
     bool m_IsAnyAttackJustWindow = false;
+
+    // パリィ被弾フラグ.
+    bool m_IsParried = false;
 
     // 統合された攻撃コライダー（各ステートがボーンを指定）
     ColliderBase* m_spAttackCollider = nullptr;

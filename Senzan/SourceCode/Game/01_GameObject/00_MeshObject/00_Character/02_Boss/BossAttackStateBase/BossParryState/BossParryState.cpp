@@ -65,4 +65,6 @@ void BossParryState::Draw()
 
 void BossParryState::Exit()
 {
+    // パリィフラグをリセット.
+    m_pOwner->m_IsParried = false;
 }

@@ -3,6 +3,7 @@
 
 #include "CameraManager.h"
 #include "Game/02_Camera/CameraBase.h"
+#include "Game/02_Camera/LockOnCamera/LockOnCamera.h"
 #include "Game/04_Time/Time.h"
 
 static std::mt19937 s_Engine(static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count()));
@@ -24,6 +25,19 @@ void CameraManager::ShakeCamera(float duration, float magnitude)
 	// 既に揺れている場合でも、新しいシェイクで上書きする。
 	m_ShakeDuration = duration;
 	m_ShakeMagnitude = magnitude;
+}
+
+// パリィカメラ演出を開始.
+void CameraManager::StartParryCamera()
+{
+	if (m_wpCamera.expired()) { return; }
+
+	// LockOnCameraにキャストしてパリィカメラ演出を開始.
+	auto lockOnCamera = std::dynamic_pointer_cast<LockOnCamera>(m_wpCamera.lock());
+	if (lockOnCamera)
+	{
+		lockOnCamera->StartParryCamera();
+	}
 }
 
 void CameraManager::LateUpdate()

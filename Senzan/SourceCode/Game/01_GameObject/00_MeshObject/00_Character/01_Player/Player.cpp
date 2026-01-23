@@ -1,4 +1,4 @@
-ï»¿#include "Player.h"
+#include "Player.h"
 #include "System/Utility/StateMachine/StateMachine.h"
 
 #include "State/PlayerStateID.h"
@@ -33,6 +33,7 @@
 
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
 #include "System/Singleton/CameraManager/CameraManager.h"
+#include "System/Singleton/ParryManager/ParryManager.h"
 #include "Graphic/DirectX/DirectX11/DirectX11.h"
 
 namespace {
@@ -61,15 +62,15 @@ Player::Player()
 	, m_DebugRepeatOnExit( false )
 	, m_DebugWasInForcedState( false )
 {
-	// ã‚¹ãƒ†ãƒ¼ãƒˆã®åˆæœŸåŒ–.
+	// ƒXƒe[ƒg‚Ì‰Šú‰».
 	InitializeStateRefMap();
 
-	// ãƒ¡ãƒƒã‚·ãƒ¥ã®ã‚¢ã‚¿ãƒƒãƒ.
+	// ƒƒbƒVƒ…‚ÌƒAƒ^ƒbƒ`.
 	auto mesh = ResourceManager::GetSkinMesh("player");
-	_ASSERT_EXPR(mesh != nullptr, "ãƒ¡ãƒƒã‚·ãƒ¥ã®å–å¾—ã«å¤±æ•—");
+	_ASSERT_EXPR(mesh != nullptr, "ƒƒbƒVƒ…‚Ìæ“¾‚É¸”s");
 	AttachMesh(mesh);
 
-	//ãƒ‡ãƒãƒƒã‚¯ç¢ºèªã®ãŸã‚.
+	//ƒfƒoƒbƒNŠm”F‚Ì‚½‚ß.
 	DirectX::XMFLOAT3 pos = { 0.f, 0.f, -20.f };
 	m_spTransform->SetPosition(pos);
 
@@ -79,7 +80,7 @@ Player::Player()
 	m_MaxHP = 100.f;
 	m_HP = m_MaxHP;
 
-	// è¢«ãƒ€ãƒ¡ã®è¿½åŠ .
+	// ”íƒ_ƒ‚Ì’Ç‰Á.
 	std::unique_ptr<CapsuleCollider> damage_collider = std::make_unique<CapsuleCollider>(m_spTransform);
 
 	m_pDamageCollider = damage_collider.get();
@@ -93,7 +94,7 @@ Player::Player()
 
 	m_upColliders->AddCollider(std::move(damage_collider));
 
-	// ãƒ‘ãƒªã‚£ã®è¿½åŠ .
+	// ƒpƒŠƒB‚Ì’Ç‰Á.
 	std::unique_ptr<CapsuleCollider> parry_collider = std::make_unique<CapsuleCollider>(m_spTransform);
 
 	m_pParryCollider = parry_collider.get();
@@ -108,7 +109,7 @@ Player::Player()
 
 	m_upColliders->AddCollider(std::move(parry_collider));
 
-	// ã‚¸ãƒ£ã‚¹ãƒˆå›é¿ã®è¿½åŠ .
+	// ƒWƒƒƒXƒg‰ñ”ğ‚Ì’Ç‰Á.
 	std::unique_ptr<CapsuleCollider> justdodge_collider = std::make_unique<CapsuleCollider>(m_spTransform);
 
 	justdodge_collider->SetColor(Color::eColor::Gray);
@@ -120,7 +121,7 @@ Player::Player()
 
 	m_upColliders->AddCollider(std::move(justdodge_collider));
 
-	// æŠ¼ã—æˆ»ã—ã®è¿½åŠ .
+	// ‰Ÿ‚µ–ß‚µ‚Ì’Ç‰Á.
 	std::unique_ptr<CapsuleCollider> pressCollider = std::make_unique<CapsuleCollider>(m_spTransform);
 
 	pressCollider->SetColor(Color::eColor::Cyan);
@@ -132,7 +133,7 @@ Player::Player()
 
 	m_upColliders->AddCollider(std::move(pressCollider));
 
-	// æ”»æ’ƒã®è¿½åŠ .
+	// UŒ‚‚Ì’Ç‰Á.
 	std::unique_ptr<CapsuleCollider> attackCollider = std::make_unique<CapsuleCollider>(m_spTransform);
 
 	m_pAttackCollider = attackCollider.get();
@@ -152,7 +153,7 @@ Player::Player()
 
 	CollisionDetector::GetInstance().RegisterCollider(*m_upColliders);
 
-	// å„ã‚¹ãƒ†ãƒ¼ãƒˆã®åˆæœŸåŒ–.
+	// ŠeƒXƒe[ƒg‚Ì‰Šú‰».
 	m_RootState.get()->Enter();
 }
 
@@ -170,7 +171,7 @@ void Player::Update()
 
 	m_IsSuccessParry = false;
 
-	// ã‚¹ãƒ†ãƒ¼ãƒˆé·ç§»ã®ãƒã‚§ãƒƒã‚¯.
+	// ƒXƒe[ƒg‘JˆÚ‚Ìƒ`ƒFƒbƒN.
 	if (m_NextStateID != PlayerState::eID::None)
 	{
 		m_RootState->ChangeState(m_NextStateID);
@@ -194,13 +195,13 @@ void Player::LateUpdate()
 		return;
 	}
 
-	// ã‚¹ãƒ†ãƒ¼ãƒˆãƒã‚·ãƒ¼ãƒ³ã®æœ€çµ‚æ›´æ–°ã‚’å®Ÿè¡Œ.
+	// ƒXƒe[ƒgƒ}ƒV[ƒ“‚ÌÅIXV‚ğÀs.
 	m_RootState->LateUpdate();
 
-	// æŠ¼ã—æˆ»ã—.
+	// ‰Ÿ‚µ–ß‚µ.
 	HandleCollisionResponse();
 
-	// è¡çªã‚¤ãƒ™ãƒ³ãƒˆå‡¦ç†ã‚’å®Ÿè¡Œ
+	// Õ“ËƒCƒxƒ“ƒgˆ—‚ğÀs
 	HandleParryDetection();
 	HandleDamageDetection();
 	HandleAttackDetection();
@@ -209,7 +210,7 @@ void Player::LateUpdate()
 
 void Player::Draw()
 {
-	// ãƒ¢ãƒ‡ãƒ«ã®é–¢ä¿‚ã§å‰å¾Œåè»¢.
+	// ƒ‚ƒfƒ‹‚ÌŠÖŒW‚Å‘OŒã”½“].
 	m_spTransform->SetRotationY(GetRotation().y + D3DXToRadian(180.0f));
 
 	Character::Draw();
@@ -218,10 +219,10 @@ void Player::Draw()
 
     EffekseerManager::GetInstance().RenderHandle(m_EffectHandle, CameraManager::GetInstance().GetCurrentCamera().get());
 
-	// UIç”¨ã‚¨ãƒ•ã‚§ã‚¯ãƒˆæç”»ï¼ˆã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ç³»ï¼‰
+	// UI—pƒGƒtƒFƒNƒg•`‰æiƒXƒNƒŠ[ƒ“À•WŒnj
 	if (m_UIEffectHandle != -1)
 	{
-		// ã‚¨ãƒ•ã‚§ã‚¯ãƒˆãŒã¾ã å†ç”Ÿä¸­ã‹ãƒã‚§ãƒƒã‚¯
+		// ƒGƒtƒFƒNƒg‚ª‚Ü‚¾Ä¶’†‚©ƒ`ƒFƒbƒN
 		if (EffekseerManager::GetInstance().GetManager()->Exists(m_UIEffectHandle))
 		{
 			EffekseerManager::GetInstance().UpdateHandle(m_UIEffectHandle);
@@ -229,19 +230,19 @@ void Player::Draw()
 		}
 		else
 		{
-			// å†ç”Ÿçµ‚äº†ã—ãŸã®ã§ãƒãƒ³ãƒ‰ãƒ«ã‚’ãƒªã‚»ãƒƒãƒˆ
+			// Ä¶I—¹‚µ‚½‚Ì‚Åƒnƒ“ƒhƒ‹‚ğƒŠƒZƒbƒg
 			m_UIEffectHandle = -1;
 		}
 	}
 }
 
-// ãƒãƒƒã‚¯ä¸­ã‹.
+// ƒmƒbƒN’†‚©.
 bool Player::IsKnockBack() const noexcept
 {
 	return m_IsKnockBack;
 }
 
-// æ­»äº¡ä¸­ã‹.
+// €–S’†‚©.
 bool Player::IsDead() const noexcept
 {
 	return m_IsDead;
@@ -252,13 +253,13 @@ bool Player::IsParry() const noexcept
 	return m_IsSuccessParry;
 }
 
-// ãƒãƒ¼ã‚ºä¸­ã‹.
+// ƒ|[ƒY’†‚©.
 bool Player::IsPaused() const noexcept
 {
 	return false;
 }
 
-// ã‚¹ãƒ†ãƒ¼ãƒˆã®å¤‰æ›´.
+// ƒXƒe[ƒg‚Ì•ÏX.
 void Player::ChangeState(PlayerState::eID id)
 {
 	m_NextStateID = id;
@@ -286,31 +287,31 @@ std::reference_wrapper<PlayerStateBase> Player::GetStateReference(PlayerState::e
 	}
 }
 
-// ãƒãƒƒãƒ”ãƒ³ã‚°ã‚’åˆæœŸåŒ–ã™ã‚‹ãƒ˜ãƒ«ãƒ‘ãƒ¼é–¢æ•°.
+// ƒ}ƒbƒsƒ“ƒO‚ğ‰Šú‰»‚·‚éƒwƒ‹ƒp[ŠÖ”.
 void Player::InitializeStateRefMap()
 {
-	// --- Systemã‚¹ãƒ†ãƒ¼ãƒˆ ---.
+	// --- SystemƒXƒe[ƒg ---.
 	m_StateRefMap[PlayerState::eID::Pause]          = [this] { return m_RootState->GetPauseStateRef(); };
 	m_StateRefMap[PlayerState::eID::KnockBack]      = [this] { return m_RootState->GetKnockBackStateRef(); };
 	m_StateRefMap[PlayerState::eID::Dead]           = [this] { return m_RootState->GetDeadStateRef(); };
 	m_StateRefMap[PlayerState::eID::SpecialAttack]  = [this] { return m_RootState->GetSpecialAttackStateRef(); };
 
-	// --- Movementã‚¹ãƒ†ãƒ¼ãƒˆ ---.
+	// --- MovementƒXƒe[ƒg ---.
 	m_StateRefMap[PlayerState::eID::Idle]           = [this] { return m_RootState->GetIdleStateRef(); };
 	m_StateRefMap[PlayerState::eID::Run]            = [this] { return m_RootState->GetRunStateRef(); };
 
-	// --- Dodgeã‚¹ãƒ†ãƒ¼ãƒˆ ---.
+	// --- DodgeƒXƒe[ƒg ---.
 	m_StateRefMap[PlayerState::eID::DodgeExecute]   = [this] { return m_RootState->GetDodgeExecuteStateRef(); };
 	m_StateRefMap[PlayerState::eID::JustDodge]      = [this] { return m_RootState->GetJustDodgeStateRef(); };
 
-	// --- Combatã‚¹ãƒ†ãƒ¼ãƒˆ ---.
+	// --- CombatƒXƒe[ƒg ---.
 	m_StateRefMap[PlayerState::eID::AttackCombo_0]  = [this] { return m_RootState->GetCombo0StateRef(); };
 	m_StateRefMap[PlayerState::eID::AttackCombo_1]  = [this] { return m_RootState->GetCombo1StateRef(); };
 	m_StateRefMap[PlayerState::eID::AttackCombo_2]  = [this] { return m_RootState->GetCombo2StateRef(); };
 	m_StateRefMap[PlayerState::eID::Parry]          = [this] { return m_RootState->GetParryStateRef(); };
 }
 
-// è¡çª_è¢«ãƒ€ãƒ¡ãƒ¼ã‚¸.
+// Õ“Ë_”íƒ_ƒ[ƒW.
 void Player::HandleDamageDetection()
 {
 	if (!m_upColliders) return;
@@ -338,23 +339,23 @@ void Player::HandleDamageDetection()
 				SoundManager::GetInstance().Play("Damage");
 				SoundManager::GetInstance().SetVolume("Damage",7000);
 
-				// æ—¢ã«ã‚¹ã‚¿ãƒ³ä¸­ã‚„ç„¡æ•µæ™‚é–“ã§ã‚ã‚Œã°å‡¦ç†ã‚’ä¸­æ–­
+				// Šù‚ÉƒXƒ^ƒ“’†‚â–³“GŠÔ‚Å‚ ‚ê‚Îˆ—‚ğ’†’f
 				if (IsKnockBack() || IsDead()) { continue; }
 
 				m_Combo = 0;
 
-				// ãƒ€ãƒ¡ãƒ¼ã‚¸ã‚’é©ç”¨ 
+				// ƒ_ƒ[ƒW‚ğ“K—p 
 				ApplyDamage(info.AttackAmount);
 
 				m_KnockBackVec = info.Normal;
 				m_KnockBackPower = 100.f;
 
-				// çŠ¶æ…‹ã‚’ãƒãƒƒã‚¯ãƒãƒƒã‚¯ã«é·ç§»ã•ã›ã‚‹
+				// ó‘Ô‚ğƒmƒbƒNƒoƒbƒN‚É‘JˆÚ‚³‚¹‚é
 				ChangeState(PlayerState::eID::KnockBack);
 
-				CameraManager::GetInstance().ShakeCamera(0.5f, 4.5f); // ã‚«ãƒ¡ãƒ©ã‚’å°‘ã—æºã‚‰ã™.
+				CameraManager::GetInstance().ShakeCamera(0.5f, 4.5f); // ƒJƒƒ‰‚ğ­‚µ—h‚ç‚·.
 
-				// 1ãƒ•ãƒ¬ãƒ¼ãƒ ã«1å›.
+				// 1ƒtƒŒ[ƒ€‚É1‰ñ.
 				return;
 			}
 		}
@@ -398,7 +399,7 @@ void Player::HandleAttackDetection()
 				m_CurrentUltValue = std::clamp(m_CurrentUltValue + (static_cast<float>(m_Combo) * 5.f), 0.0f, m_MaxUltValue);
 				SetAttackColliderActive(false);
 
-				// ä¸€ãƒ•ãƒ¬ãƒ¼ãƒ 1å›.
+				// ˆêƒtƒŒ[ƒ€1‰ñ.
 				return;
 			}
 		}
@@ -425,13 +426,13 @@ void Player::HandleDodgeDetection()
 			const ColliderBase* otherCollider = info.ColliderB;
 			if (!otherCollider) { continue; }
 
-			// ã‚¸ãƒ£ã‚¹ãƒˆå›é¿æˆåŠŸ
+			// ƒWƒƒƒXƒg‰ñ”ğ¬Œ÷
 			m_IsJustDodgeTiming = true;
-			// ã‚²ãƒ¼ã‚¸å¢—åŠ 
+			// ƒQ[ƒW‘‰Á
 			m_CurrentUltValue += 300.0f;
 
-			// UIç”¨ã‚¨ãƒ•ã‚§ã‚¯ãƒˆå†ç”Ÿï¼ˆç”»é¢ä¸­å¤®ã«é»„è‰²ã„é–ƒå…‰ï¼‰
-			auto effect = EffectResource::GetResource("Hit2"); // TODO: JustDodgeFlashç”¨ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã«å·®ã—æ›¿ãˆ
+			// UI—pƒGƒtƒFƒNƒgÄ¶i‰æ–Ê’†‰›‚É‰©F‚¢‘MŒõj
+			auto effect = EffectResource::GetResource("Hit2"); // TODO: JustDodgeFlash—pƒGƒtƒFƒNƒg‚É·‚µ‘Ö‚¦
 			if (effect != nullptr)
 			{
 				float screenX = static_cast<float>(WND_W) * 0.5f;
@@ -470,13 +471,13 @@ void Player::HandleParryDetection()
 				SoundManager::GetInstance().SetVolume("Parry",7000);
 				m_IsSuccessParry = true;
 				
-				// ãƒ‘ãƒªã‚£æˆåŠŸæ™‚ã®ã‚²ãƒ¼ã‚¸å¢—åŠ 
+				// ƒpƒŠƒB¬Œ÷‚ÌƒQ[ƒW‘‰Á
 				m_CurrentUltValue += 500.0f;
 
-				// ãƒ‘ãƒªã‚£æˆåŠŸæ™‚ã®ã‚«ãƒ¡ãƒ©æ¼”å‡ºï¼ˆã‚·ã‚§ã‚¤ã‚¯ï¼‰
+				// ƒpƒŠƒB¬Œ÷‚ÌƒJƒƒ‰‰‰oiƒVƒFƒCƒNj
 				CameraManager::GetInstance().ShakeCamera(0.15f, 0.3f);
 				
-				// ä¸€ãƒ•ãƒ¬ãƒ¼ãƒ 1å›.
+				// ˆêƒtƒŒ[ƒ€1‰ñ.
 				return;
 			}
 		}
