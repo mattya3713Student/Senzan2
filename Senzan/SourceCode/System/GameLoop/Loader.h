@@ -62,30 +62,31 @@ private:
 	bool LoadEffects();
 
 
-    /****************************************************
-    * @brief Lineの初期化処理.
-    ****************************************************/
-    void LineInit(std::shared_ptr<UIObject> obje);
+	/****************************************************
+	* @brief Lineの初期化処理.
+	****************************************************/
+	void LineInit(std::shared_ptr<UIObject> obje);
 private:
 	// 非同期の結果を取得するフラグ.
-	std::vector <std::future<bool>> m_IsLoadResult;
-    std::vector<std::shared_ptr<UIObject>> m_pWhiteLine;
+	std::vector<std::future<bool>> m_IsLoadResult;
+	std::vector<std::shared_ptr<UIObject>> m_pWhiteLine;
 
 	// Spite.
 	std::shared_ptr<Sprite2D> m_pBackGroundImage;
-	std::shared_ptr<Sprite2D> m_pTextImage;
+	std::shared_ptr<Sprite2D> m_pLoadImage;
 	std::shared_ptr<Sprite2D> m_pLineImage;
 
 	// UIObject.
 	std::unique_ptr<UIObject> m_pBackGroundObject;
-	std::unique_ptr<UIObject> m_pTextObject;
+	std::unique_ptr<UIObject> m_pLoadObject;
 
 	// テキストのα値.
-	float m_TextAlpha;
+	float m_LoadRotSpeed;
 
-    int   m_Lines;
-    float m_LineInitTickness;
-    float m_LineGenerateRate;
-    float m_LineDecAlpha;
-    float m_LineDecTickness;
+	int   m_Lines;
+	float m_LineInitTickness;
+	float m_LineGenerateRate;
+	float m_LineGenerateTime;
+	float m_LineDecAlpha;
+	float m_LineDecTickness;
 };
