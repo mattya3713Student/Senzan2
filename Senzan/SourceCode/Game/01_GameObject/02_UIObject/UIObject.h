@@ -36,6 +36,7 @@ public:
 	* @note DetachSprite：分離.
 	******************************************************/
 	void AttachSprite(const std::shared_ptr<Sprite2D>& pSprite);
+    std::shared_ptr<Sprite2D> GetSprite();
 	void DetachSprite();
 
 public: // Getter、Setter.

@@ -5,6 +5,7 @@
 #include "Graphic/DirectX/DirectX11/DirectX11.h"
 #include "Math/Easing/Easing.h"
 #include "ResourceManager/ResourceManager.h"
+#include "02_UIObject/ULTSparkle/ULTSparkle.h"
 
 #if _DEBUG
 #include "Singleton/ImGui/CImGuiManager.h"
@@ -30,6 +31,7 @@ namespace {
 
 UIGameMain::UIGameMain()
 	: m_pUIs			()
+    , m_pULTSparkle     ()
 	, m_ComboColor		()
 	, m_GuageDelSpeed	()
 	, m_ClockSecInitRot	( 6.28f )
@@ -55,25 +57,40 @@ UIGameMain::~UIGameMain()
 
 void UIGameMain::Create()
 {
-	for (auto& ui : m_pUIs)
-	{
-		if (ui->GetUIName() == "HPGauge_0") {
-			m_BossHP.InitRate = ui->GetScaleX();
-		}
-		else if (ui->GetUIName() == "HPDamage_0") {
-			m_BossDamage.InitRate = ui->GetScaleX();
-		}
-		else if (ui->GetUIName() == "ULTGauge_0") {
+    auto it = m_pUIs.begin();
+    for (auto& ui : m_pUIs)
+    {
+        auto& ui = *it;
+        bool shouldRemove = false;
+
+        if (ui->GetUIName() == "HPGauge_0") {
+            m_BossHP.InitRate = ui->GetScaleX();
+        }
+        else if (ui->GetUIName() == "HPDamage_0") {
+            m_BossDamage.InitRate = ui->GetScaleX();
+        }
+        else if (ui->GetUIName() == "ULTGauge_0") {
             ui->SetScaleX(0.0f);
-			m_PlayerUlt.InitRate = ui->GetScaleX();
-		}
-		else if (ui->GetUIName() == "HPGauge_1") {
-			m_PlayerHP.InitRate = ui->GetScaleX();
-		}
-		else if (ui->GetUIName() == "HPDamage_1") {
-			m_PlayerDamage.InitRate = ui->GetScaleX();
-		}
-	}
+            m_PlayerUlt.InitRate = ui->GetScaleX();
+        }
+        else if (ui->GetUIName() == "HPGauge_1") {
+            m_PlayerHP.InitRate = ui->GetScaleX();
+        }
+        else if (ui->GetUIName() == "HPDamage_1") {
+            m_PlayerDamage.InitRate = ui->GetScaleX();
+        }
+        else if (ui->GetUIName() == "Sparkle_0") {
+            m_pULTSparkle = std::make_shared<ULTSparkle>(ui);
+            shouldRemove = true;
+        }
+
+        if (shouldRemove) {
+            it = m_pUIs.erase(it);
+        }
+        else {
+            ++it;
+        }
+    }
 }
 
 //-----------------------------------------------------------------------.
@@ -92,10 +109,18 @@ void UIGameMain::Update()
 	m_PlayerHP.Before	= m_PlayerHP.Now;
 	m_PlayerUlt.Before	= m_PlayerUlt.Now;
 
+    m_pULTSparkle->Update();
+
 	// デバッグ用のImGui.
 	//	UIのデバッグ以外で通すと表示に齟齬が出るので消す.
-#if 0
-	// --- ImGui Debug ---.
+#if _DEBUG
+    ImGui::Begin("UI GameMain Debug");
+    if (ImGui::Button("Sparkle")) m_pULTSparkle->DoPeakAnim();
+    if (ImGui::Button("Particles")) m_switch = !m_switch;
+    ImGui::Text("Particles: %s", m_switch ? "ON" : "OFF");
+    ImGui::End();
+#elif 0
+    // --- ImGui Debug ---.
 	ImGui::Begin("UI Gauge Debug");
 
 	ImGui::Text("=== Player HP ===");
@@ -142,6 +167,11 @@ void UIGameMain::Update()
 		}
 		else if (ui->GetUIName() == "ULTGauge_0") {
 			ui->SetScaleX(m_PlayerUlt.Rate);
+            m_switch = m_PlayerUlt.Rate >= 1.0f ? true : false;
+            if (m_PlayerUlt.IsChanged && m_switch) {
+                m_pULTSparkle->DoPeakAnim();
+            }
+            m_pULTSparkle->SetULTGaugeStatus(m_switch, ui->GetPosition(), ui->GetDrawSize());
 		}
 		else if (ui->GetUIName() == "HPGauge_1") {
 			ui->SetScaleX(m_PlayerHP.InitRate * m_PlayerHP.Rate);
@@ -181,6 +211,7 @@ void UIGameMain::LateUpdate()
 	{
 		ui->Update();
 	}
+    m_pULTSparkle->LateUpdate();
 }
 
 //-----------------------------------------------------------------------.
@@ -193,6 +224,7 @@ void UIGameMain::Draw()
 		ui->Draw();
 		DirectX11::GetInstance().SetDepth(true);
 	}
+    m_pULTSparkle->Draw();
 }
 
 //-----------------------------------------------------------------------.

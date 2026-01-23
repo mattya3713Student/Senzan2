@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <random>
 namespace MyRand
 {
@@ -20,28 +20,28 @@ namespace MyRand
 
     inline float GetRandomPercentage(float Min, float Max)
     {
-        static bool isInitialized = false;
         static std::random_device dev{};
-        static std::mt19937 rnd{ dev() };
-        static std::uniform_real_distribution<float> dis{ Min, Max };
+        static std::mt19937 rnd{ dev() }; // ã‚¨ãƒ³ã‚¸ãƒ³ã¯ static ã§ä½¿ã„å›ã™
 
-        if (isInitialized == false)
-        {
-            rnd.seed(static_cast<unsigned>(
-                std::chrono::steady_clock::now().time_since_epoch().count()));
-            isInitialized = true;
-        }
+        // --- ã“ã“ã‹ã‚‰ä¿®æ­£ ---
+        // ã‚‚ã— Min > Max ã ã£ãŸã‚‰ã‚¨ãƒ©ãƒ¼ã«ãªã‚‹ã®ã§ã€å®‰å…¨ã®ãŸã‚ã« std::min/max ã‚’ä½¿ã†
+        float low = std::min(Min, Max);
+        float high = std::max(Min, Max);
+
+        // static ã‚’å¤–ã™ï¼ ã“ã‚Œã§æ¯å› Min/Max ãŒåæ˜ ã•ã‚Œã‚‹
+        std::uniform_real_distribution<float> dis{ low, high };
+
         return dis(rnd);
     }
 
-    // w’è‚µ‚½’l‚ğƒ‰ƒ“ƒ_ƒ€‚Å•Ô‚·.
+    // æŒ‡å®šã—ãŸå€¤ã‚’ãƒ©ãƒ³ãƒ€ãƒ ã§è¿”ã™.
     inline int GetRandomValue(const std::vector<int> values) {
 
-        // —”¶¬Ší‚ÌƒV[ƒh‚Æ‚µ‚Ä—”ƒfƒoƒCƒX‚ğg‚¤.
+        // ä¹±æ•°ç”Ÿæˆå™¨ã®ã‚·ãƒ¼ãƒ‰ã¨ã—ã¦ä¹±æ•°ãƒ‡ãƒã‚¤ã‚¹ã‚’ä½¿ã†.
         std::random_device rd;
         std::mt19937 gen(rd());
 
-        // ƒ‰ƒ“ƒ_ƒ€‚ÈƒCƒ“ƒfƒbƒN‚ğì¬.
+        // ãƒ©ãƒ³ãƒ€ãƒ ãªã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚’ä½œæˆ.
         std::uniform_int_distribution<> distrib(0, static_cast<int>(values.size()) - 1);
 
         return values[distrib(gen)];

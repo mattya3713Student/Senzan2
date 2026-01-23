@@ -288,6 +288,7 @@
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UIObject.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UIObjectManager.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\UITitle\UITitle.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\ULTSparkle\ULTSparkle.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\GameObject.cpp" />
     <ClCompile Include="SourceCode\Game\02_Camera\CameraBase.cpp" />
     <ClCompile Include="SourceCode\Game\02_Camera\FirstPersonCamera\FirstPersonCamera.cpp" />
@@ -374,6 +375,7 @@
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\Select\Select.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\UIGameMain\UIGameMain.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\04_BackGround\BackGround.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\ULTSparkle\ULTSparkle.h" />
     <ClInclude Include="SourceCode\Game\02_Camera\FirstPersonCamera\FirstPersonCamera.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\00_Core\CollisionSpec.h" />
     <ClInclude Include="SourceCode\Game\02_Camera\LockOnCamera\LockOnCamera.h" />

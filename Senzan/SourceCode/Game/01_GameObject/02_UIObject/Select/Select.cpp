@@ -2,7 +2,7 @@
 #include "02_UIObject/UILoader/UILoader.h"
 
 #include "Graphic/DirectX/DirectX11/DirectX11.h"
-#include "Game//04_Time//Time.h"
+#include "Game/04_Time/Time.h"
 #include "Math/Easing/Easing.h"
 
 namespace {
