@@ -72,6 +72,22 @@ struct ColliderWindow
     void Reset() { IsAct = false; IsEnd = false; IsJustWindow = false; }
 };
 
+// エフェクト再生のタイミングを制御する
+struct EffectWindow
+{
+    std::string EffectName;  // エフェクトリソース名
+    float Start = 0.0f;      // 再生開始秒
+    
+    // 座標オフセット（Bossのローカル座標系: X=横, Y=上, Z=前方）
+    DirectX::XMFLOAT3 Offset{ 0.0f, 0.0f, 0.0f };
+    
+    float Scale = 1.0f;      // エフェクトのスケール
+    
+    bool IsPlayed = false;   // 内部フラグ（再生済みか）
+
+    void Reset() { IsPlayed = false; }
+};
+
 class BossAttackStateBase
     : public StateBase<Boss>
 
@@ -115,9 +131,10 @@ protected:
     float m_ChargeTime = 0.0f;     // 溜め終了時間（秒）
     float m_AttackTime = 0.0f;     // 攻撃終了時間（秒）
 
-    // 当たり判定・移動ウィンドウ（可変長）
+    // 当たり判定・移動・エフェクトウィンドウ（可変長）
     std::vector<ColliderWindow>  m_ColliderWindows;  // 当たり判定設定
     std::vector<MovementWindow>  m_MovementWindows;  // 移動（踏み込み）設定
+    std::vector<EffectWindow>    m_EffectWindows;    // エフェクト再生設定
 
     void UpdateBaseLogic(float dt); // 共通更新ロジック
 

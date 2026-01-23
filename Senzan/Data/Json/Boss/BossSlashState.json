@@ -7,12 +7,12 @@
   "ColliderWindows": [
     {
       "BoneName": "boss_Hand_R",
-      "duration": 0.10000000149011612,
+      "duration": 4.859000205993652,
       "justTime": 0.5,
       "offset": [
         0.0,
         0.0,
-        -20.0
+        -15.0
       ],
       "start": 1.5
     }
