@@ -24,22 +24,14 @@ constexpr PlayerState::eID AttackCombo_0::GetStateID() const { return PlayerStat
 
 void AttackCombo_0::Enter()
 {
-    SoundManager::GetInstance().Play("Swing");
-    SoundManager::GetInstance().SetVolume("Swing", 7000);
 
     Combat::Enter();
 
+    SoundManager::GetInstance().Play("Swing");
+    SoundManager::GetInstance().SetVolume("Swing", 7000);
     m_pOwner->SetIsLoop(false);
     m_pOwner->SetAnimTime(0.0);
-    
-    // ジャスト回避後の強化攻撃
-    if (m_pOwner->m_IsJustDodgeTiming) {
-        m_AnimSpeed *= 1.5f;  // アニメ速度アップ
-        m_pOwner->m_pAttackCollider->SetAttackAmount(20.0f);  // ダメージ2倍
-    } else {
-        m_pOwner->m_pAttackCollider->SetAttackAmount(10.0f);  // 通常ダメージ
-    }
-    
+        
     m_pOwner->SetAnimSpeed(m_AnimSpeed);
     m_pOwner->ChangeAnim(Player::eAnim::Attack_0);
 
@@ -171,7 +163,6 @@ void AttackCombo_0::LateUpdate()
 {
     Combat::LateUpdate();
 
-    // movement optional
     float dt = m_pOwner->GetDelta();
     DirectX::XMFLOAT3 moveDirection = { m_pOwner->m_MoveVec.x, 0.0f, m_pOwner->m_MoveVec.z };
     float movement_speed = m_Distance / m_ComboEndTime;
@@ -183,7 +174,8 @@ void AttackCombo_0::LateUpdate()
     m_pOwner->AddPosition(movement);
 }
 
-void AttackCombo_0::Draw() {
+void AttackCombo_0::Draw()
+{
     Combat::Draw();
 }
 
