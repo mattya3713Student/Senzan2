@@ -43,6 +43,11 @@ void Combat::Update()
 {
 	Action::Update();
 
+	// 時間を先に更新してからウィンドウ判定
+	if (m_pOwner) {
+		m_currentTime += m_pOwner->GetDelta();
+	}
+
 	ProcessColliderWindows(m_currentTime);
 }
 
