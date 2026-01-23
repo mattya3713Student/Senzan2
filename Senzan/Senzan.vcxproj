@@ -341,6 +341,7 @@
     <ClCompile Include="SourceCode\System\GameLoop\WinMain.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\Debug\CollisionVisualizer\CollisionVisualizer.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\ImGui\CImGuiManager.cpp" />
+    <ClCompile Include="SourceCode\System\Singleton\ParryManager\ParryManager.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\PostEffectManager\PostEffectManager.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\ResourceManager\EffectManager\EffekseerManager.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\ResourceManager\ResourceManager.cpp" />
@@ -386,6 +387,7 @@
     <ClInclude Include="SourceCode\Game\03_Collision\Sprite\SpriteCollider.h" />
     <ClInclude Include="SourceCode\Resource\Effect\EffectResource.h" />
     <ClInclude Include="SourceCode\Resource\Sound\DirectSound.h" />
+    <ClInclude Include="SourceCode\System\Singleton\ParryManager\ParryManager.h" />
     <ClInclude Include="SourceCode\System\Singleton\PostEffectManager\PostEffectManager.h" />
     <ClInclude Include="SourceCode\System\Singleton\ResourceManager\EffectManager\EffekseerManager.h" />
     <ClInclude Include="SourceCode\System\Singleton\ResourceManager\SoundManager\SoundManager.h" />

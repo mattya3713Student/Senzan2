@@ -83,13 +83,13 @@ protected:
 	static constexpr float m_MoveVecDeceleration = 0.05f;
 
 public:
-	Player();
-	virtual ~Player() override;
+Player();
+virtual ~Player() override;
 
-    // Set just-dodge timing flag (used by Scene to propagate enemy just-windows)
-    void SetIsJustDodgeTiming(bool v) { m_IsJustDodgeTiming = v; }
+// Set just-dodge timing flag (used by Scene to propagate enemy just-windows)
+void SetIsJustDodgeTiming(bool v) { m_IsJustDodgeTiming = v; }
 
-	virtual void Update() override;
+virtual void Update() override;
 	virtual void LateUpdate() override;
 	virtual void Draw() override;
 
