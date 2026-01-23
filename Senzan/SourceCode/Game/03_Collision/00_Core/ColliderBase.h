@@ -163,7 +163,12 @@ inline const DirectX::XMFLOAT3 ColliderBase::GetPosition() const noexcept
 		DirectX::XMVECTOR v_position = DirectX::XMLoadFloat3(&spTransform->Position);
 		DirectX::XMVECTOR v_offset = DirectX::XMLoadFloat3(&m_PositionOffset);
 
-		DirectX::XMVECTOR v_result_pos = DirectX::XMVectorAdd(v_position, v_offset);
+		// 親の回転（Yaw）を取得し、オフセットを回転させる.
+		float yaw = spTransform->Rotation.y;
+		DirectX::XMMATRIX rotationMatrix = DirectX::XMMatrixRotationY(yaw);
+		DirectX::XMVECTOR v_rotated_offset = DirectX::XMVector3TransformCoord(v_offset, rotationMatrix);
+
+		DirectX::XMVECTOR v_result_pos = DirectX::XMVectorAdd(v_position, v_rotated_offset);
 
 		DirectX::XMFLOAT3 result_pos = {};
 		DirectX::XMStoreFloat3(&result_pos, v_result_pos);

@@ -46,6 +46,10 @@ void BossAttackStateBase::Enter()
     {
         mv.Reset();
     }
+    for (auto& eff : m_EffectWindows)
+    {
+        eff.Reset();
+    }
     
     // 全ての攻撃コライダーを最初に非アクティブにする
     if (m_pOwner)
@@ -53,6 +57,17 @@ void BossAttackStateBase::Enter()
         m_pOwner->SetColliderActiveByName("boss_Hand_R", false);
         m_pOwner->SetColliderActiveByName("boss_pSphere28", false);
         m_pOwner->SetColliderActiveByName("boss_Shout", false);
+
+        // 攻撃開始時にプレイヤー方向を向く
+        const DirectX::XMFLOAT3& bossPos = m_pOwner->GetPosition();
+        const DirectX::XMFLOAT3& playerPos = m_pOwner->m_PlayerPos;
+        
+        float dx = playerPos.x - bossPos.x;
+        float dz = playerPos.z - bossPos.z;
+        
+        // atan2 でプレイヤー方向への角度を計算（モデルの向きに合わせて調整）
+        float angle_radian = std::atan2f(-dx, -dz);
+        m_pOwner->SetRotationY(angle_radian);
     }
 }
 
@@ -125,18 +140,28 @@ void BossAttackStateBase::UpdateBaseLogic(float dt)
 					if (auto* cap = dynamic_cast<CapsuleCollider*>(targetCol)) {
 						cap->SetRadius(m_ColliderWidth);
 						cap->SetHeight(m_ColliderHeight);
-                        // ColliderWindow のオフセットを Boss の回転で回転させて適用
-                        DirectX::XMVECTOR bossQuat = DirectX::XMLoadFloat4(&m_pOwner->GetTransform()->Quaternion);
-                        DirectX::XMVECTOR v_offset = DirectX::XMLoadFloat3(&window.Offset);
-                        DirectX::XMVECTOR v_rotated = DirectX::XMVector3Rotate(v_offset, bossQuat);
-                        DirectX::XMFLOAT3 rotated; DirectX::XMStoreFloat3(&rotated, v_rotated);
-                        cap->SetPositionOffset(rotated.x, rotated.y, rotated.z);
 						cap->SetAttackAmount(m_AttackAmount);
 					}
 				}
 			}
 			window.IsAct = true;
 		}
+
+        // 当たり判定が有効な間、毎フレームオフセットを更新
+        // ColliderBase::GetPosition()が親の回転を自動適用するため、ローカルオフセットをそのまま設定
+        if (window.IsAct && !window.IsEnd)
+        {
+            ColliderBase* targetCol = nullptr;
+            if (window.BoneName == "boss_Hand_R") targetCol = m_pOwner->GetSlashCollider();
+            else if (window.BoneName == "boss_pSphere28") targetCol = m_pOwner->GetStompCollider();
+            else if (window.BoneName == "boss_Shout") targetCol = m_pOwner->GetShoutCollider();
+            if (targetCol) {
+                if (auto* cap = dynamic_cast<CapsuleCollider*>(targetCol)) {
+                    cap->SetPositionOffset(window.Offset.x, window.Offset.y, window.Offset.z);
+                }
+            }
+        }
+
         if (window.IsAct && !window.IsEnd && m_CurrentTime >= (window.Start + window.Duration))
 		{
 			m_pOwner->SetColliderActiveByName(window.BoneName, false);
@@ -146,6 +171,20 @@ void BossAttackStateBase::UpdateBaseLogic(float dt)
 
     if (m_pOwner) {
         m_pOwner->SetAnyAttackJustWindow(anyJust);
+    }
+
+    // エフェクト再生更新
+    for (auto& eff : m_EffectWindows)
+    {
+        if (!eff.IsPlayed && m_CurrentTime >= eff.Start)
+        {
+            // エフェクトを再生
+            if (m_pOwner)
+            {
+                m_pOwner->SpawnEffect(eff.EffectName, eff.Offset, eff.Scale);
+            }
+            eff.IsPlayed = true;
+        }
     }
 
     // 動き更新 (イージング適用).
@@ -327,6 +366,16 @@ void BossAttackStateBase::DrawImGui()
     // コライダーウィンドウ編集
     ImGui::Separator();
     ImGui::Text(IMGUI_JP("当たり判定ウィンドウ"));
+    
+    // デバッグ: ボスの回転情報を表示
+    if (m_pOwner)
+    {
+        const auto& quat = m_pOwner->GetTransform()->Quaternion;
+        ImGui::Text(IMGUI_JP("Boss Quat: (%.3f, %.3f, %.3f, %.3f)"), quat.x, quat.y, quat.z, quat.w);
+        DirectX::XMFLOAT3 forward = m_pOwner->GetTransform()->GetForward();
+        ImGui::Text(IMGUI_JP("Boss Forward: (%.3f, %.3f, %.3f)"), forward.x, forward.y, forward.z);
+    }
+    
     for (size_t i = 0; i < m_ColliderWindows.size(); ++i)
     {
         auto &w = m_ColliderWindows[i];
@@ -341,6 +390,35 @@ void BossAttackStateBase::DrawImGui()
             w.Offset.y = offset[1];
             w.Offset.z = offset[2];
         }
+        
+        // デバッグ: 回転後のオフセットを表示
+        if (m_pOwner && w.IsAct && !w.IsEnd)
+        {
+            float yaw = m_pOwner->GetTransform()->Rotation.y;
+
+            // XMMatrixRotationY と一致: (-sin(y), 0, cos(y))
+            DirectX::XMVECTOR v_forward = DirectX::XMVectorSet(-sinf(yaw), 0.0f, cosf(yaw), 0.0f);
+            DirectX::XMVECTOR v_up = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+            DirectX::XMVECTOR v_right = DirectX::XMVector3Cross(v_up, v_forward);
+
+            DirectX::XMVECTOR v_worldOffset = DirectX::XMVectorAdd(
+                DirectX::XMVectorAdd(
+                    DirectX::XMVectorScale(v_right, w.Offset.x),
+                    DirectX::XMVectorScale(v_up, w.Offset.y)
+                ),
+                DirectX::XMVectorScale(v_forward, w.Offset.z)
+            );
+
+            DirectX::XMFLOAT3 rotated;
+            DirectX::XMStoreFloat3(&rotated, v_worldOffset);
+            DirectX::XMFLOAT3 fwd;
+            DirectX::XMStoreFloat3(&fwd, v_forward);
+
+            ImGui::Text(IMGUI_JP("Yaw(rad): %.3f (deg: %.1f)"), yaw, yaw * 180.0f / 3.14159f);
+            ImGui::Text(IMGUI_JP("計算された前方: (%.2f, %.2f, %.2f)"), fwd.x, fwd.y, fwd.z);
+            ImGui::Text(IMGUI_JP("回転後オフセット: (%.2f, %.2f, %.2f)"), rotated.x, rotated.y, rotated.z);
+        }
+        
         // ボーン名編集
         char buf[128];
 #ifdef _MSC_VER

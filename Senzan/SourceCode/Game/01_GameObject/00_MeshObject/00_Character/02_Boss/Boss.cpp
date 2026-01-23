@@ -27,6 +27,9 @@
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
 #include "System/Singleton/CameraManager/CameraManager.h"
 #include "System/Singleton/ImGui/CImGuiManager.h"
+#include "System/Singleton/ResourceManager/EffectManager/EffekseerManager.h"
+#include "Resource/Effect/EffectResource.h"
+#include "System/Utility/Math/Math.h"
 
 #include <atomic>
 #include <chrono>
@@ -302,6 +305,30 @@ void Boss::Hit()
 void Boss::SetTargetPos(const DirectX::XMFLOAT3 Player_Pos)
 {
 	m_PlayerPos = Player_Pos;
+}
+
+void Boss::SpawnEffect(const std::string& effectName, const DirectX::XMFLOAT3& offset, float scale)
+{
+    // エフェクトリソース取得
+    auto effect = EffectResource::GetResource(effectName);
+    if (effect == nullptr) return;
+
+    // ボスの位置を取得してオフセットを加算
+    DirectX::XMFLOAT3 bossPos = GetPosition();
+    DirectX::XMFLOAT3 spawnPos{
+        bossPos.x + offset.x,
+        bossPos.y + offset.y,
+        bossPos.z + offset.z
+    };
+
+    // Effekseer の Play は座標を float で受け取る（ワールド座標系）
+    m_EffectHandle = EffekseerManager::GetInstance().GetManager()
+        ->Play(effect, spawnPos.x, spawnPos.y, spawnPos.z);
+
+    // スケールを適用
+    if (m_EffectHandle != -1 && !MyMath::IsNearlyEqual(scale, 1.0f)) {
+        EffekseerManager::GetInstance().GetManager()->SetScale(m_EffectHandle, scale, scale, scale);
+    }
 }
 
 void Boss::OffAttackCollider() {

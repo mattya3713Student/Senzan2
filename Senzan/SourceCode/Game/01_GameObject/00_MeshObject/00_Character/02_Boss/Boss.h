@@ -125,6 +125,16 @@ public:
     // 文字列でコライダーを操作できるようにする
     void SetColliderActiveByName(const std::string& name, bool active);
 
+    /*************************************************************
+    * @brief    エフェクトを指定位置に生成する.
+    * @param[in]    effectName  ：エフェクトリソース名.
+    * @param[in]    offset      ：ボス位置からのオフセット（デフォルト: 0,0,0）.
+    * @param[in]    scale       ：エフェクトのスケール（デフォルト: 1.0f）.
+    * ************************************************************/
+    void SpawnEffect(const std::string& effectName,
+                     const DirectX::XMFLOAT3& offset = DirectX::XMFLOAT3(0.f, 0.f, 0.f),
+                     float scale = 1.0f);
+
 public:
     //プレイヤーの位置を取得するためにここにSetPlayer()を作成する.
     void SetTargetPos(const DirectX::XMFLOAT3 Player_Pos);
@@ -219,5 +229,8 @@ protected:
     std::string m_AttackBoneName;  // 現在追従するボーン名
     LPD3DXFRAME m_pAttackBoneFrame = nullptr;  // ボーンフレームキャッシュ
     Transform m_AttackBoneWorldTransform;      // ワールドTransformキャッシュ
+
+    // 現在再生中のエフェクトハンドル（-1 = none）
+    int m_EffectHandle = -1;
 };
 
