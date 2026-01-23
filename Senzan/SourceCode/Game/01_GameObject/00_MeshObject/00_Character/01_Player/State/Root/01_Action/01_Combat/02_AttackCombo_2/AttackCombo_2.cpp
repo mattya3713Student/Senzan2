@@ -195,11 +195,8 @@ void AttackCombo_2::LateUpdate()
 {
     Combat::LateUpdate();
 
-    // 経過時間を加算.
-    float delta_time = m_pOwner->GetDelta();
-    m_currentTime += delta_time;
-
     // 移動量の算出.
+    float delta_time = m_pOwner->GetDelta();
     float movement_speed = m_Distance / m_ComboEndTime;
     float move_amount = movement_speed * delta_time;
 

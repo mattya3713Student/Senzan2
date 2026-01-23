@@ -65,6 +65,33 @@ void EffekseerManager::RenderHandle(::Effekseer::Handle handle, CameraBase* pUse
 
 //-----------------------------------------------------------------------------------.
 
+void EffekseerManager::RenderHandleUI(::Effekseer::Handle handle)
+{
+	if (handle == -1) {
+		return;
+	}
+
+	// 正射影行列（スクリーン座標系）を作成.
+	// 左上原点、右下が (WND_W, WND_H) となる座標系.
+	DirectX::XMMATRIX viewMatrix = DirectX::XMMatrixIdentity();
+	DirectX::XMMATRIX projMatrix = DirectX::XMMatrixOrthographicOffCenterLH(
+		0.0f, static_cast<float>(WND_W),
+		static_cast<float>(WND_H), 0.0f,
+		-1000.0f, 1000.0f
+	);
+
+	// 行列を設定.
+	m_pRenderer->SetCameraMatrix(ConvertToEfkMatrix(viewMatrix));
+	m_pRenderer->SetProjectionMatrix(ConvertToEfkMatrix(projMatrix));
+
+	// 描画.
+	m_pRenderer->BeginRendering();
+	m_pManager->DrawHandle(handle);
+	m_pRenderer->EndRendering();
+}
+
+//-----------------------------------------------------------------------------------.
+
 ::Effekseer::Vector3D EffekseerManager::ConvertToEfkVector3(const DirectX::XMFLOAT3& vector3Dx)
 {
 	return ::Effekseer::Vector3D(vector3Dx.x, vector3Dx.y, vector3Dx.z);

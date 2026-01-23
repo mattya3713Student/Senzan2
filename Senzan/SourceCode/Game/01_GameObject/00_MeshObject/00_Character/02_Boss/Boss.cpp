@@ -174,7 +174,10 @@ Boss::Boss()
 
 Boss::~Boss()
 {
-	CollisionDetector::GetInstance().UnregisterCollider(*m_upColliders);
+    if (m_upColliders)
+    {
+        CollisionDetector::GetInstance().UnregisterCollider(*m_upColliders);
+    }
 }
 
 void Boss::Update()

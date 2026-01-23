@@ -97,9 +97,12 @@ void CollisionDetector::RegisterCollider(const CompositeCollider& Collider)
 // コライダーの解除.
 void CollisionDetector::UnregisterCollider(ColliderBase* Collider)
 {
-    if (!Collider) return;
-    auto it = std::remove(m_Colliders.begin(), m_Colliders.end(), static_cast<ColliderBase*>(Collider));
-    if (it != m_Colliders.end()) {
+    if (!Collider) { return; }
+    if (m_Colliders.empty()) { return; }
+
+    auto it = std::remove(m_Colliders.begin(), m_Colliders.end(), Collider);
+    if (it != m_Colliders.end())
+    {
         m_Colliders.erase(it, m_Colliders.end());
     }
 }
