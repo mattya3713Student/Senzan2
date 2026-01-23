@@ -64,28 +64,19 @@ private:
 
 	//上がる速度のスピード設定用.
 	float m_UpSpeed;
-    // timers / flags
-    // 待機してからアニメ速度を遅くする設定
-    float m_WaitSeconds = 0.4f;
-    float m_SlowAnimSpeed = 0.5f;
-    // 事前にスロー化するためのタイマー
-    // float m_PreloadTimer = 0.0f;
-    // bool  m_HasPreSlowed = false;
-    bool  m_AnimSlowed = false;
-    bool  m_IsMoving = false;
-    // 連続待ち用タイマー
-    float m_StateTimer = 0.0f;
-    /* 上昇/下降関連を一時無効化
-    // ゆったり上がるフェーズ制御
-    float m_AscentTime;       // 上昇にかける時間
-    float m_AscentTimer;      // 上昇タイマー
-    bool  m_IsInFallPhase;    // 落下フェーズに移行したか
 
-    // 落下フェーズの水平加速
-    float m_FallAccel;        // 水平加速量
-    float m_CurrentHorizSpeed;// 現在の水平速度
-    float m_MaxFallHorizSpeed;// 最大水平速度
-    */
+	// State timers / flags
+	float m_WaitSeconds = 0.4f;    // seconds before slowing animation
+	float m_SlowAnimSpeed = 0.5f;  // slowed animation speed value
+	bool  m_AnimSlowed = false;    // whether animation was slowed
+	bool  m_IsMoving = false;      // whether boss is currently moving (stomp phase)
+	float m_StateTimer = 0.0f;     // generic timer used for state timing
+
+	// movement easing params
+	float m_MoveDuration = 0.8f;   // duration of the movement/easing (seconds)
+	float m_MoveTimer = 0.0f;      // elapsed time since movement started
+	float m_Distance = 0.0f;       // total horizontal distance to move
+	DirectX::XMFLOAT3 m_MoveVec;   // normalized horizontal direction vector
 
 	//====================================================
 	// 飛びかかり（前方移動）用メンバ変数.
@@ -93,5 +84,5 @@ private:
 	float m_ForwardSpeed;           // 前方移動速度.
 	DirectX::XMFLOAT3 m_TargetPos;  // 目標位置（プレイヤー位置）.
 	DirectX::XMFLOAT3 m_StartPos_Stomp;   // 開始位置.
-	bool m_HasLanded;               // 着地済みフラグ（ダメージ1回のみ）.
+    bool m_HasLanded;               // 着地済みフラグ（ダメージ1回のみ）
 };

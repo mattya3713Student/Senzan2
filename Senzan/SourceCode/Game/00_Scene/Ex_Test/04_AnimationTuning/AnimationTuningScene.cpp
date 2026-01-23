@@ -90,7 +90,7 @@ void AnimationTuningScene::Update()
     Input::Update();
 
     m_upPlayer->SetTargetPos(m_upBoss.get()->GetPosition());
-    m_upPlayer->Update();
+    //m_upPlayer->Update();
     m_upBoss->Update();
 
 }
