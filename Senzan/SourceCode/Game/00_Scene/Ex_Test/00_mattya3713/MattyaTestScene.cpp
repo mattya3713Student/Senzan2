@@ -26,8 +26,10 @@
 #include "System/Singleton/CameraManager/CameraManager.h"
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
 #include "System/Singleton/ImGui/CImGuiManager.h"
+#include "System/Singleton/SnowBallManager/SnowBallManager.h"
 
 #include "SceneManager/SceneManager.h"
+#include "Graphic/DirectX/DirectX11/DirectX11.h"
 
 // コンストラクタ.
 MattyaTestScene::MattyaTestScene()
@@ -81,6 +83,7 @@ void MattyaTestScene::Update()
     if(Input::IsKeyPress('I'))
         m_upPlayer->Update();
     m_pCamera->Update();
+    SnowBallManager::GetInstance().Update();
 
     m_upUI->SetBossHP(m_upBoss->GetMaxHP(), m_upBoss->GetHP());
 	m_upUI->SetCombo(m_upPlayer->GetCombo());
@@ -118,12 +121,14 @@ void MattyaTestScene::Draw()
 	m_upGround->DrawDepth();
 	Shadow::End();
 
-    m_upGround->Draw();
-	m_upPlayer->Draw();
-	m_upBoss->Draw();
+    SnowBallManager::GetInstance().Draw();
 
-	m_upUI->Draw();
-	CollisionVisualizer::GetInstance().Draw();
+    m_upGround->Draw();
+    m_upPlayer->Draw();
+    m_upBoss->Draw();
+
+    m_upUI->Draw();
+    CollisionVisualizer::GetInstance().Draw();
 }
 
 HRESULT MattyaTestScene::LoadData()

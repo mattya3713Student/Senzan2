@@ -11,8 +11,8 @@
 #include "System/Utility/Math/Easing/Easing.h"
 
 // 回避中の速度.
-static constexpr float  DODGE_DISTANCE   = 80.0f;	// 目標移動距離.
-static constexpr float  DODGE_DURATION = 1.7f;		// 移動にかける想定時間(速度算出用).
+static constexpr float  DODGE_DISTANCE   = 25.0f;	// 目標移動距離.
+static constexpr float  DODGE_DURATION   = 1.7f;	// 移動にかける時間（短くしてキビキビ感を出す）.
 static constexpr double DODGE_ANIM_SPEED = 4.0;		// アニメーション再生速度.
 static constexpr double DODGE_START_TIME = 0.0;		// アニメーションの開始秒数.
 
@@ -61,12 +61,13 @@ void DodgeExecute::LateUpdate()
 
 	// 前フレーム時点の目標距離を取得.
 	float prev_target_dist = 0.0f;
-	float blend_ratio = 0.3f;
+	float blend_ratio = 0.5f;  // Liner比率を上げて最後の減速を緩やかに.
 	{
-		float cubic = 0.0f, liner = 0.0f;
-		MyEasing::UpdateEasing(MyEasing::Type::OutCubic, m_currentTime, m_MaxTime, 0.0f, m_Distance, cubic);
+		float eased = 0.0f, liner = 0.0f;
+		// InOutCubic: 最初加速 → 中間最速 → 緩やかに減速.
+		MyEasing::UpdateEasing(MyEasing::Type::InOutCubic, m_currentTime, m_MaxTime, 0.0f, m_Distance, eased);
 		MyEasing::UpdateEasing(MyEasing::Type::Liner, m_currentTime, m_MaxTime, 0.0f, m_Distance, liner);
-		prev_target_dist = cubic * (1.0f - blend_ratio) + liner * blend_ratio;
+		prev_target_dist = eased * (1.0f - blend_ratio) + liner * blend_ratio;
 	}
 
 	// デルタタイムの計算.
@@ -84,10 +85,10 @@ void DodgeExecute::LateUpdate()
 	// 移動量を算出.
 	float current_target_dist = 0.0f;
 	{
-		float cubic = 0.0f, liner = 0.0f;
-		MyEasing::UpdateEasing(MyEasing::Type::OutCubic, m_currentTime, m_MaxTime, 0.0f, m_Distance, cubic);
+		float eased = 0.0f, liner = 0.0f;
+		MyEasing::UpdateEasing(MyEasing::Type::InOutCubic, m_currentTime, m_MaxTime, 0.0f, m_Distance, eased);
 		MyEasing::UpdateEasing(MyEasing::Type::Liner, m_currentTime, m_MaxTime, 0.0f, m_Distance, liner);
-		current_target_dist = cubic * (1.0f - blend_ratio) + liner * blend_ratio;
+		current_target_dist = eased * (1.0f - blend_ratio) + liner * blend_ratio;
 	}
 	float move_amount = current_target_dist - prev_target_dist;
 	m_traveledDistance = current_target_dist;

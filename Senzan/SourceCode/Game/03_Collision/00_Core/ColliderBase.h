@@ -16,14 +16,14 @@ enum class eCollisionGroup : uint32_t
 
 	Player_Attack	= 1 << 0,
 	Player_Damage	= 1 << 1,
-	Player_Dodge	= 1 << 2,
-	Player_JustDodge= 1 << 3,
-	Player_Parry	= 1 << 4,
-	Enemy_Attack	= 1 << 5,
-	Enemy_PreAttack = 1 << 6,
-	Enemy_Damage	= 1 << 7,
-	Press			= 1 << 8,
-	BossPress		= 1 << 9,
+	Player_Parry_Suc= 1 << 2,
+	Player_Parry_Fai= 1 << 3,
+	Player_JustDodge= 1 << 4,
+	Enemy_Attack	= 1 << 6,
+	Enemy_PreAttack = 1 << 7,
+	Enemy_Damage	= 1 << 8,
+	Press			= 1 << 9,
+	BossPress		= 1 <<10,
 
 	_Max = 0xFFFFFFFF,
 };

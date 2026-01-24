@@ -37,7 +37,6 @@ public:
 private:
     void BossAttack();
 private:
-    std::unique_ptr<SnowBall> m_pBall;
     enThrowing m_List;
     bool m_IsLaunched;
     float m_BallHeight;   // 発射高さオフセット

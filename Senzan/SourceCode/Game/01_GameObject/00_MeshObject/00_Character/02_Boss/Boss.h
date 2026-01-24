@@ -37,6 +37,7 @@ class BossLaserState;
 class BossDeadState;
 
 class BossThrowingState;
+class BossSpinningState;
 
 class BossChargeState;
 class BossParryState;
@@ -61,6 +62,7 @@ class Boss
     friend BossDeadState;
     friend BossChargeState;
     friend BossThrowingState;
+    friend BossSpinningState;
     friend BossParryState;
 
     //ボスのアニメーションの列挙.
@@ -84,7 +86,7 @@ class Boss
         SpecialToIdol,   //特殊攻撃と踏みつけ終了時に待機.
         Special_1,       //特殊攻撃と踏みつけ中.
         Special_0,       //飛ぶ.
-
+        
         FlinchToIdol,    //怯みから待機.
         Flinch,          //怯み中.
         FlinchParis,     //怯み(パリィ).

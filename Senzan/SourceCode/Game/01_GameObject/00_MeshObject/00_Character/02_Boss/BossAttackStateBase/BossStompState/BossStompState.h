@@ -34,6 +34,8 @@ public:
     std::filesystem::path GetSettingsFileName() const override { return std::filesystem::path("BossStompState.json"); }
 private:
     void BossAttack();
+    // ローカルで当たり判定ウィンドウを更新する（基底を使わずに同様の挙動を再現）
+    void UpdateLocalColliderWindows(float dt);
 private:
 	enAttack m_List;
 
@@ -71,6 +73,9 @@ private:
 	bool  m_AnimSlowed = false;    // whether animation was slowed
 	bool  m_IsMoving = false;      // whether boss is currently moving (stomp phase)
 	float m_StateTimer = 0.0f;     // generic timer used for state timing
+    // slow duration control: how long animation stays slowed after delay
+    float m_SlowDuration = 1.5f;  // seconds to keep animation slowed
+    float m_SlowElapsed = 0.0f;   // elapsed time since slow started
 
 	// movement easing params
 	float m_MoveDuration = 0.8f;   // duration of the movement/easing (seconds)
@@ -85,4 +90,8 @@ private:
 	DirectX::XMFLOAT3 m_TargetPos;  // 目標位置（プレイヤー位置）.
 	DirectX::XMFLOAT3 m_StartPos_Stomp;   // 開始位置.
     bool m_HasLanded;               // 着地済みフラグ（ダメージ1回のみ）
+    // デバッグ用: 当たり判定の可視化フラグ
+    bool m_ShowStompDebug = false;
+    // 派生で管理する当たり判定ウィンドウ（基底を使わない）
+    std::vector<ColliderWindow> m_LocalColliderWindows;
 };

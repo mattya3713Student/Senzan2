@@ -14,6 +14,69 @@ BossAttackStateBase::BossAttackStateBase(Boss* owner)
 {
 }
 
+bool BossAttackStateBase::UpdateColliderWindows(float currentTime, std::vector<ColliderWindow>& windows)
+{
+    bool anyJust = false;
+    for (auto& window : windows)
+    {
+        if (window.IsEnd) { continue; }
+
+        // ジャストタイム判定更新（開始時間 - JustTime ～ 開始時間 の間 true）
+        float justWindowStart = window.Start - window.JustTime;
+        if (window.JustTime > 0.0f && currentTime >= justWindowStart && currentTime < window.Start)
+        {
+            window.IsJustWindow = true;
+            anyJust = true;
+        }
+        else
+        {
+            window.IsJustWindow = false;
+        }
+
+        if (!window.IsAct && currentTime >= window.Start)
+        {
+            m_pOwner->SetColliderActiveByName(window.BoneName, true);
+            // apply current state collider settings to the activated collider so UI changes take effect
+            {
+                ColliderBase* targetCol = nullptr;
+                if (window.BoneName == "boss_Hand_R") targetCol = m_pOwner->GetSlashCollider();
+                else if (window.BoneName == "boss_pSphere28") targetCol = m_pOwner->GetStompCollider();
+                else if (window.BoneName == "boss_Shout") targetCol = m_pOwner->GetShoutCollider();
+                if (targetCol) {
+                    if (auto* cap = dynamic_cast<CapsuleCollider*>(targetCol)) {
+                        cap->SetRadius(m_ColliderWidth);
+                        cap->SetHeight(m_ColliderHeight);
+                        cap->SetAttackAmount(m_AttackAmount);
+                    }
+                }
+            }
+            window.IsAct = true;
+        }
+
+        // 当たり判定が有効な間、毎フレームオフセットを更新
+        // ColliderBase::GetPosition()が親の回転を自動適用するため、ローカルオフセットをそのまま設定
+        if (window.IsAct && !window.IsEnd)
+        {
+            ColliderBase* targetCol = nullptr;
+            if (window.BoneName == "boss_Hand_R") targetCol = m_pOwner->GetSlashCollider();
+            else if (window.BoneName == "boss_pSphere28") targetCol = m_pOwner->GetStompCollider();
+            else if (window.BoneName == "boss_Shout") targetCol = m_pOwner->GetShoutCollider();
+            if (targetCol) {
+                if (auto* cap = dynamic_cast<CapsuleCollider*>(targetCol)) {
+                    cap->SetPositionOffset(window.Offset.x, window.Offset.y, window.Offset.z);
+                }
+            }
+        }
+
+        if (window.IsAct && !window.IsEnd && currentTime >= (window.Start + window.Duration))
+        {
+            m_pOwner->SetColliderActiveByName(window.BoneName, false);
+            window.IsEnd = true;
+        }
+    }
+    return anyJust;
+}
+
 DirectX::XMFLOAT3 BossAttackStateBase::ComputeMovementEndPos(const MovementWindow& mv, const DirectX::XMFLOAT3& startPos, const DirectX::XMFLOAT3& targetPos) const
 {
     // デフォルト実装: ターゲット方向に対して Speed * Duration * Distance だけ移動する
@@ -109,66 +172,8 @@ void BossAttackStateBase::UpdateBaseLogic(float dt)
     m_AnimSpeed = currentAnimSpeed;
     m_pOwner->SetAnimSpeed(currentAnimSpeed);
 
-    // 当たり判定更新.
-    bool anyJust = false;
-    for (auto& window : m_ColliderWindows)
-	{
-        if (window.IsEnd) { continue; }
-
-        // ジャストタイム判定更新（開始時間 - JustTime ～ 開始時間 の間 true）
-        float justWindowStart = window.Start - window.JustTime;
-        if (window.JustTime > 0.0f && m_CurrentTime >= justWindowStart && m_CurrentTime < window.Start)
-        {
-            window.IsJustWindow = true;
-            anyJust = true;
-        }
-        else
-        {
-            window.IsJustWindow = false;
-        }
-
-        if (!window.IsAct && m_CurrentTime >= window.Start)
-		{
-			m_pOwner->SetColliderActiveByName(window.BoneName, true);
-			// apply current state collider settings to the activated collider so UI changes take effect
-			{
-				ColliderBase* targetCol = nullptr;
-				if (window.BoneName == "boss_Hand_R") targetCol = m_pOwner->GetSlashCollider();
-				else if (window.BoneName == "boss_pSphere28") targetCol = m_pOwner->GetStompCollider();
-				else if (window.BoneName == "boss_Shout") targetCol = m_pOwner->GetShoutCollider();
-				if (targetCol) {
-					if (auto* cap = dynamic_cast<CapsuleCollider*>(targetCol)) {
-						cap->SetRadius(m_ColliderWidth);
-						cap->SetHeight(m_ColliderHeight);
-						cap->SetAttackAmount(m_AttackAmount);
-					}
-				}
-			}
-			window.IsAct = true;
-		}
-
-        // 当たり判定が有効な間、毎フレームオフセットを更新
-        // ColliderBase::GetPosition()が親の回転を自動適用するため、ローカルオフセットをそのまま設定
-        if (window.IsAct && !window.IsEnd)
-        {
-            ColliderBase* targetCol = nullptr;
-            if (window.BoneName == "boss_Hand_R") targetCol = m_pOwner->GetSlashCollider();
-            else if (window.BoneName == "boss_pSphere28") targetCol = m_pOwner->GetStompCollider();
-            else if (window.BoneName == "boss_Shout") targetCol = m_pOwner->GetShoutCollider();
-            if (targetCol) {
-                if (auto* cap = dynamic_cast<CapsuleCollider*>(targetCol)) {
-                    cap->SetPositionOffset(window.Offset.x, window.Offset.y, window.Offset.z);
-                }
-            }
-        }
-
-        if (window.IsAct && !window.IsEnd && m_CurrentTime >= (window.Start + window.Duration))
-		{
-			m_pOwner->SetColliderActiveByName(window.BoneName, false);
-			window.IsEnd = true;
-		}
-	}
-
+    // 当たり判定更新 (共通ヘルパーを使用)
+    bool anyJust = UpdateColliderWindows(m_CurrentTime, m_ColliderWindows);
     if (m_pOwner) {
         m_pOwner->SetAnyAttackJustWindow(anyJust);
     }
