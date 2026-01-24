@@ -27,6 +27,9 @@
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
 #include "System/Singleton/CameraManager/CameraManager.h"
 #include "System/Singleton/ImGui/CImGuiManager.h"
+#include "System/Singleton/ResourceManager/EffectManager/EffekseerManager.h"
+#include "Resource/Effect/EffectResource.h"
+#include "System/Utility/Math/Math.h"
 
 #include <atomic>
 #include <chrono>
@@ -118,7 +121,7 @@ Boss::Boss()
 
 	m_pSlashCollider = slashCol.get();
 	m_pSlashCollider->SetMyMask(eCollisionGroup::Enemy_Attack);
-	m_pSlashCollider->SetTarGetTargetMask(eCollisionGroup::Player_Damage);
+	m_pSlashCollider->SetTarGetTargetMask(eCollisionGroup::Player_Damage | eCollisionGroup::Player_Parry);
 	m_pSlashCollider->SetAttackAmount(10.0f); 
 	m_pSlashCollider->SetRadius(15.0f);         
 	m_pSlashCollider->SetHeight(40.0f);         
@@ -133,7 +136,7 @@ Boss::Boss()
 	m_pStompCollider = stompCol.get();
 
 	m_pStompCollider->SetMyMask(eCollisionGroup::Enemy_Attack);
-	m_pStompCollider->SetTarGetTargetMask(eCollisionGroup::Player_Damage );
+	m_pStompCollider->SetTarGetTargetMask(eCollisionGroup::Player_Damage | eCollisionGroup::Player_Parry);
 
 	m_pStompCollider->SetAttackAmount(5.0f);
 	m_pStompCollider->SetRadius(30.0f);
@@ -154,7 +157,7 @@ Boss::Boss()
 	m_pShoutCollider->SetPositionOffset(0.f, 1.5f, 0.f);
 	m_pShoutCollider->SetAttackAmount(100.f);
 	m_pShoutCollider->SetMyMask(eCollisionGroup::BossPress);
-	m_pShoutCollider->SetTarGetTargetMask(eCollisionGroup::Press | eCollisionGroup::Player_Damage);
+	m_pShoutCollider->SetTarGetTargetMask(eCollisionGroup::Press | eCollisionGroup::Player_Damage | eCollisionGroup::Player_Parry);
 
 	m_pShoutCollider->SetActive(false);
 	m_upColliders->AddCollider(std::move(Shout_collider));
@@ -258,6 +261,20 @@ void Boss::Init()
 {
 }
 
+void Boss::OnParried()
+{
+    // 既にパリィ状態なら何もしない.
+    if (m_IsParried) return;
+
+    m_IsParried = true;
+
+    // 全ての攻撃コライダーを無効化.
+    OffAttackCollider();
+
+    // BossParryStateへ遷移.
+    m_State->ChangeState(std::make_shared<BossParryState>(this));
+}
+
 StateMachine<Boss>* Boss::GetStateMachine()
 {
 	return m_State.get();
@@ -302,6 +319,30 @@ void Boss::Hit()
 void Boss::SetTargetPos(const DirectX::XMFLOAT3 Player_Pos)
 {
 	m_PlayerPos = Player_Pos;
+}
+
+void Boss::SpawnEffect(const std::string& effectName, const DirectX::XMFLOAT3& offset, float scale)
+{
+    // エフェクトリソース取得
+    auto effect = EffectResource::GetResource(effectName);
+    if (effect == nullptr) return;
+
+    // ボスの位置を取得してオフセットを加算
+    DirectX::XMFLOAT3 bossPos = GetPosition();
+    DirectX::XMFLOAT3 spawnPos{
+        bossPos.x + offset.x,
+        bossPos.y + offset.y,
+        bossPos.z + offset.z
+    };
+
+    // Effekseer の Play は座標を float で受け取る（ワールド座標系）
+    m_EffectHandle = EffekseerManager::GetInstance().GetManager()
+        ->Play(effect, spawnPos.x, spawnPos.y, spawnPos.z);
+
+    // スケールを適用
+    if (m_EffectHandle != -1 && !MyMath::IsNearlyEqual(scale, 1.0f)) {
+        EffekseerManager::GetInstance().GetManager()->SetScale(m_EffectHandle, scale, scale, scale);
+    }
 }
 
 void Boss::OffAttackCollider() {

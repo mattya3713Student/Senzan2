@@ -37,7 +37,6 @@ void BossSlashState::Enter()
     // 斬るアニメーションの再生.
     m_pOwner->ChangeAnim(Boss::enBossAnim::Slash);
 
-
 	// 初期位置を保存.
 	const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
 	DirectX::XMStoreFloat3(&m_StartPos, DirectX::XMLoadFloat3(&BossPosF));

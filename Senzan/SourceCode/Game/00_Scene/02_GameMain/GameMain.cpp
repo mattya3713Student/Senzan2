@@ -126,7 +126,6 @@ void GameMain::Update()
 	m_upBoss->Update();
 	m_upBoss->SetTargetPos(m_upPlayer->GetPosition());
 
-    // propagate boss just-window flag to player
     m_upPlayer->SetIsJustDodgeTiming(m_upBoss->IsAnyAttackJustWindow());
 
     m_upPlayer->SetTargetPos(m_upBoss.get()->GetPosition());
@@ -151,15 +150,12 @@ void GameMain::Update()
 
 void GameMain::LateUpdate()
 {
-	// 衝突検出を先に実行（衝突イベントを生成）
-	CollisionDetector::GetInstance().ExecuteCollisionDetection();
-
-	// その後でLateUpdate（衝突イベントを処理）
 	m_upPlayer->LateUpdate();
 	m_upBoss->LateUpdate();
 	CameraManager::GetInstance().LateUpdate();
 
 	m_upUI->LateUpdate();
+    CollisionDetector::GetInstance().ExecuteCollisionDetection();
 }
 
 

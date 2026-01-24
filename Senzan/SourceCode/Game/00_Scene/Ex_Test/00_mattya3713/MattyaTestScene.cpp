@@ -60,7 +60,6 @@ void MattyaTestScene::Initialize()
 	LightManager::AttachDirectionLight(m_pLight);
 
 	m_upGround = std::make_unique<Ground>();
-
 }
 
 void MattyaTestScene::Create()
@@ -71,15 +70,16 @@ void MattyaTestScene::Update()
 {
     Input::Update();
 	m_upGround->Update();
-    // update boss first so it can set its just-window flag
-    //m_upBoss->Update();
+
+    m_upBoss->Update();
     m_upBoss->SetTargetPos(m_upPlayer->GetPosition());
 
-    // propagate boss just-window flag to player
     m_upPlayer->SetIsJustDodgeTiming(m_upBoss->IsAnyAttackJustWindow());
 
     m_upPlayer->SetTargetPos(m_upBoss.get()->GetPosition());
-    m_upPlayer->Update();
+
+    if(Input::IsKeyPress('I'))
+        m_upPlayer->Update();
     m_pCamera->Update();
 
     m_upUI->SetBossHP(m_upBoss->GetMaxHP(), m_upBoss->GetHP());
@@ -124,66 +124,6 @@ void MattyaTestScene::Draw()
 
 	m_upUI->Draw();
 	CollisionVisualizer::GetInstance().Draw();
-
-
-
-//    // UI用エフェクトのデバッグ調整.
-//    static ::Effekseer::Handle m_UIEffectHandle = -1;
-//    static bool effectPlayed = false;
-//    static float effectPosX = 640.0f;
-//    static float effectPosY = 360.0f;
-//    static float effectPosZ = 0.0f;
-//    static float effectScale = 100.0f;
-//
-//#if _DEBUG
-//    if (ImGui::Begin(IMGUI_JP("UI Effect Debug")))
-//    {
-//        ImGui::DragFloat(IMGUI_JP("X座標"), &effectPosX, 1.0f, 0.0f, static_cast<float>(WND_W));
-//        ImGui::DragFloat(IMGUI_JP("Y座標"), &effectPosY, 1.0f, 0.0f, static_cast<float>(WND_H));
-//        ImGui::DragFloat(IMGUI_JP("Z座標"), &effectPosZ, 1.0f, -1000.0f, 1000.0f);
-//        ImGui::DragFloat(IMGUI_JP("スケール"), &effectScale, 1.0f, 0.1f, 500.0f);
-//
-//        if (ImGui::Button(IMGUI_JP("エフェクト再生")))
-//        {
-//            effectPlayed = false; // 再生フラグをリセット
-//        }
-//        ImGui::SameLine();
-//        if (ImGui::Button(IMGUI_JP("エフェクト停止")))
-//        {
-//            if (m_UIEffectHandle != -1)
-//            {
-//                EffekseerManager::GetInstance().GetManager()->StopEffect(m_UIEffectHandle);
-//                m_UIEffectHandle = -1;
-//            }
-//            effectPlayed = false;
-//        }
-//
-//        ImGui::Text(IMGUI_JP("ハンドル: %d"), m_UIEffectHandle);
-//        ImGui::End();
-//    }
-//#endif
-//
-//    // エフェクト再生
-//    if (!effectPlayed)
-//    {
-//        auto effect = EffectResource::GetResource("Simple_SpawnMethod1");
-//        if (effect != nullptr)
-//        {
-//            m_UIEffectHandle = EffekseerManager::GetInstance().GetManager()->Play(effect, effectPosX, effectPosY, effectPosZ);
-//            EffekseerManager::GetInstance().GetManager()->SetScale(m_UIEffectHandle, effectScale, effectScale, effectScale);
-//            effectPlayed = true;
-//        }
-//    }
-//
-//    // 描画
-//    if (m_UIEffectHandle != -1)
-//    {
-//        // スケール更新（リアルタイム反映）
-//        EffekseerManager::GetInstance().GetManager()->SetScale(m_UIEffectHandle, effectScale, effectScale, effectScale);
-//        EffekseerManager::GetInstance().UpdateHandle(m_UIEffectHandle);
-//        EffekseerManager::GetInstance().RenderHandleUI(m_UIEffectHandle);
-//    }
-
 }
 
 HRESULT MattyaTestScene::LoadData()
