@@ -13,10 +13,21 @@ ULTSparkle::ULTSparkle(std::shared_ptr<UIObject> pObje)
     , m_Timer           ( 0.0f )
     , m_Duration        ( 0.8f )
     , m_StartScale      ( 0.0f )
-    , m_PeakScale       ( 1.f )
+    , m_PeakScale       ( 0.4f )
+    , m_ToPeakTime      ( 0.2f )
+    , m_PeakTime        ( 0.6f )
+    , m_StartRotSpead   ( 30.0f )
+    , m_PeakRotSpead    ( 20.0f )
+    , m_EndRotSpead     ( 40.0f )
+
     , m_IsGaugeMax      ( false )
     , m_SpawnTimer      ( 0.0f )
     , m_SpawnInterval   ( 0.4f )
+    , m_ParticlesStartAlpha( 0.7f )
+    , m_ParticlesDecAlpha( 1.0f )
+    , m_ParticlesSize   ( 0.05f )
+    , m_ParticlesAngle  ( 1.6f )
+    , m_ParticlesSpead  ( 60.0f )
 {
     Create();
 }
@@ -72,33 +83,57 @@ void ULTSparkle::UpDateParticles(float dt)
 
             pNewUI->SetPosition({ x, y, 0.0f });
 
-            pNewUI->SetScale({ 0.1f, 0.1f, 1.0f });
+            pNewUI->SetScale({ m_ParticlesSize, m_ParticlesSize, 1.0f });
             pNewUI->SetColor(m_pMainSparkle->GetColor());
-            pNewUI->SetAlpha(1.0f);
+            pNewUI->SetAlpha(m_ParticlesStartAlpha);
 
-            m_Particles.push_back(pNewUI);
+            SparkleParticle particle;
+            particle.ui = pNewUI;
+
+            // ランダム方向（-1 ～ 1）
+            float dirX = MyRand::GetRandomPercentage(-m_ParticlesAngle, m_ParticlesAngle);
+            float dirY = MyRand::GetRandomPercentage(-m_ParticlesAngle, m_ParticlesAngle);
+
+            // 正規化
+            float len = sqrtf(dirX * dirX + dirY * dirY);
+            if (len != 0.0f)
+            {
+                dirX /= len;
+                dirY /= len;
+            }
+
+            // 速度（調整用）
+            float speed = MyRand::GetRandomPercentage(0.0f, m_ParticlesSpead);
+
+            particle.velocity = { dirX * speed, dirY * speed };
+
+            m_Particles.push_back(particle);
         }
     }
 
-    // --- 2. 個別更新と削除のループ ---.
     auto it = m_Particles.begin();
     while (it != m_Particles.end())
     {
-        auto& pUI = *it;
+        auto& particle = *it;
+        auto& pUI = particle.ui;
 
-        float currentAlpha = pUI->GetAlpha();
-        currentAlpha -= dt;
-        pUI->SetAlpha(currentAlpha);
+        // ---- 移動 ----
+        auto pos = pUI->GetPosition();
+        pos.x += particle.velocity.x * dt;
+        pos.y += particle.velocity.y * dt;
+        pUI->SetPosition(pos);
 
-        if (currentAlpha <= 0.0f)
+        // ---- フェード ----
+        float alpha = pUI->GetAlpha();
+        alpha -= m_ParticlesDecAlpha * dt;
+        pUI->SetAlpha(alpha);
+
+        if (alpha <= 0.0f)
         {
             it = m_Particles.erase(it);
         }
         else
         {
-            float currentRot = pUI->GetRotation().z;
-            pUI->SetRotationZ(currentRot + dt * 3.0f);
-
             pUI->Update();
             ++it;
         }
@@ -119,41 +154,37 @@ void ULTSparkle::Update()
         float progress = m_Timer / duration;
         if (progress > 1.0f) progress = 1.0f;
 
-        // --- 閾値の微調整 ---.
-        const float peakStart = 0.2f; // 最大までの時間.
-        const float peakEnd = 0.6f; // ドヤ顔時間.
-
         float currentScale = 0.0f;
         float currentAlpha = 0.0f;
         float rotationTarget = 0.0f;
 
-        if (progress < peakStart)
+        if (progress < m_ToPeakTime)
         {
             // --- 1. 拡大フェーズ ---.
-            float t = progress / peakStart;
+            float t = progress / m_ToPeakTime;
             // 拡大.
             MyEasing::UpdateEasing(MyEasing::Type::OutCirc, t, 1.0f, 0.0f, m_PeakScale, currentScale);
             MyEasing::UpdateEasing(MyEasing::Type::OutQuint, t, 1.0f, 0.0f, 1.0f, currentAlpha);
             // 回転.
-            rotationTarget = t * 3.0f;
+            rotationTarget = t * m_StartRotSpead * dt;
         }
-        else if (progress < peakEnd)
+        else if (progress < m_PeakTime)
         {
             // --- 2. 静止維持フェーズ ---.
             currentScale = m_PeakScale;
             currentAlpha = 1.0f;
             // 維持中もゆっくり回し続ける.
-            float t = (progress - peakStart) / (peakEnd - peakStart);
-            rotationTarget = 10.0f + t * 2.0f;
+            float t = (progress - m_ToPeakTime) / (m_PeakTime - m_ToPeakTime);
+            rotationTarget = t * m_PeakRotSpead * dt;
         }
         else
         {
             // --- 3. 急加速縮小フェーズ ---.
-            float t = (progress - peakEnd) / (1.0f - peakEnd);
+            float t = (progress - m_PeakTime) / (1.0f - m_PeakTime);
             // InExpoで吸い込まれるように一瞬で消す.
             MyEasing::UpdateEasing(MyEasing::Type::InCirc, t, 1.0f, m_PeakScale, 0.0f, currentScale);
             MyEasing::UpdateEasing(MyEasing::Type::InExpo, t, 1.0f, 1.0f, 0.0f, currentAlpha);
-            rotationTarget = t * 4.0f;
+            rotationTarget = t * m_EndRotSpead * dt;
         }
 
         m_pMainSparkle->SetRotation({ 0, 0, rotationTarget });
@@ -183,7 +214,7 @@ void ULTSparkle::Draw()
 
     // パーティクルを全部描画
     for (auto& part : m_Particles) {
-        part->Draw();
+        part.ui->Draw();
     }
 
     // 主張演出を描画

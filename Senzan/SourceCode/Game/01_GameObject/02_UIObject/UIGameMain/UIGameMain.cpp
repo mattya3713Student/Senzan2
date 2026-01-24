@@ -168,7 +168,7 @@ void UIGameMain::Update()
 		else if (ui->GetUIName() == "ULTGauge_0") {
 			ui->SetScaleX(m_PlayerUlt.Rate);
             m_switch = m_PlayerUlt.Rate >= 1.0f ? true : false;
-            if (m_PlayerUlt.IsChanged && m_switch) {
+            if (m_PlayerUlt.IsChanged && m_PlayerUlt.Max == m_PlayerUlt.Now) {
                 m_pULTSparkle->DoPeakAnim();
             }
             m_pULTSparkle->SetULTGaugeStatus(m_switch, ui->GetPosition(), ui->GetDrawSize());
