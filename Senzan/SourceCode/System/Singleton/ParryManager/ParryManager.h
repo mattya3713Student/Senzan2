@@ -26,8 +26,9 @@ public:
 	// 参照をクリア（シーン終了時に呼び出す）.
 	void Clear();
 
-	// パリィ成功を通知（Playerから呼び出される）.
-	void OnParrySuccess();
+    // パリィ成功を通知（Playerから呼び出される）.
+    // withDelay = true の場合、ボスのパリィはアニメ再生後に delay 秒待機する挙動になる。
+    void OnParrySuccess(bool withDelay = false, float delaySeconds = 2.0f);
 
 	// パリィ成功時のカメラ演出が完了したか.
 	bool IsParryCameraFinished() const;

@@ -28,17 +28,18 @@ void ParryManager::Clear()
 	m_pBoss = nullptr;
 }
 
-void ParryManager::OnParrySuccess()
+void ParryManager::OnParrySuccess(bool withDelay, float delaySeconds)
 {
-	// カメラ演出（シェイク + パリィカメラ）.
-	CameraManager::GetInstance().ShakeCamera(0.15f, 0.3f);
-	CameraManager::GetInstance().StartParryCamera();
+    // カメラ演出（シェイク + パリィカメラ）.
+    CameraManager::GetInstance().ShakeCamera(0.15f, 0.3f);
+    CameraManager::GetInstance().StartParryCamera();
 
-	// Bossにパリィ被弾を通知.
-	if (m_pBoss)
-	{
-		m_pBoss->OnParried();
-	}
+    // Bossにパリィ被弾を通知（パリィステートへ遷移）。
+    // withDelay フラグは Boss 側で解釈して遅延挙動を組み込む。
+    if (m_pBoss)
+    {
+        m_pBoss->OnParried(withDelay, delaySeconds);
+    }
 }
 
 bool ParryManager::IsParryCameraFinished() const

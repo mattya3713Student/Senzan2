@@ -34,8 +34,6 @@ void JustDodge::Enter()
 	m_Distance = 250.f;
 	m_MaxTime = 1.8f;
 
-    Time::GetInstance().SetWorldTimeScale(0.1f, 1.5f, true);
-
     m_pOwner->SetIsLoop(false);
     m_pOwner->SetAnimSpeed(JUSTDODGE_ANIM_SPEED);
     m_pOwner->ChangeAnim(Player::eAnim::Dodge);

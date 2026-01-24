@@ -7,13 +7,18 @@
   "ColliderWindows": [
     {
       "BoneName": "boss_Spinning",
-      "duration": 1.0,
+      "duration": 0.5,
       "start": 2.3610000610351563
     },
     {
       "BoneName": "boss_Spinning",
       "duration": 0.30000001192092896,
-      "start": 3.0
+      "start": 4.699999809265137
+    },
+    {
+      "BoneName": "boss_Spin",
+      "duration": 4.166999816894531,
+      "start": 2.3610000610351563
     }
   ],
   "EasingType": 3,
@@ -39,11 +44,11 @@
   ],
   "RotateTotalDeg": 0.0,
   "m_AttackAmount": 0.0,
-  "m_AttackBoneName": "boss_Hand_R",
+  "m_AttackBoneName": "boss_Spin",
   "m_AttackTime": 4.166999816894531,
   "m_ChargeTime": 2.3610000610351563,
-  "m_ColliderHeight": 0.0,
-  "m_ColliderWidth": 0.0,
+  "m_ColliderHeight": 40.06399917602539,
+  "m_ColliderWidth": 16.025999069213867,
   "m_EndTime": 2.0,
   "m_TransitionOnAnimEnd_Attack": false,
   "m_TransitionOnAnimEnd_Charge": true,

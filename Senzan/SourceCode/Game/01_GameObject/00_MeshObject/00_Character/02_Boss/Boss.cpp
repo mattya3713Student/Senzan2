@@ -151,18 +151,17 @@ Boss::Boss()
     // 回転攻撃の当たり判定作成.
     auto spinning_collider = std::make_unique<CapsuleCollider>(m_spTransform);
 	m_pSpinningCollider = spinning_collider.get();
-	m_pSpinningCollider->SetColor(Color::eColor::Cyan);
-	m_pSpinningCollider->SetHeight(1.0f);
-	m_pSpinningCollider->SetRadius(1.0f);
-	m_pSpinningCollider->SetPositionOffset(0.f, 1.5f, 10.f);
-	m_pSpinningCollider->SetAttackAmount(100.f);
-	m_pSpinningCollider->SetMyMask(eCollisionGroup::BossPress);
-	m_pSpinningCollider->SetTarGetTargetMask(
+    m_pSpinningCollider->SetMyMask(eCollisionGroup::Enemy_Attack);
+    m_pSpinningCollider->SetTarGetTargetMask(
         eCollisionGroup::Player_Damage
         | eCollisionGroup::Player_Parry_Suc
-        | eCollisionGroup::Press
         | eCollisionGroup::Player_JustDodge);
+    m_pSpinningCollider->SetAttackAmount(10.0f);
+    m_pSpinningCollider->SetHeight(40.0f);
+    m_pSpinningCollider->SetRadius(15.0f);
+    m_pSpinningCollider->SetPositionOffset(0.0f, 0.0f, 0.0f);
     m_pSpinningCollider->SetActive(false);
+    m_pSpinningCollider->SetColor(Color::eColor::Red);
 	m_upColliders->AddCollider(std::move(spinning_collider));
 
     m_State->ChangeState(std::make_shared<BossSpinningState>(this));
@@ -277,6 +276,20 @@ void Boss::OnParried()
 
     // BossParryStateへ遷移.
     m_State->ChangeState(std::make_shared<BossParryState>(this));
+}
+
+void Boss::OnParried(bool withDelay, float delaySeconds)
+{
+    // 既にパリィ状態なら何もしない.
+    if (m_IsParried) return;
+
+    m_IsParried = true;
+
+    // 全ての攻撃コライダーを無効化.
+    OffAttackCollider();
+
+    // BossParryStateへ遷移（遅延フラグと遅延秒を渡す）
+    m_State->ChangeState(std::make_shared<BossParryState>(this, withDelay, delaySeconds));
 }
 
 StateMachine<Boss>* Boss::GetStateMachine()
@@ -482,9 +495,9 @@ void Boss::HandleParryDetection()
 
 			eCollisionGroup other_group = otherCollider->GetMyMask();
 
-			if ((other_group & eCollisionGroup::Player_Parry_Suc) != eCollisionGroup::None)
+			if ((other_group & eCollisionGroup::Player_Parry_Fai) != eCollisionGroup::None
+			&& (other_group & eCollisionGroup::Player_Parry_Suc) != eCollisionGroup::None)
 			{
-
                 OffAttackCollider();
 
 				m_State->ChangeState(std::make_shared<BossParryState>(this));
