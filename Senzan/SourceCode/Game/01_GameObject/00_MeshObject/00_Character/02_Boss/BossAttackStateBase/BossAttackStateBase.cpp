@@ -3,6 +3,7 @@
 #include "Game/04_Time/Time.h"
 #include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/Boss.h"
 #include "System/Utility/FileManager/FileManager.h"
+#include "Game/03_Collision/00_Core/02_Sphere/SphereCollider.h"
 
 #include "System/Singleton/ImGui/CImGuiManager.h"
 #include <cstring>
@@ -37,18 +38,14 @@ bool BossAttackStateBase::UpdateColliderWindows(float currentTime, std::vector<C
         {
             m_pOwner->SetColliderActiveByName(window.BoneName, true);
             // apply current state collider settings to the activated collider so UI changes take effect
-            {
-                ColliderBase* targetCol = nullptr;
-                if (window.BoneName == "boss_Hand_R") targetCol = m_pOwner->GetSlashCollider();
-                else if (window.BoneName == "boss_pSphere28") targetCol = m_pOwner->GetStompCollider();
-                else if (window.BoneName == "boss_Shout") targetCol = m_pOwner->GetShoutCollider();
-                if (targetCol) {
-                    if (auto* cap = dynamic_cast<CapsuleCollider*>(targetCol)) {
-                        cap->SetRadius(m_ColliderWidth);
-                        cap->SetHeight(m_ColliderHeight);
-                        cap->SetAttackAmount(m_AttackAmount);
-                    }
-                }
+            ColliderBase* targetCol = nullptr;
+            if (window.BoneName == "boss_Hand_R") targetCol = m_pOwner->GetSlashCollider();
+            else if (window.BoneName == "boss_pSphere28") targetCol = m_pOwner->GetStompCollider();
+            else if (window.BoneName == "boss_Shout") targetCol = m_pOwner->GetShoutCollider();
+            else if (window.BoneName == "boss_Spinning") targetCol = m_pOwner->GetSpinningCollider();
+            if (targetCol) {
+                // Also apply initial offset
+                targetCol->SetPositionOffset(window.Offset);
             }
             window.IsAct = true;
         }
@@ -61,10 +58,11 @@ bool BossAttackStateBase::UpdateColliderWindows(float currentTime, std::vector<C
             if (window.BoneName == "boss_Hand_R") targetCol = m_pOwner->GetSlashCollider();
             else if (window.BoneName == "boss_pSphere28") targetCol = m_pOwner->GetStompCollider();
             else if (window.BoneName == "boss_Shout") targetCol = m_pOwner->GetShoutCollider();
+            else if (window.BoneName == "boss_Spinning") targetCol = m_pOwner->GetSpinningCollider();
             if (targetCol) {
-                if (auto* cap = dynamic_cast<CapsuleCollider*>(targetCol)) {
-                    cap->SetPositionOffset(window.Offset.x, window.Offset.y, window.Offset.z);
-                }
+                // ColliderBase provides SetPositionOffset; call on base pointer so all collider types are supported
+                targetCol->SetPositionOffset(window.Offset.x, window.Offset.y, window.Offset.z);
+                targetCol->SetDebugInfo();
             }
         }
 
@@ -120,6 +118,7 @@ void BossAttackStateBase::Enter()
         m_pOwner->SetColliderActiveByName("boss_Hand_R", false);
         m_pOwner->SetColliderActiveByName("boss_pSphere28", false);
         m_pOwner->SetColliderActiveByName("boss_Shout", false);
+        m_pOwner->SetColliderActiveByName("boss_Spin", false);
 
         // 攻撃開始時にプレイヤー方向を向く
         const DirectX::XMFLOAT3& bossPos = m_pOwner->GetPosition();

@@ -1,11 +1,12 @@
-#pragma once
+ï»¿#pragma once
 #include "../Dodge.h"    
+#include "Resource/Effect/EffectResource.h"
 
 class Player;
 
 /**************************************************
-*	ƒvƒŒƒCƒ„[‚ÌƒWƒƒƒXƒg‰ñ”ğ‚ÌƒXƒe[ƒg(”h¶).
-*	’S“–:•£˜e –¢—ˆ.
+*	ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ã‚¸ãƒ£ã‚¹ãƒˆå›é¿ã®ã‚¹ãƒ†ãƒ¼ãƒˆ(æ´¾ç”Ÿ).
+*	æ‹…å½“:æ·µè„‡ æœªæ¥.
 **/
 
 namespace PlayerState {
@@ -15,7 +16,7 @@ public:
     JustDodge(Player* owner);
     ~JustDodge();
 
-    // ID‚Ìæ“¾.
+    // IDã®å–å¾—.
     constexpr PlayerState::eID GetStateID() const override;
 
     void Enter() override;
@@ -25,5 +26,6 @@ public:
     void Exit() override;
 
 protected:
+    ::Effekseer::Handle m_UIEffectHandle = -1; // UIç”¨ã‚¨ãƒ•ã‚§ã‚¯ãƒˆãƒãƒ³ãƒ‰ãƒ«.
 };
 }

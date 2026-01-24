@@ -51,6 +51,24 @@ void Parry::Update()
             m_pOwner->SetAnimSpeed(0.0f);
             m_IsPaused = true;
         }
+        // パリィが成功しなかった場合、最大待機時間を超えたらステートを抜ける
+        if (m_ElapsedTime >= m_MaxWaitTime)
+        {
+            if(!m_IsAnimEndStart)
+            {
+                m_pOwner->SetAnimTime(2.926);
+                m_pOwner->SetAnimSpeed(1.0f);
+                m_IsAnimEndStart = true;
+            }
+            else
+            {
+                if (m_ElapsedTime >= m_PauseThreshold + (Time::GetInstance().GetDeltaTime() * 10.f))
+                {
+                    m_pOwner->ChangeState(PlayerState::eID::Idle); // 失敗時も Idle に遷移
+                }
+            }
+            return;
+        }
     }
 
     // プレイヤーの成功フラグを監視して、成功したら再生を再開する
@@ -90,6 +108,7 @@ void Parry::Exit()
     // Exit で必ず再生速度を復帰
     m_pOwner->SetAnimSpeed(1.0f);
     m_IsPaused = false;
+    m_IsAnimEndStart = false;
     m_ElapsedTime = 0.0f;
 
     m_pOwner->SetDamageColliderActive(true);

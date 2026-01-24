@@ -35,6 +35,7 @@
 #include "System/Singleton/CameraManager/CameraManager.h"
 #include "System/Singleton/ParryManager/ParryManager.h"
 #include "Graphic/DirectX/DirectX11/DirectX11.h"
+#include "Resource/Effect/EffectResource.h"
 
 namespace {
     ::Effekseer::Handle m_EffectHandle = -1;
@@ -202,7 +203,8 @@ void Player::LateUpdate()
 	HandleCollisionResponse();
 
 	// 衝突イベント処理を実行
-	HandleParryDetection();
+    HandleParry_FailDetection();
+    HandleParry_FailDetection();
 	HandleDamageDetection();
 	HandleAttackDetection();
 	HandleDodgeDetection();
@@ -219,21 +221,6 @@ void Player::Draw()
 
     EffekseerManager::GetInstance().RenderHandle(m_EffectHandle, CameraManager::GetInstance().GetCurrentCamera().get());
 
-	// UI用エフェクト描画（スクリーン座標系）
-	if (m_UIEffectHandle != -1)
-	{
-		// エフェクトがまだ再生中かチェック
-		if (EffekseerManager::GetInstance().GetManager()->Exists(m_UIEffectHandle))
-		{
-			EffekseerManager::GetInstance().UpdateHandle(m_UIEffectHandle);
-			EffekseerManager::GetInstance().RenderHandleUI(m_UIEffectHandle);
-		}
-		else
-		{
-			// 再生終了したのでハンドルをリセット
-			m_UIEffectHandle = -1;
-		}
-	}
 }
 
 // ノック中か.
@@ -262,8 +249,36 @@ bool Player::IsPaused() const noexcept
 // ステートの変更.
 void Player::ChangeState(PlayerState::eID id)
 {
-	m_NextStateID = id;
-	//m_RootState.get()->ChangeState(id);
+    // 遷移ステートがより優先度の高いほうを設定.
+    auto IsSystemState = [](PlayerState::eID s) {
+        return s == PlayerState::eID::Pause ||
+               s == PlayerState::eID::KnockBack ||
+               s == PlayerState::eID::Dead ||
+               s == PlayerState::eID::SpecialAttack;
+    };
+
+    // まだ予約がない場合はそのままセット
+    if (m_NextStateID == PlayerState::eID::None)
+    {
+        m_NextStateID = id;
+        return;
+    }
+
+    // 新しい遷移がSystem側なら優先して上書き
+    if (IsSystemState(id))
+    {
+        m_NextStateID = id;
+        return;
+    }
+
+    // 既に予約されている遷移がSystem側ならそれを優先（上書きしない）
+    if (IsSystemState(m_NextStateID))
+    {
+        return;
+    }
+
+    // それ以外は新しい遷移で上書きする
+    m_NextStateID = id;
 }
 
 std::reference_wrapper<PlayerStateBase> Player::GetStateReference(PlayerState::eID id)
@@ -428,22 +443,11 @@ void Player::HandleDodgeDetection()
 
 			// ジャスト回避成功
 			m_IsJustDodgeTiming = true;
-			// ゲージ増加
-			m_CurrentUltValue += 300.0f;
-
-			// UI用エフェクト再生（画面中央に黄色い閃光）
-			auto effect = EffectResource::GetResource("Hit2"); // TODO: JustDodgeFlash用エフェクトに差し替え
-			if (effect != nullptr)
-			{
-				float screenX = static_cast<float>(WND_W) * 0.5f;
-				float screenY = static_cast<float>(WND_H) * 0.5f;
-				m_UIEffectHandle = EffekseerManager::GetInstance().GetManager()->Play(effect, screenX, screenY, 0.0f);
-			}
 		}
 	}
 }
 
-void Player::HandleParryDetection()
+void Player::HandleParry_SuccessDetection()
 {
 	if (!m_upColliders) return;
 
@@ -477,9 +481,68 @@ void Player::HandleParryDetection()
 				// パリィ成功時のカメラ演出（シェイク）
 				CameraManager::GetInstance().ShakeCamera(0.15f, 0.3f);
 
-			// ParryManager に成功を通知（ボスをパリィ状態へ遷移させる）
-			ParryManager::GetInstance().OnParrySuccess();
+			    // ParryManager に成功を通知（ボスをパリィ状態へ遷移させる）
+			    ParryManager::GetInstance().OnParrySuccess();
+
+			// パリィエフェクトを衝突点に出す
+			auto parryEffect = EffectResource::GetResource("Spark");
+			if (parryEffect != nullptr)
+			{
+				m_EffectHandle =
+					EffekseerManager::GetInstance().GetManager()
+					->Play(parryEffect, info.ContactPoint.x, info.ContactPoint.y, info.ContactPoint.z);
+			}
 				
+				// 一フレーム1回.
+				return;
+			}
+		}
+	}
+}
+
+
+void Player::HandleParry_FailDetection()
+{
+	if (!m_upColliders) return;
+
+	const auto& internal_colliders = m_upColliders->GetInternalColliders();
+
+	for (const auto& collider_ptr : internal_colliders)
+	{
+		const ColliderBase* current_collider = collider_ptr.get();
+
+		if ((current_collider->GetMyMask() & eCollisionGroup::Player_Parry_Fai) == eCollisionGroup::None) {
+			continue;
+		}
+
+		for (const CollisionInfo& info : current_collider->GetCollisionEvents())
+		{
+			if (!info.IsHit) continue;
+			const ColliderBase* otherCollider = info.ColliderB;
+			if (!otherCollider) { continue; }
+
+			eCollisionGroup other_group = otherCollider->GetMyMask();
+
+			if ((other_group & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None)
+			{
+				SoundManager::GetInstance().Play("Parry");
+				SoundManager::GetInstance().SetVolume("Parry",7000);
+				m_IsSuccessParry = true;
+				
+				// パリィ成功時のゲージ増加
+				m_CurrentUltValue += 500.0f;
+
+                // パリィエフェクトを衝突点に出す
+                auto parryEffect = EffectResource::GetResource("Spark");
+                if (parryEffect != nullptr)
+                {
+                    m_EffectHandle =
+                        EffekseerManager::GetInstance().GetManager()
+                        ->Play(parryEffect, info.ContactPoint.x, info.ContactPoint.y, info.ContactPoint.z);
+                }
+				// パリィ成功時のカメラ演出（シェイク）
+				CameraManager::GetInstance().ShakeCamera(0.15f, 0.3f);
+
 				// 一フレーム1回.
 				return;
 			}

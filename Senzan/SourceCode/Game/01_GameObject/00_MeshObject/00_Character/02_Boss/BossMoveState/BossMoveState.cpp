@@ -8,6 +8,7 @@
 #include "System/Singleton/ImGui/CImGuiManager.h"
 #include <algorithm>
 #include <random>
+#include <Windows.h>
 
 static constexpr double Move_Run_AnimSpeed = 5.0;
 
@@ -57,27 +58,136 @@ void BossMoveState::Update()
 
     ImGui::Separator();
     ImGui::Text(IMGUI_JP("=== Attack Settings ==="));
-    for (int i = 0; i < Count; ++i)
+    // 各攻撃の UI: 個別に IMGUI_JP マクロで日本語ラベルを指定（動的文字列に IMGUI_JP は使えないため）
+    // Distance view selector for ImGui (0:Near,1:Mid,2:Far)
+    static int viewDistance = 0;
+    const char* distLabels[] = { IMGUI_JP("近距離"), IMGUI_JP("中距離"), IMGUI_JP("遠距離") };
+    ImGui::Combo(IMGUI_JP("表示距離"), &viewDistance, distLabels, IM_ARRAYSIZE(distLabels));
+
+    // 合計での正規化表示用に合計値を取得（現在表示中の距離）
+    int curDist = viewDistance;
+    float weightTotal = 0.0f;
+    for (int wi = 0; wi < Count; ++wi) weightTotal += s_Weight[curDist][wi];
+
+    // 重みが合計100を超えた場合、直前に操作したスライダー以外の値を調整して合計を100に収める
+    auto normalizeWeights = [&](int changedIndex, int dist){
+        float total = 0.0f;
+        for (int k = 0; k < Count; ++k) total += s_Weight[dist][k];
+        if (total <= 100.0f) return;
+        float excess = total - 100.0f;
+        float sumOthers = total - s_Weight[dist][changedIndex];
+        if (sumOthers > 1e-6f)
+        {
+            // 他のスライダーから比率に応じて減算
+            for (int k = 0; k < Count; ++k)
+            {
+                if (k == changedIndex) continue;
+                float reduction = (s_Weight[dist][k] / sumOthers) * excess;
+                s_Weight[dist][k] -= reduction;
+                if (s_Weight[dist][k] < 0.0f) s_Weight[dist][k] = 0.0f;
+            }
+        }
+        else
+        {
+            // 他がゼロなら変更したものを100に制限
+            s_Weight[dist][changedIndex] = 100.0f;
+        }
+        // 再補正（丸め誤差対策）
+        float newTotal = 0.0f;
+        for (int k = 0; k < Count; ++k) newTotal += s_Weight[dist][k];
+        if (newTotal > 100.0f + 1e-4f)
+        {
+            float remainExcess = newTotal - 100.0f;
+            // 可能なら changedIndex を減らす
+            if (s_Weight[dist][changedIndex] > remainExcess)
+            {
+                s_Weight[dist][changedIndex] -= remainExcess;
+            }
+            else
+            {
+                s_Weight[dist][changedIndex] = 0.0f;
+            }
+        }
+    };
+
+    ImGui::PushID(0);
+    ImGui::Checkbox(IMGUI_JP("斬り"), &s_Enable[0]); ImGui::SameLine();
+    if (ImGui::SliderFloat(IMGUI_JP("重み (%)"), &s_Weight[curDist][0], 0.0f, 100.0f)) { normalizeWeights(0, curDist); }
+    // 再計算
+    weightTotal = 0.0f; for (int wi = 0; wi < Count; ++wi) weightTotal += s_Weight[curDist][wi];
     {
-        ImGui::PushID(i);
-        // 攻撃名 (日本語) と有効フラグ
-        ImGui::Checkbox(s_AttackNames[i], &s_Enable[i]);
-        ImGui::SameLine();
-        // 重みは0..100(%表示)
-        ImGui::SliderFloat(IMGUI_JP("重み (%)"), &s_Weight[i], 0.0f, 100.0f);
-        // 右側に現在値をパーセント表示
-        ImGui::SameLine();
-        ImGui::Text("%0.0f%%", s_Weight[i]);
-        ImGui::SameLine();
-        ImGui::SliderFloat(IMGUI_JP("クールダウン (秒)"), &s_CooldownDefault[i], 0.0f, 10.0f);
-        ImGui::PopID();
+        float norm = (weightTotal > 0.0001f) ? (s_Weight[curDist][0] / weightTotal * 100.0f) : 0.0f;
+        ImGui::SameLine(); ImGui::Text("%0.0f%%", norm);
     }
+    ImGui::SameLine();
+    ImGui::SliderFloat(IMGUI_JP("クールダウン (秒)"), &s_CooldownDefault[0], 0.0f, 10.0f);
+    ImGui::PopID();
+
+    ImGui::PushID(5);
+    ImGui::Checkbox(IMGUI_JP("回転"), &s_Enable[5]); ImGui::SameLine();
+    if (ImGui::SliderFloat(IMGUI_JP("重み (%)"), &s_Weight[curDist][5], 0.0f, 100.0f)) { normalizeWeights(5, curDist); }
+    weightTotal = 0.0f; for (int wi = 0; wi < Count; ++wi) weightTotal += s_Weight[curDist][wi];
+    {
+        float norm = (weightTotal > 0.0001f) ? (s_Weight[curDist][5] / weightTotal * 100.0f) : 0.0f;
+        ImGui::SameLine(); ImGui::Text("%0.0f%%", norm);
+    }
+    ImGui::SameLine();
+    ImGui::SliderFloat(IMGUI_JP("クールダウン (秒)"), &s_CooldownDefault[5], 0.0f, 10.0f);
+    ImGui::PopID();
+
+    ImGui::PushID(1);
+    ImGui::Checkbox(IMGUI_JP("飛びかかり"), &s_Enable[1]); ImGui::SameLine();
+    if (ImGui::SliderFloat(IMGUI_JP("重み (%)"), &s_Weight[curDist][1], 0.0f, 100.0f)) { normalizeWeights(1, curDist); }
+    weightTotal = 0.0f; for (int wi = 0; wi < Count; ++wi) weightTotal += s_Weight[curDist][wi];
+    {
+        float norm = (weightTotal > 0.0001f) ? (s_Weight[curDist][1] / weightTotal * 100.0f) : 0.0f;
+        ImGui::SameLine(); ImGui::Text("%0.0f%%", norm);
+    }
+    ImGui::SameLine();
+    ImGui::SliderFloat(IMGUI_JP("クールダウン (秒)"), &s_CooldownDefault[1], 0.0f, 10.0f);
+    ImGui::PopID();
+
+    ImGui::PushID(2);
+    ImGui::Checkbox(IMGUI_JP("溜め"), &s_Enable[2]); ImGui::SameLine();
+    if (ImGui::SliderFloat(IMGUI_JP("重み (%)"), &s_Weight[curDist][2], 0.0f, 100.0f)) { normalizeWeights(2, curDist); }
+    weightTotal = 0.0f; for (int wi = 0; wi < Count; ++wi) weightTotal += s_Weight[curDist][wi];
+    {
+        float norm = (weightTotal > 0.0001f) ? (s_Weight[curDist][2] / weightTotal * 100.0f) : 0.0f;
+        ImGui::SameLine(); ImGui::Text("%0.0f%%", norm);
+    }
+    ImGui::SameLine();
+    ImGui::SliderFloat(IMGUI_JP("クールダウン (秒)"), &s_CooldownDefault[2], 0.0f, 10.0f);
+    ImGui::PopID();
+
+    ImGui::PushID(3);
+    ImGui::Checkbox(IMGUI_JP("叫び"), &s_Enable[3]); ImGui::SameLine();
+    if (ImGui::SliderFloat(IMGUI_JP("重み (%)"), &s_Weight[curDist][3], 0.0f, 100.0f)) { normalizeWeights(3, curDist); }
+    weightTotal = 0.0f; for (int wi = 0; wi < Count; ++wi) weightTotal += s_Weight[curDist][wi];
+    {
+        float norm = (weightTotal > 0.0001f) ? (s_Weight[curDist][3] / weightTotal * 100.0f) : 0.0f;
+        ImGui::SameLine(); ImGui::Text("%0.0f%%", norm);
+    }
+    ImGui::SameLine();
+    ImGui::SliderFloat(IMGUI_JP("クールダウン (秒)"), &s_CooldownDefault[3], 0.0f, 10.0f);
+    ImGui::PopID();
+
+    ImGui::PushID(4);
+    ImGui::Checkbox(IMGUI_JP("投擲"), &s_Enable[4]); ImGui::SameLine();
+    if (ImGui::SliderFloat(IMGUI_JP("重み (%)"), &s_Weight[curDist][4], 0.0f, 100.0f)) { normalizeWeights(4, curDist); }
+    weightTotal = 0.0f; for (int wi = 0; wi < Count; ++wi) weightTotal += s_Weight[curDist][wi];
+    {
+        float norm = (weightTotal > 0.0001f) ? (s_Weight[curDist][4] / weightTotal * 100.0f) : 0.0f;
+        ImGui::SameLine(); ImGui::Text("%0.0f%%", norm);
+    }
+    ImGui::SameLine();
+    ImGui::SliderFloat(IMGUI_JP("クールダウン (秒)"), &s_CooldownDefault[4], 0.0f, 10.0f);
+    ImGui::PopID();
 
     ImGui::Separator();
     ImGui::Text(IMGUI_JP("=== 強制攻撃 ==="));
-    const char* attackNames[] = { "ランダム", "斬り", "飛びかかり", "溜め", "叫び", "投擲" };
+    const char* attackNames[] = { "ランダム", "斬り", "飛びかかり", "溜め", "叫び", "投擲", "回転" };
     ImGui::Combo(IMGUI_JP("強制攻撃"), &s_ForceAttackIndex, attackNames, IM_ARRAYSIZE(attackNames));
-    s_ForceAttackIndex -= 1; // -1 = Random, 0-4 = Each attack
+    s_ForceAttackIndex -= 1; // -1 = Random, 0-5 = Each attack
 
     ImGui::Separator();
     XMFLOAT3 debugTargetPos = m_pOwner->GetTargetPos();
@@ -99,10 +209,22 @@ void BossMoveState::Update()
         SaveSettings();
     }
 
+    // Enter キーで読み込み (キー押下の立ち上がりで一度だけ実行)
+    {
+        static bool prevEnterDown = false;
+        SHORT st = GetAsyncKeyState(VK_RETURN);
+        bool enterDown = (st & 0x8000) != 0;
+        if (enterDown && !prevEnterDown)
+        {
+            LoadSettings();
+        }
+        prevEnterDown = enterDown;
+    }
+
     ImGui::End();
 #endif
 
-	float delta = Time::GetInstance().GetDeltaTime();
+	float delta = m_pOwner-> GetDelta();
 
 	// Attack timer
 	m_Timer += delta;
@@ -229,11 +351,11 @@ void BossMoveState::Update()
         struct Candidate { std::function<std::unique_ptr<StateBase<Boss>>() > factory; float weight; int id; };
         std::vector<Candidate> weighted;
 
-        auto pushCandidate = [&](int id, std::function<std::unique_ptr<StateBase<Boss>>() > factory){
+        auto pushCandidate = [&](int id, std::function<std::unique_ptr<StateBase<Boss>>() > factory, int distIndex){
             if (!s_Enable[id]) return;
             // If on cooldown, skip
             if (m_CooldownRemaining[id] > 0.0f) return;
-            float w = s_Weight[id];
+            float w = s_Weight[distIndex][id];
             // apply repeat penalty
             if (m_LastAttackId == id) w *= s_RepeatPenalty;
             if (w <= 0.0f) return;
@@ -245,34 +367,34 @@ void BossMoveState::Update()
         {
             switch (s_ForceAttackIndex)
             {
-            case 0: pushCandidate(AttackId::Slash, [this]() { return std::make_unique<BossSlashState>(m_pOwner); }); break;
-            case 1: pushCandidate(AttackId::Stomp, [this]() { return std::make_unique<BossStompState>(m_pOwner); }); break;
-            case 3: pushCandidate(AttackId::Shout, [this]() { return std::make_unique<BossShoutState>(m_pOwner); }); break;
-            case 4: pushCandidate(AttackId::Throwing, [this]() { return std::make_unique<BossThrowingState>(m_pOwner); }); break;
+            case 0: pushCandidate(AttackId::Slash, [this]() { return std::make_unique<BossSlashState>(m_pOwner); }, (dist < s_NearRange) ? Near : (dist < s_MidRange ? Mid : Far)); break;
+            case 1: pushCandidate(AttackId::Stomp, [this]() { return std::make_unique<BossStompState>(m_pOwner); }, (dist < s_NearRange) ? Near : (dist < s_MidRange ? Mid : Far)); break;
+            case 3: pushCandidate(AttackId::Shout, [this]() { return std::make_unique<BossShoutState>(m_pOwner); }, (dist < s_NearRange) ? Near : (dist < s_MidRange ? Mid : Far)); break;
+            case 4: pushCandidate(AttackId::Throwing, [this]() { return std::make_unique<BossThrowingState>(m_pOwner); }, (dist < s_NearRange) ? Near : (dist < s_MidRange ? Mid : Far)); break;
             }
         }
         else
         {
             // Near: Slash or Stomp
             if (dist < s_NearRange) {
-                pushCandidate(AttackId::Slash, [this]() { return std::make_unique<BossSlashState>(m_pOwner); });
-                pushCandidate(AttackId::Stomp, [this]() { return std::make_unique<BossStompState>(m_pOwner); });
+                pushCandidate(AttackId::Slash, [this]() { return std::make_unique<BossSlashState>(m_pOwner); }, Near);
+                pushCandidate(AttackId::Stomp, [this]() { return std::make_unique<BossStompState>(m_pOwner); }, Near);
             }
             // Mid: Shout (and possibly Charge in future)
             else if (dist < s_MidRange) {
-                pushCandidate(AttackId::Shout, [this]() { return std::make_unique<BossShoutState>(m_pOwner); });
+                pushCandidate(AttackId::Shout, [this]() { return std::make_unique<BossShoutState>(m_pOwner); }, Mid);
             }
             // Far: Throwing or Stomp
             else {
-                pushCandidate(AttackId::Throwing, [this]() { return std::make_unique<BossThrowingState>(m_pOwner); });
-                pushCandidate(AttackId::Stomp, [this]() { return std::make_unique<BossStompState>(m_pOwner); });
+                pushCandidate(AttackId::Throwing, [this]() { return std::make_unique<BossThrowingState>(m_pOwner); }, Far);
+                pushCandidate(AttackId::Stomp, [this]() { return std::make_unique<BossStompState>(m_pOwner); }, Far);
             }
         }
 
         if (!weighted.empty())
         {
             // Sum weights
-            // Weights are expressed as 0..100 percentages; sum them for sampling
+            // Weights are expressed as 0..100 percentages (per-distance); sum them for sampling
             float total = 0.0f;
             for (auto &c : weighted) total += c.weight;
 
@@ -338,13 +460,17 @@ void BossMoveState::LoadSettings()
     if (j.contains("RepeatPenalty")) s_RepeatPenalty = j["RepeatPenalty"].get<float>();
     for (int i = 0; i < Count; ++i)
     {
-        // JSON では英語 ID をキーに使う
+        // JSON では英語 ID をキーに使う (Enable / Cooldown are per-attack)
         std::string keyEnable = std::string(s_AttackIds[i]) + "_Enable";
-        std::string keyWeight = std::string(s_AttackIds[i]) + "_Weight";
         std::string keyCD = std::string(s_AttackIds[i]) + "_Cooldown";
         if (j.contains(keyEnable)) s_Enable[i] = j[keyEnable].get<bool>();
-        if (j.contains(keyWeight)) s_Weight[i] = j[keyWeight].get<float>();
         if (j.contains(keyCD)) s_CooldownDefault[i] = j[keyCD].get<float>();
+        // per-distance weights
+        for (int d = 0; d < DistCount; ++d)
+        {
+            std::string keyWeight = std::string(s_AttackIds[i]) + "_" + std::string(s_DistanceIds[d]) + "_Weight";
+            if (j.contains(keyWeight)) s_Weight[d][i] = j[keyWeight].get<float>();
+        }
     }
 }
 
@@ -352,15 +478,24 @@ void BossMoveState::SaveSettings() const
 {
     json j;
     j["RepeatPenalty"] = s_RepeatPenalty;
+    // 保存: Enable (per-attack), Cooldown (per-attack), Weight (per-distance per-attack)
     for (int i = 0; i < Count; ++i)
     {
-        // JSON では英語 ID をキーに使う
         std::string keyEnable = std::string(s_AttackIds[i]) + "_Enable";
-        std::string keyWeight = std::string(s_AttackIds[i]) + "_Weight";
         std::string keyCD = std::string(s_AttackIds[i]) + "_Cooldown";
         j[keyEnable] = s_Enable[i];
-        j[keyWeight] = s_Weight[i];
         j[keyCD] = s_CooldownDefault[i];
+        // per-distance normalize and write
+        for (int d = 0; d < DistCount; ++d)
+        {
+            float sum = 0.0f;
+            for (int k = 0; k < Count; ++k) sum += s_Weight[d][k];
+            float outWeight = 0.0f;
+            if (sum > 1e-6f) outWeight = s_Weight[d][i] / sum * 100.0f;
+            else outWeight = 100.0f / static_cast<float>(Count);
+            std::string keyWeight = std::string(s_AttackIds[i]) + "_" + std::string(s_DistanceIds[d]) + "_Weight";
+            j[keyWeight] = outWeight;
+        }
     }
     auto dataDir = std::filesystem::path("Data") / "Json" / "Boss";
     std::error_code ec;

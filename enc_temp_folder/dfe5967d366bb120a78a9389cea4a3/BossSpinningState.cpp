@@ -29,35 +29,6 @@ void BossSpinningState::Enter()
     m_pOwner->ChangeAnim(Boss::enBossAnim::Charge);
     m_List = enSpinning::Anim;
     m_IsSpun = false;
-
-    // Ensure a spinning collider window exists (create if JSON didn't provide one)
-    bool hasSpin = false;
-    for (auto &w : m_ColliderWindows) {
-        if (w.BoneName == "boss_Spin") { hasSpin = true; m_AttackBoneName = w.BoneName; break; }
-    }
-    if (!hasSpin)
-    {
-        ColliderWindow cw;
-        cw.BoneName = "boss_Spin"; // maps to Boss::m_pSpinningCollider via SetColliderActiveByName
-        cw.Start = m_ChargeTime;
-        cw.Duration = m_AttackTime > 0.0f ? m_AttackTime : 0.5f;
-        cw.Offset = DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f };
-        cw.JustTime = 0.0f;
-        m_ColliderWindows.push_back(cw);
-        m_AttackBoneName = cw.BoneName;
-
-        // apply immediate collider settings so UI-adjusted values take effect before activation
-        if (m_pOwner) {
-            ColliderBase* targetCol = m_pOwner->GetSpinningCollider();
-            if (targetCol) {
-                targetCol->SetRadius(m_ColliderWidth);
-                targetCol->SetHeight(m_ColliderHeight);
-                targetCol->SetAttackAmount(m_AttackAmount);
-                targetCol->SetPositionOffset(cw.Offset.x, cw.Offset.y, cw.Offset.z);
-                targetCol->SetActive(false);
-            }
-        }
-    }
 }
 
 void BossSpinningState::Update()

@@ -49,7 +49,14 @@ public:
 	};
 
     // Attack identifiers
-    enum AttackId { Slash = 0, Stomp = 1, Charge = 2, Shout = 3, Throwing = 4, Count = 5 };
+    enum AttackId {
+        Slash = 0,
+        Stomp = 1,
+        Charge = 2,
+        Shout = 3,
+        Throwing = 4,
+        Spin = 5,
+        Count = 6 };
 
     MovePhase m_Phase = MovePhase::Start;
 public:
@@ -100,23 +107,33 @@ private:
 	// === デバッグ用距離設定 ===
 	static inline float s_NearRange = 15.0f;      // 近距離の閾値
 	static inline float s_MidRange = 35.0f;       // 中距離の閾値
-	static inline float s_AttackDelay = 1.0f;     // 攻撃開始までの遅延
+	static inline float s_AttackDelay = 5.0f;     // 攻撃開始までの遅延
 
 	// === 攻撃有効/無効フラグ、重み、クールダウン（配列で管理） ===
 	static inline float s_RepeatPenalty = 0.25f;
 
-	// Per-attack settings (indexed by AttackId::Count)
-	static inline std::array<bool, Count> s_Enable = { true, true, true, true, true };
-	static inline std::array<float, Count> s_Weight = { 100.0f, 100.0f, 100.0f, 100.0f, 100.0f }; // percentage-like (0..100)
-	static inline std::array<float, Count> s_CooldownDefault = { 2.0f, 2.5f, 3.0f, 4.0f, 2.0f };
-    // 日本語ラベルにして IMGUI 表示でそのまま使えるようにする
-    // 表示用日本語ラベル
-    static inline const char* s_AttackNames[Count] = { "斬り", "飛びかかり", "溜め", "叫び", "投擲" };
-    // 内部保存用ID（英語）。JSONキーなどで使う。
-    static inline const char* s_AttackIds[Count] = { "Slash", "Stomp", "Charge", "Shout", "Throwing" };
+    // Per-attack settings (indexed by AttackId::Count)
+    static inline std::array<bool, Count> s_Enable = { true, true, true, true, true, true };
 
-	// === デバッグ強制攻撃選択 ===
-	static inline int s_ForceAttackIndex = -1;    // -1: ランダム, 0-4: 強制選択
+    // Distances: Near / Mid / Far
+    enum DistanceIndex { Near = 0, Mid = 1, Far = 2, DistCount = 3 };
+
+    // weights[distance][attack] - stored/edited as percentages that sum to ~100 per distance
+    static inline std::array<std::array<float, Count>, DistCount> s_Weight = { {
+        std::array<float, Count>{ 20.0f, 20.0f, 20.0f, 20.0f, 20.0f, 20.0f }, // Near (sum 120)
+        std::array<float, Count>{ 20.0f, 20.0f, 20.0f, 20.0f, 20.0f, 20.0f }, // Mid
+        std::array<float, Count>{ 20.0f, 20.0f, 20.0f, 20.0f, 20.0f, 20.0f }  // Far
+    } };
+
+    static inline std::array<float, Count> s_CooldownDefault = { 2.0f, 2.5f, 3.0f, 4.0f, 2.0f, 2.0f };
+    // 表示用日本語ラベル
+    static inline const char* s_AttackNames[Count] = { "斬り", "飛びかかり", "溜め", "叫び", "投擲", "回転" };
+    // 内部保存用ID（英語）。JSONキーなどで使う。
+    static inline const char* s_AttackIds[Count] = { "Slash", "Stomp", "Charge", "Shout", "Throwing", "Spin" };
+    static inline const char* s_DistanceIds[DistCount] = { "Near", "Mid", "Far" };
+
+    // === デバッグ強制攻撃選択 ===
+    static inline int s_ForceAttackIndex = -1;    // -1: ランダム, 0-5: 強制選択
 
     // runtime cooldown/last-attack tracking
     std::array<float, Count> m_CooldownRemaining{};

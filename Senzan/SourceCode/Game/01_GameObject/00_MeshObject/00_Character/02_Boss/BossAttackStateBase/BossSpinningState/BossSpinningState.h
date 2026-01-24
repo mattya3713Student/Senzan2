@@ -2,6 +2,7 @@
 
 #include "..//BossAttackStateBase.h"
 #include "00_MeshObject/00_Character/02_Boss/BossIdolState/BossIdolState.h"
+#include "System/Utility/Math/Easing/Easing.h"
 
 class BossSpinningState
     : public BossAttackStateBase
@@ -35,10 +36,10 @@ public:
 private:
     enSpinning m_List;
     bool m_IsSpun;
-    float m_Radius;
-    float m_RotateSpeed;
-    // 再生するアニメーションのインデックス(保存用)
-    int m_AnimIdxChargeToIdol;
-    int m_AnimIdxChargeAttack;
-    int m_AnimIdxCharge;
+
+    // 回転量制御
+    float m_RotateTotalDeg = 360.0f; // 攻撃フェーズで回す合計角度
+    MyEasing::Type m_EasingType = MyEasing::Type::InOutSine; // デフォルトのイージング
+    float m_LastEasedAngle = 0.0f; // ランタイム: 前フレームのイーズ角度
+    // アニメは Boss::enBossAnim の列挙を直接使用する
 };
