@@ -25,7 +25,6 @@ namespace PlayerState {
         void Exit() override;
 
     private:
-        bool m_IsParrySuccessful;
         // パリィ成功を待つための一時停止制御
         float m_ElapsedTime = 0.0f;
         float m_PauseThreshold = 1.12f; // この時間経過後にアニメ速度を0にする
@@ -33,5 +32,6 @@ namespace PlayerState {
         float m_MaxWaitTime = 1.5f; // 秒
         bool m_IsPaused = false;
         bool m_IsAnimEndStart = false;
+        bool m_IsFastTime = false;
     };
 }

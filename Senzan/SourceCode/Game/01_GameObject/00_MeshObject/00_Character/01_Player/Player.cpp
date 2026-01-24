@@ -82,7 +82,8 @@ Player::Player()
 	m_HP = m_MaxHP;
 
 	// 被ダメの追加.
-	std::unique_ptr<CapsuleCollider> damage_collider = std::make_unique<CapsuleCollider>(m_spTransform);
+	std::unique_ptr<CapsuleCollider> damage_collider
+        = std::make_unique<CapsuleCollider>(m_spTransform);
 
 	m_pDamageCollider = damage_collider.get();
 
@@ -106,8 +107,7 @@ Player::Player()
 	parry_collider->SetRadius(0.5f);
 	parry_collider->SetPositionOffset(0.f, 1.5f, 0.f);
 	parry_collider->SetMyMask(eCollisionGroup::Player_Parry_Fai | eCollisionGroup::Player_Parry_Suc);
-	parry_collider->SetTarGetTargetMask(eCollisionGroup::Enemy_PreAttack);
-
+	parry_collider->SetTarGetTargetMask(eCollisionGroup::Enemy_Attack);
 	m_upColliders->AddCollider(std::move(parry_collider));
 
 	// ジャスト回避の追加.
@@ -150,8 +150,6 @@ Player::Player()
 
 	m_upColliders->AddCollider(std::move(attackCollider));
 
-	// If other attack colliders existed before, they should be registered similarly.
-
 	CollisionDetector::GetInstance().RegisterCollider(*m_upColliders);
 
 	// 各ステートの初期化.
@@ -169,8 +167,6 @@ Player::~Player()
 void Player::Update()
 {
 	Character::Update();
-
-	m_IsSuccessParry = false;
 
 	// ステート遷移のチェック.
 	if (m_NextStateID != PlayerState::eID::None)
@@ -202,8 +198,8 @@ void Player::LateUpdate()
 	// 押し戻し.
 	HandleCollisionResponse();
 
-	// 衝突イベント処理を実行
-    HandleParry_FailDetection();
+    // 衝突イベント処理を実行
+    HandleParry_SuccessDetection();
     HandleParry_FailDetection();
 	HandleDamageDetection();
 	HandleAttackDetection();
@@ -468,8 +464,10 @@ void Player::HandleParry_SuccessDetection()
 			if (!otherCollider) { continue; }
 
 			eCollisionGroup other_group = otherCollider->GetMyMask();
+            eCollisionGroup other_target_group = otherCollider->GetTargetMask();
 
-			if ((other_group & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None)
+			if ((other_group & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None
+                && (other_target_group & eCollisionGroup::Player_Parry_Suc) != eCollisionGroup::None)
 			{
 				SoundManager::GetInstance().Play("Parry");
 				SoundManager::GetInstance().SetVolume("Parry",7000);
@@ -481,8 +479,9 @@ void Player::HandleParry_SuccessDetection()
 				// パリィ成功時のカメラ演出（シェイク）
 				CameraManager::GetInstance().ShakeCamera(0.15f, 0.3f);
 
-			    // ParryManager に成功を通知（ボスをパリィ状態へ遷移させる）
-			    ParryManager::GetInstance().OnParrySuccess();
+                // ParryManager に成功を通知（ボスをパリィ状態へ遷移させる）
+                // Player_Parry_Suc は遅延ありの挙動を要求
+                ParryManager::GetInstance().OnParrySuccess(true, 2.0f);
 
 			// パリィエフェクトを衝突点に出す
 			auto parryEffect = EffectResource::GetResource("Spark");
@@ -522,8 +521,10 @@ void Player::HandleParry_FailDetection()
 			if (!otherCollider) { continue; }
 
 			eCollisionGroup other_group = otherCollider->GetMyMask();
+			eCollisionGroup other_target_group = otherCollider->GetTargetMask();
 
-			if ((other_group & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None)
+			if ((other_group & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None
+             && (other_target_group & eCollisionGroup::Player_Parry_Fai) != eCollisionGroup::None)
 			{
 				SoundManager::GetInstance().Play("Parry");
 				SoundManager::GetInstance().SetVolume("Parry",7000);
@@ -543,8 +544,11 @@ void Player::HandleParry_FailDetection()
 				// パリィ成功時のカメラ演出（シェイク）
 				CameraManager::GetInstance().ShakeCamera(0.15f, 0.3f);
 
-				// 一フレーム1回.
-				return;
+			// Boss に通知（アニメ再生のみ）
+			ParryManager::GetInstance().OnParrySuccess(false, 0.0f);
+
+			// 一フレーム1回.
+			return;
 			}
 		}
 	}

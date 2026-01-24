@@ -9,12 +9,15 @@ public:
     enum class ParryPhase : byte
     {
         None,
-        Flinch,
-        FlinchTimer,
-        FlinchToIdol,
+        PlayHit,
+        PlayFlinchParis,
+        PlayFlinch,
+        PlayFlinchToIdol,
+        ToIdol,
     };
 
     BossParryState(Boss* owner);
+    BossParryState(Boss* owner, bool withDelay, float delaySeconds = 2.0f);
     ~BossParryState() override;
 
     void Enter() override;
@@ -26,4 +29,7 @@ public:
 private:
 
     ParryPhase m_Phase;
+    bool m_WithDelay = false;
+    float m_DelaySeconds = 0.0f;
+    float m_DelayElapsed = 0.0f;
 };

@@ -44,6 +44,10 @@ bool BossAttackStateBase::UpdateColliderWindows(float currentTime, std::vector<C
             else if (window.BoneName == "boss_Shout") targetCol = m_pOwner->GetShoutCollider();
             else if (window.BoneName == "boss_Spinning") targetCol = m_pOwner->GetSpinningCollider();
             if (targetCol) {
+                // Use virtual setters so Sphere/Box/Capsule implementations receive values
+                targetCol->SetRadius(m_ColliderWidth);
+                targetCol->SetHeight(m_ColliderHeight);
+                targetCol->SetAttackAmount(m_AttackAmount);
                 // Also apply initial offset
                 targetCol->SetPositionOffset(window.Offset);
             }
