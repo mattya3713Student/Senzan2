@@ -1,6 +1,7 @@
 ﻿#include "Parry.h"
 
 #include "Game/01_GameObject/00_MeshObject/00_Character/01_Player/Player.h"
+#include "Game/04_Time/Time.h"
 
 namespace PlayerState {
 Parry::Parry(Player* owner)
@@ -27,6 +28,8 @@ void Parry::Enter()
 
 
     m_IsParrySuccessful = false;
+    m_ElapsedTime = 0.0f;
+    m_IsPaused = false;
 
     // アニメーション設定
     m_pOwner->SetIsLoop(false);
@@ -39,6 +42,28 @@ void Parry::Update()
 {
     Combat::Update();
     
+    // パリィ成功を待つ間、所定時間経過したらアニメ速度を0にして停止させる
+    if (!m_IsParrySuccessful)
+    {
+        m_ElapsedTime += Time::GetInstance().GetDeltaTime();
+        if (!m_IsPaused && m_ElapsedTime >= m_PauseThreshold)
+        {
+            m_pOwner->SetAnimSpeed(0.0f);
+            m_IsPaused = true;
+        }
+    }
+
+    // プレイヤーの成功フラグを監視して、成功したら再生を再開する
+    if (m_pOwner->IsParry() && !m_IsParrySuccessful)
+    {
+        m_IsParrySuccessful = true;
+        if (m_IsPaused)
+        {
+            m_pOwner->SetAnimSpeed(1.0f);
+            m_IsPaused = false;
+        }
+    }
+
     // アニメーション終了時の処理
     if (m_pOwner->IsAnimEnd(Player::eAnim::Parry)) {
         if (!m_IsParrySuccessful) {
@@ -61,6 +86,11 @@ void Parry::Exit()
 {
     Combat::Exit();
     m_IsParrySuccessful = false;
+
+    // Exit で必ず再生速度を復帰
+    m_pOwner->SetAnimSpeed(1.0f);
+    m_IsPaused = false;
+    m_ElapsedTime = 0.0f;
 
     m_pOwner->SetDamageColliderActive(true);
     m_pOwner->SetParryColliderActive(false);

@@ -137,6 +137,11 @@ protected:
     std::vector<EffectWindow>    m_EffectWindows;    // エフェクト再生設定
 
     void UpdateBaseLogic(float dt); // 共通更新ロジック
+    // 共通のコライダーウィンドウ更新ヘルパー
+    // currentTime: 時間基準（秒）
+    // windows: 更新対象のウィンドウ配列（m_ColliderWindows など）
+    // 戻り値: anyJust フラグ
+    bool UpdateColliderWindows(float currentTime, std::vector<ColliderWindow>& windows);
 
     // 派生クラスが移動の終点を独自に決めたい場合にオーバーライドする
     virtual DirectX::XMFLOAT3 ComputeMovementEndPos(const MovementWindow& mv, const DirectX::XMFLOAT3& startPos, const DirectX::XMFLOAT3& targetPos) const;

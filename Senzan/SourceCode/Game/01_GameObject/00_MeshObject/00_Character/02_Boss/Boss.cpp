@@ -69,26 +69,10 @@ Boss::Boss()
 	m_spTransform->SetScale(scale);
 	m_spTransform->SetRotationDegrees(Rotation);
 
-	m_MaxHP = 5000.f;
+	m_MaxHP = 5000000.f;
 	m_HP = m_MaxHP;
 
-	// 攻撃の追加.
-	std::unique_ptr<CapsuleCollider> attackCollider = std::make_unique<CapsuleCollider>(m_spTransform);
-
-	m_pAttackCollider = attackCollider.get();
-
-	attackCollider->SetActive(false);
-	attackCollider->SetColor(Color::eColor::Red);
-	attackCollider->SetAttackAmount(5.0f);
-	attackCollider->SetHeight(0.0);
-	attackCollider->SetRadius(0.0);
-	attackCollider->SetPositionOffset(0.f, -50.0f, -20.f);
-	attackCollider->SetMyMask(eCollisionGroup::Enemy_Attack);
-	attackCollider->SetTarGetTargetMask(eCollisionGroup::Player_Damage | eCollisionGroup::Player_Dodge | eCollisionGroup::Player_JustDodge | eCollisionGroup::Player_Parry);
-
-	m_upColliders->AddCollider(std::move(attackCollider));
-
-	//ボスの最大体力.
+    //ボスの最大体力.
 	m_HitPoint = HP_Max;
 
 	// 被ダメの追加.
@@ -106,7 +90,6 @@ Boss::Boss()
 
 	// プレスの追加.
 	std::unique_ptr<CapsuleCollider> press_collider = std::make_unique<CapsuleCollider>(m_spTransform);
-
 	press_collider->SetColor(Color::eColor::Cyan);
 	press_collider->SetHeight(20.0f);
 	press_collider->SetRadius(5.1f);
@@ -118,51 +101,54 @@ Boss::Boss()
 
 	//通常攻撃の当たり判定作成.
 	auto slashCol = std::make_unique<CapsuleCollider>(m_spTransform);
-
 	m_pSlashCollider = slashCol.get();
 	m_pSlashCollider->SetMyMask(eCollisionGroup::Enemy_Attack);
-	m_pSlashCollider->SetTarGetTargetMask(eCollisionGroup::Player_Damage | eCollisionGroup::Player_Parry);
+	m_pSlashCollider->SetTarGetTargetMask(
+        eCollisionGroup::Player_Damage
+        | eCollisionGroup::Player_Parry_Fai
+        | eCollisionGroup::Player_JustDodge);
 	m_pSlashCollider->SetAttackAmount(10.0f); 
-	m_pSlashCollider->SetRadius(15.0f);         
 	m_pSlashCollider->SetHeight(40.0f);         
+	m_pSlashCollider->SetRadius(15.0f);         
 	m_pSlashCollider->SetPositionOffset(0.0f, 0.0f, 0.0f); 
 	m_pSlashCollider->SetActive(false);
 	m_pSlashCollider->SetColor(Color::eColor::Red);
 
 	m_upColliders->AddCollider(std::move(slashCol));
 
+    // とびかかりの当たり判定.
 	auto stompCol = std::make_unique<CapsuleCollider>(m_spTransform);
-
 	m_pStompCollider = stompCol.get();
-
 	m_pStompCollider->SetMyMask(eCollisionGroup::Enemy_Attack);
-	m_pStompCollider->SetTarGetTargetMask(eCollisionGroup::Player_Damage | eCollisionGroup::Player_Parry);
-
+	m_pStompCollider->SetTarGetTargetMask(
+        eCollisionGroup::Player_Damage
+        | eCollisionGroup::Player_Parry_Suc
+        | eCollisionGroup::Player_JustDodge);
 	m_pStompCollider->SetAttackAmount(5.0f);
 	m_pStompCollider->SetRadius(30.0f);
 	m_pStompCollider->SetHeight(15.0f);
-
 	m_pStompCollider->SetActive(false);
 	m_pStompCollider->SetColor(Color::eColor::Red);
-
 	m_upColliders->AddCollider(std::move(stompCol));
 
+    // 咆哮の当たり判定作成.
 	std::unique_ptr<CapsuleCollider> Shout_collider = std::make_unique<CapsuleCollider>(m_spTransform);
-
 	m_pShoutCollider = Shout_collider.get(); 
-
 	m_pShoutCollider->SetColor(Color::eColor::Cyan);
 	m_pShoutCollider->SetHeight(1.0f);
 	m_pShoutCollider->SetRadius(1.0f);
 	m_pShoutCollider->SetPositionOffset(0.f, 1.5f, 0.f);
 	m_pShoutCollider->SetAttackAmount(100.f);
 	m_pShoutCollider->SetMyMask(eCollisionGroup::BossPress);
-	m_pShoutCollider->SetTarGetTargetMask(eCollisionGroup::Press | eCollisionGroup::Player_Damage | eCollisionGroup::Player_Parry);
-
+	m_pShoutCollider->SetTarGetTargetMask(
+        eCollisionGroup::Player_Damage
+        | eCollisionGroup::Player_Parry_Suc
+        | eCollisionGroup::Press
+        | eCollisionGroup::Player_JustDodge);
 	m_pShoutCollider->SetActive(false);
 	m_upColliders->AddCollider(std::move(Shout_collider));
 
-    m_State->ChangeState(std::make_shared<BossStompState>(this));
+    m_State->ChangeState(std::make_shared<BossThrowingState>(this));
     /* BossSlashState
  BossChargeState
  BossChargeSlashState
@@ -187,7 +173,6 @@ void Boss::Update()
 {
 	Character::Update();
 
-	//距離の計算後にステートを更新する.
 	m_State->Update();
 
 #if _DEBUG
@@ -478,7 +463,7 @@ void Boss::HandleParryDetection()
 
 			eCollisionGroup other_group = otherCollider->GetMyMask();
 
-			if ((other_group & eCollisionGroup::Player_Parry) != eCollisionGroup::None)
+			if ((other_group & eCollisionGroup::Player_Parry_Suc) != eCollisionGroup::None)
 			{
 				// 別ステートへ遷移させる（共通のパリィステート）
 				m_pAttackCollider->SetActive(false);

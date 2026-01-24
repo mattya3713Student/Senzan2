@@ -2,14 +2,13 @@
 #include "00_MeshObject/00_Character/02_Boss/Boss.h"
 #include "00_MeshObject/00_Character/02_Boss/BossIdolState/BossIdolState.h"
 #include "..//04_Time/Time.h"
-#include "00_MeshObject/00_Character/03_SnowBall/SnowBall.h"
 #include "System/Singleton/ImGui/CImGuiManager.h"
 #include "System/Utility/FileManager/FileManager.h"
+#include "System/Singleton/SnowBallManager/SnowBallManager.h"
 
 BossThrowingState::BossThrowingState(Boss* owner)
 	: BossAttackStateBase(owner)
 	, m_List(enThrowing::None)
-	, m_pBall(std::make_unique<SnowBall>())
 	, m_IsLaunched(false)
 	, m_BallHeight(5.0f)
 	, m_BallSpeed(1.0f)
@@ -42,6 +41,7 @@ void BossThrowingState::Enter()
 void BossThrowingState::Update()
 {
 	float deltaTime = Time::GetInstance().GetDeltaTime();
+    m_pOwner->m_AnimTimer += deltaTime;
 
 	switch (m_List)
 	{
@@ -66,28 +66,21 @@ void BossThrowingState::Update()
 			startPos.y += m_BallHeight;
 
 			// 雪玉発射
-			m_pBall->Fire(m_pOwner->GetTargetPos(), startPos);
+			SnowBallManager::GetInstance().Spawn(m_pOwner->GetTargetPos(), startPos);
 			m_IsLaunched = true;
 		}
 
-		// 雪玉の移動更新
-		m_pBall->Update();
-
-		// 雪玉が着弾、かつ投げアニメーションが終了したら次へ
-		if (!m_pBall->IsAction)
-		{
-			if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Laser))
-			{
-				m_pOwner->ChangeAnim(Boss::enBossAnim::LaserEnd);
-				m_List = enThrowing::CoolDown;
-			}
-		}
+        if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Laser))
+        {
+            m_pOwner->ChangeAnim(Boss::enBossAnim::LaserEnd);
+            m_List = enThrowing::CoolDown;
+        }
+		
 		break;
 
 	case enThrowing::CoolDown:
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::LaserEnd))
 		{
-			m_pBall->ResetPosition();
 			m_List = enThrowing::Trans;
 		}
 		break;
@@ -105,7 +98,6 @@ void BossThrowingState::LateUpdate()
 
 void BossThrowingState::Draw()
 {
-	m_pBall->Draw();
 }
 
 void BossThrowingState::Exit()
@@ -114,7 +106,6 @@ void BossThrowingState::Exit()
 
 void BossThrowingState::BossAttack()
 {
-	m_pBall->Update();
 }
 
 void BossThrowingState::DrawImGui()

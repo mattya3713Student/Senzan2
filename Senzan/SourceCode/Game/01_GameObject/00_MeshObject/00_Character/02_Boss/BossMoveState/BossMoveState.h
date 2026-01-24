@@ -22,6 +22,7 @@ class BossStompState;
 class BossThrowingState;
 
 #include <random>
+#include <array>
 
 /******************************************************************************
 *	ボスの動作(左右移動・プレイヤーを囲むように半円を描く).
@@ -47,7 +48,10 @@ public:
 		Strafe,
 	};
 
-	MovePhase m_Phase = MovePhase::Start;
+    // Attack identifiers
+    enum AttackId { Slash = 0, Stomp = 1, Charge = 2, Shout = 3, Throwing = 4, Count = 5 };
+
+    MovePhase m_Phase = MovePhase::Start;
 public:
 	BossMoveState(Boss* owner);
 	~BossMoveState();
@@ -56,18 +60,19 @@ public:
 	void Enter() override;
 	//動作.
 	void Update() override;
-	//かかなくていい.
-	void LateUpdate() override;
+    //かかなくていい.
+    void LateUpdate() override;
 	//描画.
 	void Draw() override;
 	//終わるときに一回だけ入る.
 	void Exit() override;
 
-	//void DrawBone();
-
 public:
 	//初期角度を設定する関数.
 	void SetInitialAngle(float angle);
+    // 設定の読み書き
+    void LoadSettings();
+    void SaveSettings() const;
 private:
 	//現在のボスの回転度を確認する.
 	float m_RotationAngle;
@@ -97,13 +102,23 @@ private:
 	static inline float s_MidRange = 35.0f;       // 中距離の閾値
 	static inline float s_AttackDelay = 1.0f;     // 攻撃開始までの遅延
 
-	// === 攻撃有効/無効フラグ ===
-	static inline bool s_EnableSlash = true;      // 斬り攻撃
-	static inline bool s_EnableStomp = true;      // 飛びかかり攻撃
-	static inline bool s_EnableCharge = true;     // 溜め攻撃
-	static inline bool s_EnableShout = true;      // 叫び攻撃
-	static inline bool s_EnableThrowing = true;   // 投擲攻撃
+	// === 攻撃有効/無効フラグ、重み、クールダウン（配列で管理） ===
+	static inline float s_RepeatPenalty = 0.25f;
+
+	// Per-attack settings (indexed by AttackId::Count)
+	static inline std::array<bool, Count> s_Enable = { true, true, true, true, true };
+	static inline std::array<float, Count> s_Weight = { 100.0f, 100.0f, 100.0f, 100.0f, 100.0f }; // percentage-like (0..100)
+	static inline std::array<float, Count> s_CooldownDefault = { 2.0f, 2.5f, 3.0f, 4.0f, 2.0f };
+    // 日本語ラベルにして IMGUI 表示でそのまま使えるようにする
+    // 表示用日本語ラベル
+    static inline const char* s_AttackNames[Count] = { "斬り", "飛びかかり", "溜め", "叫び", "投擲" };
+    // 内部保存用ID（英語）。JSONキーなどで使う。
+    static inline const char* s_AttackIds[Count] = { "Slash", "Stomp", "Charge", "Shout", "Throwing" };
 
 	// === デバッグ強制攻撃選択 ===
 	static inline int s_ForceAttackIndex = -1;    // -1: ランダム, 0-4: 強制選択
+
+    // runtime cooldown/last-attack tracking
+    std::array<float, Count> m_CooldownRemaining{};
+    int m_LastAttackId = -1; // last chosen attack id
 };
