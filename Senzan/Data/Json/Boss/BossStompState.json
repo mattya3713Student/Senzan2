@@ -7,8 +7,8 @@
   "ColliderWindows": [
     {
       "BoneName": "boss_pSphere28",
-      "duration": 3.315000057220459,
-      "start": 4.255000114440918
+      "duration": 0.6000000238418579,
+      "start": 4.5920000076293945
     }
   ],
   "ForwardSpeed": 15.0,
@@ -17,6 +17,9 @@
   "MovementWindows": [],
   "SlowAnimSpeed": 0.7319999933242798,
   "SlowDuration": 1.5,
+  "StompActive": false,
+  "StompDamage": 15.0,
+  "StompRadius": 7.5,
   "UpSpeed": 1.0,
   "WaitSeconds": 2.015000104904175,
   "m_AttackAmount": 15.0,

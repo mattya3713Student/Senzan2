@@ -23,6 +23,7 @@
 
 
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossThrowingState/BossThrowingState.h"
+#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossSpinningState/BossSpinningState.h"
 
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
 #include "System/Singleton/CameraManager/CameraManager.h"
@@ -132,23 +133,39 @@ Boss::Boss()
 	m_upColliders->AddCollider(std::move(stompCol));
 
     // 咆哮の当たり判定作成.
-	std::unique_ptr<CapsuleCollider> Shout_collider = std::make_unique<CapsuleCollider>(m_spTransform);
+    auto Shout_collider = std::make_unique<CapsuleCollider>(m_spTransform);
 	m_pShoutCollider = Shout_collider.get(); 
 	m_pShoutCollider->SetColor(Color::eColor::Cyan);
 	m_pShoutCollider->SetHeight(1.0f);
 	m_pShoutCollider->SetRadius(1.0f);
 	m_pShoutCollider->SetPositionOffset(0.f, 1.5f, 0.f);
 	m_pShoutCollider->SetAttackAmount(100.f);
-	m_pShoutCollider->SetMyMask(eCollisionGroup::BossPress);
+	m_pShoutCollider->SetMyMask(
+        eCollisionGroup::BossPress);
 	m_pShoutCollider->SetTarGetTargetMask(
+        eCollisionGroup::Player_Damage
+        | eCollisionGroup::Press);
+	m_pShoutCollider->SetActive(false);
+	m_upColliders->AddCollider(std::move(Shout_collider));
+
+    // 回転攻撃の当たり判定作成.
+    auto spinning_collider = std::make_unique<CapsuleCollider>(m_spTransform);
+	m_pSpinningCollider = spinning_collider.get();
+	m_pSpinningCollider->SetColor(Color::eColor::Cyan);
+	m_pSpinningCollider->SetHeight(1.0f);
+	m_pSpinningCollider->SetRadius(1.0f);
+	m_pSpinningCollider->SetPositionOffset(0.f, 1.5f, 10.f);
+	m_pSpinningCollider->SetAttackAmount(100.f);
+	m_pSpinningCollider->SetMyMask(eCollisionGroup::BossPress);
+	m_pSpinningCollider->SetTarGetTargetMask(
         eCollisionGroup::Player_Damage
         | eCollisionGroup::Player_Parry_Suc
         | eCollisionGroup::Press
         | eCollisionGroup::Player_JustDodge);
-	m_pShoutCollider->SetActive(false);
-	m_upColliders->AddCollider(std::move(Shout_collider));
+    m_pSpinningCollider->SetActive(false);
+	m_upColliders->AddCollider(std::move(spinning_collider));
 
-    m_State->ChangeState(std::make_shared<BossThrowingState>(this));
+    m_State->ChangeState(std::make_shared<BossSpinningState>(this));
     /* BossSlashState
  BossChargeState
  BossChargeSlashState
@@ -185,6 +202,7 @@ void Boss::Update()
             IMGUI_JP("Move"),
             IMGUI_JP("Slash"),
             IMGUI_JP("Shout"),
+            IMGUI_JP("BossSpinningState"),
             IMGUI_JP("JumpOn"),
             IMGUI_JP("Stomp"),
             IMGUI_JP("Throwing"),
@@ -200,17 +218,18 @@ void Boss::Update()
             case 1: m_State->ChangeState(std::make_shared<BossMoveState>(this)); break;
             case 2: m_State->ChangeState(std::make_shared<BossSlashState>(this)); break;
             case 3: m_State->ChangeState(std::make_shared<BossShoutState>(this)); break;
-            case 4: m_State->ChangeState(std::make_shared<BossJumpOnlState>(this)); break;
-            case 5: m_State->ChangeState(std::make_shared<BossStompState>(this)); break;
-            case 6: m_State->ChangeState(std::make_shared<BossThrowingState>(this)); break;
-            case 7: m_State->ChangeState(std::make_shared<BossParryState>(this)); break;
+            case 4: m_State->ChangeState(std::make_shared<BossSpinningState>(this)); break;
+            case 5: m_State->ChangeState(std::make_shared<BossJumpOnlState>(this)); break;
+            case 6: m_State->ChangeState(std::make_shared<BossStompState>(this)); break;
+            case 7: m_State->ChangeState(std::make_shared<BossThrowingState>(this)); break;
+            case 8: m_State->ChangeState(std::make_shared<BossParryState>(this)); break;
             default: break;
             }
         }
 
         ImGui::SameLine();
         if (ImGui::Button(IMGUI_JP("Enter Slash (Hotkey)"))) {
-            m_State->ChangeState(std::make_shared<BossStompState>(this));
+            m_State->ChangeState(std::make_shared<BossSpinningState>(this));
         }
         ImGui::End();
     }
@@ -465,8 +484,9 @@ void Boss::HandleParryDetection()
 
 			if ((other_group & eCollisionGroup::Player_Parry_Suc) != eCollisionGroup::None)
 			{
-				// 別ステートへ遷移させる（共通のパリィステート）
-				m_pAttackCollider->SetActive(false);
+
+                OffAttackCollider();
+
 				m_State->ChangeState(std::make_shared<BossParryState>(this));
 
 				// 一フレーム1回.
@@ -491,6 +511,11 @@ ColliderBase* Boss::GetShoutCollider() const
 	return m_pShoutCollider;
 }
 
+ColliderBase* Boss::GetSpinningCollider() const
+{
+    return m_pSpinningCollider;
+}
+
 void Boss::SetColliderActiveByName(const std::string& name, bool active)
 {
 	// NOTE: 文字列は typo を避けるため定数化推奨
@@ -509,6 +534,11 @@ void Boss::SetColliderActiveByName(const std::string& name, bool active)
 		if (auto* col = GetShoutCollider()) col->SetActive(active);
 		return;
 	}
+    if (name == "boss_Spinning")
+    {
+        if (auto* col = GetSpinningCollider()) col->SetActive(active);
+        return;
+    }
 }
 
 bool Boss::UpdateColliderFromBone(

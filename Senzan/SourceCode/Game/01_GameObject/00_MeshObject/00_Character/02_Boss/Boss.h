@@ -169,6 +169,8 @@ protected:
     ColliderBase* GetStompCollider() const;
     //叫び攻撃.
     ColliderBase* GetShoutCollider() const;
+// 回転攻撃用コライダー
+ColliderBase* GetSpinningCollider() const;
 
     // 統合された攻撃コライダー（各ステートがボーンを指定して使用）
     ColliderBase* GetAttackCollider() const { return m_spAttackCollider; }
@@ -227,6 +229,7 @@ protected:
     ColliderBase* m_pSlashCollider;
     ColliderBase* m_pStompCollider;
     ColliderBase* m_pShoutCollider;
+    ColliderBase* m_pSpinningCollider;
 
     // runtime flag indicating any attack's just window is active
     bool m_IsAnyAttackJustWindow = false;
