@@ -197,6 +197,8 @@ void BossJumpOnlState::JumpTime()
             // rise target は現在位置 + height
             DirectX::XMFLOAT3 pos = m_pOwner->GetPosition();
             m_RiseTargetY = pos.y + m_RiseHeight;
+            SoundManager::GetInstance().Play("Jump", false);
+            SoundManager::GetInstance().SetVolume("Jump", 9500);
         }
         return;
     }
@@ -345,6 +347,8 @@ void BossJumpOnlState::BossAttack()
             m_pOwner->ChangeAnim(Boss::enBossAnim::SpecialToIdol);
             m_List = enSpecial::CoolTime;
             m_IsFalling = false;
+            SoundManager::GetInstance().Play("Landing", false);
+            SoundManager::GetInstance().SetVolume("Landing", 10000);
             return;
         }
         m_pOwner->SetPosition(CurrentPos);

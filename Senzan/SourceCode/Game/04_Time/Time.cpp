@@ -45,12 +45,9 @@ void Time::Update()
         }
     }
 
-    // 時間スケールを適用.
-    m_DeltaTime *= m_WorldTimeScale;
-
     // タイマー更新.
     if (m_IsTimerActive) {
-        m_TimerNow += (m_DeltaTime); // TimeScaleの影響を受ける.
+        m_TimerNow += GetDeltaTime(); // TimeScaleの影響を受ける.
         if (m_TimerMax <= m_TimerNow) {
             m_TimerNow = 0.0f;
             m_IsTimerActive = false;
@@ -103,6 +100,11 @@ void Time::MaintainFPS()
 
 // デルタタイムを取得.
 const float Time::GetDeltaTime() const
+{
+    return m_DeltaTime * m_WorldTimeScale;
+}
+
+const float Time::GetUnscaledDeltaTime() const
 {
     return m_DeltaTime;
 }

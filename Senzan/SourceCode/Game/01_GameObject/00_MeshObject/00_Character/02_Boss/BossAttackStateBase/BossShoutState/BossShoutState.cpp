@@ -68,6 +68,9 @@ void BossShoutState::Update()
             {
                 m_pOwner->PlayEffect("Shout", m_EffectOffset, m_EffectScale);
                 m_EffectPlayed = true;
+
+                SoundManager::GetInstance().Play("Shout", false);
+                SoundManager::GetInstance().SetVolume("Shout", 9400);
             }
             // シャウト発動: コライダーを有効化し、半径を徐々に広げる準備
             if (auto* shoutCol = m_pOwner->GetShoutCollider()) {
