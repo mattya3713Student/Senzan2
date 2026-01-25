@@ -55,6 +55,8 @@ void BossThrowingState::Update()
 		{
 			m_pOwner->ChangeAnim(Boss::enBossAnim::Laser); // 投げる瞬間のアニメ
 			m_List = enThrowing::Attack;
+            SoundManager::GetInstance().Play("Throw");
+            SoundManager::GetInstance().SetVolume("Throw", 9000);
 		}
 		break;
 

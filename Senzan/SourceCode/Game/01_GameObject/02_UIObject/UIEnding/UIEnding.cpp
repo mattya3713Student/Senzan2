@@ -47,7 +47,7 @@ void UIEnding::Update()
 {
     if (m_IsFadeIn)
     {
-        m_GlobalAlpha += Time::GetInstance().GetDeltaTime() * m_FadeSpeed;
+        m_GlobalAlpha += Time::GetInstance().GetUnscaledDeltaTime() * m_FadeSpeed;
         if (m_GlobalAlpha >= 1.0f) {
             m_GlobalAlpha = 1.0f;
             m_IsFadeIn = false;
@@ -112,9 +112,9 @@ void UIEnding::AnimUpdate()
 	else if (1.f < m_SelectAlpha) { m_AnimReturn = true; }
 
 	if (m_AnimReturn) {
-		m_SelectAlpha = m_SelectAlpha - Time::GetInstance().GetDeltaTime() * m_AnimeSpeed;
+		m_SelectAlpha = m_SelectAlpha - Time::GetInstance().GetUnscaledDeltaTime() * m_AnimeSpeed;
 	}
 	else {
-		m_SelectAlpha = m_SelectAlpha + Time::GetInstance().GetDeltaTime() * m_AnimeSpeed;
+		m_SelectAlpha = m_SelectAlpha + Time::GetInstance().GetUnscaledDeltaTime() * m_AnimeSpeed;
 	}
 }
