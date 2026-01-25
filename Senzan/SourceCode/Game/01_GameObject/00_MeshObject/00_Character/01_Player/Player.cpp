@@ -209,6 +209,7 @@ void Player::Draw()
 	// モデルの関係で前後反転.
 	m_spTransform->SetRotationY(GetRotation().y + D3DXToRadian(180.0f));
 
+    m_RootState->Draw();
 	Character::Draw();
 
 	m_spTransform->SetRotationY(GetRotation().y - D3DXToRadian(180.0f));
@@ -353,7 +354,16 @@ void Player::HandleDamageDetection()
 				// ダメージを適用 
 				ApplyDamage(info.AttackAmount);
 
-				m_KnockBackVec = info.Normal;
+				// ボスからPlayerへのベクトルを計算.
+				DirectX::XMFLOAT3 bossPos = otherCollider->GetPosition();
+				DirectX::XMFLOAT3 playerPos = GetPosition();
+				DirectX::XMVECTOR vBossToPlayer = DirectX::XMVectorSubtract(
+					DirectX::XMLoadFloat3(&playerPos),
+					DirectX::XMLoadFloat3(&bossPos)
+				);
+				vBossToPlayer = DirectX::XMVector3Normalize(vBossToPlayer);
+				DirectX::XMStoreFloat3(&m_KnockBackVec, vBossToPlayer);
+
 				m_KnockBackPower = 100.f;
 
 				// 状態をノックバックに遷移させる
@@ -438,12 +448,18 @@ void Player::HandleDodgeDetection()
 
 		for (const CollisionInfo& info : current_collider->GetCollisionEvents())
 		{
-			if (!info.IsHit) continue;
-			const ColliderBase* otherCollider = info.ColliderB;
-			if (!otherCollider) { continue; }
 
-			// ジャスト回避成功
-			m_IsJustDodgeTiming = true;
+            if (!info.IsHit) continue;
+            const ColliderBase* otherCollider = info.ColliderB;
+            if (!otherCollider) { continue; }
+
+            eCollisionGroup other_group = otherCollider->GetMyMask();
+
+            if ((other_group & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None)
+            {
+                // ジャスト回避タイミング.
+                m_IsJustDodgeTiming = true;
+            }
 		}
 	}
 }
@@ -500,10 +516,6 @@ void Player::HandleParry_SuccessDetection()
                 DirectX::XMFLOAT3 eulerRot{ rotDist(s_rng), rotDist(s_rng), rotDist(s_rng) };
                 PlayEffectAtWorldPos("Spark", jitterPos, eulerRot, 3.f);
             }
-
-                DirectX::XMFLOAT3 pos = info.ContactPoint;
-                pos.y += 8.5f;
-                PlayEffectAtWorldPos("Parry_Attack", info.ContactPoint);
 				// 一フレーム1回.
 				return;
 			}
@@ -557,10 +569,6 @@ void Player::HandleParry_FailDetection()
                     DirectX::XMFLOAT3 eulerRot{ rotDist(s_rng), rotDist(s_rng), rotDist(s_rng) };
                     PlayEffectAtWorldPos("Spark", info.ContactPoint, eulerRot);
                 }
-
-                DirectX::XMFLOAT3 pos = info.ContactPoint;
-                pos.y += 8.5f;
-                PlayEffectAtWorldPos("Parry_Attack", info.ContactPoint);
 
 			// 一フレーム1回.
 			return;

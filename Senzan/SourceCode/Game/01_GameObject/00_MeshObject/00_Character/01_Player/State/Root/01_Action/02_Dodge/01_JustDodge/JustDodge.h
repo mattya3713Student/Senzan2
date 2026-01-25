@@ -1,6 +1,7 @@
 ﻿#pragma once
-#include "../Dodge.h"    
-#include "Resource/Effect/EffectResource.h"
+#include "../Dodge.h"
+#include "AfterImage.h"
+#include <memory>
 
 class Player;
 
@@ -26,6 +27,10 @@ public:
     void Exit() override;
 
 protected:
-    ::Effekseer::Handle m_UIEffectHandle = -1; // UI用エフェクトハンドル.
+    // 残像エフェクト.
+    std::unique_ptr<AfterImage> m_pAfterImage;
+    float m_AfterImageTimer;        // 残像生成タイマー.
+    float m_AfterImageInterval;     // 残像生成間隔 (秒).
+    float m_AfterImageLifeTime;     // 残像の生存時間 (秒).
 };
 }

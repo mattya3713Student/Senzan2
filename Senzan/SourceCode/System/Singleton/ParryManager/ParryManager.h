@@ -33,6 +33,9 @@ public:
 	// パリィ成功時のカメラ演出が完了したか.
 	bool IsParryCameraFinished() const;
 
+    // ボスの攻撃判定を全てオフにする（プレイヤー側からのユーティリティ）
+    void DisableBossAttackColliders();
+
 
 private:
 	Player* m_pPlayer = nullptr;

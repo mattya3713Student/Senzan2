@@ -42,7 +42,6 @@ void KnockBack::Enter()
     v_horizontal_vec = DirectX::XMVector3Normalize(v_horizontal_vec);
     v_horizontal_vec = DirectX::XMVectorScale(v_horizontal_vec, m_pOwner->m_KnockBackPower);
 
-
     // 水平速度と垂直速度を組み合わせる.
     DirectX::XMVECTOR v_final_velocity = DirectX::XMVectorSelect(v_horizontal_vec,
         DirectX::XMVectorSet(0.0f, INITIAL_JUMP_SPEED, 0.0f, 0.0f),

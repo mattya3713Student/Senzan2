@@ -159,7 +159,13 @@ void LockOnCamera::UpdateParryCamera(float dt)
         float halfT = t * 2.0f;
         easedT = 1.0f - (1.0f - halfT) * (1.0f - halfT);
     }
-    else
+    else if (t < 0.6f)
+    {
+        float halfT = 0.5f * 2.0f;
+        easedT = 1.0f - (1.0f - halfT) * (1.0f - halfT);
+        // 一瞬止まる.
+    }
+    else 
     {
         // 後半: パリィ位置→通常へ（EaseInQuad: t^2）.
         float halfT = (t - 0.5f) * 2.0f;
