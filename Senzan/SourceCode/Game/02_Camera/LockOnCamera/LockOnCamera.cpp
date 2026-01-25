@@ -24,36 +24,36 @@ void LockOnCamera::Update()
 {
     float dt = Time::GetInstance().GetDeltaTime();
 
-#if _DEBUG
-	if (ImGui::Begin(IMGUI_JP("LockOnCamera Debug")))
-	{
-		ImGui::DragFloat(IMGUI_JP("距離"), &m_Distance, 0.1f, 1.0f, 50.0f);
-		ImGui::DragFloat(IMGUI_JP("追従速度"), &m_FollowSpeed, 0.05f, 0.1f, 10.0f);
-		ImGui::DragFloat(IMGUI_JP("高さオフセット"), &m_HeightOffset, 0.1f, 0.0f, 20.0f);
-		ImGui::DragFloat(IMGUI_JP("注視点高さ"), &m_LookOffset, 0.1f, 0.0f, 20.0f);
-		ImGui::DragFloat(IMGUI_JP("注視点補間"), &m_LookLerp, 0.01f, 0.0f, 1.0f);
-
-        ImGui::Separator();
-        ImGui::Text(IMGUI_JP("パリィカメラ設定"));
-        ImGui::DragFloat(IMGUI_JP("パリィ演出時間"), &m_ParryDuration, 0.05f, 0.1f, 3.0f);
-        ImGui::DragFloat(IMGUI_JP("パリィ時高さ"), &m_ParryHeightOffset, 0.1f, -5.0f, 10.0f);
-        ImGui::DragFloat(IMGUI_JP("パリィ時注視点高さ"), &m_ParryLookOffset, 0.1f, 0.0f, 15.0f);
-        ImGui::DragFloat(IMGUI_JP("パリィ時距離"), &m_ParryDistance, 0.1f, 1.0f, 20.0f);
-        
-        if (ImGui::Button(IMGUI_JP("パリィカメラテスト"))) {
-            StartParryCamera();
-        }
-
-		if (ImGui::Button(IMGUI_JP("Load"))) {
-			try { LoadSettings(); } catch (...) {}
-		}
-		ImGui::SameLine();
-		if (ImGui::Button(IMGUI_JP("Save"))) {
-			try { SaveSettings(); } catch (...) {}
-		}
-		ImGui::End();
-	}
-#endif
+//#if _DEBUG
+//	if (ImGui::Begin(IMGUI_JP("LockOnCamera Debug")))
+//	{
+//		ImGui::DragFloat(IMGUI_JP("距離"), &m_Distance, 0.1f, 1.0f, 50.0f);
+//		ImGui::DragFloat(IMGUI_JP("追従速度"), &m_FollowSpeed, 0.05f, 0.1f, 10.0f);
+//		ImGui::DragFloat(IMGUI_JP("高さオフセット"), &m_HeightOffset, 0.1f, 0.0f, 20.0f);
+//		ImGui::DragFloat(IMGUI_JP("注視点高さ"), &m_LookOffset, 0.1f, 0.0f, 20.0f);
+//		ImGui::DragFloat(IMGUI_JP("注視点補間"), &m_LookLerp, 0.01f, 0.0f, 1.0f);
+//
+//        ImGui::Separator();
+//        ImGui::Text(IMGUI_JP("パリィカメラ設定"));
+//        ImGui::DragFloat(IMGUI_JP("パリィ演出時間"), &m_ParryDuration, 0.05f, 0.1f, 3.0f);
+//        ImGui::DragFloat(IMGUI_JP("パリィ時高さ"), &m_ParryHeightOffset, 0.1f, -5.0f, 10.0f);
+//        ImGui::DragFloat(IMGUI_JP("パリィ時注視点高さ"), &m_ParryLookOffset, 0.1f, 0.0f, 15.0f);
+//        ImGui::DragFloat(IMGUI_JP("パリィ時距離"), &m_ParryDistance, 0.1f, 1.0f, 20.0f);
+//        
+//        if (ImGui::Button(IMGUI_JP("パリィカメラテスト"))) {
+//            StartParryCamera();
+//        }
+//
+//		if (ImGui::Button(IMGUI_JP("Load"))) {
+//			try { LoadSettings(); } catch (...) {}
+//		}
+//		ImGui::SameLine();
+//		if (ImGui::Button(IMGUI_JP("Save"))) {
+//			try { SaveSettings(); } catch (...) {}
+//		}
+//		ImGui::End();
+//	}
+//#endif
 
     // カメラモードに応じて更新処理を分岐.
     switch (m_CameraMode)

@@ -68,7 +68,7 @@ void ParryManager::EndJustDodge()
     {
         m_pBoss->OffAttackCollider();
         m_pBoss->SetTimeScale(-1.f);
-        m_pBoss->SetLockOnPlayer(false);
+        m_pBoss->SetLockOnPlayer(true);
     }
 }
 
