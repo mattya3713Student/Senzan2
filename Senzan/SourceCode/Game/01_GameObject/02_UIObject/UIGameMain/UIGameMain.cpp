@@ -97,17 +97,13 @@ void UIGameMain::Create()
 
 void UIGameMain::Update()
 {
-	float dt = Time::GetInstance().GetDeltaTime();
+	float dt = Time::GetInstance().GetUnscaledDeltaTime();
 
 	m_PlayerHP.Update(dt);
 	m_PlayerDamage.Update(dt);
 	m_PlayerUlt.Update(dt);
 	m_BossHP.Update(dt);
 	m_BossDamage.Update(dt);
-
-	m_BossHP.Before		= m_BossHP.Now;
-	m_PlayerHP.Before	= m_PlayerHP.Now;
-	m_PlayerUlt.Before	= m_PlayerUlt.Now;
 
     m_pULTSparkle->Update();
 
@@ -162,8 +158,10 @@ void UIGameMain::Update()
 		else if (ui->GetUIName() == "ULTGauge_0") {
 			ui->SetScaleX(m_PlayerUlt.Rate);
             bool m_switch = m_PlayerUlt.Rate >= 1.0f ? true : false;
-            if (m_PlayerUlt.IsChanged && m_PlayerUlt.Max == m_PlayerUlt.Now) {
+            if (m_PlayerUlt.Before < m_PlayerUlt.Max &&  m_PlayerUlt.Now >= m_PlayerUlt.Max) {
                 m_pULTSparkle->DoPeakAnim();
+                SoundManager::GetInstance().Play("ULTCharge",false);
+                SoundManager::GetInstance().SetVolume("ULTCharge",9500);
             }
             m_pULTSparkle->SetULTGaugeStatus(m_switch, ui->GetPosition(), ui->GetDrawSize());
 		}
@@ -315,22 +313,23 @@ DirectX::XMFLOAT4 UIGameMain::GetComboColor(int combo)
 void UIGameMain::Gauge::Set(float max, float now)
 {
 	Max = max;
+    Before = Now;
 	Now = now;
-
-	IsChanged = (Now != Before);
+	IsChanged = (Now != now);
 
 	if (!IsChanged)
 		return;
 
 	float newRate = (Max > 0.0f) ? (Now / Max) : 0.0f;
+    newRate = std::clamp(newRate, 0.0f, 1.01f);
 
 	IsEasing	= true;
 	EaseTime	= 0.0f;
 	EaseStart	= Rate;
 	EaseEnd		= newRate;
 
-	DelayMax = DelayFrame * Time::GetInstance().GetDeltaTime();
-	EaseMax = EaseFrame * Time::GetInstance().GetDeltaTime();
+	DelayMax = DelayFrame * Time::GetInstance().GetUnscaledDeltaTime();
+	EaseMax = EaseFrame * Time::GetInstance().GetUnscaledDeltaTime();
 }
 
 //-----------------------------------------------------------------------.
@@ -383,8 +382,8 @@ void UIGameMain::Gauge::StartFollow(float targetRate)
 	EaseStart = Rate;
 	EaseEnd = targetRate;
 
-	DelayMax = DelayFrame * Time::GetInstance().GetDeltaTime();
-	EaseMax = EaseFrame * Time::GetInstance().GetDeltaTime();
+	DelayMax = DelayFrame * Time::GetInstance().GetUnscaledDeltaTime();
+	EaseMax = EaseFrame * Time::GetInstance().GetUnscaledDeltaTime();
 }
 
 //-----------------------------------------------------------------------.

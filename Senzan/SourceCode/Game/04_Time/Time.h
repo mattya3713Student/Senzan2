@@ -26,6 +26,7 @@ public:
 
 	// デルタタイムを取得.
 	const float GetDeltaTime() const;
+	const float GetUnscaledDeltaTime() const;
 
 	float GetNowTime();
 	float GetWorldTimeScale() const;

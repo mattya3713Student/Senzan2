@@ -412,7 +412,7 @@ void Player::HandleAttackDetection()
 				SoundManager::GetInstance().SetVolume("Hit1", 9000);
 
 				++m_Combo;
-				m_CurrentUltValue = std::clamp(m_CurrentUltValue + (static_cast<float>(m_Combo) * 5.f), 0.0f, m_MaxUltValue);
+				m_CurrentUltValue = std::clamp(m_CurrentUltValue + (static_cast<float>(m_Combo) * 50.f), 0.0f, m_MaxUltValue);
 				SetAttackColliderActive(false);
 
 				// 一フレーム1回.
