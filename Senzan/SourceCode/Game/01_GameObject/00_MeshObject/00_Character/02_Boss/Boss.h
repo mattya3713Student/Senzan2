@@ -149,9 +149,12 @@ public:
 
     DirectX::XMFLOAT3 GetTargetPos() { return m_PlayerPos; }
 
-protected:
     // 全攻撃判定オフ.
     void OffAttackCollider();
+
+    // 全攻撃判定オフ.
+    void SetLockOnPlayer(bool IslockOnPlayer) { m_IslockOnPlayer = IslockOnPlayer; }
+protected:
 
     // 衝突_被ダメージ.
     void HandleDamageDetection() override;
@@ -175,17 +178,6 @@ protected:
 
     // 統合された攻撃コライダー（各ステートがボーンを指定して使用）
     ColliderBase* GetAttackCollider() const { return m_spAttackCollider; }
-
-    // 攻撃コライダーが追従するボーンを設定
-    void SetAttackBone(const std::string& boneName);
-    // 攻撃コライダーのサイズを設定
-    void SetAttackColliderSize(float radius, float height);
-    // 名前で指定したコライダーのサイズを設定
-    void SetColliderSizeByName(const std::string& name, float radius, float height);
-    // 名前で指定したコライダーの与えるダメージを設定
-    void SetColliderDamageByName(const std::string& name, float damage);
-    // 攻撃コライダーのダメージを設定
-    void SetAttackColliderDamage(float damage);
 
     /*************************************************************
     * @brief	ボスのワールド行列と掛け合わせてボーンのワールド行列を作成し、
@@ -248,5 +240,7 @@ protected:
     Transform m_AttackBoneWorldTransform;      // ワールドTransformキャッシュ
 
     // エフェクトハンドルは Character 側で管理する（Character::PlayEffect を使用）
+
+    bool m_IslockOnPlayer;
 };
 

@@ -219,7 +219,7 @@ void BossStompState::Update()
     BossAttackStateBase::Update();
     // use base timing and windows
     float dt = m_pOwner->GetDelta();
-    if (!m_IsDebugStop) UpdateBaseLogic(dt);
+    UpdateBaseLogic(dt);
     auto* pStompCollider = m_pOwner->GetStompCollider();
 
 	switch (m_List)
@@ -260,8 +260,11 @@ void BossStompState::Update()
 			m_Distance = dist;
 			DirectX::XMStoreFloat3(&m_MoveVec, DirectX::XMVector3Normalize(DirectX::XMVectorSetY(vDiff, 0.0f)));
 			if (pStompCollider) {
-				pStompCollider->SetRadius(30.0f);
-				pStompCollider->SetAttackAmount(15.0f);
+				// Follow UpdateBaseLogic: set base collider params so UpdateColliderWindows will apply them on activation
+				m_ColliderWidth = (m_StompRadius > 0.0f) ? m_StompRadius : 30.0f; // radius stored in base width
+				m_AttackAmount = (m_StompDamage > 0.0f) ? m_StompDamage : 15.0f;
+				// Position offset / BoneName for activation comes from ColliderWindow (loaded from JSON)
+				// Do not manually SetActive here; UpdateBaseLogic will activate the collider at the configured time.
 			}
 		}
 		break;
@@ -313,6 +316,11 @@ void BossStompState::Exit()
 	m_GroundedFrag = true;
 	// 保存: 実行時に ImGui 等で変更した設定を永続化
 	try { SaveSettings(); } catch (...) {}
+
+	// 退出時に念のため stomp コライダーを無効化
+	if (m_pOwner && m_pOwner->GetStompCollider()) {
+		m_pOwner->GetStompCollider()->SetActive(false);
+	}
 	// m_pOwner->SetPositionY(0.0f);
 }
 

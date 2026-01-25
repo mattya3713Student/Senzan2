@@ -69,8 +69,13 @@ struct ColliderWindow
     bool IsEnd = false;       // 内部フラグ（判定終了済みか）
     bool IsJustWindow = false; // ジャスト判定フラグ（Start - JustTime ～ Start の間 true）
     bool JustPlayed = false; // 内部フラグ：ジャスト時演出を一度だけ再生する
+    
+    // 当たり判定を1度だけ有効にするか (true = 到達時に1フレームだけ有効)
+    bool OneShot = true;
+    // ランタイム用: OneShot アクティベートが行われたことを示す内部フラグ
+    bool OneShotTriggered = false;
 
-    void Reset() { IsAct = false; IsEnd = false; IsJustWindow = false; JustPlayed = false; }
+    void Reset() { IsAct = false; IsEnd = false; IsJustWindow = false; JustPlayed = false; OneShotTriggered = false; }
 };
 
 // エフェクト再生のタイミングを制御する
@@ -154,7 +159,7 @@ protected:
     // currentTime: 時間基準（秒）
     // windows: 更新対象のウィンドウ配列（m_ColliderWindows など）
     // 戻り値: anyJust フラグ
-    bool UpdateColliderWindows(float currentTime, std::vector<ColliderWindow>& windows);
+    bool UpdateColliderWindows(float prevTime, float currentTime, std::vector<ColliderWindow>& windows);
 
     // 派生クラスが移動の終点を独自に決めたい場合にオーバーライドする
     virtual DirectX::XMFLOAT3 ComputeMovementEndPos(const MovementWindow& mv, const DirectX::XMFLOAT3& startPos, const DirectX::XMFLOAT3& targetPos) const;
@@ -194,4 +199,6 @@ protected:
 
     DirectX::XMFLOAT3 m_StartPos{ 0.0f, 0.0f, 0.0f }; // 攻撃開始位置（共通）
     // (no global registry) instances update Boss::IsJustWindow flag directly
+    // 前フレーム時間記録（UpdateBaseLogic 内で使用）
+    float m_PrevTime = 0.0f;
 };

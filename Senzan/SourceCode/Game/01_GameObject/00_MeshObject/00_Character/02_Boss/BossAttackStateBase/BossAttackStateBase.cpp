@@ -15,7 +15,7 @@ BossAttackStateBase::BossAttackStateBase(Boss* owner)
 {
 }
 
-bool BossAttackStateBase::UpdateColliderWindows(float currentTime, std::vector<ColliderWindow>& windows)
+bool BossAttackStateBase::UpdateColliderWindows(float prevTime, float currentTime, std::vector<ColliderWindow>& windows)
 {
     bool anyJust = false;
     for (auto& window : windows)
@@ -34,24 +34,43 @@ bool BossAttackStateBase::UpdateColliderWindows(float currentTime, std::vector<C
             window.IsJustWindow = false;
         }
 
-        if (!window.IsAct && currentTime >= window.Start)
+        // Activation: for OneShot windows, activate only when crossing the start time
+        if (!window.IsAct)
         {
-            m_pOwner->SetColliderActiveByName(window.BoneName, true);
-            // apply current state collider settings to the activated collider so UI changes take effect
-            ColliderBase* targetCol = nullptr;
-            if (window.BoneName == "boss_Hand_R") targetCol = m_pOwner->GetSlashCollider();
-            else if (window.BoneName == "boss_pSphere28") targetCol = m_pOwner->GetStompCollider();
-            else if (window.BoneName == "boss_Shout") targetCol = m_pOwner->GetShoutCollider();
-            else if (window.BoneName == "boss_Spinning") targetCol = m_pOwner->GetSpinningCollider();
-            if (targetCol) {
-                // Use virtual setters so Sphere/Box/Capsule implementations receive values
-                targetCol->SetRadius(m_ColliderWidth);
-                targetCol->SetHeight(m_ColliderHeight);
-                targetCol->SetAttackAmount(m_AttackAmount);
-                // Also apply initial offset
-                targetCol->SetPositionOffset(window.Offset);
+            bool shouldActivate = false;
+            if (window.OneShot)
+            {
+                // Activate only when prevTime < Start <= currentTime
+                if (prevTime < window.Start && currentTime >= window.Start && !window.OneShotTriggered)
+                {
+                    shouldActivate = true;
+                    window.OneShotTriggered = true;
+                }
             }
-            window.IsAct = true;
+            else
+            {
+                if (currentTime >= window.Start) shouldActivate = true;
+            }
+
+            if (shouldActivate)
+            {
+                m_pOwner->SetColliderActiveByName(window.BoneName, true);
+                // apply current state collider settings to the activated collider so UI changes take effect
+                ColliderBase* targetCol = nullptr;
+                if (window.BoneName == "boss_Hand_R") targetCol = m_pOwner->GetSlashCollider();
+                else if (window.BoneName == "boss_pSphere28") targetCol = m_pOwner->GetStompCollider();
+                else if (window.BoneName == "boss_Shout") targetCol = m_pOwner->GetShoutCollider();
+                else if (window.BoneName == "boss_Spinning") targetCol = m_pOwner->GetSpinningCollider();
+                if (targetCol) {
+                    // Use virtual setters so Sphere/Box/Capsule implementations receive values
+                    targetCol->SetRadius(m_ColliderWidth);
+                    targetCol->SetHeight(m_ColliderHeight);
+                    targetCol->SetAttackAmount(m_AttackAmount);
+                    // Also apply initial offset
+                    targetCol->SetPositionOffset(window.Offset);
+                }
+                window.IsAct = true;
+            }
         }
         // ジャスト時の1回演出: IsJustWindow が true になった瞬間に実行
         if (window.IsJustWindow && !window.JustPlayed)
@@ -93,10 +112,14 @@ bool BossAttackStateBase::UpdateColliderWindows(float currentTime, std::vector<C
             }
         }
 
-        if (window.IsAct && !window.IsEnd && currentTime >= (window.Start + window.Duration))
+        // Deactivation: for OneShot, deactivate after the next frame (i.e., when currentTime > Start)
+        if (!window.IsEnd)
         {
-            m_pOwner->SetColliderActiveByName(window.BoneName, false);
-            window.IsEnd = true;
+            if (window.IsAct && currentTime >= (window.Start + window.Duration))
+            {
+                m_pOwner->SetColliderActiveByName(window.BoneName, false);
+                window.IsEnd = true;
+            }
         }
     }
     return anyJust;
@@ -124,6 +147,9 @@ void BossAttackStateBase::Enter()
 {
     LoadSettings();
     m_CurrentTime = 0.0f;
+    // Reset previous time so UpdateColliderWindows sees a fresh time window on re-entry
+    // Use a negative value to ensure prevTime < Start for OneShot activations that begin at t=0
+    m_PrevTime = -1.0f;
     
     // ウィンドウフラグをリセット
     for (auto& window : m_ColliderWindows)
@@ -158,6 +184,7 @@ void BossAttackStateBase::Enter()
 void BossAttackStateBase::FacePlayerInstantYaw()
 {
     if (!m_pOwner) return;
+    if (!m_pOwner->m_IslockOnPlayer) { return; }
     const DirectX::XMFLOAT3 bossPos = m_pOwner->GetPosition();
     const DirectX::XMFLOAT3 playerPos = m_pOwner->m_PlayerPos;
     float dx = playerPos.x - bossPos.x;
@@ -168,7 +195,9 @@ void BossAttackStateBase::FacePlayerInstantYaw()
 
 void BossAttackStateBase::FacePlayerYawContinuous()
 {
-    if (!m_pOwner) return;
+    if (!m_pOwner) { return; }
+    if (!m_pOwner->m_IslockOnPlayer) { return; }
+
     DirectX::XMFLOAT3 bossPos = m_pOwner->GetPosition();
     DirectX::XMFLOAT3 playerPos = m_pOwner->GetTargetPos();
     DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&bossPos);
@@ -223,7 +252,8 @@ void BossAttackStateBase::UpdateBaseLogic(float dt)
     m_pOwner->SetAnimSpeed(currentAnimSpeed);
 
     // 当たり判定更新 (共通ヘルパーを使用)
-    bool anyJust = UpdateColliderWindows(m_CurrentTime, m_ColliderWindows);
+    bool anyJust = UpdateColliderWindows(m_PrevTime, m_CurrentTime, m_ColliderWindows);
+    m_PrevTime = m_CurrentTime;
     if (m_pOwner) {
         m_pOwner->SetAnyAttackJustWindow(anyJust);
     }
@@ -487,6 +517,8 @@ void BossAttackStateBase::DrawImGui()
         }
         // ジャストタイム編集
         ImGui::DragFloat(IMGUI_JP("ジャストタイム (秒)"), &w.JustTime, 0.01f, 0.0f, 5.0f);
+        ImGui::SameLine();
+        ImGui::Checkbox(IMGUI_JP("ワンショット"), &w.OneShot);
         // ジャスト判定状態表示
         ImGui::Text(IMGUI_JP("ジャスト判定: %s"), w.IsJustWindow ? "ON" : "OFF");
         ImGui::SameLine();
@@ -610,6 +642,9 @@ void BossAttackStateBase::LoadSettings()
                 if (entry.contains("justTime")) {
                     w.JustTime = entry["justTime"].get<float>();
                 }
+                if (entry.contains("oneShot")) {
+                    w.OneShot = entry["oneShot"].get<bool>();
+                }
                 m_ColliderWindows.push_back(w);
             }
         }
@@ -683,6 +718,7 @@ void BossAttackStateBase::SaveSettings() const
         e["BoneName"] = w.BoneName;
         e["offset"] = { w.Offset.x, w.Offset.y, w.Offset.z };
         e["justTime"] = w.JustTime;
+        e["oneShot"] = w.OneShot;
         j["ColliderWindows"].push_back(e);
     }
 
@@ -729,6 +765,7 @@ nlohmann::json BossAttackStateBase::SerializeSettings() const
         // 保存時にオフセットとジャストタイムも書き出す
         e["offset"] = { w.Offset.x, w.Offset.y, w.Offset.z };
         e["justTime"] = w.JustTime;
+        e["oneShot"] = w.OneShot;
         j["ColliderWindows"].push_back(e);
     }
 

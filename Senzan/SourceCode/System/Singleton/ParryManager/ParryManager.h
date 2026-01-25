@@ -33,6 +33,12 @@ public:
 	// パリィ成功時のカメラ演出が完了したか.
 	bool IsParryCameraFinished() const;
 
+    // ジャスト回避開始.
+    void StartJustDodge(float TimeScale);
+    void EndJustDodge();
+    // ボスの攻撃判定を全てオフにする（プレイヤー側からのユーティリティ）
+    void DisableBossAttackColliders();
+
 
 private:
 	Player* m_pPlayer = nullptr;

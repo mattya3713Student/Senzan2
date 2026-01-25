@@ -69,6 +69,8 @@ void Parry::Update()
             m_pOwner->GetTransform()->SetRotationY(rad);
 
             m_pOwner->m_MoveVec = diff_vec;
+            DirectX::XMFLOAT3 pos = { 0.f, 3.5f, 0.f };
+            m_pOwner->PlayEffect("Parry_Attack", pos);
         }
         m_ElapsedTime += m_pOwner->GetDelta();
 
@@ -127,8 +129,8 @@ void Parry::Exit()
     m_IsAnimEndStart = false;
     m_IsFastTime = false;
     m_ElapsedTime = 0.0f;
+    m_pOwner->m_IsSuccessParry = false;
 
-    m_pOwner->m_IsSuccessParry = true;
     m_pOwner->SetDamageColliderActive(true);
     m_pOwner->SetParryColliderActive(false);
     m_pOwner->SetTimeScale(-1.0f);

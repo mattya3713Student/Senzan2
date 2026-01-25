@@ -29,13 +29,6 @@ SnowBall::SnowBall()
 {
     AttachMesh(MeshManager::GetInstance().GetSkinMesh("snowball_nomal"));
 
-    // 初期位置を画面外の遠くへ
-    Init_Pos = { 1000.0f, -1000.0f, 1000.0f };
-    DirectX::XMFLOAT3 scale = { 0.5f, 0.5f, 0.5f }; // サイズを少し大きく修正
-
-    m_spTransform->SetPosition(Init_Pos);
-    m_spTransform->SetScale(scale);
-
     IsVisible = false;
     IsAction = false;
 
@@ -45,9 +38,10 @@ SnowBall::SnowBall()
     m_pAttackCollider->SetMyMask(eCollisionGroup::Enemy_Attack);
     // パリィで跳ね返す挙動に対応するために Player_Parry_Suc をターゲットに追加
     m_pAttackCollider->SetTarGetTargetMask(eCollisionGroup::Player_Damage | eCollisionGroup::Player_Parry_Suc);
+    m_pAttackCollider->SetPositionOffset({ 0.0f, 10.f, 0.0f });
     m_pAttackCollider->SetAttackAmount(30.0f);
-    m_pAttackCollider->SetHeight(5.0f);
-    m_pAttackCollider->SetRadius(3.0f);
+    m_pAttackCollider->SetHeight(25.0f);
+    m_pAttackCollider->SetRadius(8.f);
     m_pAttackCollider->SetActive(true);
     m_pAttackCollider->SetColor(Color::eColor::Red);
     m_upColliders->AddCollider(std::move(attackCol));
@@ -223,7 +217,7 @@ void SnowBall::Launch()
 	XMStoreFloat3(&Current_Pos, P1_Vec);
 
 	m_spTransform->SetPosition(Boss_Pos);
-	m_spTransform->SetScale({ 0.1f, 0.1f, 0.1f });
+	m_spTransform->SetScale({ 0.3f, 0.3f, 0.3f });
 	ThrowingTime = 0.0f;
 	IsAction = true;
 	IsVisible = true;

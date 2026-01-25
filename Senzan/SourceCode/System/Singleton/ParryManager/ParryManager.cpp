@@ -37,7 +37,8 @@ void ParryManager::OnParrySuccess(bool withDelay)
     CameraManager::GetInstance().StartParryCamera();
 
     // 円状グレースケールエフェクト開始
-    PostEffectManager::GetInstance().StartCircleGrayEffect(0.3f, 0.4f, 0.5f);
+    PostEffectManager::GetInstance().StartCircleGrayEffect(0.0f, 0.016f * 5, 0.016f * 2);
+    Time::GetInstance().SetWorldTimeScale(0.01f, 0.016f * 5, true);
     // BGMをフェードで少し下げて自動で戻す
     // 下げ時間:0.2s, 保持:1.8s, 戻す:0.4s -> 合計約2.4s
     SoundManager::LowerCurrentBGMVolumeTemporarily(6500, 0.2f, 0.4f, 0.4f);
@@ -48,6 +49,34 @@ void ParryManager::OnParrySuccess(bool withDelay)
     if (m_pBoss)
     {
         m_pBoss->OnParried(withDelay);
+    }
+}
+
+void ParryManager::StartJustDodge(float TimeScale)
+{
+    if (m_pBoss)
+    {
+        m_pBoss->OffAttackCollider();
+        m_pBoss->SetTimeScale(TimeScale);
+        m_pBoss->SetLockOnPlayer(false);
+    }
+}
+
+void ParryManager::EndJustDodge()
+{
+    if (m_pBoss)
+    {
+        m_pBoss->OffAttackCollider();
+        m_pBoss->SetTimeScale(-1.f);
+        m_pBoss->SetLockOnPlayer(false);
+    }
+}
+
+void ParryManager::DisableBossAttackColliders()
+{
+    if (m_pBoss)
+    {
+        m_pBoss->OffAttackCollider();
     }
 }
 

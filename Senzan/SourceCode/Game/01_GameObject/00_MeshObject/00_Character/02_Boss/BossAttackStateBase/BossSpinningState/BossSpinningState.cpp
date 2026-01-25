@@ -154,8 +154,6 @@ void BossSpinningState::DrawImGui()
 
     ImGui::Separator();
     if (ImGui::Button(IMGUI_JP("読み込み (Enter またはボタン)"))) { LoadSettings(); }
-    ImGui::SameLine();
-    if (ImGui::Button(IMGUI_JP("保存"))) { SaveSettings(); }
 
     // Enter キーで JSON を読み込む (既存の処理)
     {
@@ -193,8 +191,8 @@ void BossSpinningState::LoadSettings()
 
 void BossSpinningState::SaveSettings() const
 {
+    // Serialize base + derived fields and save once.
     json j = SerializeSettings();
-    BossAttackStateBase::SaveSettings();
     j["RotateTotalDeg"] = m_RotateTotalDeg;
     j["EasingType"] = static_cast<int>(m_EasingType);
 
