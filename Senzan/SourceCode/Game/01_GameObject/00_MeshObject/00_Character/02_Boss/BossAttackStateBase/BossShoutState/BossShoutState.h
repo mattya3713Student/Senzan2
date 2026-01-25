@@ -30,6 +30,9 @@ public:
 	void Draw() override;
 	void Exit() override;
 
+    // PlayerのParry成功時硬直させたいアニメーションとタイミング.
+    std::pair<Boss::enBossAnim, float> GetParryAnimPair() override;
+
 private:
     void DrawImGui() override;
     void LoadSettings() override;
@@ -45,4 +48,9 @@ private:
     // ランタイム用: 経過時間と開始半径
     float m_ShoutElapsed = 0.0f;
     float m_ShoutStartRadius = 0.0f;
+
+    // エフェクト関連: 一度だけ発火させるためのフラグと設定
+    bool m_EffectPlayed = false;
+    DirectX::XMFLOAT3 m_EffectOffset = DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f);
+    float m_EffectScale = 1.0f;
 };

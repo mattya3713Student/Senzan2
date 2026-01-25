@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "System//Utility//StateMachine//StateBase.h"
-#include "Game\03_Collision\00_Core\01_Capsule\CapsuleCollider.h"
+#include "Game\01_GameObject\00_MeshObject\00_Character\02_Boss\Boss.h"
 #include "System/Singleton/ImGui/CImGuiManager.h"
 #include "System/Utility/FileManager/FileManager.h"
 #include "System/Utility/Math/Easing/Easing.h"
@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <utility>
 #include <filesystem>
 #include <algorithm>
 
@@ -17,7 +18,6 @@
 **/
 
 //前方宣言.
-class Boss;
 class Time;
 class ColliderBase;
 class GameObject;
@@ -120,6 +120,9 @@ public:
 
     // ステート遷移を許可するか (デバッグ停止時は拒否)
     bool CanChangeState() const override { return !m_IsDebugStop; }
+
+    // PlayerのParry成功時硬直させたいアニメーションとタイミング.
+    virtual std::pair<Boss::enBossAnim, float> GetParryAnimPair(); 
 
 protected:
     // --- 共通タイムベース制御 ---

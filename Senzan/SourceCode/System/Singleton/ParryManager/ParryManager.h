@@ -33,6 +33,7 @@ public:
 	// パリィ成功時のカメラ演出が完了したか.
 	bool IsParryCameraFinished() const;
 
+
 private:
 	Player* m_pPlayer = nullptr;
 	Boss* m_pBoss = nullptr;

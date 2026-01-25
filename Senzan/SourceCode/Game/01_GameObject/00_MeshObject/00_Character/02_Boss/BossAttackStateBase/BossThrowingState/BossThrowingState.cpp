@@ -40,7 +40,7 @@ void BossThrowingState::Enter()
 
 void BossThrowingState::Update()
 {
-	float deltaTime = Time::GetInstance().GetDeltaTime();
+	float deltaTime = m_pOwner->GetDelta();
     m_pOwner->m_AnimTimer += deltaTime;
 
 	switch (m_List)
@@ -102,6 +102,11 @@ void BossThrowingState::Draw()
 
 void BossThrowingState::Exit()
 {
+}
+
+std::pair<Boss::enBossAnim, float> BossThrowingState::GetParryAnimPair()
+{
+    return std::pair(Boss::enBossAnim::Laser, 0.918f);
 }
 
 void BossThrowingState::BossAttack()

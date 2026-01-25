@@ -33,6 +33,9 @@ public:
 	void Draw() override;
 	void Exit() override;
 
+    // PlayerのParry成功時硬直させたいアニメーションとタイミング.
+    std::pair<Boss::enBossAnim, float> GetParryAnimPair() override;
+
 private:
 	//============================================================
 	// 特殊攻撃のCharge/Jump/Attackの時の関数

@@ -48,20 +48,21 @@ void Parry::Update()
     {
         if (!m_IsFastTime)
         {
-            m_pOwner->SetAnimSpeed(5.0f);
-            Time::GetInstance().SetWorldTimeScale(0.001f, 1.5f, true);
+            m_pOwner->SetAnimSpeed(2.0f);
             m_IsFastTime = true;
+            m_ElapsedTime = 0.f;
         }
+        m_ElapsedTime += m_pOwner->GetDelta();
 
         // アニメーション終了時の処理
-        if (m_pOwner->IsAnimEnd(Player::eAnim::Parry)) {
+        if (m_ElapsedTime >= 1.2f) {
             m_pOwner->ChangeState(PlayerState::eID::Idle); // 失敗時も Idle に遷移
         }
     }
     else
     {
 
-        m_ElapsedTime += Time::GetInstance().GetDeltaTime();
+        m_ElapsedTime += m_pOwner->GetDelta();
         if (!m_IsPaused && m_ElapsedTime >= m_PauseThreshold)
         {
             m_pOwner->SetAnimSpeed(0.0f);
@@ -109,6 +110,7 @@ void Parry::Exit()
     m_IsFastTime = false;
     m_ElapsedTime = 0.0f;
 
+    m_pOwner->m_IsSuccessParry = true;
     m_pOwner->SetDamageColliderActive(true);
     m_pOwner->SetParryColliderActive(false);
     m_pOwner->SetTimeScale(-1.0f);

@@ -44,7 +44,7 @@ void BossJumpOnlState::Enter()
 
 void BossJumpOnlState::Update()
 {
-	float deltaTime = Time::GetInstance().GetDeltaTime();
+	float deltaTime = m_pOwner->GetDelta();
 
 	switch (m_List)
 	{
@@ -118,9 +118,14 @@ void BossJumpOnlState::Exit()
     }
 }
 
+std::pair<Boss::enBossAnim, float> BossJumpOnlState::GetParryAnimPair()
+{
+    return std::pair(Boss::enBossAnim::none, 0.0f);
+}
+
 void BossJumpOnlState::ChargeTime()
 {
-	float deltaTime = Time::GetInstance().GetDeltaTime();
+	float deltaTime = m_pOwner->GetDelta();
 	m_Timer += deltaTime;
 
 	if (m_Timer > m_AttackTimer)
@@ -169,7 +174,7 @@ void BossJumpOnlState::JumpTime()
 
 void BossJumpOnlState::BossAttack()
 {
-	float deltaTime = Time::GetInstance().GetDeltaTime();
+	float deltaTime = m_pOwner->GetDelta();
 	const float floorY = 0.0f;
 	const float PlayerYOffset = 1.0f;
 	const float One = 1.0f;

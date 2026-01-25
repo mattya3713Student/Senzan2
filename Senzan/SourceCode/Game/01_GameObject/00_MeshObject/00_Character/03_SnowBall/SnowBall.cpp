@@ -71,7 +71,7 @@ void SnowBall::Update()
     MeshObject::Update();
 	using namespace DirectX;
 
-	float deltaTime = Time::GetInstance().GetDeltaTime();
+	float deltaTime = GetDelta();
 
     m_upColliders->SetDebugInfo();
 
