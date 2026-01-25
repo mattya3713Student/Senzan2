@@ -313,15 +313,26 @@ DirectX::XMFLOAT4 UIGameMain::GetComboColor(int combo)
 void UIGameMain::Gauge::Set(float max, float now)
 {
 	Max = max;
+
+    if (!IsInitialized)
+    {
+        Now = now;
+        Before = now;
+        Rate = (Max > 0.0f) ? std::clamp(now / Max, 0.0f, 1.0f) : 0.0f;
+        IsInitialized = true;
+        IsChanged = false;
+        return;
+    }
+
     Before = Now;
 	Now = now;
-	IsChanged = (Now != now);
+	IsChanged = (Now != Before);
 
 	if (!IsChanged)
 		return;
 
 	float newRate = (Max > 0.0f) ? (Now / Max) : 0.0f;
-    newRate = std::clamp(newRate, 0.0f, 1.01f);
+    newRate = std::clamp(newRate, 0.0f, 1.0f);
 
 	IsEasing	= true;
 	EaseTime	= 0.0f;

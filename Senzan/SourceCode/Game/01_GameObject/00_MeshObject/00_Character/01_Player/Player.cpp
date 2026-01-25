@@ -475,7 +475,7 @@ void Player::HandleParry_SuccessDetection()
                 && (other_target_group & eCollisionGroup::Player_Parry_Suc) != eCollisionGroup::None)
 			{
 				SoundManager::GetInstance().Play("Parry");
-				SoundManager::GetInstance().SetVolume("Parry",7000);
+				SoundManager::GetInstance().SetVolume("Parry",9000);
 				m_IsSuccessParry = true;
 				
 				// パリィ成功時のゲージ増加
