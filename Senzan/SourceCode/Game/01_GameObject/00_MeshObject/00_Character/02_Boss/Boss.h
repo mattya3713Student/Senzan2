@@ -175,6 +175,8 @@ protected:
     ColliderBase* GetShoutCollider() const;
     // 回転攻撃用コライダー
     ColliderBase* GetSpinningCollider() const;
+    // レーザー攻撃用コライダー
+    ColliderBase* GetLaserCollider() const;
 
     // 統合された攻撃コライダー（各ステートがボーンを指定して使用）
     ColliderBase* GetAttackCollider() const { return m_spAttackCollider; }
@@ -223,6 +225,7 @@ protected:
     ColliderBase* m_pStompCollider;
     ColliderBase* m_pShoutCollider;
     ColliderBase* m_pSpinningCollider;
+    ColliderBase* m_pLaserCollider;
 
     // runtime flag indicating any attack's just window is active
     bool m_IsAnyAttackJustWindow = false;
@@ -241,6 +244,6 @@ protected:
 
     // エフェクトハンドルは Character 側で管理する（Character::PlayEffect を使用）
 
-    bool m_IslockOnPlayer;
+    bool m_IslockOnPlayer = true;
 };
 

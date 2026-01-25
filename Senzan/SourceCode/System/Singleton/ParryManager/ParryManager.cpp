@@ -38,6 +38,7 @@ void ParryManager::OnParrySuccess(bool withDelay)
 
     // 円状グレースケールエフェクト開始
     PostEffectManager::GetInstance().StartCircleGrayEffect(0.0f, 0.016f * 5, 0.016f * 2);
+    // 一時的にワールド時間を止める（短時間）
     Time::GetInstance().SetWorldTimeScale(0.01f, 0.016f * 5, true);
     // BGMをフェードで少し下げて自動で戻す
     // 下げ時間:0.2s, 保持:1.8s, 戻す:0.4s -> 合計約2.4s

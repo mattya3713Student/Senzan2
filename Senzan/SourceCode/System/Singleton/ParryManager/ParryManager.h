@@ -34,7 +34,11 @@ public:
 	bool IsParryCameraFinished() const;
 
     // ジャスト回避開始.
+    // @param TimeScale: 使用されるワールド時間スケール (0.0 ~ 1.0 の値推奨).
+    // Note: この関数はボス側の攻撃判定を無効化し、
+    //       ワールド時間スケールを変更します (Time::SetWorldTimeScale を使用).
     void StartJustDodge(float TimeScale);
+    // ジャスト回避終了: ワールド時間スケールを 1.0 に戻し、ロックオンを復帰します.
     void EndJustDodge();
     // ボスの攻撃判定を全てオフにする（プレイヤー側からのユーティリティ）
     void DisableBossAttackColliders();

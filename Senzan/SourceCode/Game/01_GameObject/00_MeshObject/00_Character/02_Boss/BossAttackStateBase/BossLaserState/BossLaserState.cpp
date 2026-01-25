@@ -6,6 +6,7 @@
 #include "00_MeshObject/00_Character/02_Boss/BossIdolState/BossIdolState.h"
 #include "System/Singleton/ImGui/CImGuiManager.h"
 #include "System/Utility/FileManager/FileManager.h"
+#include <cmath>
 
 BossLaserState::BossLaserState(Boss* owner)
     : BossAttackStateBase(owner)
@@ -34,7 +35,6 @@ void BossLaserState::Enter()
     m_FireElapsed = 0.0f;
     m_EffectPlayed = false;
 
-    // face player and play charge anim
     FacePlayerInstantYaw();
     m_pOwner->SetAnimSpeed(1.5);
     m_pOwner->ChangeAnim(Boss::enBossAnim::LaserCharge);
@@ -44,37 +44,47 @@ void BossLaserState::Update()
 {
     BossAttackStateBase::Update();
     float dt = m_pOwner->GetDelta();
+    UpdateBaseLogic(dt);
 
     switch (m_State) {
     case enLaser::Charge:
         m_ChargeElapsed += dt;
+        // keep facing player while charging
+        FacePlayerYawContinuous();
         if (m_ChargeElapsed >= m_ChargeDuration || m_pOwner->IsAnimEnd(Boss::enBossAnim::LaserCharge)) {
             m_State = enLaser::Fire;
             m_pOwner->SetAnimSpeed(1.0);
             m_pOwner->ChangeAnim(Boss::enBossAnim::Laser);
-            // enable shout/laser collider if available
-            if (auto* col = m_pOwner->GetShoutCollider()) {
-                col->SetActive(true);
-                col->SetAttackAmount(m_LaserDamage);
-                col->SetRadius(m_LaserRadius);
-            }
         }
         break;
     case enLaser::Fire:
         m_FireElapsed += dt;
         if (!m_EffectPlayed) {
             if (m_pOwner) {
-                m_pOwner->PlayEffect("Laser", DirectX::XMFLOAT3{0,0,0}, 1.0f);
+                // play laser effect aligned with boss orientation
+                DirectX::XMFLOAT3 bossPos = m_pOwner->GetPosition();
+                // local offset in boss local space (X right, Y up, Z forward)
+                DirectX::XMFLOAT3 localOffset{0.0f, 12.0f, -5.0f};
+                float yaw = m_pOwner->GetTransform()->Rotation.y;
+                float c = cosf(yaw);
+                float s = sinf(yaw);
+                DirectX::XMFLOAT3 worldOffset;
+                worldOffset.x = c * localOffset.x + s * localOffset.z;
+                worldOffset.y = localOffset.y;
+                worldOffset.z = -s * localOffset.x + c * localOffset.z;
+                DirectX::XMFLOAT3 effectPos{ bossPos.x + worldOffset.x, bossPos.y + worldOffset.y, bossPos.z + worldOffset.z };
+                DirectX::XMFLOAT3 eulerRot{ 0.0f, yaw, 0.0f };
+                m_pOwner->PlayEffectAtWorldPos("Boss_Laser", effectPos, eulerRot, 2.0f, false);
             }
             m_EffectPlayed = true;
         }
-        // expand collider over duration
         if (auto* col = m_pOwner->GetShoutCollider()) {
             if (col->GetActive()) {
                 float t = (m_FireElapsed / (m_FireDuration > 0.0f ? m_FireDuration : 1.0f));
                 if (t > 1.0f) t = 1.0f;
                 float radius = m_LaserRadius * t;
                 col->SetRadius(radius);
+                col->SetPositionOffset(0.0f, 0.0f, radius * 0.5f);
             }
         }
         if (m_FireElapsed >= m_FireDuration || m_pOwner->IsAnimEnd(Boss::enBossAnim::Laser)) {
@@ -119,11 +129,29 @@ void BossLaserState::DrawImGui()
 {
 #if _DEBUG
     ImGui::Begin(IMGUI_JP("BossLaser State"));
+    ImGui::Text(IMGUI_JP("Laser State: %d"), static_cast<int>(m_State));
     CImGuiManager::Slider<float>(IMGUI_JP("チャージ時間"), m_ChargeDuration, 0.0f, 5.0f, true);
     CImGuiManager::Slider<float>(IMGUI_JP("発射時間"), m_FireDuration, 0.0f, 5.0f, true);
     CImGuiManager::Slider<float>(IMGUI_JP("ダメージ"), m_LaserDamage, 0.0f, 100.0f, true);
     CImGuiManager::Slider<float>(IMGUI_JP("範囲"), m_LaserRadius, 0.0f, 200.0f, true);
+    CImGuiManager::Slider<float>(IMGUI_JP("射程"), m_LaserRange, 0.0f, 1000.0f, true);
+
+    // Debug controls for forcing state
+    if (ImGui::Button(IMGUI_JP("Force Charge"))) { m_State = enLaser::Charge; m_ChargeElapsed = 0.0f; }
+    ImGui::SameLine();
+    if (ImGui::Button(IMGUI_JP("Force Fire"))) { m_State = enLaser::Fire; m_FireElapsed = 0.0f; if (auto* c = m_pOwner->GetShoutCollider()) { c->SetActive(true); } }
+    ImGui::SameLine();
+    if (ImGui::Button(IMGUI_JP("Force Cool"))) { m_State = enLaser::Cool; }
+    ImGui::SameLine();
+    if (ImGui::Button(IMGUI_JP("Force Trans"))) { m_State = enLaser::Trans; }
     BossAttackStateBase::DrawImGui();
+    // collider debug
+    if (auto* col = m_pOwner->GetShoutCollider()) {
+        ImGui::Separator();
+        ImGui::Text(IMGUI_JP("Shout Collider: Active=%s Radius=%.2f"), col->GetActive() ? "ON" : "OFF", col->GetRadius());
+        DirectX::XMFLOAT3 off = col->GetPositionOffset();
+        ImGui::Text(IMGUI_JP("Offset: (%.2f, %.2f, %.2f)"), off.x, off.y, off.z);
+    }
     if (ImGui::Button(IMGUI_JP("Load"))) { try { LoadSettings(); } catch (...) {} }
     ImGui::SameLine();
     if (ImGui::Button(IMGUI_JP("Save"))) { try { SaveSettings(); } catch (...) {} }

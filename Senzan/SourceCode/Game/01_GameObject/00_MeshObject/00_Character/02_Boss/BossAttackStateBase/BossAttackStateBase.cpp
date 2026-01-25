@@ -61,6 +61,7 @@ bool BossAttackStateBase::UpdateColliderWindows(float prevTime, float currentTim
                 else if (window.BoneName == "boss_pSphere28") targetCol = m_pOwner->GetStompCollider();
                 else if (window.BoneName == "boss_Shout") targetCol = m_pOwner->GetShoutCollider();
                 else if (window.BoneName == "boss_Spinning") targetCol = m_pOwner->GetSpinningCollider();
+                else if (window.BoneName == "boss_Laser") targetCol = m_pOwner->GetLaserCollider();
                 if (targetCol) {
                     // Use virtual setters so Sphere/Box/Capsule implementations receive values
                     targetCol->SetRadius(m_ColliderWidth);
@@ -105,6 +106,7 @@ bool BossAttackStateBase::UpdateColliderWindows(float prevTime, float currentTim
             else if (window.BoneName == "boss_pSphere28") targetCol = m_pOwner->GetStompCollider();
             else if (window.BoneName == "boss_Shout") targetCol = m_pOwner->GetShoutCollider();
             else if (window.BoneName == "boss_Spinning") targetCol = m_pOwner->GetSpinningCollider();
+            else if (window.BoneName == "boss_Laser") targetCol = m_pOwner->GetLaserCollider();
             if (targetCol) {
                 // ColliderBase provides SetPositionOffset; call on base pointer so all collider types are supported
                 targetCol->SetPositionOffset(window.Offset.x, window.Offset.y, window.Offset.z);
