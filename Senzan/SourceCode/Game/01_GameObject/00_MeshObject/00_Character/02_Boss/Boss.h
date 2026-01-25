@@ -37,6 +37,7 @@ class BossLaserState;
 class BossDeadState;
 
 class BossThrowingState;
+class BossSpinningState;
 
 class BossChargeState;
 class BossParryState;
@@ -61,6 +62,7 @@ class Boss
     friend BossDeadState;
     friend BossChargeState;
     friend BossThrowingState;
+    friend BossSpinningState;
     friend BossParryState;
 
     //ボスのアニメーションの列挙.
@@ -102,18 +104,28 @@ class Boss
     };
 
 public:
-Boss();
-~Boss() override;
+    Boss();
+    ~Boss() override;
 
-void SetAnyAttackJustWindow(bool v) { m_IsAnyAttackJustWindow = v; }
-bool IsAnyAttackJustWindow() const { return m_IsAnyAttackJustWindow; }
+    void SetAnyAttackJustWindow(bool v) { m_IsAnyAttackJustWindow = v; }
+    bool IsAnyAttackJustWindow() const { return m_IsAnyAttackJustWindow; }
 
-// パリィ被弾通知（外部から呼び出す）.
-void OnParried();
-// パリィ被弾フラグを取得.
-bool IsParried() const { return m_IsParried; }
+    // パリィ被弾通知（外部から呼び出す）。
+    // withDelay=true の場合、指定秒数だけパリィ後に次フェーズへ移行する挙動になる。
+    void OnParried();
+    void OnParried(bool withDelay);
+    // パリィ被弾フラグを取得.
+    bool IsParried() const { return m_IsParried; }
 
-void Update() override;
+    // パリィ時にアニメーションを停止する秒数を取得
+    std::pair<Boss::enBossAnim, float> GetParryPauseSeconds() const { return m_ParryPauseSeconds; }
+
+    // パリィで再生するアニメと停止（参照）するアニメ番号を返す
+    // first  = 再生開始アニメ
+    // second = パリィで停止させたいアニメ（参照用）
+    virtual void GetParryAnimPair();
+
+    void Update() override;
     void LateUpdate() override;
     void Draw() override;
 
@@ -130,15 +142,6 @@ void Update() override;
     // 文字列でコライダーを操作できるようにする
     void SetColliderActiveByName(const std::string& name, bool active);
 
-    /*************************************************************
-    * @brief    エフェクトを指定位置に生成する.
-    * @param[in]    effectName  ：エフェクトリソース名.
-    * @param[in]    offset      ：ボス位置からのオフセット（デフォルト: 0,0,0）.
-    * @param[in]    scale       ：エフェクトのスケール（デフォルト: 1.0f）.
-    * ************************************************************/
-    void SpawnEffect(const std::string& effectName,
-                     const DirectX::XMFLOAT3& offset = DirectX::XMFLOAT3(0.f, 0.f, 0.f),
-                     float scale = 1.0f);
 
 public:
     //プレイヤーの位置を取得するためにここにSetPlayer()を作成する.
@@ -167,6 +170,8 @@ protected:
     ColliderBase* GetStompCollider() const;
     //叫び攻撃.
     ColliderBase* GetShoutCollider() const;
+    // 回転攻撃用コライダー
+    ColliderBase* GetSpinningCollider() const;
 
     // 統合された攻撃コライダー（各ステートがボーンを指定して使用）
     ColliderBase* GetAttackCollider() const { return m_spAttackCollider; }
@@ -199,7 +204,7 @@ protected:
         ColliderBase* collider,
         Transform& outTransform,
         bool updateRotation = true,
-        const DirectX::XMFLOAT4& rotationOffset = DirectX::XMFLOAT4{0.0f,0.0f,0.0f,1.0f});
+        const DirectX::XMFLOAT4& rotationOffset = DirectX::XMFLOAT4{ 0.0f,0.0f,0.0f,1.0f });
 
 protected:
     //ステートマシンのメンバ変数.
@@ -225,6 +230,7 @@ protected:
     ColliderBase* m_pSlashCollider;
     ColliderBase* m_pStompCollider;
     ColliderBase* m_pShoutCollider;
+    ColliderBase* m_pSpinningCollider;
 
     // runtime flag indicating any attack's just window is active
     bool m_IsAnyAttackJustWindow = false;
@@ -232,13 +238,15 @@ protected:
     // パリィ被弾フラグ.
     bool m_IsParried = false;
 
+    // パリィ時にアニメーションを停止する秒数（デザインで手打ち可）
+    std::pair<Boss::enBossAnim, float> m_ParryPauseSeconds = {};
+
     // 統合された攻撃コライダー（各ステートがボーンを指定）
     ColliderBase* m_spAttackCollider = nullptr;
     std::string m_AttackBoneName;  // 現在追従するボーン名
     LPD3DXFRAME m_pAttackBoneFrame = nullptr;  // ボーンフレームキャッシュ
     Transform m_AttackBoneWorldTransform;      // ワールドTransformキャッシュ
 
-    // 現在再生中のエフェクトハンドル（-1 = none）
-    int m_EffectHandle = -1;
+    // エフェクトハンドルは Character 側で管理する（Character::PlayEffect を使用）
 };
 

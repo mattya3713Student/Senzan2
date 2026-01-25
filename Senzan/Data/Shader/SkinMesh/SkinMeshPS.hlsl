@@ -2,23 +2,23 @@
 
 float4 main(PSSkinIn input) : SV_Target
 {
-    // ÅIF.
+    // æœ€çµ‚è‰².
     float4 color = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-    // ƒeƒNƒXƒ`ƒƒƒJƒ‰[.
+    // ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚«ãƒ©ãƒ¼.
     float4 texterColor = g_Texture.Sample(g_SamLinear, input.uv);
     
-    // ƒ‰ƒCƒg‚ğg—p‚·‚éê‡AŒõ‚ÌŒvZ‚ğs‚¤.
+    // ãƒ©ã‚¤ãƒˆã‚’ä½¿ç”¨ã™ã‚‹å ´åˆã€å…‰ã®è¨ˆç®—ã‚’è¡Œã†.
     if (cb_IsLight.x >= 1.0f)
     {
-        // ŠÂ‹«Œõ.
+        // ç’°å¢ƒå…‰.
         float4 ambient = texterColor * cb_Ambient;
     
-        // ŠgU”½ËŒõ.
+        // æ‹¡æ•£åå°„å…‰.
         float nl = saturate(dot(input.normal,input.lightDirection));
         float4 diffuse = ((cb_Diffuse * 0.5f) + (texterColor * 0.5f)) * nl;
     
-        // ‹¾–Ê”½ËŒõ.
+        // é¡é¢åå°„å…‰.
         float3 reflect = normalize(2.0f * nl * input.normal - input.lightDirection);
         float4 specular = pow(saturate(dot(reflect, input.eyeVector)), 4.0f) * cb_Specular;
     
@@ -29,25 +29,25 @@ float4 main(PSSkinIn input) : SV_Target
         color = texterColor;
     }
     
-    // ‰e‚ğ—‚Æ‚·ê‡A‰e‚ª—‚¿‚é•”•ª‚ÌƒJƒ‰[‚ğŒ¸‚ç‚·.
+    // å½±ã‚’è½ã¨ã™å ´åˆã€å½±ãŒè½ã¡ã‚‹éƒ¨åˆ†ã®ã‚«ãƒ©ãƒ¼ã‚’æ¸›ã‚‰ã™.
     if(cb_IsShadow.x >= 1.0f)
     {
-        // ƒ‰ƒCƒg‹óŠÔ‚Å‚ÌˆÊ’u‚ğƒXƒNƒŠ[ƒ“À•W‚É•ÏŠ·.        
+        // ãƒ©ã‚¤ãƒˆç©ºé–“ã§ã®ä½ç½®ã‚’ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ã«å¤‰æ›.        
         float2 shadowMapUV = input.lightViewPosition.xy / input.lightViewPosition.w;
         shadowMapUV *= float2(0.5f, -0.5f);
         shadowMapUV += 0.5f;
         
-        // ƒ‰ƒCƒg‹óŠÔ“à‚Å‚Ì[“x’l‚ğæ“¾.
+        // ãƒ©ã‚¤ãƒˆç©ºé–“å†…ã§ã®æ·±åº¦å€¤ã‚’å–å¾—.
         float zInLVP = input.lightViewPosition.z / input.lightViewPosition.w;
 
-        // ƒVƒƒƒhƒEƒ}ƒbƒv“à‚ÌÀ•W‚ª0.0f`1.0f‚Ì”ÍˆÍ“à‚É‚ ‚é‚©.
+        // ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—å†…ã®åº§æ¨™ãŒ0.0fï½1.0fã®ç¯„å›²å†…ã«ã‚ã‚‹ã‹.
         if (shadowMapUV.x > 0.0f && shadowMapUV.x < 1.0f
 		    && shadowMapUV.y > 0.0f && shadowMapUV.y < 1.0f)
         {
-            // ƒVƒƒƒhƒEƒ}ƒbƒv‚©‚çŒ»İ‚ÌÀ•W‚Ì[“x‚ğƒTƒ“ƒvƒŠƒ“ƒO.
+            // ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ã‹ã‚‰ç¾åœ¨ã®åº§æ¨™ã®æ·±åº¦ã‚’ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°.
             float zInShadowMap = g_ShadowMap.Sample(g_SamLinear, shadowMapUV).r;
             
-            // ƒ‰ƒCƒg‹óŠÔ‚Å‚Ì[“x‚ªƒVƒƒƒhƒEƒ}ƒbƒv“à‚Ì[“x’l‚æ‚è‘å‚«‚¯‚ê‚ÎA‰e‚ª—‚¿‚Ä‚¢‚é.
+            // ãƒ©ã‚¤ãƒˆç©ºé–“ã§ã®æ·±åº¦ãŒã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—å†…ã®æ·±åº¦å€¤ã‚ˆã‚Šå¤§ãã‘ã‚Œã°ã€å½±ãŒè½ã¡ã¦ã„ã‚‹.
             if (zInLVP > zInShadowMap + 0.0005f)
             {
                 color.xyz *= 0.5f;
@@ -55,5 +55,8 @@ float4 main(PSSkinIn input) : SV_Target
         }
     }
     
+    // ã‚¢ãƒ«ãƒ•ã‚¡ã¯ãƒãƒ†ãƒªã‚¢ãƒ«ã®Diffuse.wã¨ãƒ†ã‚¯ã‚¹ãƒãƒ£ã®ã‚¢ãƒ«ãƒ•ã‚¡ã‚’ä¹—ç®—ã—ã¦å‡ºåŠ›
+    float alpha = cb_Diffuse.w * texterColor.a;
+    color.a = alpha;
     return color;
 }

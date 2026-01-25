@@ -16,6 +16,7 @@
 #include "Game/00_Scene/Ex_Test/03_UIEditor/UIEditor.h"
 #include "Game/00_Scene/Ex_Test/04_AnimationTuning/AnimationTuningScene.h"
 #include "System/Singleton/ResourceManager/EffectManager/EffekseerManager.h"
+#include "System/Singleton/CollisionDetector/CollisionDetector.h"
 
 #if _DEBUG
 #include "ImGui/CImGuiManager.h"
@@ -118,6 +119,9 @@ void SceneManager::Update()
     // 一般的には遷移中は Update を止めることが多いです.
     if (!pI.m_IsSceneChanging && pI.m_pScene) {
         pI.m_pScene->Update();
+
+        CollisionDetector::GetInstance().ExecuteCollisionDetection();
+
         pI.m_pScene->LateUpdate();
     }
 	
@@ -148,6 +152,15 @@ void SceneManager::Draw()
 	SceneManager& pI = GetInstance();
 	pI.m_pScene->Draw();
     FadeManager::GetInstance().Draw();
+}
+
+bool SceneManager::IsCurrentSceneMattya() const
+{
+#if _DEBUG
+    return (m_CurrentSceneID == eList::Mattya);
+#else
+    return false;
+#endif
 }
 
 void SceneManager::LoadScene(eList Scene)

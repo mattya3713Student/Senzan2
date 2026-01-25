@@ -28,6 +28,11 @@ public:
 	// パリィカメラ演出を開始.
 	void StartParryCamera();
 
+	// 必殺技カメラ演出を開始（ボスをロックオン）.
+	void StartSpecialCamera();
+	// 必殺技カメラ演出を終了.
+	void EndSpecialCamera();
+
 	// カメラの更新.
 	void LateUpdate();
 

@@ -31,6 +31,10 @@ public:
 	void LateUpdate() override;
 	void Draw() override;
 	void Exit() override;
+
+    // PlayerのParry成功時硬直させたいアニメーションとタイミング.
+    std::pair<Boss::enBossAnim, float> GetParryAnimPair() override;
+
     // 設定の読み書き
     void LoadSettings() override;
     void SaveSettings() const override;

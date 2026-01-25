@@ -22,6 +22,7 @@ class BossStompState;
 class BossThrowingState;
 
 #include <random>
+#include <array>
 
 /******************************************************************************
 *	ボスの動作(左右移動・プレイヤーを囲むように半円を描く).
@@ -47,7 +48,18 @@ public:
 		Strafe,
 	};
 
-	MovePhase m_Phase = MovePhase::Start;
+    // Attack identifiers (order matters for arrays)
+    enum AttackId {
+        Jump = 0,       // ジャンプ
+        Shout = 1,      // 叫び
+        Slash = 2,      // 通常
+        Spinning = 3,   // 回転
+        Stomp = 4,      // とびかかり
+        Throwing = 5,   // 岩投げ
+        Count = 6
+    };
+
+    MovePhase m_Phase = MovePhase::Start;
 public:
 	BossMoveState(Boss* owner);
 	~BossMoveState();
@@ -56,18 +68,19 @@ public:
 	void Enter() override;
 	//動作.
 	void Update() override;
-	//かかなくていい.
-	void LateUpdate() override;
+    //かかなくていい.
+    void LateUpdate() override;
 	//描画.
 	void Draw() override;
 	//終わるときに一回だけ入る.
 	void Exit() override;
 
-	//void DrawBone();
-
 public:
 	//初期角度を設定する関数.
 	void SetInitialAngle(float angle);
+    // 設定の読み書き
+    void LoadSettings();
+    void SaveSettings() const;
 private:
 	//現在のボスの回転度を確認する.
 	float m_RotationAngle;
@@ -95,15 +108,34 @@ private:
 	// === デバッグ用距離設定 ===
 	static inline float s_NearRange = 15.0f;      // 近距離の閾値
 	static inline float s_MidRange = 35.0f;       // 中距離の閾値
-	static inline float s_AttackDelay = 1.0f;     // 攻撃開始までの遅延
+	static inline float s_AttackDelay = 5.0f;     // 攻撃開始までの遅延
 
-	// === 攻撃有効/無効フラグ ===
-	static inline bool s_EnableSlash = true;      // 斬り攻撃
-	static inline bool s_EnableStomp = true;      // 飛びかかり攻撃
-	static inline bool s_EnableCharge = true;     // 溜め攻撃
-	static inline bool s_EnableShout = true;      // 叫び攻撃
-	static inline bool s_EnableThrowing = true;   // 投擲攻撃
+	// === 攻撃有効/無効フラグ、重み、クールダウン（配列で管理） ===
+	static inline float s_RepeatPenalty = 0.25f;
 
-	// === デバッグ強制攻撃選択 ===
-	static inline int s_ForceAttackIndex = -1;    // -1: ランダム, 0-4: 強制選択
+    // Per-attack settings (indexed by AttackId::Count)
+    static inline std::array<bool, Count> s_Enable = { true, true, true, true, true, true };
+
+    // Distances: Near / Mid (遠距離削除)
+    enum DistanceIndex { Near = 0, Mid = 1, DistCount = 2 };
+
+    // weights[distance][attack] - stored/edited as percentages that sum to ~100 per distance
+    static inline std::array<std::array<float, Count>, DistCount> s_Weight = { {
+        std::array<float, Count>{ 16.7f, 16.7f, 16.7f, 16.7f, 16.7f, 16.5f }, // Near (sum ~100)
+        std::array<float, Count>{ 16.7f, 16.7f, 16.7f, 16.7f, 16.7f, 16.5f }  // Mid (sum ~100)
+    } };
+
+    static inline std::array<float, Count> s_CooldownDefault = { 2.0f, 4.0f, 2.0f, 3.0f, 2.5f, 2.0f };
+    // 表示用日本語ラベル (順序: Jump, Shout, Slash, Spinning, Stomp, Throwing)
+    static inline const char* s_AttackNames[Count] = { "ジャンプ", "叫び", "通常", "回転", "とびかかり", "岩投げ" };
+    // 内部保存用ID（英語）。JSONキーなどで使う。
+    static inline const char* s_AttackIds[Count] = { "Jump", "Shout", "Slash", "Spinning", "Stomp", "Throwing" };
+    static inline const char* s_DistanceIds[DistCount] = { "Near", "Mid" };
+
+    // === デバッグ強制攻撃選択 ===
+    static inline int s_ForceAttackIndex = -1;    // -1: ランダム, 0-5: 強制選択
+
+    // runtime cooldown/last-attack tracking
+    std::array<float, Count> m_CooldownRemaining{};
+    int m_LastAttackId = -1; // last chosen attack id
 };

@@ -23,6 +23,7 @@
 
 
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossThrowingState/BossThrowingState.h"
+#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossSpinningState/BossSpinningState.h"
 
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
 #include "System/Singleton/CameraManager/CameraManager.h"
@@ -69,26 +70,10 @@ Boss::Boss()
 	m_spTransform->SetScale(scale);
 	m_spTransform->SetRotationDegrees(Rotation);
 
-	m_MaxHP = 5000.f;
+	m_MaxHP = 5000000.f;
 	m_HP = m_MaxHP;
 
-	// 攻撃の追加.
-	std::unique_ptr<CapsuleCollider> attackCollider = std::make_unique<CapsuleCollider>(m_spTransform);
-
-	m_pAttackCollider = attackCollider.get();
-
-	attackCollider->SetActive(false);
-	attackCollider->SetColor(Color::eColor::Red);
-	attackCollider->SetAttackAmount(5.0f);
-	attackCollider->SetHeight(0.0);
-	attackCollider->SetRadius(0.0);
-	attackCollider->SetPositionOffset(0.f, -50.0f, -20.f);
-	attackCollider->SetMyMask(eCollisionGroup::Enemy_Attack);
-	attackCollider->SetTarGetTargetMask(eCollisionGroup::Player_Damage | eCollisionGroup::Player_Dodge | eCollisionGroup::Player_JustDodge | eCollisionGroup::Player_Parry);
-
-	m_upColliders->AddCollider(std::move(attackCollider));
-
-	//ボスの最大体力.
+    //ボスの最大体力.
 	m_HitPoint = HP_Max;
 
 	// 被ダメの追加.
@@ -106,7 +91,6 @@ Boss::Boss()
 
 	// プレスの追加.
 	std::unique_ptr<CapsuleCollider> press_collider = std::make_unique<CapsuleCollider>(m_spTransform);
-
 	press_collider->SetColor(Color::eColor::Cyan);
 	press_collider->SetHeight(20.0f);
 	press_collider->SetRadius(5.1f);
@@ -118,51 +102,69 @@ Boss::Boss()
 
 	//通常攻撃の当たり判定作成.
 	auto slashCol = std::make_unique<CapsuleCollider>(m_spTransform);
-
 	m_pSlashCollider = slashCol.get();
 	m_pSlashCollider->SetMyMask(eCollisionGroup::Enemy_Attack);
-	m_pSlashCollider->SetTarGetTargetMask(eCollisionGroup::Player_Damage | eCollisionGroup::Player_Parry);
+	m_pSlashCollider->SetTarGetTargetMask(
+        eCollisionGroup::Player_Damage
+        | eCollisionGroup::Player_Parry_Fai
+        | eCollisionGroup::Player_JustDodge);
 	m_pSlashCollider->SetAttackAmount(10.0f); 
-	m_pSlashCollider->SetRadius(15.0f);         
 	m_pSlashCollider->SetHeight(40.0f);         
+	m_pSlashCollider->SetRadius(15.0f);         
 	m_pSlashCollider->SetPositionOffset(0.0f, 0.0f, 0.0f); 
 	m_pSlashCollider->SetActive(false);
 	m_pSlashCollider->SetColor(Color::eColor::Red);
 
 	m_upColliders->AddCollider(std::move(slashCol));
 
+    // とびかかりの当たり判定.
 	auto stompCol = std::make_unique<CapsuleCollider>(m_spTransform);
-
 	m_pStompCollider = stompCol.get();
-
 	m_pStompCollider->SetMyMask(eCollisionGroup::Enemy_Attack);
-	m_pStompCollider->SetTarGetTargetMask(eCollisionGroup::Player_Damage | eCollisionGroup::Player_Parry);
-
+	m_pStompCollider->SetTarGetTargetMask(
+        eCollisionGroup::Player_Damage
+        | eCollisionGroup::Player_Parry_Suc
+        | eCollisionGroup::Player_JustDodge);
 	m_pStompCollider->SetAttackAmount(5.0f);
 	m_pStompCollider->SetRadius(30.0f);
 	m_pStompCollider->SetHeight(15.0f);
-
 	m_pStompCollider->SetActive(false);
 	m_pStompCollider->SetColor(Color::eColor::Red);
-
 	m_upColliders->AddCollider(std::move(stompCol));
 
-	std::unique_ptr<CapsuleCollider> Shout_collider = std::make_unique<CapsuleCollider>(m_spTransform);
-
+    // 咆哮の当たり判定作成.
+    auto Shout_collider = std::make_unique<CapsuleCollider>(m_spTransform);
 	m_pShoutCollider = Shout_collider.get(); 
-
 	m_pShoutCollider->SetColor(Color::eColor::Cyan);
 	m_pShoutCollider->SetHeight(1.0f);
 	m_pShoutCollider->SetRadius(1.0f);
 	m_pShoutCollider->SetPositionOffset(0.f, 1.5f, 0.f);
 	m_pShoutCollider->SetAttackAmount(100.f);
-	m_pShoutCollider->SetMyMask(eCollisionGroup::BossPress);
-	m_pShoutCollider->SetTarGetTargetMask(eCollisionGroup::Press | eCollisionGroup::Player_Damage | eCollisionGroup::Player_Parry);
-
+	m_pShoutCollider->SetMyMask(
+        eCollisionGroup::BossPress);
+	m_pShoutCollider->SetTarGetTargetMask(
+        eCollisionGroup::Player_Damage
+        | eCollisionGroup::Press);
 	m_pShoutCollider->SetActive(false);
 	m_upColliders->AddCollider(std::move(Shout_collider));
 
-    m_State->ChangeState(std::make_shared<BossStompState>(this));
+    // 回転攻撃の当たり判定作成.
+    auto spinning_collider = std::make_unique<CapsuleCollider>(m_spTransform);
+	m_pSpinningCollider = spinning_collider.get();
+    m_pSpinningCollider->SetMyMask(eCollisionGroup::Enemy_Attack);
+    m_pSpinningCollider->SetTarGetTargetMask(
+        eCollisionGroup::Player_Damage
+        | eCollisionGroup::Player_Parry_Suc
+        | eCollisionGroup::Player_JustDodge);
+    m_pSpinningCollider->SetAttackAmount(10.0f);
+    m_pSpinningCollider->SetHeight(40.0f);
+    m_pSpinningCollider->SetRadius(15.0f);
+    m_pSpinningCollider->SetPositionOffset(0.0f, 0.0f, 0.0f);
+    m_pSpinningCollider->SetActive(false);
+    m_pSpinningCollider->SetColor(Color::eColor::Red);
+	m_upColliders->AddCollider(std::move(spinning_collider));
+
+    m_State->ChangeState(std::make_shared<BossShoutState>(this));
     /* BossSlashState
  BossChargeState
  BossChargeSlashState
@@ -183,50 +185,76 @@ Boss::~Boss()
     }
 }
 
+void Boss::GetParryAnimPair()
+{
+    if (m_State && m_State->m_pCurrentState)
+    {
+        // BossAttackStateBase へキャストして設定を取得する
+        auto attackBase = std::dynamic_pointer_cast<BossAttackStateBase>(m_State->m_pCurrentState);
+        if (attackBase)
+        {
+            auto pair = attackBase->GetParryAnimPair();
+            m_ParryPauseSeconds = pair;
+        }
+    }
+}
+
 void Boss::Update()
 {
 	Character::Update();
 
-	//距離の計算後にステートを更新する.
 	m_State->Update();
+ 
 
 #if _DEBUG
-    // デバッグ用: ImGui で任意のボスステートに切り替えられるパネル
+    // デバッグ用: ImGui で任意のボスステートに切り替えられるボタン群
     if (ImGui::Begin(IMGUI_JP("Boss Debug")))
     {
-        static int sel = 0;
-        const char* items[] = {
+        const char* state_labels[] = {
             IMGUI_JP("Idle"),
             IMGUI_JP("Move"),
             IMGUI_JP("Slash"),
             IMGUI_JP("Shout"),
+            IMGUI_JP("BossSpinningState"),
             IMGUI_JP("JumpOn"),
             IMGUI_JP("Stomp"),
             IMGUI_JP("Throwing"),
             IMGUI_JP("Parry")
         };
+        constexpr int state_count = static_cast<int>(sizeof(state_labels) / sizeof(state_labels[0]));
+        const int buttons_per_row = 4;
 
-        ImGui::Combo(IMGUI_JP("State"), &sel, items, IM_ARRAYSIZE(items));
-        if (ImGui::Button(IMGUI_JP("Enter State")))
+        for (int i = 0; i < state_count; ++i)
         {
-            switch (sel)
+            if (i > 0 && (i % buttons_per_row) != 0)
             {
-            case 0: m_State->ChangeState(std::make_shared<BossIdolState>(this)); break;
-            case 1: m_State->ChangeState(std::make_shared<BossMoveState>(this)); break;
-            case 2: m_State->ChangeState(std::make_shared<BossSlashState>(this)); break;
-            case 3: m_State->ChangeState(std::make_shared<BossShoutState>(this)); break;
-            case 4: m_State->ChangeState(std::make_shared<BossJumpOnlState>(this)); break;
-            case 5: m_State->ChangeState(std::make_shared<BossStompState>(this)); break;
-            case 6: m_State->ChangeState(std::make_shared<BossThrowingState>(this)); break;
-            case 7: m_State->ChangeState(std::make_shared<BossParryState>(this)); break;
-            default: break;
+                ImGui::SameLine();
+            }
+
+            if (ImGui::Button(state_labels[i]))
+            {
+                switch (i)
+                {
+                case 0: m_State->ChangeState(std::make_shared<BossIdolState>(this)); break;
+                case 1: m_State->ChangeState(std::make_shared<BossMoveState>(this)); break;
+                case 2: m_State->ChangeState(std::make_shared<BossSlashState>(this)); break;
+                case 3: m_State->ChangeState(std::make_shared<BossShoutState>(this)); break;
+                case 4: m_State->ChangeState(std::make_shared<BossSpinningState>(this)); break;
+                case 5: m_State->ChangeState(std::make_shared<BossJumpOnlState>(this)); break;
+                case 6: m_State->ChangeState(std::make_shared<BossStompState>(this)); break;
+                case 7: m_State->ChangeState(std::make_shared<BossThrowingState>(this)); break;
+                case 8: m_State->ChangeState(std::make_shared<BossParryState>(this)); break;
+                default: break;
+                }
             }
         }
 
         ImGui::SameLine();
-        if (ImGui::Button(IMGUI_JP("Enter Slash (Hotkey)"))) {
-            m_State->ChangeState(std::make_shared<BossStompState>(this));
+        if (ImGui::Button(IMGUI_JP("Enter Slash (Hotkey)")))
+        {
+            m_State->ChangeState(std::make_shared<BossSpinningState>(this));
         }
+
         ImGui::End();
     }
 #endif
@@ -253,7 +281,7 @@ void Boss::LateUpdate()
 
 void Boss::Draw()
 {
-	MeshObject::Draw();
+    Character::Draw();
 	m_State->Draw();
 }
 
@@ -273,6 +301,21 @@ void Boss::OnParried()
 
     // BossParryStateへ遷移.
     m_State->ChangeState(std::make_shared<BossParryState>(this));
+}
+
+void Boss::OnParried(bool withDelay)
+{
+    // 既にパリィ状態なら何もしない.
+    if (m_IsParried) return;
+    GetParryAnimPair();
+
+    m_IsParried = true;
+
+    // 全ての攻撃コライダーを無効化 (パリィ成功時も攻撃判定を消す)
+    OffAttackCollider();
+
+    // BossParryStateへ遷移（遅延フラグと遅延秒を渡す）
+    m_State->ChangeState(std::make_shared<BossParryState>(this, withDelay));
 }
 
 StateMachine<Boss>* Boss::GetStateMachine()
@@ -321,34 +364,12 @@ void Boss::SetTargetPos(const DirectX::XMFLOAT3 Player_Pos)
 	m_PlayerPos = Player_Pos;
 }
 
-void Boss::SpawnEffect(const std::string& effectName, const DirectX::XMFLOAT3& offset, float scale)
-{
-    // エフェクトリソース取得
-    auto effect = EffectResource::GetResource(effectName);
-    if (effect == nullptr) return;
-
-    // ボスの位置を取得してオフセットを加算
-    DirectX::XMFLOAT3 bossPos = GetPosition();
-    DirectX::XMFLOAT3 spawnPos{
-        bossPos.x + offset.x,
-        bossPos.y + offset.y,
-        bossPos.z + offset.z
-    };
-
-    // Effekseer の Play は座標を float で受け取る（ワールド座標系）
-    m_EffectHandle = EffekseerManager::GetInstance().GetManager()
-        ->Play(effect, spawnPos.x, spawnPos.y, spawnPos.z);
-
-    // スケールを適用
-    if (m_EffectHandle != -1 && !MyMath::IsNearlyEqual(scale, 1.0f)) {
-        EffekseerManager::GetInstance().GetManager()->SetScale(m_EffectHandle, scale, scale, scale);
-    }
-}
 
 void Boss::OffAttackCollider() {
     m_pSlashCollider->SetActive(false);
     m_pStompCollider->SetActive(false);
     m_pShoutCollider->SetActive(false);
+    m_pSpinningCollider->SetActive(false);
 }
 
 // 衝突_被ダメージ.
@@ -458,37 +479,36 @@ void Boss::HandleDodgeDetection()
 
 void Boss::HandleParryDetection()
 {
-	if (!m_upColliders) return;
+    // Player側の当たり判定で呼び出し、ParryManagerでBossの初期化実行
 
-	const auto& internal_colliders = m_upColliders->GetInternalColliders();
+	//if (!m_upColliders) return;
 
-	for (const auto& collider_ptr : internal_colliders)
-	{
-		const ColliderBase* current_collider = collider_ptr.get();
+	//const auto& internal_colliders = m_upColliders->GetInternalColliders();
 
-		if ((current_collider->GetMyMask() & eCollisionGroup::Enemy_Attack) == eCollisionGroup::None) {
-			continue;
-		}
+	//for (const auto& collider_ptr : internal_colliders)
+	//{
+	//	const ColliderBase* current_collider = collider_ptr.get();
 
-		for (const CollisionInfo& info : current_collider->GetCollisionEvents())
-		{
-			if (!info.IsHit) continue;
-			const ColliderBase* otherCollider = info.ColliderB;
-			if (!otherCollider) { continue; }
+	//	if ((current_collider->GetMyMask() & eCollisionGroup::Enemy_Attack) == eCollisionGroup::None) {
+	//		continue;
+	//	}
 
-			eCollisionGroup other_group = otherCollider->GetMyMask();
+	//	for (const CollisionInfo& info : current_collider->GetCollisionEvents())
+	//	{
+	//		if (!info.IsHit) continue;
+	//		const ColliderBase* otherCollider = info.ColliderB;
+	//		if (!otherCollider) { continue; }
 
-			if ((other_group & eCollisionGroup::Player_Parry) != eCollisionGroup::None)
-			{
-				// 別ステートへ遷移させる（共通のパリィステート）
-				m_pAttackCollider->SetActive(false);
-				m_State->ChangeState(std::make_shared<BossParryState>(this));
+	//		eCollisionGroup other_group = otherCollider->GetMyMask();
 
-				// 一フレーム1回.
-				return;
-			}
-		}
-	}
+	//		if ((other_group & eCollisionGroup::Player_Parry_Fai) != eCollisionGroup::None
+	//		&& (other_group & eCollisionGroup::Player_Parry_Suc) != eCollisionGroup::None)
+	//		{
+	//			// 一フレーム1回.
+	//			return;
+	//		}
+	//	}
+	//}
 }
 
 ColliderBase* Boss::GetSlashCollider() const
@@ -504,6 +524,11 @@ ColliderBase* Boss::GetStompCollider() const
 ColliderBase* Boss::GetShoutCollider() const
 {
 	return m_pShoutCollider;
+}
+
+ColliderBase* Boss::GetSpinningCollider() const
+{
+    return m_pSpinningCollider;
 }
 
 void Boss::SetColliderActiveByName(const std::string& name, bool active)
@@ -524,6 +549,11 @@ void Boss::SetColliderActiveByName(const std::string& name, bool active)
 		if (auto* col = GetShoutCollider()) col->SetActive(active);
 		return;
 	}
+    if (name == "boss_Spinning")
+    {
+        if (auto* col = GetSpinningCollider()) col->SetActive(active);
+        return;
+    }
 }
 
 bool Boss::UpdateColliderFromBone(

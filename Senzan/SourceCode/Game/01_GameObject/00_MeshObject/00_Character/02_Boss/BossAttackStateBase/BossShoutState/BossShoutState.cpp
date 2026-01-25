@@ -48,6 +48,7 @@ void BossShoutState::Enter()
     //アニメーション速度.
     m_pOwner->SetAnimSpeed(1.5);
     m_pOwner->ChangeAnim(Boss::enBossAnim::LaserCharge);
+    m_EffectPlayed = false;
 }
 
 void BossShoutState::Update()
@@ -63,6 +64,11 @@ void BossShoutState::Update()
         {
             m_pOwner->SetAnimSpeed(1.0);
             m_pOwner->ChangeAnim(Boss::enBossAnim::Laser);
+            if (!m_EffectPlayed && m_pOwner)
+            {
+                m_pOwner->PlayEffect("Shout", m_EffectOffset, m_EffectScale);
+                m_EffectPlayed = true;
+            }
             // シャウト発動: コライダーを有効化し、半径を徐々に広げる準備
             if (auto* shoutCol = m_pOwner->GetShoutCollider()) {
                 shoutCol->SetActive(true);
@@ -83,7 +89,7 @@ void BossShoutState::Update()
         // 更新: コライダー半径を徐々に拡大
         if (auto* shoutCol = m_pOwner->GetShoutCollider()) {
             if (shoutCol->GetActive()) {
-                float dt = Time::GetInstance().GetDeltaTime();
+                float dt = m_pOwner->GetDelta();
                 m_ShoutElapsed += dt;
                 if (m_ShoutExpandTime > 0.0f) {
                     float t = m_ShoutElapsed / m_ShoutExpandTime;
@@ -132,6 +138,11 @@ void BossShoutState::Draw()
 void BossShoutState::Exit()
 {
   
+}
+
+std::pair<Boss::enBossAnim, float> BossShoutState::GetParryAnimPair()
+{
+    return std::pair(Boss::enBossAnim::Slash, 2.358f);
 }
 
 void BossShoutState::DrawImGui()

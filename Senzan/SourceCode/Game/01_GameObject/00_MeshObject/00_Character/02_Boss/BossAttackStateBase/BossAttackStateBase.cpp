@@ -3,6 +3,7 @@
 #include "Game/04_Time/Time.h"
 #include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/Boss.h"
 #include "System/Utility/FileManager/FileManager.h"
+#include "Game/03_Collision/00_Core/02_Sphere/SphereCollider.h"
 
 #include "System/Singleton/ImGui/CImGuiManager.h"
 #include <cstring>
@@ -12,6 +13,93 @@ BossAttackStateBase::BossAttackStateBase(Boss* owner)
     : StateBase<Boss>(owner)
     , m_pTransform(std::make_shared<Transform>())
 {
+}
+
+bool BossAttackStateBase::UpdateColliderWindows(float currentTime, std::vector<ColliderWindow>& windows)
+{
+    bool anyJust = false;
+    for (auto& window : windows)
+    {
+        if (window.IsEnd) { continue; }
+
+        // ジャストタイム判定更新（開始時間 - JustTime ～ 開始時間 の間 true）
+        float justWindowStart = window.Start - window.JustTime;
+        if (window.JustTime > 0.0f && currentTime >= justWindowStart && currentTime < window.Start)
+        {
+            window.IsJustWindow = true;
+            anyJust = true;
+        }
+        else
+        {
+            window.IsJustWindow = false;
+        }
+
+        if (!window.IsAct && currentTime >= window.Start)
+        {
+            m_pOwner->SetColliderActiveByName(window.BoneName, true);
+            // apply current state collider settings to the activated collider so UI changes take effect
+            ColliderBase* targetCol = nullptr;
+            if (window.BoneName == "boss_Hand_R") targetCol = m_pOwner->GetSlashCollider();
+            else if (window.BoneName == "boss_pSphere28") targetCol = m_pOwner->GetStompCollider();
+            else if (window.BoneName == "boss_Shout") targetCol = m_pOwner->GetShoutCollider();
+            else if (window.BoneName == "boss_Spinning") targetCol = m_pOwner->GetSpinningCollider();
+            if (targetCol) {
+                // Use virtual setters so Sphere/Box/Capsule implementations receive values
+                targetCol->SetRadius(m_ColliderWidth);
+                targetCol->SetHeight(m_ColliderHeight);
+                targetCol->SetAttackAmount(m_AttackAmount);
+                // Also apply initial offset
+                targetCol->SetPositionOffset(window.Offset);
+            }
+            window.IsAct = true;
+        }
+        // ジャスト時の1回演出: IsJustWindow が true になった瞬間に実行
+        if (window.IsJustWindow && !window.JustPlayed)
+        {
+            // プレイヤーまたはボス固有の演出をここで実行する。
+            // 例: UI の Parry_Flash を画面上に表示させる
+            if (m_pOwner)
+            {
+                // ボスの頭のワールド位置を取得して画面座標に変換して UI 表示
+                DirectX::XMFLOAT3 headPos{0.0f, 0.0f, 0.0f};
+                // Bone 名が設定されていれば、試しに Mesh からボーン位置を取得
+                if (!m_pOwner->GetResourceName().empty()) {
+                    // Boss のメッシュからボーン位置取得 API がある場合は使用する
+                }
+                // とりあえず画面中央上寄せで表示
+                DirectX::XMFLOAT2 screenPos{ WND_WF * 0.5f, WND_HF * 0.5f };
+                auto charPtr = dynamic_cast<Character*>(m_pOwner);
+                if (charPtr)
+                {
+                    charPtr->PlayEffectUIAtScreenPos("Parry_Flash", screenPos, 100.0f);
+                }
+            }
+            window.JustPlayed = true;
+        }
+
+        // 当たり判定が有効な間、毎フレームオフセットを更新
+        // ColliderBase::GetPosition()が親の回転を自動適用するため、ローカルオフセットをそのまま設定
+        if (window.IsAct && !window.IsEnd)
+        {
+            ColliderBase* targetCol = nullptr;
+            if (window.BoneName == "boss_Hand_R") targetCol = m_pOwner->GetSlashCollider();
+            else if (window.BoneName == "boss_pSphere28") targetCol = m_pOwner->GetStompCollider();
+            else if (window.BoneName == "boss_Shout") targetCol = m_pOwner->GetShoutCollider();
+            else if (window.BoneName == "boss_Spinning") targetCol = m_pOwner->GetSpinningCollider();
+            if (targetCol) {
+                // ColliderBase provides SetPositionOffset; call on base pointer so all collider types are supported
+                targetCol->SetPositionOffset(window.Offset.x, window.Offset.y, window.Offset.z);
+                targetCol->SetDebugInfo();
+            }
+        }
+
+        if (window.IsAct && !window.IsEnd && currentTime >= (window.Start + window.Duration))
+        {
+            m_pOwner->SetColliderActiveByName(window.BoneName, false);
+            window.IsEnd = true;
+        }
+    }
+    return anyJust;
 }
 
 DirectX::XMFLOAT3 BossAttackStateBase::ComputeMovementEndPos(const MovementWindow& mv, const DirectX::XMFLOAT3& startPos, const DirectX::XMFLOAT3& targetPos) const
@@ -57,16 +145,41 @@ void BossAttackStateBase::Enter()
         m_pOwner->SetColliderActiveByName("boss_Hand_R", false);
         m_pOwner->SetColliderActiveByName("boss_pSphere28", false);
         m_pOwner->SetColliderActiveByName("boss_Shout", false);
+        m_pOwner->SetColliderActiveByName("boss_Spinning", false);
 
-        // 攻撃開始時にプレイヤー方向を向く
-        const DirectX::XMFLOAT3& bossPos = m_pOwner->GetPosition();
-        const DirectX::XMFLOAT3& playerPos = m_pOwner->m_PlayerPos;
-        
-        float dx = playerPos.x - bossPos.x;
-        float dz = playerPos.z - bossPos.z;
-        
-        // atan2 でプレイヤー方向への角度を計算（モデルの向きに合わせて調整）
-        float angle_radian = std::atan2f(-dx, -dz);
+        // 攻撃開始時にプレイヤー方向を向く（デフォルトで有効）
+        if (m_AutoFaceOnEnter)
+        {
+            FacePlayerInstantYaw();
+        }
+    }
+}
+
+void BossAttackStateBase::FacePlayerInstantYaw()
+{
+    if (!m_pOwner) return;
+    const DirectX::XMFLOAT3 bossPos = m_pOwner->GetPosition();
+    const DirectX::XMFLOAT3 playerPos = m_pOwner->m_PlayerPos;
+    float dx = playerPos.x - bossPos.x;
+    float dz = playerPos.z - bossPos.z;
+    float angle_radian = std::atan2f(-dx, -dz);
+    m_pOwner->SetRotationY(angle_radian);
+}
+
+void BossAttackStateBase::FacePlayerYawContinuous()
+{
+    if (!m_pOwner) return;
+    DirectX::XMFLOAT3 bossPos = m_pOwner->GetPosition();
+    DirectX::XMFLOAT3 playerPos = m_pOwner->GetTargetPos();
+    DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&bossPos);
+    DirectX::XMVECTOR PlayerPosXM = DirectX::XMLoadFloat3(&playerPos);
+    DirectX::XMVECTOR Dir = DirectX::XMVectorSubtract(PlayerPosXM, BossPosXM);
+    Dir = DirectX::XMVectorSetY(Dir, 0.0f);
+    if (DirectX::XMVectorGetX(DirectX::XMVector3LengthSq(Dir)) > 0.0001f)
+    {
+        float dx = DirectX::XMVectorGetX(Dir);
+        float dz = DirectX::XMVectorGetZ(Dir);
+        float angle_radian = std::atan2f(dx, dz) + DirectX::XM_PI;
         m_pOwner->SetRotationY(angle_radian);
     }
 }
@@ -109,66 +222,8 @@ void BossAttackStateBase::UpdateBaseLogic(float dt)
     m_AnimSpeed = currentAnimSpeed;
     m_pOwner->SetAnimSpeed(currentAnimSpeed);
 
-    // 当たり判定更新.
-    bool anyJust = false;
-    for (auto& window : m_ColliderWindows)
-	{
-        if (window.IsEnd) { continue; }
-
-        // ジャストタイム判定更新（開始時間 - JustTime ～ 開始時間 の間 true）
-        float justWindowStart = window.Start - window.JustTime;
-        if (window.JustTime > 0.0f && m_CurrentTime >= justWindowStart && m_CurrentTime < window.Start)
-        {
-            window.IsJustWindow = true;
-            anyJust = true;
-        }
-        else
-        {
-            window.IsJustWindow = false;
-        }
-
-        if (!window.IsAct && m_CurrentTime >= window.Start)
-		{
-			m_pOwner->SetColliderActiveByName(window.BoneName, true);
-			// apply current state collider settings to the activated collider so UI changes take effect
-			{
-				ColliderBase* targetCol = nullptr;
-				if (window.BoneName == "boss_Hand_R") targetCol = m_pOwner->GetSlashCollider();
-				else if (window.BoneName == "boss_pSphere28") targetCol = m_pOwner->GetStompCollider();
-				else if (window.BoneName == "boss_Shout") targetCol = m_pOwner->GetShoutCollider();
-				if (targetCol) {
-					if (auto* cap = dynamic_cast<CapsuleCollider*>(targetCol)) {
-						cap->SetRadius(m_ColliderWidth);
-						cap->SetHeight(m_ColliderHeight);
-						cap->SetAttackAmount(m_AttackAmount);
-					}
-				}
-			}
-			window.IsAct = true;
-		}
-
-        // 当たり判定が有効な間、毎フレームオフセットを更新
-        // ColliderBase::GetPosition()が親の回転を自動適用するため、ローカルオフセットをそのまま設定
-        if (window.IsAct && !window.IsEnd)
-        {
-            ColliderBase* targetCol = nullptr;
-            if (window.BoneName == "boss_Hand_R") targetCol = m_pOwner->GetSlashCollider();
-            else if (window.BoneName == "boss_pSphere28") targetCol = m_pOwner->GetStompCollider();
-            else if (window.BoneName == "boss_Shout") targetCol = m_pOwner->GetShoutCollider();
-            if (targetCol) {
-                if (auto* cap = dynamic_cast<CapsuleCollider*>(targetCol)) {
-                    cap->SetPositionOffset(window.Offset.x, window.Offset.y, window.Offset.z);
-                }
-            }
-        }
-
-        if (window.IsAct && !window.IsEnd && m_CurrentTime >= (window.Start + window.Duration))
-		{
-			m_pOwner->SetColliderActiveByName(window.BoneName, false);
-			window.IsEnd = true;
-		}
-	}
-
+    // 当たり判定更新 (共通ヘルパーを使用)
+    bool anyJust = UpdateColliderWindows(m_CurrentTime, m_ColliderWindows);
     if (m_pOwner) {
         m_pOwner->SetAnyAttackJustWindow(anyJust);
     }
@@ -181,7 +236,8 @@ void BossAttackStateBase::UpdateBaseLogic(float dt)
             // エフェクトを再生
             if (m_pOwner)
             {
-                m_pOwner->SpawnEffect(eff.EffectName, eff.Offset, eff.Scale);
+                m_pOwner->PlayEffect(eff.EffectName, eff.Offset, eff.Scale);
+                (eff.EffectName, eff.Offset, eff.Scale);
             }
             eff.IsPlayed = true;
         }
@@ -670,6 +726,9 @@ nlohmann::json BossAttackStateBase::SerializeSettings() const
         e["start"] = w.Start;
         e["duration"] = w.Duration;
         e["BoneName"] = w.BoneName;
+        // 保存時にオフセットとジャストタイムも書き出す
+        e["offset"] = { w.Offset.x, w.Offset.y, w.Offset.z };
+        e["justTime"] = w.JustTime;
         j["ColliderWindows"].push_back(e);
     }
 
@@ -687,5 +746,10 @@ nlohmann::json BossAttackStateBase::SerializeSettings() const
     }
 
     return j;
+}
+
+std::pair<Boss::enBossAnim, float> BossAttackStateBase::GetParryAnimPair()
+{
+    return { Boss::enBossAnim::none, 0.0f };
 }
 
