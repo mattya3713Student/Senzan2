@@ -173,6 +173,7 @@
     <None Include="tools\add_author_header.py" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Data\Shader\Blur\GaussianBlurRuntime.hlsl" />
     <FxCompile Include="Data\Shader\PMX\Pixel.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>

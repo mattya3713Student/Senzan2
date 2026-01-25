@@ -27,6 +27,7 @@
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
 #include "System/Singleton/ImGui/CImGuiManager.h"
 #include "System/Singleton/SnowBallManager/SnowBallManager.h"
+#include "System/Singleton/PostEffectManager/PostEffectManager.h"
 
 #include "SceneManager/SceneManager.h"
 #include "Graphic/DirectX/DirectX11/DirectX11.h"
@@ -91,6 +92,14 @@ void MattyaTestScene::Update()
 	m_upUI->SetPlayerUlt(m_upPlayer->GetMaxUltValue(), m_upPlayer->GetUltValue());
 
 	m_upUI->Update();
+
+    // デバッグ: 'O' でモーションブラーを試す
+    if (Input::IsKeyPress('O'))
+        PostEffectManager::GetInstance().ResetMotionBlurAccumulation();
+    bool holdO = Input::IsKeyDown('O');
+    PostEffectManager::GetInstance().SetMotionBlurEnabled(holdO);
+    if (holdO) PostEffectManager::GetInstance().SetMotionBlurAmount(0.99f);
+    else PostEffectManager::GetInstance().SetMotionBlurAmount(0.5f);
 }
 
 void MattyaTestScene::LateUpdate()
@@ -117,15 +126,21 @@ void MattyaTestScene::LateUpdate()
 
 void MattyaTestScene::Draw()
 {
-	Shadow::Begin();
-	m_upGround->DrawDepth();
-	Shadow::End();
+    // モーションブラー用のポスト処理を使うか
+    bool useMotion = PostEffectManager::GetInstance().IsMotionBlurEnabled();
+    if (useMotion) PostEffectManager::GetInstance().BeginSceneRender();
+
+    Shadow::Begin();
+    m_upGround->DrawDepth();
+    Shadow::End();
 
     SnowBallManager::GetInstance().Draw();
 
     m_upGround->Draw();
     m_upPlayer->Draw();
     m_upBoss->Draw();
+
+    if (useMotion) PostEffectManager::GetInstance().DrawToBackBuffer();
 
     m_upUI->Draw();
     CollisionVisualizer::GetInstance().Draw();

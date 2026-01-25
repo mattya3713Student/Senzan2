@@ -147,6 +147,12 @@ void GameMain::Update()
 
     UIUpdate();
 
+    bool holdO = Input::IsKeyDown('O');                // 押している間 true
+    if (Input::IsKeyPress('O'))                        // 押した瞬間だけリセット
+        PostEffectManager::GetInstance().ResetMotionBlurAccumulation();
+
+    PostEffectManager::GetInstance().SetMotionBlurEnabled(holdO);
+    PostEffectManager::GetInstance().SetMotionBlurAmount(0.99f); // 極端にしたいなら 0.99
 #if _DEBUG
 	ImGui::Begin("Gamemain Debug");
 	bool gray = PostEffectManager::GetInstance().IsGray();
@@ -181,7 +187,8 @@ void GameMain::Draw()
 
 	const bool useGray = PostEffectManager::GetInstance().IsGray();
 	const bool useCircleGray = PostEffectManager::GetInstance().IsCircleGrayActive();
-	if (useGray || useCircleGray) {
+	const bool useBlur = PostEffectManager::GetInstance().IsBlurEnabled();
+	if (useGray || useCircleGray || useBlur) {
 		PostEffectManager::GetInstance().BeginSceneRender();
 	}
    
@@ -192,7 +199,7 @@ void GameMain::Draw()
 
     SnowBallManager::GetInstance().Draw();
 
-	if (useGray || useCircleGray) {
+	if (useGray || useCircleGray || useBlur) {
 		PostEffectManager::GetInstance().DrawToBackBuffer();
 	}
 
