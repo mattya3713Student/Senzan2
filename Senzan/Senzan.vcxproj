@@ -275,6 +275,7 @@
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossIdolState\BossIdolState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossMoveState\BossMoveState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\03_SnowBall\SnowBallManager.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\ULTSparkle\ULTSparkle.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\SnowBallManager\SnowBallManager.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\04_BackGround\BackGround.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\03_SnowBall\SnowBall.cpp" />
@@ -377,6 +378,7 @@
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossParryState\BossParryState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossSpinningState\BossSpinningState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\03_SnowBall\SnowBallManager.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\ULTSparkle\ULTSparkle.h" />
     <ClInclude Include="SourceCode\System\Singleton\SnowBallManager\SnowBallManager.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\05_SkyDome\SkyDome.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\Select\Select.h" />

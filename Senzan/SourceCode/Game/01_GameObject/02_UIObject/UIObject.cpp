@@ -64,6 +64,13 @@ void UIObject::AttachSprite(const std::shared_ptr<Sprite2D>& pSprite)
 
 //----------------------------------------------------------------.
 
+std::shared_ptr<Sprite2D> UIObject::GetSprite()
+{
+    return m_pSprite.lock();
+}
+
+//----------------------------------------------------------------.
+
 void UIObject::DetachSprite()
 {
 	m_pSprite.reset();

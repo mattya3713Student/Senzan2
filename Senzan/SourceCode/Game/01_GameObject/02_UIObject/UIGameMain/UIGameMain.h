@@ -5,6 +5,7 @@
 /*********************************************
 *	ゲームメインUIクラス.
 **/
+class ULTSparkle;
 
 class UIGameMain
 {
@@ -99,6 +100,7 @@ private:
 
 private:
 	std::vector<std::shared_ptr<UIObject>> m_pUIs;
+	std::shared_ptr<ULTSparkle> m_pULTSparkle;
 	DirectX::XMFLOAT4 m_ComboColor;
 
 	float m_GuageDelSpeed;
