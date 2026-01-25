@@ -64,6 +64,9 @@ void LockOnCamera::Update()
     case eCameraMode::Parry:
         UpdateParryCamera(dt);
         break;
+    case eCameraMode::Special:
+        UpdateSpecialCamera(dt);
+        break;
     }
 
 	ViewAndProjectionUpdate();
@@ -226,6 +229,71 @@ void LockOnCamera::EndParryCamera()
 {
     m_CameraMode = eCameraMode::Normal;
     m_ParryTime = 0.0f;
+}
+
+void LockOnCamera::StartSpecialCamera()
+{
+    m_CameraMode = eCameraMode::Special;
+}
+
+void LockOnCamera::EndSpecialCamera()
+{
+    m_CameraMode = eCameraMode::Normal;
+}
+
+void LockOnCamera::UpdateSpecialCamera(float dt)
+{
+    const auto& player = m_rPlayer.get();
+    const auto& target = m_rTarget.get();
+
+    // 1. 各座標を取得.
+    DirectX::XMVECTOR vPlayerPos = DirectX::XMLoadFloat3(&player.GetPosition());
+    DirectX::XMVECTOR vBossPos = DirectX::XMLoadFloat3(&target.GetPosition());
+
+    // 2. プレイヤーとボスの距離を算出.
+    DirectX::XMVECTOR vDiffPB = DirectX::XMVectorSubtract(vPlayerPos, vBossPos);
+    float distToBoss = DirectX::XMVectorGetX(DirectX::XMVector3Length(vDiffPB));
+
+    DirectX::XMVECTOR vToPlayerDir;
+    if (distToBoss < 0.1f) {
+        DirectX::XMFLOAT3 playerForward = player.GetTransform()->GetForward();
+        vToPlayerDir = DirectX::XMVectorScale(DirectX::XMLoadFloat3(&playerForward), -1.0f);
+    }
+    else {
+        vToPlayerDir = DirectX::XMVector3Normalize(DirectX::XMVectorSetY(vDiffPB, 0.0f));
+    }
+
+    // 注視点をボスに完全ロック.
+    DirectX::XMVECTOR vLookAt = DirectX::XMVectorLerp(vPlayerPos, vBossPos, m_SpecialLookLerp);
+    vLookAt = DirectX::XMVectorAdd(vLookAt, DirectX::XMVectorSet(0.0f, m_LookOffset, 0.0f, 0.0f));
+
+    // 3. カメラ位置を計算（通常と同じ距離・高さ）.
+    float heightScaling = (1.0f / (distToBoss + 1.0f)) * 2.0f;
+    float finalHeight = m_HeightOffset + heightScaling;
+
+    DirectX::XMVECTOR vIdealPos = DirectX::XMVectorAdd(vPlayerPos, DirectX::XMVectorScale(vToPlayerDir, m_Distance));
+    vIdealPos = DirectX::XMVectorAdd(vIdealPos, DirectX::XMVectorSet(0.0f, finalHeight, 0.0f, 0.0f));
+
+    // 4. カメラ位置を更新.
+    DirectX::XMVECTOR vCurrentPos = DirectX::XMLoadFloat3(&m_spTransform.Position);
+    float lerpFactor = std::clamp(m_FollowSpeed * dt, 0.0f, 1.0f);
+    DirectX::XMVECTOR vNextPos = DirectX::XMVectorLerp(vCurrentPos, vIdealPos, lerpFactor);
+    DirectX::XMStoreFloat3(&m_spTransform.Position, vNextPos);
+
+    // 5. 注視点の適用（ボスをロック）.
+    DirectX::XMStoreFloat3(&m_LookPos, vLookAt);
+
+    // 前方ベクトル・右方ベクトル・行列更新.
+    DirectX::XMVECTOR vForward = DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(vLookAt, vNextPos));
+    DirectX::XMStoreFloat3(&m_ForwardVec, vForward);
+
+    DirectX::XMVECTOR vUp = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+    DirectX::XMVECTOR vRight = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(vUp, vForward));
+    DirectX::XMStoreFloat3(&m_RightVec, vRight);
+
+    DirectX::XMMATRIX lookAtMat = DirectX::XMMatrixLookToLH(vNextPos, vForward, vUp);
+    DirectX::XMVECTOR v_Quaternion = DirectX::XMQuaternionRotationMatrix(DirectX::XMMatrixTranspose(lookAtMat));
+    DirectX::XMStoreFloat4(&m_spTransform.Quaternion, v_Quaternion);
 }
 
 void LockOnCamera::SaveSettings() const

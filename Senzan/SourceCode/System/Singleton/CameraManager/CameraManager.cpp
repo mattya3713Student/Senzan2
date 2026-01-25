@@ -40,6 +40,30 @@ void CameraManager::StartParryCamera()
 	}
 }
 
+// 必殺技カメラ演出を開始.
+void CameraManager::StartSpecialCamera()
+{
+	if (m_wpCamera.expired()) { return; }
+
+	auto lockOnCamera = std::dynamic_pointer_cast<LockOnCamera>(m_wpCamera.lock());
+	if (lockOnCamera)
+	{
+		lockOnCamera->StartSpecialCamera();
+	}
+}
+
+// 必殺技カメラ演出を終了.
+void CameraManager::EndSpecialCamera()
+{
+	if (m_wpCamera.expired()) { return; }
+
+	auto lockOnCamera = std::dynamic_pointer_cast<LockOnCamera>(m_wpCamera.lock());
+	if (lockOnCamera)
+	{
+		lockOnCamera->EndSpecialCamera();
+	}
+}
+
 void CameraManager::LateUpdate()
 {
     if (m_wpCamera.expired()) { return; }

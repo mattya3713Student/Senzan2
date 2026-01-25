@@ -14,6 +14,9 @@
 #include "Graphic/Shader/ShaderResource.h"
 #include "Graphic/Shader/ShaderCompile.h"
 
+#include "System/Singleton/SceneManager/SceneManager.h"
+#include <string>
+
 #include <stdlib.h>	//マルチバイト文字→Unicode文字変換で必要.
 #include <locale.h>
 
@@ -65,8 +68,11 @@ SkinMesh::SkinMesh()
 	, m_pD3dxMesh(nullptr)
 	, m_FilePath()
 	, m_Frame()
+, m_GlobalAlpha(1.0f)
 {
 }
+
+// (no static scene alpha)
 
 //-------------------------------------------------------------------------------------------------------------------------------------
 
@@ -85,6 +91,7 @@ SkinMesh::~SkinMesh()
 	SAFE_RELEASE(m_pCBufferPerMesh);
 
 	SAFE_RELEASE(m_pD3dxMesh);
+//-------------------------------------------------------------------------------------------------------------------------------------
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------
@@ -345,10 +352,11 @@ void SkinMesh::Render(LPD3DXANIMATIONCONTROLLER pAC)
 		pAC->AdvanceTime(m_AnimSpeed, nullptr);
 	}
   
-	D3DXMATRIX m;
-	D3DXMatrixIdentity(&m);
-	m_pD3dxMesh->UpdateFrameMatrices(m_pD3dxMesh->m_pFrameRoot, &m);
-	DrawFrame(m_pD3dxMesh->m_pFrameRoot);
+    D3DXMATRIX m;
+    D3DXMatrixIdentity(&m);
+    m_pD3dxMesh->UpdateFrameMatrices(m_pD3dxMesh->m_pFrameRoot, &m);
+
+    DrawFrame(m_pD3dxMesh->m_pFrameRoot);
 }
 
 LPD3DXFRAME SkinMesh::FindFrame(LPD3DXFRAME frame, LPCSTR frameName)
@@ -1037,7 +1045,11 @@ void SkinMesh::SendCBufferPerMaterial(MY_SKINMATERIAL* pMaterial)
 		cb.Ambient = pMaterial->Ambient;
 		cb.Diffuse = pMaterial->Diffuse;
 		cb.Specular = pMaterial->Specular;
+		// Emissive のアルファにグローバルアルファを乗算
 		cb.Emissive = pMaterial->Emissive;
+		cb.Diffuse.w *= m_GlobalAlpha;
+		cb.Ambient.w *= m_GlobalAlpha;
+		cb.Specular.w *= m_GlobalAlpha;
 
 		memcpy_s(pDat.pData, pDat.RowPitch,
 			reinterpret_cast<void*>(&cb), sizeof(cb));

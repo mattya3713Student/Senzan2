@@ -4,6 +4,10 @@
 #include "Game/03_Collision/00_Core/00_Box/BoxCollider.h"
 #include "Game/03_Collision/00_Core/01_Capsule/CapsuleCollider.h"
 #include "Game/03_Collision/00_Core/02_Sphere/SphereCollider.h"
+#include "System/Singleton/ResourceManager/EffectManager/EffekseerManager.h"
+#include "System/Singleton/CameraManager/CameraManager.h"
+#include "Resource/Effect/EffectResource.h"
+#include "System/Utility/Math/Math.h"
 
 Character::Character()
 	: MeshObject    ()
@@ -21,6 +25,113 @@ Character::~Character()
 void Character::Update()
 {
 	m_upColliders->SetDebugInfo();
+
+    // 再生中のエフェクトハンドルを更新し、存在しなくなったものを削除する
+    if (!m_EffectHandles.empty())
+    {
+        auto mgr = EffekseerManager::GetInstance().GetManager();
+        const int MIN_AGE_FRAMES = 5; // 最低フレーム保持して即時削除を防止
+        for (auto it = m_EffectHandles.begin(); it != m_EffectHandles.end(); )
+        {
+            auto &entry = *it;
+            int handle = entry.Handle;
+            if (handle == -1) { it = m_EffectHandles.erase(it); continue; }
+
+            // Advance effect playback by one frame (1/60s). UpdateHandle expects frames (1 = 1/60s)
+            EffekseerManager::GetInstance().UpdateHandle(handle);
+
+            // 年齢を増やす
+            entry.AgeFrames += 1;
+
+            // 最低フレーム数に達するまで存在チェックは行わない
+            if (entry.AgeFrames < MIN_AGE_FRAMES) { ++it; continue; }
+
+            if (mgr == nullptr || !mgr->Exists(handle))
+            {
+                std::string msg = std::string("Effect handle ") + std::to_string(handle) + std::string(" expired and removed (Age=") + std::to_string(entry.AgeFrames) + std::string(")");
+                Log::GetInstance().LogInfo(msg);
+                it = m_EffectHandles.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        }
+    }
+}
+
+void Character::PlayEffect(const std::string& effectName, const DirectX::XMFLOAT3& offset, float scale, bool isUI)
+{
+    // EffectResource から取得して Effekseer に再生依頼
+    auto effect = EffectResource::GetResource(effectName);
+    if (effect == nullptr) return;
+
+    DirectX::XMFLOAT3 pos = GetPosition();
+    float x = pos.x + offset.x;
+    float y = pos.y + offset.y;
+    float z = pos.z + offset.z;
+
+    int handle = EffekseerManager::GetInstance().GetManager()->Play(effect, x, y, z);
+    if (handle != -1)
+    {
+        if (!MyMath::IsNearlyEqual(scale, 1.0f))
+        {
+            EffekseerManager::GetInstance().GetManager()->SetScale(handle, scale, scale, scale);
+        }
+        m_EffectHandles.push_back({ handle, 0, isUI });
+    }
+}
+
+void Character::PlayEffectAtWorldPos(const std::string& effectName, const DirectX::XMFLOAT3& worldPos, float scale, bool isUI)
+{
+    auto effect = EffectResource::GetResource(effectName);
+    if (effect == nullptr) return;
+
+    int handle = EffekseerManager::GetInstance().GetManager()->Play(effect, worldPos.x, worldPos.y, worldPos.z);
+    if (handle != -1)
+    {
+        if (!MyMath::IsNearlyEqual(scale, 1.0f))
+        {
+            EffekseerManager::GetInstance().GetManager()->SetScale(handle, scale, scale, scale);
+        }
+        m_EffectHandles.push_back({ handle, 0, isUI });
+    }
+}
+
+void Character::PlayEffectUIAtScreenPos(const std::string& effectName, const DirectX::XMFLOAT2& screenPos, float scale)
+{
+    auto effect = EffectResource::GetResource(effectName);
+    if (effect == nullptr) return;
+
+    // Effekseer: Play with orthographic coordinates requires using RenderHandleUI later.
+    int handle = EffekseerManager::GetInstance().GetManager()->Play(effect, screenPos.x, screenPos.y, 0.0f);
+    if (handle != -1)
+    {
+        if (!MyMath::IsNearlyEqual(scale, 1.0f))
+        {
+            EffekseerManager::GetInstance().GetManager()->SetScale(handle, scale, scale, scale);
+        }
+        m_EffectHandles.push_back({ handle, 0, true });
+    }
+}
+
+void Character::PlayEffectAtWorldPos(const std::string& effectName, const DirectX::XMFLOAT3& worldPos, const DirectX::XMFLOAT3& eulerRotation, float scale, bool isUI)
+{
+    auto effect = EffectResource::GetResource(effectName);
+    if (effect == nullptr) return;
+
+    int handle = EffekseerManager::GetInstance().GetManager()->Play(effect, worldPos.x, worldPos.y, worldPos.z);
+    if (handle != -1)
+    {
+        // 回転指定がある場合は Effekseer の SetRotation を使用（ラジアンで渡す）
+        EffekseerManager::GetInstance().GetManager()->SetRotation(handle, eulerRotation.x, eulerRotation.y, eulerRotation.z);
+
+        if (!MyMath::IsNearlyEqual(scale, 1.0f))
+        {
+            EffekseerManager::GetInstance().GetManager()->SetScale(handle, scale, scale, scale);
+        }
+        m_EffectHandles.push_back({ handle, 0, isUI });
+    }
 }
 
 void Character::LateUpdate()
@@ -31,6 +142,23 @@ void Character::LateUpdate()
 void Character::Draw()
 {
 	MeshObject::Draw();
+
+    // 再生中のエフェクトを描画
+    if (!m_EffectHandles.empty())
+    {
+        auto camera = CameraManager::GetInstance().GetCurrentCamera();
+        for (auto &entry : m_EffectHandles)
+        {
+            if (entry.Handle == -1) continue;
+            if (entry.IsUI) {
+                // UI エフェクトは正射影で描画
+                EffekseerManager::GetInstance().RenderHandleUI(entry.Handle);
+            }
+            else {
+                if (camera) EffekseerManager::GetInstance().RenderHandle(entry.Handle, camera.get());
+            }
+        }
+    }
 }
 
 // 衝突応答処理.

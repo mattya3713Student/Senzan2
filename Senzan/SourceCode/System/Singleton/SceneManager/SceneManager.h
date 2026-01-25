@@ -42,6 +42,9 @@ private:
 public:
 	~SceneManager();
 
+    // Returns true when the currently active scene is the Mattya test scene.
+    bool IsCurrentSceneMattya() const;
+
 	// データの読み込み.
 	void LoadData();
 

@@ -107,6 +107,22 @@ void DirectSound::SetVolume(int volume)
     m_lpSoundBuffer->SetVolume(dsVolume);
 }
 
+int DirectSound::GetVolume() const
+{
+    if (!m_lpSoundBuffer) return 10000;
+
+    LONG dsVolume = 0;
+    if (SUCCEEDED(m_lpSoundBuffer->GetVolume(&dsVolume))) {
+        // dsVolume is in range DSBVOLUME_MIN .. DSBVOLUME_MAX (-10000..0)
+        int volume = static_cast<int>(dsVolume + 10000);
+        if (volume < 0) volume = 0;
+        if (volume > 10000) volume = 10000;
+        return volume;
+    }
+
+    return 10000;
+}
+
 bool DirectSound::LoadWavFile(const std::wstring& fileName, WaveData* outWaveData)
 {
     HMMIO mmioHandle = mmioOpenW((LPWSTR)fileName.c_str(), NULL, MMIO_READ);

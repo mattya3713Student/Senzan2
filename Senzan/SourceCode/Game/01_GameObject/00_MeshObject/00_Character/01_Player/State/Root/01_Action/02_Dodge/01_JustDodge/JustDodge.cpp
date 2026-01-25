@@ -5,6 +5,7 @@
 #include "Game/05_InputDevice/VirtualPad.h"
 #include "System/Singleton/CameraManager/CameraManager.h"
 #include "System/Singleton/PostEffectManager/PostEffectManager.h"
+#include "Resource/Effect/EffectResource.h"
 
 #include "../Dodge.h"
 
@@ -33,13 +34,23 @@ void JustDodge::Enter()
 	m_Distance = 250.f;
 	m_MaxTime = 1.8f;
 
-    Time::GetInstance().SetWorldTimeScale(0.1f, 1.5f, true);
-
     m_pOwner->SetIsLoop(false);
     m_pOwner->SetAnimSpeed(JUSTDODGE_ANIM_SPEED);
     m_pOwner->ChangeAnim(Player::eAnim::Dodge);
 
-    PostEffectManager::GetInstance().SetGray(true);
+    PostEffectManager::GetInstance().StartCircleGrayEffect(0.2f, m_MaxTime - 0.5f, 0.3f);
+
+    // ゲージ増加
+    m_pOwner->m_CurrentUltValue += 300.0f;
+
+    // UI用エフェクト再生（画面中央に黄色い閃光）
+    auto effect = EffectResource::GetResource("Hit2"); // TODO: JustDodgeFlash用エフェクトに差し替え
+    if (effect != nullptr)
+    {
+        float screenX = static_cast<float>(WND_W) * 0.5f;
+        float screenY = static_cast<float>(WND_H) * 0.5f;
+        m_UIEffectHandle = EffekseerManager::GetInstance().GetManager()->Play(effect, screenX, screenY, 0.0f);
+    }
 }
 
 void JustDodge::Update()
@@ -86,6 +97,23 @@ void JustDodge::Update()
     m_pOwner->m_MoveVec.x = final_move.x;
     m_pOwner->m_MoveVec.y = final_move.z;
 
+
+    // UI用エフェクト描画（スクリーン座標系）
+    if (m_UIEffectHandle != -1)
+    {
+        // エフェクトがまだ再生中かチェック
+        if (EffekseerManager::GetInstance().GetManager()->Exists(m_UIEffectHandle))
+        {
+            EffekseerManager::GetInstance().UpdateHandle(m_UIEffectHandle);
+            EffekseerManager::GetInstance().RenderHandleUI(m_UIEffectHandle);
+        }
+        else
+        {
+            // 再生終了したのでハンドルをリセット
+            m_UIEffectHandle = -1;
+        }
+    }
+
 	// 回避完了.
 	if (m_currentTime >= m_MaxTime)
 	{
@@ -109,6 +137,19 @@ void JustDodge::Exit()
 {
 	Dodge::Exit();
     PostEffectManager::GetInstance().SetGray(false);
+
+    // UIエフェクトが有効なハンドルなら停止して解放する
+    if (m_UIEffectHandle != -1)
+    {
+        // 念のため Effekseer のマネージャー側にも存在確認のうえ停止を試みる（ラッパーが無い場合の保険）
+        if (EffekseerManager::GetInstance().GetManager()->Exists(m_UIEffectHandle))
+        {
+            EffekseerManager::GetInstance().GetManager()->StopEffect(m_UIEffectHandle);
+        }
+
+        m_UIEffectHandle = -1;
+    }
 }
 
 } // PlayerState.
+

@@ -26,8 +26,11 @@
 #include "System/Singleton/CameraManager/CameraManager.h"
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
 #include "System/Singleton/ImGui/CImGuiManager.h"
+#include "System/Singleton/SnowBallManager/SnowBallManager.h"
+#include "System/Singleton/PostEffectManager/PostEffectManager.h"
 
 #include "SceneManager/SceneManager.h"
+#include "Graphic/DirectX/DirectX11/DirectX11.h"
 
 // コンストラクタ.
 MattyaTestScene::MattyaTestScene()
@@ -81,6 +84,7 @@ void MattyaTestScene::Update()
     if(Input::IsKeyPress('I'))
         m_upPlayer->Update();
     m_pCamera->Update();
+    SnowBallManager::GetInstance().Update();
 
     m_upUI->SetBossHP(m_upBoss->GetMaxHP(), m_upBoss->GetHP());
 	m_upUI->SetCombo(m_upPlayer->GetCombo());
@@ -114,16 +118,24 @@ void MattyaTestScene::LateUpdate()
 
 void MattyaTestScene::Draw()
 {
-	Shadow::Begin();
-	m_upGround->DrawDepth();
-	Shadow::End();
+    // モーションブラー用のポスト処理を使うか
+    bool useMotion = PostEffectManager::GetInstance().IsMotionBlurEnabled();
+    if (useMotion) PostEffectManager::GetInstance().BeginSceneRender();
+
+    Shadow::Begin();
+    m_upGround->DrawDepth();
+    Shadow::End();
+
+    SnowBallManager::GetInstance().Draw();
 
     m_upGround->Draw();
-	m_upPlayer->Draw();
-	m_upBoss->Draw();
+    m_upPlayer->Draw();
+    m_upBoss->Draw();
 
-	m_upUI->Draw();
-	CollisionVisualizer::GetInstance().Draw();
+    if (useMotion) PostEffectManager::GetInstance().DrawToBackBuffer();
+
+    m_upUI->Draw();
+    CollisionVisualizer::GetInstance().Draw();
 }
 
 HRESULT MattyaTestScene::LoadData()

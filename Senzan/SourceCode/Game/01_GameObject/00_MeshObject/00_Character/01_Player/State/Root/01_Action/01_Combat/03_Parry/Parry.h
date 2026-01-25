@@ -1,11 +1,11 @@
-#pragma once
+﻿#pragma once
 #include "../Combat.h"
 
 class Player;
 
 /**************************************************
-*	�v���C���[�̃p���B�̃X�e�[�g(�h��).
-*	�S��:���e ����.
+*	プレイヤーのパリィのステート(派生).
+*	担当:淵脇 未来.
 **/
 
 namespace PlayerState {
@@ -15,7 +15,7 @@ namespace PlayerState {
         Parry(Player* owner);
         ~Parry();
 
-        // ID�̎擾.
+        // IDの取得.
         constexpr PlayerState::eID GetStateID() const override;
 
         void Enter() override;
@@ -25,6 +25,13 @@ namespace PlayerState {
         void Exit() override;
 
     private:
-        bool m_IsParrySuccessful;
+        // パリィ成功を待つための一時停止制御
+        float m_ElapsedTime = 0.0f;
+        float m_PauseThreshold = 1.12f; // この時間経過後にアニメ速度を0にする
+        // パリィ判定が成功しなかった場合にステートを抜けるまでの最大待機時間
+        float m_MaxWaitTime = 1.5f; // 秒
+        bool m_IsPaused = false;
+        bool m_IsAnimEndStart = false;
+        bool m_IsFastTime = false;
     };
 }

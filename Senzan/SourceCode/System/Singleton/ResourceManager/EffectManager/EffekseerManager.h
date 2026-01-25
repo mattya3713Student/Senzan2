@@ -82,12 +82,29 @@ public:
 	static DirectX::XMMATRIX ConvertToXMMatrix(const ::Effekseer::Matrix44& matrixEfk);
 
 
+	/*******************************************************************
+	* @brief 背景テクスチャを設定（歪みエフェクト用）.
+	* @param[in] pSRV：背景のシェーダーリソースビュー.
+	* @note 歪み(distortion)エフェクトを使用する場合は描画前に呼び出す.
+	*******************************************************************/
+	void SetBackgroundTexture(ID3D11ShaderResourceView* pSRV);
+
+	/*******************************************************************
+	* @brief 背景テクスチャをクリア.
+	*******************************************************************/
+	void ClearBackgroundTexture();
+
 public: // Getter.
 
 	/*******************************************************************
 	* @brief マネージャーを取得.
 	*******************************************************************/
 	const ::Effekseer::ManagerRef GetManager() const;
+
+	/*******************************************************************
+	* @brief レンダラーを取得.
+	*******************************************************************/
+	const EffekseerRendererDX11::RendererRef GetRenderer() const { return m_pRenderer; }
 
 private:
 

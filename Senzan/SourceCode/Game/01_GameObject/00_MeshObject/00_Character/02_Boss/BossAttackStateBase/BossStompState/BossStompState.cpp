@@ -22,6 +22,8 @@ BossStompState::BossStompState(Boss* owner)
 	, m_TargetPos(0.0f, 0.0f, 0.0f)
 	, m_StartPos_Stomp(0.0f, 0.0f, 0.0f)
 	, m_HasLanded(false)
+    , m_SlowDuration(1.5f)
+    , m_SlowElapsed(0.0f)
 {
     // 初期設定をファイルから読み込む（存在すれば上書き）
     try { LoadSettings(); } catch (...) {}
@@ -38,6 +40,7 @@ void BossStompState::DrawImGui()
     CImGuiManager::Slider<float>(IMGUI_JP("遅延秒数"), m_WaitSeconds, 0.0f, 5.0f, true);
     // legacy pre-slow removed
     CImGuiManager::Slider<float>(IMGUI_JP("遅延中アニメ速度"), m_SlowAnimSpeed, 0.0f, 2.0f, true);
+    CImGuiManager::Slider<float>(IMGUI_JP("スロー継続時間"), m_SlowDuration, 0.0f, 10.0f, true);
     // pre-slow removed; use m_WaitSeconds / m_SlowAnimSpeed
     // 上昇/落下パラメータは一時無効化
     // CImGuiManager::Slider<float>(IMGUI_JP("上昇時間"), m_AscentTime, 0.0f, 5.0f, true);
@@ -55,6 +58,32 @@ void BossStompState::DrawImGui()
     }
 
     BossAttackStateBase::DrawImGui();
+
+    // 当たり判定デバッグ表示の追加
+    auto* pStompCollider = m_pOwner->GetStompCollider();
+    if (pStompCollider) {
+        ImGui::Separator();
+        ImGui::Text(IMGUI_JP("Stomp Collider Debug"));
+        // 有効/無効トグル (runtime collider active)
+        bool active = pStompCollider->GetActive();
+        if (ImGui::Checkbox(IMGUI_JP("コライダー有効"), &active)) {
+            pStompCollider->SetActive(active);
+        }
+        // 半径調整 (SphereCollider などが実装している SetRadius を利用)
+        float radius = pStompCollider->GetRadius();
+        if (ImGui::SliderFloat(IMGUI_JP("半径"), &radius, 0.0f, 200.0f)) {
+            pStompCollider->SetRadius(radius);
+        }
+        // ダメージ量の表示/編集
+        float dmg = pStompCollider->GetAttackAmount();
+        if (ImGui::SliderFloat(IMGUI_JP("ダメージ"), &dmg, 0.0f, 100.0f)) {
+            pStompCollider->SetAttackAmount(dmg);
+        }
+
+        
+    }
+
+    // collider windows are managed by base class (use BossAttackStateBase::DrawImGui)
     ImGui::End();
 #endif
 }
@@ -77,6 +106,27 @@ void BossStompState::LoadSettings()
     if (j.contains("ForwardSpeed")) m_ForwardSpeed = j["ForwardSpeed"].get<float>();
     if (j.contains("WaitSeconds")) m_WaitSeconds = j["WaitSeconds"].get<float>();
     if (j.contains("SlowAnimSpeed")) m_SlowAnimSpeed = j["SlowAnimSpeed"].get<float>();
+    if (j.contains("SlowDuration")) m_SlowDuration = j["SlowDuration"].get<float>();
+    if (j.contains("StompRadius")) m_StompRadius = j["StompRadius"].get<float>();
+    if (j.contains("StompDamage")) m_StompDamage = j["StompDamage"].get<float>();
+    if (j.contains("StompActive")) m_StompActive = j["StompActive"].get<bool>();
+    // (local collider windows moved to base m_ColliderWindows)
+    // stomp コライダー設定の読み込み
+    if (j.contains("StompRadius") || j.contains("StompDamage") || j.contains("StompActive")) {
+        auto* pStomp = m_pOwner ? m_pOwner->GetStompCollider() : nullptr;
+        if (j.contains("StompRadius")) {
+            float r = j["StompRadius"].get<float>();
+            if (pStomp) pStomp->SetRadius(r);
+        }
+        if (j.contains("StompDamage")) {
+            float d = j["StompDamage"].get<float>();
+            if (pStomp) pStomp->SetAttackAmount(d);
+        }
+        if (j.contains("StompActive")) {
+            bool a = j["StompActive"].get<bool>();
+            if (pStomp) pStomp->SetActive(a);
+        }
+    }
     // no additional parameters
     // オフセットは ColliderWindow で管理
 }
@@ -91,6 +141,17 @@ void BossStompState::SaveSettings() const
     j["ForwardSpeed"] = m_ForwardSpeed;
     j["WaitSeconds"] = m_WaitSeconds;
     j["SlowAnimSpeed"] = m_SlowAnimSpeed;
+    j["SlowDuration"] = m_SlowDuration;
+    j["StompRadius"] = m_StompRadius;
+    j["StompDamage"] = m_StompDamage;
+    j["StompActive"] = m_StompActive;
+    // collider windows persisted via base SerializeSettings/SaveSettings
+    // stomp コライダー設定保存
+    if (auto* pStomp = m_pOwner ? m_pOwner->GetStompCollider() : nullptr) {
+        j["StompRadius"] = pStomp->GetRadius();
+        j["StompDamage"] = pStomp->GetAttackAmount();
+        j["StompActive"] = pStomp->GetActive();
+    }
     // no additional parameters
 
     auto filePath = GetSettingsFileName();
@@ -108,16 +169,23 @@ BossStompState::~BossStompState()
 
 void BossStompState::Enter()
 {
+    // Load settings when entering the state so runtime changes are applied immediately
+    try { LoadSettings(); } catch (...) {}
+
+    // Use base enter to initialize common timers/windows and reset m_CurrentTime
+    BossAttackStateBase::Enter();
+
 	m_Velocity = { 0.0f, 0.0f, 0.0f };
 	m_GroundedFrag = true;
 	m_HasLanded = false;
     // 初期化: タイマーとフラグをリセット
     m_AnimSlowed = false;
     m_IsMoving = false;
-    m_StateTimer = 0.0f;
 
     m_pOwner->SetIsLoop(false);
     m_pOwner->SetAnimTime(0.0);
+
+    m_SlowElapsed = 0.0f;
 
 	//向きだけプレイヤーに合わせる.
 	const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
@@ -149,19 +217,31 @@ void BossStompState::Update()
 {
     // 呼び出し位置: 基底の Update を先に実行して ImGui を表示・デバッグ停止を反映する
     BossAttackStateBase::Update();
-
-	auto* pStompCollider = m_pOwner->GetStompCollider();
+    // use base timing and windows
+    float dt = m_pOwner->GetDelta();
+    if (!m_IsDebugStop) UpdateBaseLogic(dt);
+    auto* pStompCollider = m_pOwner->GetStompCollider();
 
 	switch (m_List)
 	{
-	case BossStompState::enAttack::None:
-		// 指定秒数経過でアニメをスローにする
-		m_StateTimer += Time::GetInstance().GetDeltaTime();
-		if (!m_AnimSlowed && m_StateTimer >= m_WaitSeconds) {
-			m_AnimSlowed = true;
-			m_pOwner->SetAnimSpeed(m_SlowAnimSpeed);
-		}
+    case BossStompState::enAttack::None:
+        // 指定秒数経過でアニメをスローにする (use m_CurrentTime from base)
+        if (!m_AnimSlowed && m_CurrentTime >= m_WaitSeconds) {
+            m_AnimSlowed = true;
+            m_pOwner->SetAnimSpeed(m_SlowAnimSpeed);
+            // start slow elapsed timer
+            m_SlowElapsed = 0.0f;
+        }
 
+        if (m_AnimSlowed) {
+            m_SlowElapsed += dt;
+            if (m_SlowElapsed >= m_SlowDuration) {
+                m_AnimSlowed = false;
+                m_pOwner->SetAnimSpeed(1.0f);
+            }
+        }
+
+        FacePlayerInstantYaw();
 		// Special_0 が終了したら座標移動を開始して Special_1 を再生
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Special_0) && !m_IsMoving)
 		{
@@ -169,9 +249,7 @@ void BossStompState::Update()
 			m_pOwner->SetAnimSpeed(1.0f);
 			m_pOwner->ChangeAnim(Boss::enBossAnim::Special_1);
 			m_List = enAttack::Stomp;
-			// setup movement easing parameters
 			m_MoveTimer = 0.0f;
-			// compute horizontal distance & direction toward player
 			DirectX::XMFLOAT3 bossPos = m_pOwner->GetPosition();
 			DirectX::XMFLOAT3 playerPos = m_pOwner->m_PlayerPos;
 			playerPos.y = 0.0f; bossPos.y = 0.0f;
@@ -192,7 +270,7 @@ void BossStompState::Update()
 		// 移動中のみ BossAttack を実行
 		if (m_IsMoving) {
 			// advance move timer
-			m_MoveTimer += Time::GetInstance().GetDeltaTime();
+			m_MoveTimer += m_pOwner->GetDelta();
 			// run BossAttack which now performs eased movement based on m_MoveTimer/m_MoveDuration
 			BossAttack();
 		}
@@ -208,9 +286,6 @@ void BossStompState::Update()
 			auto* pStompCollider = m_pOwner->GetStompCollider();
 			if (pStompCollider) pStompCollider->SetActive(false);
 		}
-
-
-		// (処理を上に統合したため削除)
 		break;
 	case BossStompState::enAttack::CoolTime:
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::SpecialToIdol))
@@ -241,9 +316,14 @@ void BossStompState::Exit()
 	// m_pOwner->SetPositionY(0.0f);
 }
 
+std::pair<Boss::enBossAnim, float> BossStompState::GetParryAnimPair()
+{
+    return std::pair(Boss::enBossAnim::Special_1, 0.918f);
+}
+
 void BossStompState::BossAttack()
 {
-    float dt = Time::GetInstance().GetDeltaTime();
+    float dt = m_pOwner->GetDelta();
 
     // progress for movement easing (0..1)
     float progress = m_MoveDuration > 0.0f ? (m_MoveTimer / m_MoveDuration) : 1.0f;

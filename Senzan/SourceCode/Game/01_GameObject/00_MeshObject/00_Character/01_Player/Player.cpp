@@ -1,4 +1,4 @@
-#include "Player.h"
+ï»¿#include "Player.h"
 #include "System/Utility/StateMachine/StateMachine.h"
 
 #include "State/PlayerStateID.h"
@@ -35,10 +35,9 @@
 #include "System/Singleton/CameraManager/CameraManager.h"
 #include "System/Singleton/ParryManager/ParryManager.h"
 #include "Graphic/DirectX/DirectX11/DirectX11.h"
+#include "Resource/Effect/EffectResource.h"
+#include <random>
 
-namespace {
-    ::Effekseer::Handle m_EffectHandle = -1;
-}
 Player::Player()
 	: Character         ()
 	, m_RootState       ( std::make_unique<PlayerState::Root>(this) )
@@ -62,26 +61,27 @@ Player::Player()
 	, m_DebugRepeatOnExit( false )
 	, m_DebugWasInForcedState( false )
 {
-	// ƒXƒe[ƒg‚Ì‰Šú‰».
+	// ã‚¹ãƒ†ãƒ¼ãƒˆã®åˆæœŸåŒ–.
 	InitializeStateRefMap();
 
-	// ƒƒbƒVƒ…‚ÌƒAƒ^ƒbƒ`.
+	// ãƒ¡ãƒƒã‚·ãƒ¥ã®ã‚¢ã‚¿ãƒƒãƒ.
 	auto mesh = ResourceManager::GetSkinMesh("player");
-	_ASSERT_EXPR(mesh != nullptr, "ƒƒbƒVƒ…‚Ìæ“¾‚É¸”s");
+	_ASSERT_EXPR(mesh != nullptr, "ãƒ¡ãƒƒã‚·ãƒ¥ã®å–å¾—ã«å¤±æ•—");
 	AttachMesh(mesh);
 
-	//ƒfƒoƒbƒNŠm”F‚Ì‚½‚ß.
+	//ãƒ‡ãƒãƒƒã‚¯ç¢ºèªã®ãŸã‚.
 	DirectX::XMFLOAT3 pos = { 0.f, 0.f, -20.f };
 	m_spTransform->SetPosition(pos);
 
 	DirectX::XMFLOAT3 scale = { 3.f, 3.f, 3.f };
 	m_spTransform->SetScale(scale);
 
-	m_MaxHP = 100.f;
+	m_MaxHP = 10000.f;
 	m_HP = m_MaxHP;
 
-	// ”íƒ_ƒ‚Ì’Ç‰Á.
-	std::unique_ptr<CapsuleCollider> damage_collider = std::make_unique<CapsuleCollider>(m_spTransform);
+	// è¢«ãƒ€ãƒ¡ã®è¿½åŠ .
+	std::unique_ptr<CapsuleCollider> damage_collider
+        = std::make_unique<CapsuleCollider>(m_spTransform);
 
 	m_pDamageCollider = damage_collider.get();
 
@@ -94,7 +94,7 @@ Player::Player()
 
 	m_upColliders->AddCollider(std::move(damage_collider));
 
-	// ƒpƒŠƒB‚Ì’Ç‰Á.
+	// ãƒ‘ãƒªã‚£ã®è¿½åŠ .
 	std::unique_ptr<CapsuleCollider> parry_collider = std::make_unique<CapsuleCollider>(m_spTransform);
 
 	m_pParryCollider = parry_collider.get();
@@ -104,12 +104,11 @@ Player::Player()
 	parry_collider->SetHeight(2.0f);
 	parry_collider->SetRadius(0.5f);
 	parry_collider->SetPositionOffset(0.f, 1.5f, 0.f);
-	parry_collider->SetMyMask(eCollisionGroup::Player_Parry);
+	parry_collider->SetMyMask(eCollisionGroup::Player_Parry_Fai | eCollisionGroup::Player_Parry_Suc);
 	parry_collider->SetTarGetTargetMask(eCollisionGroup::Enemy_Attack);
-
 	m_upColliders->AddCollider(std::move(parry_collider));
 
-	// ƒWƒƒƒXƒg‰ñ”ğ‚Ì’Ç‰Á.
+	// ã‚¸ãƒ£ã‚¹ãƒˆå›é¿ã®è¿½åŠ .
 	std::unique_ptr<CapsuleCollider> justdodge_collider = std::make_unique<CapsuleCollider>(m_spTransform);
 
 	justdodge_collider->SetColor(Color::eColor::Gray);
@@ -121,7 +120,7 @@ Player::Player()
 
 	m_upColliders->AddCollider(std::move(justdodge_collider));
 
-	// ‰Ÿ‚µ–ß‚µ‚Ì’Ç‰Á.
+	// æŠ¼ã—æˆ»ã—ã®è¿½åŠ .
 	std::unique_ptr<CapsuleCollider> pressCollider = std::make_unique<CapsuleCollider>(m_spTransform);
 
 	pressCollider->SetColor(Color::eColor::Cyan);
@@ -133,7 +132,7 @@ Player::Player()
 
 	m_upColliders->AddCollider(std::move(pressCollider));
 
-	// UŒ‚‚Ì’Ç‰Á.
+	// æ”»æ’ƒã®è¿½åŠ .
 	std::unique_ptr<CapsuleCollider> attackCollider = std::make_unique<CapsuleCollider>(m_spTransform);
 
 	m_pAttackCollider = attackCollider.get();
@@ -149,11 +148,9 @@ Player::Player()
 
 	m_upColliders->AddCollider(std::move(attackCollider));
 
-	// If other attack colliders existed before, they should be registered similarly.
-
 	CollisionDetector::GetInstance().RegisterCollider(*m_upColliders);
 
-	// ŠeƒXƒe[ƒg‚Ì‰Šú‰».
+	// å„ã‚¹ãƒ†ãƒ¼ãƒˆã®åˆæœŸåŒ–.
 	m_RootState.get()->Enter();
 }
 
@@ -169,9 +166,7 @@ void Player::Update()
 {
 	Character::Update();
 
-	m_IsSuccessParry = false;
-
-	// ƒXƒe[ƒg‘JˆÚ‚Ìƒ`ƒFƒbƒN.
+	// ã‚¹ãƒ†ãƒ¼ãƒˆé·ç§»ã®ãƒã‚§ãƒƒã‚¯.
 	if (m_NextStateID != PlayerState::eID::None)
 	{
 		m_RootState->ChangeState(m_NextStateID);
@@ -195,14 +190,15 @@ void Player::LateUpdate()
 		return;
 	}
 
-	// ƒXƒe[ƒgƒ}ƒV[ƒ“‚ÌÅIXV‚ğÀs.
+	// ã‚¹ãƒ†ãƒ¼ãƒˆãƒã‚·ãƒ¼ãƒ³ã®æœ€çµ‚æ›´æ–°ã‚’å®Ÿè¡Œ.
 	m_RootState->LateUpdate();
 
-	// ‰Ÿ‚µ–ß‚µ.
+	// æŠ¼ã—æˆ»ã—.
 	HandleCollisionResponse();
 
-	// Õ“ËƒCƒxƒ“ƒgˆ—‚ğÀs
-	HandleParryDetection();
+    // è¡çªã‚¤ãƒ™ãƒ³ãƒˆå‡¦ç†ã‚’å®Ÿè¡Œ
+    HandleParry_SuccessDetection();
+    HandleParry_FailDetection();
 	HandleDamageDetection();
 	HandleAttackDetection();
 	HandleDodgeDetection();
@@ -210,39 +206,21 @@ void Player::LateUpdate()
 
 void Player::Draw()
 {
-	// ƒ‚ƒfƒ‹‚ÌŠÖŒW‚Å‘OŒã”½“].
+	// ãƒ¢ãƒ‡ãƒ«ã®é–¢ä¿‚ã§å‰å¾Œåè»¢.
 	m_spTransform->SetRotationY(GetRotation().y + D3DXToRadian(180.0f));
 
 	Character::Draw();
 
 	m_spTransform->SetRotationY(GetRotation().y - D3DXToRadian(180.0f));
-
-    EffekseerManager::GetInstance().RenderHandle(m_EffectHandle, CameraManager::GetInstance().GetCurrentCamera().get());
-
-	// UI—pƒGƒtƒFƒNƒg•`‰æiƒXƒNƒŠ[ƒ“À•WŒnj
-	if (m_UIEffectHandle != -1)
-	{
-		// ƒGƒtƒFƒNƒg‚ª‚Ü‚¾Ä¶’†‚©ƒ`ƒFƒbƒN
-		if (EffekseerManager::GetInstance().GetManager()->Exists(m_UIEffectHandle))
-		{
-			EffekseerManager::GetInstance().UpdateHandle(m_UIEffectHandle);
-			EffekseerManager::GetInstance().RenderHandleUI(m_UIEffectHandle);
-		}
-		else
-		{
-			// Ä¶I—¹‚µ‚½‚Ì‚Åƒnƒ“ƒhƒ‹‚ğƒŠƒZƒbƒg
-			m_UIEffectHandle = -1;
-		}
-	}
 }
 
-// ƒmƒbƒN’†‚©.
+// ãƒãƒƒã‚¯ä¸­ã‹.
 bool Player::IsKnockBack() const noexcept
 {
 	return m_IsKnockBack;
 }
 
-// €–S’†‚©.
+// æ­»äº¡ä¸­ã‹.
 bool Player::IsDead() const noexcept
 {
 	return m_IsDead;
@@ -253,17 +231,45 @@ bool Player::IsParry() const noexcept
 	return m_IsSuccessParry;
 }
 
-// ƒ|[ƒY’†‚©.
+// ãƒãƒ¼ã‚ºä¸­ã‹.
 bool Player::IsPaused() const noexcept
 {
 	return false;
 }
 
-// ƒXƒe[ƒg‚Ì•ÏX.
+// ã‚¹ãƒ†ãƒ¼ãƒˆã®å¤‰æ›´.
 void Player::ChangeState(PlayerState::eID id)
 {
-	m_NextStateID = id;
-	//m_RootState.get()->ChangeState(id);
+    // é·ç§»ã‚¹ãƒ†ãƒ¼ãƒˆãŒã‚ˆã‚Šå„ªå…ˆåº¦ã®é«˜ã„ã»ã†ã‚’è¨­å®š.
+    auto IsSystemState = [](PlayerState::eID s) {
+        return s == PlayerState::eID::Pause ||
+               s == PlayerState::eID::KnockBack ||
+               s == PlayerState::eID::Dead ||
+               s == PlayerState::eID::SpecialAttack;
+    };
+
+    // ã¾ã äºˆç´„ãŒãªã„å ´åˆã¯ãã®ã¾ã¾ã‚»ãƒƒãƒˆ
+    if (m_NextStateID == PlayerState::eID::None)
+    {
+        m_NextStateID = id;
+        return;
+    }
+
+    // æ–°ã—ã„é·ç§»ãŒSystemå´ãªã‚‰å„ªå…ˆã—ã¦ä¸Šæ›¸ã
+    if (IsSystemState(id))
+    {
+        m_NextStateID = id;
+        return;
+    }
+
+    // æ—¢ã«äºˆç´„ã•ã‚Œã¦ã„ã‚‹é·ç§»ãŒSystemå´ãªã‚‰ãã‚Œã‚’å„ªå…ˆï¼ˆä¸Šæ›¸ãã—ãªã„ï¼‰
+    if (IsSystemState(m_NextStateID))
+    {
+        return;
+    }
+
+    // ãã‚Œä»¥å¤–ã¯æ–°ã—ã„é·ç§»ã§ä¸Šæ›¸ãã™ã‚‹
+    m_NextStateID = id;
 }
 
 std::reference_wrapper<PlayerStateBase> Player::GetStateReference(PlayerState::eID id)
@@ -287,31 +293,31 @@ std::reference_wrapper<PlayerStateBase> Player::GetStateReference(PlayerState::e
 	}
 }
 
-// ƒ}ƒbƒsƒ“ƒO‚ğ‰Šú‰»‚·‚éƒwƒ‹ƒp[ŠÖ”.
+// ãƒãƒƒãƒ”ãƒ³ã‚°ã‚’åˆæœŸåŒ–ã™ã‚‹ãƒ˜ãƒ«ãƒ‘ãƒ¼é–¢æ•°.
 void Player::InitializeStateRefMap()
 {
-	// --- SystemƒXƒe[ƒg ---.
+	// --- Systemã‚¹ãƒ†ãƒ¼ãƒˆ ---.
 	m_StateRefMap[PlayerState::eID::Pause]          = [this] { return m_RootState->GetPauseStateRef(); };
 	m_StateRefMap[PlayerState::eID::KnockBack]      = [this] { return m_RootState->GetKnockBackStateRef(); };
 	m_StateRefMap[PlayerState::eID::Dead]           = [this] { return m_RootState->GetDeadStateRef(); };
 	m_StateRefMap[PlayerState::eID::SpecialAttack]  = [this] { return m_RootState->GetSpecialAttackStateRef(); };
 
-	// --- MovementƒXƒe[ƒg ---.
+	// --- Movementã‚¹ãƒ†ãƒ¼ãƒˆ ---.
 	m_StateRefMap[PlayerState::eID::Idle]           = [this] { return m_RootState->GetIdleStateRef(); };
 	m_StateRefMap[PlayerState::eID::Run]            = [this] { return m_RootState->GetRunStateRef(); };
 
-	// --- DodgeƒXƒe[ƒg ---.
+	// --- Dodgeã‚¹ãƒ†ãƒ¼ãƒˆ ---.
 	m_StateRefMap[PlayerState::eID::DodgeExecute]   = [this] { return m_RootState->GetDodgeExecuteStateRef(); };
 	m_StateRefMap[PlayerState::eID::JustDodge]      = [this] { return m_RootState->GetJustDodgeStateRef(); };
 
-	// --- CombatƒXƒe[ƒg ---.
+	// --- Combatã‚¹ãƒ†ãƒ¼ãƒˆ ---.
 	m_StateRefMap[PlayerState::eID::AttackCombo_0]  = [this] { return m_RootState->GetCombo0StateRef(); };
 	m_StateRefMap[PlayerState::eID::AttackCombo_1]  = [this] { return m_RootState->GetCombo1StateRef(); };
 	m_StateRefMap[PlayerState::eID::AttackCombo_2]  = [this] { return m_RootState->GetCombo2StateRef(); };
 	m_StateRefMap[PlayerState::eID::Parry]          = [this] { return m_RootState->GetParryStateRef(); };
 }
 
-// Õ“Ë_”íƒ_ƒ[ƒW.
+// è¡çª_è¢«ãƒ€ãƒ¡ãƒ¼ã‚¸.
 void Player::HandleDamageDetection()
 {
 	if (!m_upColliders) return;
@@ -339,23 +345,23 @@ void Player::HandleDamageDetection()
 				SoundManager::GetInstance().Play("Damage");
 				SoundManager::GetInstance().SetVolume("Damage",7000);
 
-				// Šù‚ÉƒXƒ^ƒ“’†‚â–³“GŠÔ‚Å‚ ‚ê‚Îˆ—‚ğ’†’f
+				// æ—¢ã«ã‚¹ã‚¿ãƒ³ä¸­ã‚„ç„¡æ•µæ™‚é–“ã§ã‚ã‚Œã°å‡¦ç†ã‚’ä¸­æ–­
 				if (IsKnockBack() || IsDead()) { continue; }
 
 				m_Combo = 0;
 
-				// ƒ_ƒ[ƒW‚ğ“K—p 
+				// ãƒ€ãƒ¡ãƒ¼ã‚¸ã‚’é©ç”¨ 
 				ApplyDamage(info.AttackAmount);
 
 				m_KnockBackVec = info.Normal;
 				m_KnockBackPower = 100.f;
 
-				// ó‘Ô‚ğƒmƒbƒNƒoƒbƒN‚É‘JˆÚ‚³‚¹‚é
+				// çŠ¶æ…‹ã‚’ãƒãƒƒã‚¯ãƒãƒƒã‚¯ã«é·ç§»ã•ã›ã‚‹
 				ChangeState(PlayerState::eID::KnockBack);
 
-				CameraManager::GetInstance().ShakeCamera(0.5f, 4.5f); // ƒJƒƒ‰‚ğ­‚µ—h‚ç‚·.
+				CameraManager::GetInstance().ShakeCamera(0.5f, 4.5f); // ã‚«ãƒ¡ãƒ©ã‚’å°‘ã—æºã‚‰ã™.
 
-				// 1ƒtƒŒ[ƒ€‚É1‰ñ.
+				// 1ãƒ•ãƒ¬ãƒ¼ãƒ ã«1å›.
 				return;
 			}
 		}
@@ -384,14 +390,24 @@ void Player::HandleAttackDetection()
 
 			eCollisionGroup other_group = otherCollider->GetMyMask();
 
-			if ((other_group & eCollisionGroup::Enemy_Damage) != eCollisionGroup::None)
-			{
-                auto effect = EffectResource::GetResource("Hit2");
+            if ((other_group & eCollisionGroup::Enemy_Damage) != eCollisionGroup::None)
+            {
+                for (int i = 0; i < 3; ++i)
+                { // å°ã•ãªãƒ©ãƒ³ãƒ€ãƒ ã‚ªãƒ•ã‚»ãƒƒãƒˆã‚’è¿½åŠ ã—ã¦ã‚¨ãƒ•ã‚§ã‚¯ãƒˆä½ç½®ã«æºã‚‰ãã‚’æŒãŸã›ã‚‹
+                    static thread_local std::mt19937 s_rng((std::random_device())());
+                    std::uniform_real_distribution<float> dist(-1.2f, 1.2f);
+                    std::uniform_real_distribution<float> rotDist(0.0f, DirectX::XM_2PI);
 
-                m_EffectHandle =
-                    EffekseerManager::GetInstance().GetManager()
-                    ->Play(effect, info.ContactPoint.x, info.ContactPoint.y + 1.5f, info.ContactPoint.z);
+                    DirectX::XMFLOAT3 jitterPos{
+                        info.ContactPoint.x + dist(s_rng),
+                        info.ContactPoint.y + 1.5f + dist(s_rng),
+                        info.ContactPoint.z + dist(s_rng)
+                    };
 
+                    // ãƒ©ãƒ³ãƒ€ãƒ å›è»¢ï¼ˆãƒ©ã‚¸ã‚¢ãƒ³ï¼‰ã‚’ä½œæˆã—ã¦ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã«æ¸¡ã™
+                    DirectX::XMFLOAT3 eulerRot{ rotDist(s_rng), rotDist(s_rng), rotDist(s_rng) };
+                    PlayEffectAtWorldPos("Hit2", jitterPos, eulerRot);
+                }
 				SoundManager::GetInstance().Play("Hit1");
 				SoundManager::GetInstance().SetVolume("Hit1", 9000);
 
@@ -399,7 +415,7 @@ void Player::HandleAttackDetection()
 				m_CurrentUltValue = std::clamp(m_CurrentUltValue + (static_cast<float>(m_Combo) * 5.f), 0.0f, m_MaxUltValue);
 				SetAttackColliderActive(false);
 
-				// ˆêƒtƒŒ[ƒ€1‰ñ.
+				// ä¸€ãƒ•ãƒ¬ãƒ¼ãƒ 1å›.
 				return;
 			}
 		}
@@ -426,24 +442,13 @@ void Player::HandleDodgeDetection()
 			const ColliderBase* otherCollider = info.ColliderB;
 			if (!otherCollider) { continue; }
 
-			// ƒWƒƒƒXƒg‰ñ”ğ¬Œ÷
+			// ã‚¸ãƒ£ã‚¹ãƒˆå›é¿æˆåŠŸ
 			m_IsJustDodgeTiming = true;
-			// ƒQ[ƒW‘‰Á
-			m_CurrentUltValue += 300.0f;
-
-			// UI—pƒGƒtƒFƒNƒgÄ¶i‰æ–Ê’†‰›‚É‰©F‚¢‘MŒõj
-			auto effect = EffectResource::GetResource("Hit2"); // TODO: JustDodgeFlash—pƒGƒtƒFƒNƒg‚É·‚µ‘Ö‚¦
-			if (effect != nullptr)
-			{
-				float screenX = static_cast<float>(WND_W) * 0.5f;
-				float screenY = static_cast<float>(WND_H) * 0.5f;
-				m_UIEffectHandle = EffekseerManager::GetInstance().GetManager()->Play(effect, screenX, screenY, 0.0f);
-			}
 		}
 	}
 }
 
-void Player::HandleParryDetection()
+void Player::HandleParry_SuccessDetection()
 {
 	if (!m_upColliders) return;
 
@@ -453,7 +458,7 @@ void Player::HandleParryDetection()
 	{
 		const ColliderBase* current_collider = collider_ptr.get();
 
-		if ((current_collider->GetMyMask() & eCollisionGroup::Player_Parry) == eCollisionGroup::None) {
+		if ((current_collider->GetMyMask() & eCollisionGroup::Player_Parry_Suc) == eCollisionGroup::None) {
 			continue;
 		}
 
@@ -464,21 +469,101 @@ void Player::HandleParryDetection()
 			if (!otherCollider) { continue; }
 
 			eCollisionGroup other_group = otherCollider->GetMyMask();
+            eCollisionGroup other_target_group = otherCollider->GetTargetMask();
 
-			if ((other_group & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None)
+			if ((other_group & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None
+                && (other_target_group & eCollisionGroup::Player_Parry_Suc) != eCollisionGroup::None)
 			{
 				SoundManager::GetInstance().Play("Parry");
 				SoundManager::GetInstance().SetVolume("Parry",7000);
 				m_IsSuccessParry = true;
 				
-				// ƒpƒŠƒB¬Œ÷‚ÌƒQ[ƒW‘‰Á
+				// ãƒ‘ãƒªã‚£æˆåŠŸæ™‚ã®ã‚²ãƒ¼ã‚¸å¢—åŠ 
 				m_CurrentUltValue += 500.0f;
 
-				// ƒpƒŠƒB¬Œ÷‚ÌƒJƒƒ‰‰‰oiƒVƒFƒCƒNj
+				// ãƒ‘ãƒªã‚£æˆåŠŸæ™‚ã®ã‚«ãƒ¡ãƒ©æ¼”å‡ºï¼ˆã‚·ã‚§ã‚¤ã‚¯ï¼‰
 				CameraManager::GetInstance().ShakeCamera(0.15f, 0.3f);
-				
-				// ˆêƒtƒŒ[ƒ€1‰ñ.
+
+                ParryManager::GetInstance().OnParrySuccess(true);
+
+            // ãƒ‘ãƒªã‚£ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã‚’è¡çªç‚¹ã«å‡ºã™ï¼ˆå°ã•ãªãƒ©ãƒ³ãƒ€ãƒ ã‚ªãƒ•ã‚»ãƒƒãƒˆã‚’è¿½åŠ ï¼‰
+                for(int i = 0 ; i < 3; ++i)
+            {
+                static thread_local std::mt19937 s_rng((std::random_device())());
+                std::uniform_real_distribution<float> dist(-1.15f, 1.15f);
+                std::uniform_real_distribution<float> rotDist(0.0f, DirectX::XM_2PI);
+                DirectX::XMFLOAT3 jitterPos{
+                    info.ContactPoint.x + dist(s_rng),
+                    info.ContactPoint.y + 3.5f+ dist(s_rng),
+                    info.ContactPoint.z + dist(s_rng)
+                };
+                DirectX::XMFLOAT3 eulerRot{ rotDist(s_rng), rotDist(s_rng), rotDist(s_rng) };
+                PlayEffectAtWorldPos("Spark", jitterPos, eulerRot, 3.f);
+            }
+
+                DirectX::XMFLOAT3 pos = info.ContactPoint;
+                pos.y += 8.5f;
+                PlayEffectAtWorldPos("Parry_Attack", info.ContactPoint);
+				// ä¸€ãƒ•ãƒ¬ãƒ¼ãƒ 1å›.
 				return;
+			}
+		}
+	}
+}
+
+
+void Player::HandleParry_FailDetection()
+{
+	if (!m_upColliders) return;
+
+	const auto& internal_colliders = m_upColliders->GetInternalColliders();
+
+	for (const auto& collider_ptr : internal_colliders)
+	{
+		const ColliderBase* current_collider = collider_ptr.get();
+
+		if ((current_collider->GetMyMask() & eCollisionGroup::Player_Parry_Fai) == eCollisionGroup::None) {
+			continue;
+		}
+
+		for (const CollisionInfo& info : current_collider->GetCollisionEvents())
+		{
+			if (!info.IsHit) continue;
+			const ColliderBase* otherCollider = info.ColliderB;
+			if (!otherCollider) { continue; }
+
+			eCollisionGroup other_group = otherCollider->GetMyMask();
+			eCollisionGroup other_target_group = otherCollider->GetTargetMask();
+
+			if ((other_group & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None
+             && (other_target_group & eCollisionGroup::Player_Parry_Fai) != eCollisionGroup::None)
+			{
+				SoundManager::GetInstance().Play("Parry");
+				SoundManager::GetInstance().SetVolume("Parry",7000);
+				m_IsSuccessParry = true;
+				
+				// ãƒ‘ãƒªã‚£æˆåŠŸæ™‚ã®ã‚²ãƒ¼ã‚¸å¢—åŠ 
+				m_CurrentUltValue += 500.0f;
+
+				// ãƒ‘ãƒªã‚£æˆåŠŸæ™‚ã®ã‚«ãƒ¡ãƒ©æ¼”å‡ºï¼ˆã‚·ã‚§ã‚¤ã‚¯ï¼‰
+				CameraManager::GetInstance().ShakeCamera(0.15f, 0.3f);
+			    // Boss ã«é€šçŸ¥ï¼ˆã‚¢ãƒ‹ãƒ¡å†ç”Ÿã®ã¿ï¼‰
+			    ParryManager::GetInstance().OnParrySuccess(false);
+
+                // ãƒ‘ãƒªã‚£ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã‚’è¡çªç‚¹ã«å‡ºã™ï¼ˆãƒ©ãƒ³ãƒ€ãƒ å›è»¢ï¼‰
+                {
+                    static thread_local std::mt19937 s_rng((std::random_device())());
+                    std::uniform_real_distribution<float> rotDist(0.0f, DirectX::XM_2PI);
+                    DirectX::XMFLOAT3 eulerRot{ rotDist(s_rng), rotDist(s_rng), rotDist(s_rng) };
+                    PlayEffectAtWorldPos("Spark", info.ContactPoint, eulerRot);
+                }
+
+                DirectX::XMFLOAT3 pos = info.ContactPoint;
+                pos.y += 8.5f;
+                PlayEffectAtWorldPos("Parry_Attack", info.ContactPoint);
+
+			// ä¸€ãƒ•ãƒ¬ãƒ¼ãƒ 1å›.
+			return;
 			}
 		}
 	}

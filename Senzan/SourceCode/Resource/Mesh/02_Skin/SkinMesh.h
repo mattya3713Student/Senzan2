@@ -84,6 +84,11 @@ public:
 	
 	LPD3DXFRAME GetFrameByName(LPCSTR frameName);
 
+    // グローバルなアルファ値を設定（レンダリング時にマテリアルのアルファに乗算される）
+    void SetGlobalAlpha(float alpha) { m_GlobalAlpha = alpha; }
+    float GetGlobalAlpha() const { return m_GlobalAlpha; }
+
+
 private:
 	LPD3DXFRAME FindFrame(LPD3DXFRAME frame, LPCSTR frameName);
 	// ... ロード・作成関連の private 関数 (入出力の型は D3DX のまま維持) ...
@@ -130,5 +135,8 @@ private:
 	D3DXPARSER* m_pD3dxMesh;	// メッシュ. (変更なし)
 	TCHAR		m_FilePath[256];	// Xファイルのパス. (変更なし)
 	int			m_Frame;			// アニメーションフレーム. (変更なし)
+	// グローバルアルファ値（1.0 = 不透明）
+	float m_GlobalAlpha;
+    // (no scene-wide alpha)
 };
 

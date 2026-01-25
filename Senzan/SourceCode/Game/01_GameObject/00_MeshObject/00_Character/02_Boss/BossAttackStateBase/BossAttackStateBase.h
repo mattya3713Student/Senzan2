@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "System//Utility//StateMachine//StateBase.h"
-#include "Game\03_Collision\00_Core\01_Capsule\CapsuleCollider.h"
+#include "Game\01_GameObject\00_MeshObject\00_Character\02_Boss\Boss.h"
 #include "System/Singleton/ImGui/CImGuiManager.h"
 #include "System/Utility/FileManager/FileManager.h"
 #include "System/Utility/Math/Easing/Easing.h"
@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <utility>
 #include <filesystem>
 #include <algorithm>
 
@@ -17,7 +18,6 @@
 **/
 
 //前方宣言.
-class Boss;
 class Time;
 class ColliderBase;
 class GameObject;
@@ -68,8 +68,9 @@ struct ColliderWindow
     bool IsAct = false;       // 内部フラグ（判定開始済みか）
     bool IsEnd = false;       // 内部フラグ（判定終了済みか）
     bool IsJustWindow = false; // ジャスト判定フラグ（Start - JustTime ～ Start の間 true）
+    bool JustPlayed = false; // 内部フラグ：ジャスト時演出を一度だけ再生する
 
-    void Reset() { IsAct = false; IsEnd = false; IsJustWindow = false; }
+    void Reset() { IsAct = false; IsEnd = false; IsJustWindow = false; JustPlayed = false; }
 };
 
 // エフェクト再生のタイミングを制御する
@@ -121,6 +122,18 @@ public:
     // ステート遷移を許可するか (デバッグ停止時は拒否)
     bool CanChangeState() const override { return !m_IsDebugStop; }
 
+    // PlayerのParry成功時硬直させたいアニメーションとタイミング.
+    virtual std::pair<Boss::enBossAnim, float> GetParryAnimPair(); 
+
+    // --- Player を見る（Yaw のみ）ヘルパー ---
+    // 一度だけ即座にプレイヤーの方を見る
+    void FacePlayerInstantYaw();
+    // 毎フレームプレイヤーの方を向き続ける（呼び出し側が毎フレーム呼ぶ）
+    void FacePlayerYawContinuous();
+
+    // Enter 時に自動でプレイヤーを向くか（デフォルト true）
+    bool m_AutoFaceOnEnter = true;
+
 protected:
     // --- 共通タイムベース制御 ---
     float m_CurrentTime = 0.0f;    // ステートに入ってからの経過時間（秒）
@@ -137,6 +150,11 @@ protected:
     std::vector<EffectWindow>    m_EffectWindows;    // エフェクト再生設定
 
     void UpdateBaseLogic(float dt); // 共通更新ロジック
+    // 共通のコライダーウィンドウ更新ヘルパー
+    // currentTime: 時間基準（秒）
+    // windows: 更新対象のウィンドウ配列（m_ColliderWindows など）
+    // 戻り値: anyJust フラグ
+    bool UpdateColliderWindows(float currentTime, std::vector<ColliderWindow>& windows);
 
     // 派生クラスが移動の終点を独自に決めたい場合にオーバーライドする
     virtual DirectX::XMFLOAT3 ComputeMovementEndPos(const MovementWindow& mv, const DirectX::XMFLOAT3& startPos, const DirectX::XMFLOAT3& targetPos) const;
