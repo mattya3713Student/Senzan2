@@ -185,11 +185,26 @@ Boss::~Boss()
     }
 }
 
+void Boss::GetParryAnimPair()
+{
+    if (m_State && m_State->m_pCurrentState)
+    {
+        // BossAttackStateBase へキャストして設定を取得する
+        auto attackBase = std::dynamic_pointer_cast<BossAttackStateBase>(m_State->m_pCurrentState);
+        if (attackBase)
+        {
+            auto pair = attackBase->GetParryAnimPair();
+            m_ParryPauseSeconds = pair;
+        }
+    }
+}
+
 void Boss::Update()
 {
 	Character::Update();
 
 	m_State->Update();
+ 
 
 #if _DEBUG
     // デバッグ用: ImGui で任意のボスステートに切り替えられるパネル
@@ -256,7 +271,7 @@ void Boss::LateUpdate()
 
 void Boss::Draw()
 {
-	MeshObject::Draw();
+    Character::Draw();
 	m_State->Draw();
 }
 
@@ -282,11 +297,9 @@ void Boss::OnParried(bool withDelay, float delaySeconds)
 {
     // 既にパリィ状態なら何もしない.
     if (m_IsParried) return;
+    GetParryAnimPair();
 
     m_IsParried = true;
-
-    // 全ての攻撃コライダーを無効化.
-    OffAttackCollider();
 
     // BossParryStateへ遷移（遅延フラグと遅延秒を渡す）
     m_State->ChangeState(std::make_shared<BossParryState>(this, withDelay, delaySeconds));
@@ -338,34 +351,12 @@ void Boss::SetTargetPos(const DirectX::XMFLOAT3 Player_Pos)
 	m_PlayerPos = Player_Pos;
 }
 
-void Boss::SpawnEffect(const std::string& effectName, const DirectX::XMFLOAT3& offset, float scale)
-{
-    // エフェクトリソース取得
-    auto effect = EffectResource::GetResource(effectName);
-    if (effect == nullptr) return;
-
-    // ボスの位置を取得してオフセットを加算
-    DirectX::XMFLOAT3 bossPos = GetPosition();
-    DirectX::XMFLOAT3 spawnPos{
-        bossPos.x + offset.x,
-        bossPos.y + offset.y,
-        bossPos.z + offset.z
-    };
-
-    // Effekseer の Play は座標を float で受け取る（ワールド座標系）
-    m_EffectHandle = EffekseerManager::GetInstance().GetManager()
-        ->Play(effect, spawnPos.x, spawnPos.y, spawnPos.z);
-
-    // スケールを適用
-    if (m_EffectHandle != -1 && !MyMath::IsNearlyEqual(scale, 1.0f)) {
-        EffekseerManager::GetInstance().GetManager()->SetScale(m_EffectHandle, scale, scale, scale);
-    }
-}
 
 void Boss::OffAttackCollider() {
     m_pSlashCollider->SetActive(false);
     m_pStompCollider->SetActive(false);
     m_pShoutCollider->SetActive(false);
+    m_pSpinningCollider->SetActive(false);
 }
 
 // 衝突_被ダメージ.
@@ -475,38 +466,36 @@ void Boss::HandleDodgeDetection()
 
 void Boss::HandleParryDetection()
 {
-	if (!m_upColliders) return;
+    // Player側の当たり判定で呼び出し、ParryManagerでBossの初期化実行
 
-	const auto& internal_colliders = m_upColliders->GetInternalColliders();
+	//if (!m_upColliders) return;
 
-	for (const auto& collider_ptr : internal_colliders)
-	{
-		const ColliderBase* current_collider = collider_ptr.get();
+	//const auto& internal_colliders = m_upColliders->GetInternalColliders();
 
-		if ((current_collider->GetMyMask() & eCollisionGroup::Enemy_Attack) == eCollisionGroup::None) {
-			continue;
-		}
+	//for (const auto& collider_ptr : internal_colliders)
+	//{
+	//	const ColliderBase* current_collider = collider_ptr.get();
 
-		for (const CollisionInfo& info : current_collider->GetCollisionEvents())
-		{
-			if (!info.IsHit) continue;
-			const ColliderBase* otherCollider = info.ColliderB;
-			if (!otherCollider) { continue; }
+	//	if ((current_collider->GetMyMask() & eCollisionGroup::Enemy_Attack) == eCollisionGroup::None) {
+	//		continue;
+	//	}
 
-			eCollisionGroup other_group = otherCollider->GetMyMask();
+	//	for (const CollisionInfo& info : current_collider->GetCollisionEvents())
+	//	{
+	//		if (!info.IsHit) continue;
+	//		const ColliderBase* otherCollider = info.ColliderB;
+	//		if (!otherCollider) { continue; }
 
-			if ((other_group & eCollisionGroup::Player_Parry_Fai) != eCollisionGroup::None
-			&& (other_group & eCollisionGroup::Player_Parry_Suc) != eCollisionGroup::None)
-			{
-                OffAttackCollider();
+	//		eCollisionGroup other_group = otherCollider->GetMyMask();
 
-				m_State->ChangeState(std::make_shared<BossParryState>(this));
-
-				// 一フレーム1回.
-				return;
-			}
-		}
-	}
+	//		if ((other_group & eCollisionGroup::Player_Parry_Fai) != eCollisionGroup::None
+	//		&& (other_group & eCollisionGroup::Player_Parry_Suc) != eCollisionGroup::None)
+	//		{
+	//			// 一フレーム1回.
+	//			return;
+	//		}
+	//	}
+	//}
 }
 
 ColliderBase* Boss::GetSlashCollider() const

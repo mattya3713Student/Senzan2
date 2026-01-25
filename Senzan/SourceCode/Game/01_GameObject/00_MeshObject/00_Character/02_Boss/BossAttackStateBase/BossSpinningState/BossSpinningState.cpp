@@ -63,7 +63,7 @@ void BossSpinningState::Enter()
 void BossSpinningState::Update()
 {
     BossAttackStateBase::Update();
-    const float dt = Time::GetInstance().GetDeltaTime();
+    const float dt = m_pOwner->GetDelta();
     UpdateBaseLogic(dt);
 
     switch (m_List)
@@ -154,6 +154,11 @@ void BossSpinningState::Draw()
 void BossSpinningState::Exit()
 {
     BossAttackStateBase::Exit();
+}
+
+std::pair<Boss::enBossAnim, float> BossSpinningState::GetParryAnimPair()
+{
+    return std::pair(Boss::enBossAnim::ChargeAttack, 2.466f);
 }
 
 void BossSpinningState::DrawImGui()

@@ -242,7 +242,7 @@ void BossStompState::Update()
     // 呼び出し位置: 基底の Update を先に実行して ImGui を表示・デバッグ停止を反映する
     BossAttackStateBase::Update();
     // use base timing and windows
-    float dt = Time::GetInstance().GetDeltaTime();
+    float dt = m_pOwner->GetDelta();
     if (!m_IsDebugStop) UpdateBaseLogic(dt);
     auto* pStompCollider = m_pOwner->GetStompCollider();
 
@@ -296,7 +296,7 @@ void BossStompState::Update()
 		// 移動中のみ BossAttack を実行
 		if (m_IsMoving) {
 			// advance move timer
-			m_MoveTimer += Time::GetInstance().GetDeltaTime();
+			m_MoveTimer += m_pOwner->GetDelta();
 			// run BossAttack which now performs eased movement based on m_MoveTimer/m_MoveDuration
 			BossAttack();
 		}
@@ -345,9 +345,14 @@ void BossStompState::Exit()
 	// m_pOwner->SetPositionY(0.0f);
 }
 
+std::pair<Boss::enBossAnim, float> BossStompState::GetParryAnimPair()
+{
+    return std::pair(Boss::enBossAnim::Special_1, 0.918f);
+}
+
 void BossStompState::BossAttack()
 {
-    float dt = Time::GetInstance().GetDeltaTime();
+    float dt = m_pOwner->GetDelta();
 
     // progress for movement easing (0..1)
     float progress = m_MoveDuration > 0.0f ? (m_MoveTimer / m_MoveDuration) : 1.0f;

@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include "..//BossAttackStateBase.h"
-#include "00_MeshObject/00_Character/02_Boss/BossIdolState/BossIdolState.h"
 #include "System/Utility/Math/Easing/Easing.h"
 
 class BossSpinningState
@@ -26,6 +25,9 @@ public:
     void LateUpdate() override;
     void Draw() override;
     void Exit() override;
+
+    // PlayerのParry成功時硬直させたいアニメーションとタイミング.
+    std::pair<Boss::enBossAnim, float> GetParryAnimPair() override;
 
     // ImGui と設定の読み書き
     void DrawImGui() override;

@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "Game/01_GameObject/00_MeshObject/MeshObject.h"
+#include <vector>
 class CompositeCollider;
 
 
@@ -16,6 +17,9 @@ public:
 	virtual void Update() override;
 	virtual void LateUpdate() override;
 	virtual void Draw() override;
+
+    // 再生要求を行い、再生中のエフェクトハンドルを管理する
+    void PlayEffect(const std::string& effectName, const DirectX::XMFLOAT3& offset = DirectX::XMFLOAT3(0.f,0.f,0.f), float scale = 1.0f);
 
 	inline float GetMaxHP() const noexcept { return m_MaxHP; }
 	inline float GetHP() const noexcept { return m_HP; }
@@ -39,6 +43,10 @@ protected:
 
 protected:
 	std::unique_ptr<CompositeCollider>	m_upColliders;	// 衝突.
+
+    // 再生中のエフェクトハンドル群（AgeFrames を保持して即時削除を防止）
+    struct EffectHandleEntry { int Handle = -1; int AgeFrames = 0; };
+    std::vector<EffectHandleEntry> m_EffectHandles;
 
 	float m_MaxHP;							// 最大.
 	float m_HP;								// 体力.

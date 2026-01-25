@@ -118,14 +118,10 @@ void SceneManager::Update()
     // シーンの更新 (遷移中も更新を続けるか、止めるかは仕様に合わせて調整).
     // 一般的には遷移中は Update を止めることが多いです.
     if (!pI.m_IsSceneChanging && pI.m_pScene) {
-        // 1) Update all scene objects
         pI.m_pScene->Update();
 
-        // 2) Execute global collision detection after Update so collision
-        //    events are populated before LateUpdate / collision response.
         CollisionDetector::GetInstance().ExecuteCollisionDetection();
 
-        // 3) LateUpdate (handles collision responses, etc.)
         pI.m_pScene->LateUpdate();
     }
 	

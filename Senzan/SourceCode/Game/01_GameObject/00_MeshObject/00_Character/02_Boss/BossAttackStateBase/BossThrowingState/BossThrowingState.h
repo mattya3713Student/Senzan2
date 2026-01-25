@@ -29,6 +29,9 @@ public:
     void Draw() override;
     void Exit() override;
 
+    // PlayerのParry成功時硬直させたいアニメーションとタイミング.
+    std::pair<Boss::enBossAnim, float> GetParryAnimPair() override;
+
     // ImGui と設定の読み書き
     void DrawImGui() override;
     void LoadSettings() override;

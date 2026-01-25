@@ -122,7 +122,7 @@ void BossAttackStateBase::Enter()
         m_pOwner->SetColliderActiveByName("boss_Hand_R", false);
         m_pOwner->SetColliderActiveByName("boss_pSphere28", false);
         m_pOwner->SetColliderActiveByName("boss_Shout", false);
-        m_pOwner->SetColliderActiveByName("boss_Spin", false);
+        m_pOwner->SetColliderActiveByName("boss_Spinning", false);
 
         // 攻撃開始時にプレイヤー方向を向く
         const DirectX::XMFLOAT3& bossPos = m_pOwner->GetPosition();
@@ -189,7 +189,8 @@ void BossAttackStateBase::UpdateBaseLogic(float dt)
             // エフェクトを再生
             if (m_pOwner)
             {
-                m_pOwner->SpawnEffect(eff.EffectName, eff.Offset, eff.Scale);
+                m_pOwner->PlayEffect(eff.EffectName, eff.Offset, eff.Scale);
+                (eff.EffectName, eff.Offset, eff.Scale);
             }
             eff.IsPlayed = true;
         }
@@ -695,5 +696,10 @@ nlohmann::json BossAttackStateBase::SerializeSettings() const
     }
 
     return j;
+}
+
+std::pair<Boss::enBossAnim, float> BossAttackStateBase::GetParryAnimPair()
+{
+    return { Boss::enBossAnim::none, 0.0f };
 }
 
