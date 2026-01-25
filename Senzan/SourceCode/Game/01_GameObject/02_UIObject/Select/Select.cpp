@@ -87,7 +87,7 @@ void Select::Update()
 {
 	if (!m_DoAnimation) { return; }
 
-	m_Time += Time::GetInstance().GetDeltaTime();
+	m_Time += Time::GetInstance().GetUnscaledDeltaTime();
 
 	float t = std::clamp(m_Time / m_Duration, 0.0f, 1.0f);
 

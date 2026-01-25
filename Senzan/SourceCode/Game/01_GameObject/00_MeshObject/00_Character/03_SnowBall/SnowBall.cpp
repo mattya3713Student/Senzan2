@@ -236,6 +236,9 @@ void SnowBall::HandleHitVisual()
     auto skin = MeshManager::GetInstance().GetSkinMesh("snowball");
     if (skin)
     {
+        SoundManager::GetInstance().Play("BreakSnow",false);
+        SoundManager::GetInstance().SetVolume("BreakSnow",9000);
+
         AttachMesh(skin);
         // 再生するアニメを先頭に切り替え
         ChangeAnim(0);

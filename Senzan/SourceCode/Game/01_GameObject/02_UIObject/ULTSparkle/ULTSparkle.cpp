@@ -13,12 +13,12 @@ ULTSparkle::ULTSparkle(std::shared_ptr<UIObject> pObje)
     , m_Timer           ( 0.0f )
     , m_Duration        ( 0.8f )
     , m_StartScale      ( 0.0f )
-    , m_PeakScale       ( 0.4f )
-    , m_ToPeakTime      ( 0.2f )
+    , m_PeakScale       ( 0.6f )
+    , m_ToPeakTime      ( 0.3f )
     , m_PeakTime        ( 0.6f )
-    , m_StartRotSpead   ( 30.0f )
-    , m_PeakRotSpead    ( 20.0f )
-    , m_EndRotSpead     ( 40.0f )
+    , m_StartRotSpead   ( 10.0f )
+    , m_PeakRotSpead    ( 2.0f )
+    , m_EndRotSpead     ( 7.0f )
 
     , m_IsGaugeMax      ( false )
     , m_SpawnTimer      ( 0.0f )
@@ -144,19 +144,19 @@ void ULTSparkle::UpDateParticles(float dt)
 
 void ULTSparkle::Update()
 {
-    float dt = Time::GetInstance().GetDeltaTime();
+    float dt = Time::GetInstance().GetUnscaledDeltaTime();
     UpDateParticles(dt);
 
     if (m_IsAnimating)
     {
-        m_Timer += Time::GetInstance().GetDeltaTime();
+        m_Timer += dt;
         float duration = 1.f; // 全体時間.
         float progress = m_Timer / duration;
         if (progress > 1.0f) progress = 1.0f;
 
         float currentScale = 0.0f;
         float currentAlpha = 0.0f;
-        float rotationTarget = 0.0f;
+        float rot = m_pMainSparkle->GetRotation().z;
 
         if (progress < m_ToPeakTime)
         {
@@ -166,7 +166,7 @@ void ULTSparkle::Update()
             MyEasing::UpdateEasing(MyEasing::Type::OutCirc, t, 1.0f, 0.0f, m_PeakScale, currentScale);
             MyEasing::UpdateEasing(MyEasing::Type::OutQuint, t, 1.0f, 0.0f, 1.0f, currentAlpha);
             // 回転.
-            rotationTarget = t * m_StartRotSpead * dt;
+            rot += m_StartRotSpead * dt;
         }
         else if (progress < m_PeakTime)
         {
@@ -175,7 +175,7 @@ void ULTSparkle::Update()
             currentAlpha = 1.0f;
             // 維持中もゆっくり回し続ける.
             float t = (progress - m_ToPeakTime) / (m_PeakTime - m_ToPeakTime);
-            rotationTarget = t * m_PeakRotSpead * dt;
+            rot += m_PeakRotSpead * dt;
         }
         else
         {
@@ -184,10 +184,10 @@ void ULTSparkle::Update()
             // InExpoで吸い込まれるように一瞬で消す.
             MyEasing::UpdateEasing(MyEasing::Type::InCirc, t, 1.0f, m_PeakScale, 0.0f, currentScale);
             MyEasing::UpdateEasing(MyEasing::Type::InExpo, t, 1.0f, 1.0f, 0.0f, currentAlpha);
-            rotationTarget = t * m_EndRotSpead * dt;
+            rot += m_EndRotSpead * dt;
         }
 
-        m_pMainSparkle->SetRotation({ 0, 0, rotationTarget });
+        m_pMainSparkle->SetRotation({ 0, 0, rot });
         m_pMainSparkle->SetScale({ currentScale, currentScale, 1.0f });
         m_pMainSparkle->SetAlpha(currentAlpha);
 

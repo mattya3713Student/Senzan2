@@ -457,6 +457,8 @@ void Boss::HandleAttackDetection()
 			if ((other_group & eCollisionGroup::Player_Damage) != eCollisionGroup::None)
 			{
                 OffAttackCollider();
+                SoundManager::Play("Damage");
+                SoundManager::SetVolume("Damage", 9000);
 
 				// 1フレームに1回.
 				return;
