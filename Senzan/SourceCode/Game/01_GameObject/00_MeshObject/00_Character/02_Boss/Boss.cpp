@@ -206,7 +206,7 @@ void Boss::Update()
 	m_State->Update();
  
 
-#if _DEBUG
+#if 1
     // デバッグ用: ImGui で任意のボスステートに切り替えられるボタン群
     if (ImGui::Begin(IMGUI_JP("Boss Debug")))
     {
@@ -437,6 +437,8 @@ void Boss::HandleAttackDetection()
 			if ((other_group & eCollisionGroup::Player_Damage) != eCollisionGroup::None)
 			{
                 OffAttackCollider();
+                SoundManager::Play("Damage");
+                SoundManager::SetVolume("Damage", 9000);
 
 				// 1フレームに1回.
 				return;

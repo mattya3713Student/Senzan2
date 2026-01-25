@@ -72,6 +72,8 @@ bool BossAttackStateBase::UpdateColliderWindows(float currentTime, std::vector<C
                 if (charPtr)
                 {
                     charPtr->PlayEffectUIAtScreenPos("Parry_Flash", screenPos, 100.0f);
+                    SoundManager::GetInstance().Play("Attack", false);
+                    SoundManager::GetInstance().SetVolume("Attack", 9000);
                 }
             }
             window.JustPlayed = true;

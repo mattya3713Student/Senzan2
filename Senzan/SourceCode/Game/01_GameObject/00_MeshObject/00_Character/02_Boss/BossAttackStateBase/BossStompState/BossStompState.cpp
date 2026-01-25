@@ -24,6 +24,10 @@ BossStompState::BossStompState(Boss* owner)
 	, m_HasLanded(false)
     , m_SlowDuration(1.5f)
     , m_SlowElapsed(0.0f)
+
+    , m_JumpedSoundTiming(0.35f)
+    , m_JumpedSoundPlayed(false)
+    , m_LandedSoundPlayed(false)
 {
     // 初期設定をファイルから読み込む（存在すれば上書き）
     try { LoadSettings(); } catch (...) {}
@@ -211,6 +215,9 @@ void BossStompState::Enter()
     m_pOwner->SetAnimSpeed(2.0);
     m_pOwner->ChangeAnim(Boss::enBossAnim::Special_0);
 
+    SoundManager::GetInstance().Play("AttackCharge", false);
+    SoundManager::GetInstance().SetVolume("AttackCharge", 9000);
+
 }
 
 void BossStompState::Update()
@@ -235,6 +242,13 @@ void BossStompState::Update()
 
         if (m_AnimSlowed) {
             m_SlowElapsed += dt;
+
+            if ( m_JumpedSoundTiming < m_SlowElapsed && !m_JumpedSoundPlayed) {
+                SoundManager::GetInstance().Play("Jump", false);
+                SoundManager::GetInstance().SetVolume("Jump", 9500);
+                m_JumpedSoundPlayed = true;
+            }
+
             if (m_SlowElapsed >= m_SlowDuration) {
                 m_AnimSlowed = false;
                 m_pOwner->SetAnimSpeed(1.0f);
@@ -245,6 +259,11 @@ void BossStompState::Update()
 		// Special_0 が終了したら座標移動を開始して Special_1 を再生
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Special_0) && !m_IsMoving)
 		{
+            if (!m_LandedSoundPlayed) {
+                SoundManager::GetInstance().Play("Landing", false);
+                SoundManager::GetInstance().SetVolume("Landing", 10000);
+                m_LandedSoundPlayed = true;
+            }
 			m_IsMoving = true;
 			m_pOwner->SetAnimSpeed(1.0f);
 			m_pOwner->ChangeAnim(Boss::enBossAnim::Special_1);
@@ -291,7 +310,8 @@ void BossStompState::Update()
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::SpecialToIdol))
 		{
            m_List = enAttack::Trans; // Transition to the next state
-		}
+           m_JumpedSoundPlayed = m_LandedSoundPlayed = false;
+        }
 		break;
 
 	case BossStompState::enAttack::Trans:

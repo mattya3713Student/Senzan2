@@ -11,6 +11,9 @@ BossSpinningState::BossSpinningState(Boss* owner)
     : BossAttackStateBase(owner)
     , m_List(enSpinning::None)
     , m_IsSpun(false)
+    , m_SecondSlashTimer(0.f)
+    , m_SecondSlashTiming(3.f)
+    , m_SecondSlashed(false)
 {
 }
 
@@ -29,6 +32,8 @@ void BossSpinningState::Enter()
     m_pOwner->ChangeAnim(Boss::enBossAnim::Charge);
     m_List = enSpinning::Anim;
     m_IsSpun = false;
+    SoundManager::GetInstance().Play("AttackCharge", false);
+    SoundManager::GetInstance().SetVolume("AttackCharge", 9000);
 }
 
 void BossSpinningState::Update()
@@ -36,6 +41,7 @@ void BossSpinningState::Update()
     BossAttackStateBase::Update();
     const float dt = m_pOwner->GetDelta();
     UpdateBaseLogic(dt);
+    m_SecondSlashTimer += dt;
 
     FacePlayerInstantYaw();
     switch (m_List)
@@ -59,8 +65,19 @@ void BossSpinningState::Update()
         if (!m_IsSpun)
         {
             m_IsSpun = true;
+            SoundManager::GetInstance().Play("BossSwing", false);
+            SoundManager::GetInstance().SetVolume("BossSwing", 9000);
+            SoundManager::GetInstance().Play("Throw", false);
+            SoundManager::GetInstance().SetVolume("Throw", 8000);
         }
-
+        if (m_SecondSlashTiming < m_SecondSlashTimer && !m_SecondSlashed)
+        {
+            SoundManager::GetInstance().Play("BossSwing", false);
+            SoundManager::GetInstance().SetVolume("BossSwing", 9000);
+            SoundManager::GetInstance().Play("Throw", false);
+            SoundManager::GetInstance().SetVolume("Throw", 8000);
+            m_SecondSlashed = true;
+        }
         // 攻撃フェーズの進行率 t in [0,1]
         float phaseStart = m_ChargeTime;
         float phaseEnd = m_ChargeTime + m_AttackTime;

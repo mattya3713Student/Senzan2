@@ -97,4 +97,8 @@ private:
 	DirectX::XMFLOAT3 m_StartPos_Stomp;   // 開始位置.
     bool m_HasLanded;               // 着地済みフラグ（ダメージ1回のみ）
     // using base's m_ColliderWindows
+
+    float m_JumpedSoundTiming;
+    bool m_JumpedSoundPlayed;
+    bool m_LandedSoundPlayed;
 };
