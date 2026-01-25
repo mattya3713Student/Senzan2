@@ -59,6 +59,10 @@ void BossSlashState::Update()
         if (m_CurrentTime >= m_ChargeTime)
         {
             m_List = enList::SlashAttack;
+            SoundManager::GetInstance().Play("BossSwing", false);
+            SoundManager::GetInstance().SetVolume("BossSwing", 9000);
+            SoundManager::GetInstance().Play("Throw", false);
+            SoundManager::GetInstance().SetVolume("Throw", 8000);
         }
         break;
 

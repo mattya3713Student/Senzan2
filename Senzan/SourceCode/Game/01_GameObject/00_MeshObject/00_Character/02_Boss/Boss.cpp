@@ -24,6 +24,7 @@
 
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossThrowingState/BossThrowingState.h"
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossSpinningState/BossSpinningState.h"
+#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossLaserState/BossLaserState.h"
 
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
 #include "System/Singleton/CameraManager/CameraManager.h"
@@ -154,7 +155,7 @@ Boss::Boss()
     m_pSpinningCollider->SetMyMask(eCollisionGroup::Enemy_Attack);
     m_pSpinningCollider->SetTarGetTargetMask(
         eCollisionGroup::Player_Damage
-        | eCollisionGroup::Player_Parry_Suc
+        | eCollisionGroup::Player_Parry_Fai
         | eCollisionGroup::Player_JustDodge);
     m_pSpinningCollider->SetAttackAmount(10.0f);
     m_pSpinningCollider->SetHeight(40.0f);
@@ -163,6 +164,22 @@ Boss::Boss()
     m_pSpinningCollider->SetActive(false);
     m_pSpinningCollider->SetColor(Color::eColor::Red);
 	m_upColliders->AddCollider(std::move(spinning_collider));
+
+    // 回転攻撃の当たり判定作成.
+    auto laser_collider = std::make_unique<CapsuleCollider>(m_spTransform);
+	m_pLaserCollider = laser_collider.get();
+    m_pLaserCollider->SetMyMask(eCollisionGroup::Enemy_Attack);
+    m_pLaserCollider->SetTarGetTargetMask(
+        eCollisionGroup::Player_Damage
+        | eCollisionGroup::Player_Parry_Fai
+        | eCollisionGroup::Player_JustDodge);
+    m_pLaserCollider->SetAttackAmount(10.0f);
+    m_pLaserCollider->SetHeight(40.0f);
+    m_pLaserCollider->SetRadius(15.0f);
+    m_pLaserCollider->SetPositionOffset(0.0f, 0.0f, 0.0f);
+    m_pLaserCollider->SetActive(false);
+    m_pLaserCollider->SetColor(Color::eColor::Red);
+	m_upColliders->AddCollider(std::move(laser_collider));
 
     m_State->ChangeState(std::make_shared<BossShoutState>(this));
     /* BossSlashState
@@ -206,7 +223,7 @@ void Boss::Update()
 	m_State->Update();
  
 
-#if _DEBUG
+#if 1
     // デバッグ用: ImGui で任意のボスステートに切り替えられるボタン群
     if (ImGui::Begin(IMGUI_JP("Boss Debug")))
     {
@@ -219,7 +236,8 @@ void Boss::Update()
             IMGUI_JP("JumpOn"),
             IMGUI_JP("Stomp"),
             IMGUI_JP("Throwing"),
-            IMGUI_JP("Parry")
+            IMGUI_JP("Parry"),
+            IMGUI_JP("Laser")
         };
         constexpr int state_count = static_cast<int>(sizeof(state_labels) / sizeof(state_labels[0]));
         const int buttons_per_row = 4;
@@ -244,6 +262,7 @@ void Boss::Update()
                 case 6: m_State->ChangeState(std::make_shared<BossStompState>(this)); break;
                 case 7: m_State->ChangeState(std::make_shared<BossThrowingState>(this)); break;
                 case 8: m_State->ChangeState(std::make_shared<BossParryState>(this)); break;
+                case 9: m_State->ChangeState(std::make_shared<BossLaserState>(this)); break;
                 default: break;
                 }
             }
@@ -370,6 +389,7 @@ void Boss::OffAttackCollider() {
     m_pStompCollider->SetActive(false);
     m_pShoutCollider->SetActive(false);
     m_pSpinningCollider->SetActive(false);
+    m_pLaserCollider->SetActive(false);
 }
 
 // 衝突_被ダメージ.
@@ -437,6 +457,8 @@ void Boss::HandleAttackDetection()
 			if ((other_group & eCollisionGroup::Player_Damage) != eCollisionGroup::None)
 			{
                 OffAttackCollider();
+                SoundManager::Play("Damage");
+                SoundManager::SetVolume("Damage", 9000);
 
 				// 1フレームに1回.
 				return;
@@ -531,6 +553,11 @@ ColliderBase* Boss::GetSpinningCollider() const
     return m_pSpinningCollider;
 }
 
+ColliderBase* Boss::GetLaserCollider() const
+{
+    return m_pLaserCollider;
+}
+
 void Boss::SetColliderActiveByName(const std::string& name, bool active)
 {
 	// NOTE: 文字列は typo を避けるため定数化推奨
@@ -552,6 +579,11 @@ void Boss::SetColliderActiveByName(const std::string& name, bool active)
     if (name == "boss_Spinning")
     {
         if (auto* col = GetSpinningCollider()) col->SetActive(active);
+        return;
+    }
+    if (name == "boss_Laser")
+    {
+        if (auto* col = GetLaserCollider()) col->SetActive(active);
         return;
     }
 }

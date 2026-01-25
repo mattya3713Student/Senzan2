@@ -43,5 +43,8 @@ private:
     float m_RotateTotalDeg = 360.0f; // 攻撃フェーズで回す合計角度
     MyEasing::Type m_EasingType = MyEasing::Type::InOutSine; // デフォルトのイージング
     float m_LastEasedAngle = 0.0f; // ランタイム: 前フレームのイーズ角度
+    float m_SecondSlashTimer;
+    float m_SecondSlashTiming;
+    bool m_SecondSlashed;
     // アニメは Boss::enBossAnim の列挙を直接使用する
 };

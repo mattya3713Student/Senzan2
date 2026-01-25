@@ -24,6 +24,10 @@ BossStompState::BossStompState(Boss* owner)
 	, m_HasLanded(false)
     , m_SlowDuration(1.5f)
     , m_SlowElapsed(0.0f)
+
+    , m_JumpedSoundTiming(0.35f)
+    , m_JumpedSoundPlayed(false)
+    , m_LandedSoundPlayed(false)
 {
     // 初期設定をファイルから読み込む（存在すれば上書き）
     try { LoadSettings(); } catch (...) {}
@@ -211,6 +215,9 @@ void BossStompState::Enter()
     m_pOwner->SetAnimSpeed(2.0);
     m_pOwner->ChangeAnim(Boss::enBossAnim::Special_0);
 
+    SoundManager::GetInstance().Play("AttackCharge", false);
+    SoundManager::GetInstance().SetVolume("AttackCharge", 9000);
+
 }
 
 void BossStompState::Update()
@@ -219,7 +226,7 @@ void BossStompState::Update()
     BossAttackStateBase::Update();
     // use base timing and windows
     float dt = m_pOwner->GetDelta();
-    if (!m_IsDebugStop) UpdateBaseLogic(dt);
+    UpdateBaseLogic(dt);
     auto* pStompCollider = m_pOwner->GetStompCollider();
 
 	switch (m_List)
@@ -235,6 +242,13 @@ void BossStompState::Update()
 
         if (m_AnimSlowed) {
             m_SlowElapsed += dt;
+
+            if ( m_JumpedSoundTiming < m_SlowElapsed && !m_JumpedSoundPlayed) {
+                SoundManager::GetInstance().Play("Jump", false);
+                SoundManager::GetInstance().SetVolume("Jump", 9500);
+                m_JumpedSoundPlayed = true;
+            }
+
             if (m_SlowElapsed >= m_SlowDuration) {
                 m_AnimSlowed = false;
                 m_pOwner->SetAnimSpeed(1.0f);
@@ -245,6 +259,11 @@ void BossStompState::Update()
 		// Special_0 が終了したら座標移動を開始して Special_1 を再生
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Special_0) && !m_IsMoving)
 		{
+            if (!m_LandedSoundPlayed) {
+                SoundManager::GetInstance().Play("Landing", false);
+                SoundManager::GetInstance().SetVolume("Landing", 10000);
+                m_LandedSoundPlayed = true;
+            }
 			m_IsMoving = true;
 			m_pOwner->SetAnimSpeed(1.0f);
 			m_pOwner->ChangeAnim(Boss::enBossAnim::Special_1);
@@ -260,8 +279,11 @@ void BossStompState::Update()
 			m_Distance = dist;
 			DirectX::XMStoreFloat3(&m_MoveVec, DirectX::XMVector3Normalize(DirectX::XMVectorSetY(vDiff, 0.0f)));
 			if (pStompCollider) {
-				pStompCollider->SetRadius(30.0f);
-				pStompCollider->SetAttackAmount(15.0f);
+				// Follow UpdateBaseLogic: set base collider params so UpdateColliderWindows will apply them on activation
+				m_ColliderWidth = (m_StompRadius > 0.0f) ? m_StompRadius : 30.0f; // radius stored in base width
+				m_AttackAmount = (m_StompDamage > 0.0f) ? m_StompDamage : 15.0f;
+				// Position offset / BoneName for activation comes from ColliderWindow (loaded from JSON)
+				// Do not manually SetActive here; UpdateBaseLogic will activate the collider at the configured time.
 			}
 		}
 		break;
@@ -291,7 +313,8 @@ void BossStompState::Update()
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::SpecialToIdol))
 		{
            m_List = enAttack::Trans; // Transition to the next state
-		}
+           m_JumpedSoundPlayed = m_LandedSoundPlayed = false;
+        }
 		break;
 
 	case BossStompState::enAttack::Trans:
@@ -313,6 +336,11 @@ void BossStompState::Exit()
 	m_GroundedFrag = true;
 	// 保存: 実行時に ImGui 等で変更した設定を永続化
 	try { SaveSettings(); } catch (...) {}
+
+	// 退出時に念のため stomp コライダーを無効化
+	if (m_pOwner && m_pOwner->GetStompCollider()) {
+		m_pOwner->GetStompCollider()->SetActive(false);
+	}
 	// m_pOwner->SetPositionY(0.0f);
 }
 

@@ -87,10 +87,11 @@ void Root::LateUpdate()
 
 void Root::Draw()
 {
+    m_CurrentActiveState.get().Draw();
 }
-
 void Root::Exit()
 {
+    m_CurrentActiveState.get().Exit();
 }
 
 // ステートの変更.

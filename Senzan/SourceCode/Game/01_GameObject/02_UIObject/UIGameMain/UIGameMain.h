@@ -13,7 +13,7 @@ class UIGameMain
 	{
 		float Max = 0.0f;
 		float Now = 0.0f;
-		float Before = 0.1f;
+		float Before = 0.0f;
 
 		float InitRate = 1.0f;
 		float Rate = 1.0f;
@@ -34,6 +34,8 @@ class UIGameMain
 		// delay（赤用）.
 		float DelayTime = 0.0f;
 		float DelayMax = 0.4f;
+
+        bool IsInitialized = false;
 
 		void Set(float max, float now);
 		void Update(float dt);

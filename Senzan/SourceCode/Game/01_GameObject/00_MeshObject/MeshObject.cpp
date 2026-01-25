@@ -220,19 +220,18 @@ double MeshObject::GetAnimPeriod(int index) const
 
 void MeshObject::IsLoopAnimTimeSet()
 {
-	// もしループしないなら最終フレームに到達時点でアニメーション固定.
-	if (!m_Isloop) {
-		double EndTime = GetAnimPeriod(m_AnimNo);
-		if (EndTime <= m_AnimTimer) {
-			if (std::shared_ptr<SkinMesh> skinMesh = std::dynamic_pointer_cast<SkinMesh>(m_pMesh.lock()))
-			{
-				while(m_AnimTimer > EndTime)
-					m_AnimTimer -= 0.016;
-				m_pAnimCtrl->SetTrackPosition(0, EndTime);
-				m_AnimSpeed = 0.0;
-			}
-		}
-	}
+    // もしループしないなら最終フレームに到達時点でアニメーション固定.
+    if (!m_Isloop) {
+        double EndTime = GetAnimPeriod(m_AnimNo);
+        if (EndTime <= m_AnimTimer) {
+            if (std::shared_ptr<SkinMesh> skinMesh = std::dynamic_pointer_cast<SkinMesh>(m_pMesh.lock()))
+            {
+                m_AnimTimer = EndTime - 0.016; 
+                m_pAnimCtrl->SetTrackPosition(0, EndTime);
+                m_AnimSpeed = 0.0;
+            }
+        }
+    }
 }
 
 //------------------------------------------------------------------------------------.
