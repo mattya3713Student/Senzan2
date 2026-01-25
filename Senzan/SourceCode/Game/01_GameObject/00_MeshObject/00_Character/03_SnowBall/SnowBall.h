@@ -45,7 +45,8 @@ private:
 	DirectX::XMFLOAT3 Init_Pos;    // 待機位置
 
     float ThrowingTime;
-    const float Totle_ThrowingTime; // 1.5秒で着弾（3.0から修正）
+    // 飛行にかける秒数（インスタンスごとに変更可能）
+    float Totle_ThrowingTime = 0.5f; // デフォルトはコンストラクタで設定
 
 	// 当たり判定.
     std::unique_ptr<CompositeCollider> m_upColliders;
@@ -73,6 +74,6 @@ private:
     // 割れた表示を一度だけ行うフラグ
     bool m_HasBrokenVisual;
 
-    // State helpers
-    // (unused helper declarations removed)
+    // 跳ね返り時の速度
+    float m_BounceSpeed;
 };

@@ -1,24 +1,31 @@
-{
+﻿{
   "AnimSpeeds": {
-    "Attack": 4.256999969482422,
-    "Charge": 1.0,
-    "Exit": 1.0
+    "Attack": 6.385,
+    "Charge": 1.5,
+    "Exit": 1.5
   },
   "ColliderWindows": [
     {
       "BoneName": "boss_Spinning",
-      "duration": 0.5,
-      "start": 2.3610000610351563
+      "duration": 0.333,
+      "justTime": 0.5,
+      "offset": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "start": 1.574
     },
     {
       "BoneName": "boss_Spinning",
-      "duration": 0.30000001192092896,
-      "start": 4.699999809265137
-    },
-    {
-      "BoneName": "boss_Spin",
-      "duration": 4.166999816894531,
-      "start": 2.3610000610351563
+      "duration": 0.2,
+      "justTime": 0.5,
+      "offset": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "start": 3.133
     }
   ],
   "EasingType": 3,
@@ -26,30 +33,30 @@
     {
       "direction_offset_deg": 0.0,
       "distance": 3.0,
-      "duration": 1.0,
+      "duration": 0.667,
       "easing": 3,
       "speed": 10.0,
-      "start": 2.299999952316284,
+      "start": 1.533,
       "use_direction_offset": true
     },
     {
       "direction_offset_deg": 0.0,
       "distance": 1.0,
-      "duration": 1.0,
+      "duration": 0.667,
       "easing": 3,
       "speed": 10.0,
-      "start": 4.400000095367432,
+      "start": 2.933,
       "use_direction_offset": true
     }
   ],
   "RotateTotalDeg": 0.0,
   "m_AttackAmount": 0.0,
-  "m_AttackBoneName": "boss_Spin",
-  "m_AttackTime": 4.166999816894531,
-  "m_ChargeTime": 2.3610000610351563,
+  "m_AttackBoneName": "boss_Spinning",
+  "m_AttackTime": 2.778,
+  "m_ChargeTime": 1.574,
   "m_ColliderHeight": 40.06399917602539,
   "m_ColliderWidth": 16.025999069213867,
-  "m_EndTime": 2.0,
+  "m_EndTime": 1.333,
   "m_TransitionOnAnimEnd_Attack": false,
   "m_TransitionOnAnimEnd_Charge": true,
   "m_TransitionOnAnimEnd_Exit": false

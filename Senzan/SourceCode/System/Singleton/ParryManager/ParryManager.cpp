@@ -30,14 +30,14 @@ void ParryManager::Clear()
 	m_pBoss = nullptr;
 }
 
-void ParryManager::OnParrySuccess(bool withDelay, float delaySeconds)
+void ParryManager::OnParrySuccess(bool withDelay)
 {
     // カメラ演出（シェイク + パリィカメラ）.
     CameraManager::GetInstance().ShakeCamera(0.15f, 0.3f);
     CameraManager::GetInstance().StartParryCamera();
 
     // 円状グレースケールエフェクト開始
-    PostEffectManager::GetInstance().StartCircleGrayEffect(0.2f, 0.4f, 0.3f);
+    PostEffectManager::GetInstance().StartCircleGrayEffect(0.3f, 0.4f, 0.5f);
     // BGMをフェードで少し下げて自動で戻す
     // 下げ時間:0.2s, 保持:1.8s, 戻す:0.4s -> 合計約2.4s
     SoundManager::LowerCurrentBGMVolumeTemporarily(6500, 0.2f, 0.4f, 0.4f);
@@ -47,7 +47,7 @@ void ParryManager::OnParrySuccess(bool withDelay, float delaySeconds)
     // withDelay フラグは Boss 側で解釈して遅延挙動を組み込む。
     if (m_pBoss)
     {
-        m_pBoss->OnParried(withDelay, delaySeconds);
+        m_pBoss->OnParried(withDelay);
     }
 }
 

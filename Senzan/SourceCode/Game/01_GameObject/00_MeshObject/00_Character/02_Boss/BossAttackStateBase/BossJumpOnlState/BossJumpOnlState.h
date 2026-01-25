@@ -31,6 +31,7 @@ public:
 	void Update() override;
 	void LateUpdate() override;
 	void Draw() override;
+    void DrawImGui() override;
 	void Exit() override;
 
     // PlayerのParry成功時硬直させたいアニメーションとタイミング.
@@ -60,6 +61,28 @@ private:
 	bool m_SpecialFrag;
 	//着地フラグ.
 	bool m_GroundedFrag;
+
+    // --- JumpOn specific ---
+    // 高さ上昇量 (ジャンプで上昇する量)
+    float m_RiseHeight;
+    // 上昇速度
+    float m_RiseSpeed;
+    // 再出現までの待機秒数
+    float m_ReappearDelay;
+    // 落下速度
+    float m_FallSpeed;
+    // 内部ターゲットY位置
+    float m_RiseTargetY;
+    // フラグ: 上昇処理開始済み
+    bool m_RiseStarted;
+    // フラグ: 現在落下中
+    bool m_IsFalling;
+    // フラグ: 再出現待ち中
+    bool m_WaitingReappear;
+    // フラグ: 落下モードに入る1秒前のエフェクトを再生済みか
+    bool m_HasPlayedPreFallEffect;
+    // 落下モードに入る何秒前にエフェクトを再生するか
+    float m_PreFallSeconds;
 
 	//時間のメンバ変数.
 	//時間加算に使用する.

@@ -48,8 +48,8 @@ bool SoundManager::LoadAllInternal(HWND hWnd) {
 }
 
 void SoundManager::Play(const std::string& name, bool isLoop) {
-#ifdef _SOUND_STOP_DEBUG
-    //return;
+#if _SOUND_STOP_DEBUG == 1
+    return;
 #endif
 
     auto& inst = GetInstance();

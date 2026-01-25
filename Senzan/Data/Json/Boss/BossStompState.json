@@ -1,34 +1,40 @@
 {
   "AnimSpeeds": {
-    "Attack": 1.0,
-    "Charge": 1.0,
-    "Exit": 1.0
+    "Attack": 1.5,
+    "Charge": 1.5,
+    "Exit": 1.5
   },
   "ColliderWindows": [
     {
       "BoneName": "boss_pSphere28",
-      "duration": 0.6000000238418579,
-      "start": 4.5920000076293945
+      "duration": 0.4000000059604645,
+      "justTime": 0.0,
+      "offset": [
+        0.0,
+        0.0,
+        -15.0
+      ],
+      "start": 3.061000108718872
     }
   ],
   "ForwardSpeed": 15.0,
   "Gravity": 1.5,
   "JumpPower": 5.0,
   "MovementWindows": [],
-  "SlowAnimSpeed": 0.7319999933242798,
-  "SlowDuration": 1.5,
+  "SlowAnimSpeed": 1.0980000495910645,
+  "SlowDuration": 1.0,
   "StompActive": false,
   "StompDamage": 15.0,
   "StompRadius": 7.5,
   "UpSpeed": 1.0,
-  "WaitSeconds": 2.015000104904175,
+  "WaitSeconds": 1.343000054359436,
   "m_AttackAmount": 15.0,
   "m_AttackBoneName": "",
-  "m_AttackTime": 2.815000057220459,
-  "m_ChargeTime": 2.015000104904175,
+  "m_AttackTime": 1.8769999742507935,
+  "m_ChargeTime": 1.343000054359436,
   "m_ColliderHeight": 0.0,
   "m_ColliderWidth": 30.0,
-  "m_EndTime": 5.311999797821045,
+  "m_EndTime": 3.5409998893737793,
   "m_TransitionOnAnimEnd_Attack": false,
   "m_TransitionOnAnimEnd_Charge": false,
   "m_TransitionOnAnimEnd_Exit": false

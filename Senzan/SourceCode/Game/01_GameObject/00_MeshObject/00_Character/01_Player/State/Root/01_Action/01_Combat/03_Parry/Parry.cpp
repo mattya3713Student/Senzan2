@@ -3,6 +3,7 @@
 #include "Game/01_GameObject/00_MeshObject/00_Character/01_Player/Player.h"
 #include "System/Singleton/PostEffectManager/PostEffectManager.h"
 #include "Game/04_Time/Time.h"
+#include <cmath>
 
 namespace PlayerState {
 Parry::Parry(Player* owner)
@@ -48,14 +49,32 @@ void Parry::Update()
     {
         if (!m_IsFastTime)
         {
-            m_pOwner->SetAnimSpeed(2.0f);
+            m_pOwner->SetAnimSpeed(1.7f);
             m_IsFastTime = true;
             m_ElapsedTime = 0.f;
+
+            DirectX::XMFLOAT3 target_pos = m_pOwner->m_TargetPos;
+            DirectX::XMVECTOR v_target_pos = DirectX::XMLoadFloat3(&target_pos);
+            v_target_pos = DirectX::XMVectorSetY(v_target_pos, 0.f);
+            DirectX::XMFLOAT3 player_pos = m_pOwner->GetPosition();
+            DirectX::XMVECTOR v_player_pos = DirectX::XMLoadFloat3(&player_pos);
+            v_player_pos = DirectX::XMVectorSetY(v_player_pos, 0.f);
+
+            DirectX::XMVECTOR v_diff_vec = DirectX::XMVectorSubtract(v_target_pos, v_player_pos);
+            DirectX::XMVECTOR v_Lenght = DirectX::XMVector3Length(v_diff_vec);
+            DirectX::XMStoreFloat(&m_Distance, v_Lenght);
+            v_diff_vec = DirectX::XMVector3Normalize(v_diff_vec);
+            DirectX::XMFLOAT3 diff_vec; DirectX::XMStoreFloat3(&diff_vec, v_diff_vec);
+            float rad = std::atan2f(diff_vec.x, diff_vec.z);            
+            m_pOwner->GetTransform()->SetRotationY(rad);
+
+            m_pOwner->m_MoveVec = diff_vec;
+
         }
         m_ElapsedTime += m_pOwner->GetDelta();
 
         // アニメーション終了時の処理
-        if (m_ElapsedTime >= 1.2f) {
+        if (m_ElapsedTime >= 1.8f) {
             m_pOwner->ChangeState(PlayerState::eID::Idle); // 失敗時も Idle に遷移
         }
     }

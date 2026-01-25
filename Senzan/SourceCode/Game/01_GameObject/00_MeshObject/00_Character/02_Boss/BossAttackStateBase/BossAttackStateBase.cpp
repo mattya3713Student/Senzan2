@@ -67,7 +67,7 @@ bool BossAttackStateBase::UpdateColliderWindows(float currentTime, std::vector<C
                     // Boss のメッシュからボーン位置取得 API がある場合は使用する
                 }
                 // とりあえず画面中央上寄せで表示
-                DirectX::XMFLOAT2 screenPos{ WND_WF * 0.5f, WND_HF * 0.25f };
+                DirectX::XMFLOAT2 screenPos{ WND_WF * 0.5f, WND_HF * 0.5f };
                 auto charPtr = dynamic_cast<Character*>(m_pOwner);
                 if (charPtr)
                 {
@@ -702,6 +702,9 @@ nlohmann::json BossAttackStateBase::SerializeSettings() const
         e["start"] = w.Start;
         e["duration"] = w.Duration;
         e["BoneName"] = w.BoneName;
+        // 保存時にオフセットとジャストタイムも書き出す
+        e["offset"] = { w.Offset.x, w.Offset.y, w.Offset.z };
+        e["justTime"] = w.JustTime;
         j["ColliderWindows"].push_back(e);
     }
 

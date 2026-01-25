@@ -303,7 +303,7 @@ void Boss::OnParried()
     m_State->ChangeState(std::make_shared<BossParryState>(this));
 }
 
-void Boss::OnParried(bool withDelay, float delaySeconds)
+void Boss::OnParried(bool withDelay)
 {
     // 既にパリィ状態なら何もしない.
     if (m_IsParried) return;
@@ -315,7 +315,7 @@ void Boss::OnParried(bool withDelay, float delaySeconds)
     OffAttackCollider();
 
     // BossParryStateへ遷移（遅延フラグと遅延秒を渡す）
-    m_State->ChangeState(std::make_shared<BossParryState>(this, withDelay, delaySeconds));
+    m_State->ChangeState(std::make_shared<BossParryState>(this, withDelay));
 }
 
 StateMachine<Boss>* Boss::GetStateMachine()

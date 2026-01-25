@@ -29,8 +29,6 @@ BossStompState::BossStompState(Boss* owner)
     try { LoadSettings(); } catch (...) {}
 }
 
-// (local collider windows removed — use base m_ColliderWindows and UpdateBaseLogic)
-
 void BossStompState::DrawImGui()
 {
 #if _DEBUG
@@ -187,29 +185,7 @@ void BossStompState::Enter()
     m_pOwner->SetIsLoop(false);
     m_pOwner->SetAnimTime(0.0);
 
-    // reset slow elapsed timer
     m_SlowElapsed = 0.0f;
-
-    // Register stomp collider window in base m_ColliderWindows
-    // Keep existing windows configured in JSON, only add/ensure stomp window if not present
-    bool hasStomp = false;
-    for (auto &w : m_ColliderWindows) { if (w.BoneName == "boss_pSphere28") { hasStomp = true; break; } }
-    if (!hasStomp) {
-        ColliderWindow stompWindow;
-        stompWindow.BoneName = "boss_pSphere28";
-        stompWindow.Start = m_WaitSeconds; // keep existing wait behavior
-        stompWindow.Duration = 0.6f; // keep default duration similar to prior behavior
-        stompWindow.Offset = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
-        stompWindow.JustTime = 0.0f;
-        m_ColliderWindows.push_back(stompWindow);
-    }
-
-    // apply stomp collider persisted settings if available (also applied when collider activates)
-    if (auto* pStomp = m_pOwner ? m_pOwner->GetStompCollider() : nullptr) {
-        pStomp->SetRadius(m_StompRadius);
-        pStomp->SetAttackAmount(m_StompDamage);
-        pStomp->SetActive(m_StompActive);
-    }
 
 	//向きだけプレイヤーに合わせる.
 	const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
@@ -257,7 +233,6 @@ void BossStompState::Update()
             m_SlowElapsed = 0.0f;
         }
 
-        // if currently slowed, advance slow elapsed and restore when duration passed
         if (m_AnimSlowed) {
             m_SlowElapsed += dt;
             if (m_SlowElapsed >= m_SlowDuration) {
@@ -273,9 +248,7 @@ void BossStompState::Update()
 			m_pOwner->SetAnimSpeed(1.0f);
 			m_pOwner->ChangeAnim(Boss::enBossAnim::Special_1);
 			m_List = enAttack::Stomp;
-			// setup movement easing parameters
 			m_MoveTimer = 0.0f;
-			// compute horizontal distance & direction toward player
 			DirectX::XMFLOAT3 bossPos = m_pOwner->GetPosition();
 			DirectX::XMFLOAT3 playerPos = m_pOwner->m_PlayerPos;
 			playerPos.y = 0.0f; bossPos.y = 0.0f;

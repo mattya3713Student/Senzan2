@@ -3,6 +3,7 @@
 #include "Game/03_Collision/00_Core/01_Capsule/CapsuleCollider.h"
 #include "Game/03_Collision/00_Core/ColliderBase.h"
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
+#include "System/Singleton/ParryManager/ParryManager.h"
 #include "Resource/Mesh/02_Skin/SkinMesh.h"
 #include <algorithm>
 
@@ -24,6 +25,7 @@ SnowBall::SnowBall()
     , m_GroundY(1.f)
     , m_ShouldDestroy(false)
     , m_HasBrokenVisual(false)
+    , m_BounceSpeed(60.0f)
 {
     AttachMesh(MeshManager::GetInstance().GetSkinMesh("snowball_nomal"));
 
@@ -41,7 +43,8 @@ SnowBall::SnowBall()
     auto attackCol = std::make_unique<CapsuleCollider>(m_spTransform);
     m_pAttackCollider = attackCol.get();
     m_pAttackCollider->SetMyMask(eCollisionGroup::Enemy_Attack);
-    m_pAttackCollider->SetTarGetTargetMask(eCollisionGroup::Player_Damage | eCollisionGroup::Player_Parry_Fai);
+    // パリィで跳ね返す挙動に対応するために Player_Parry_Suc をターゲットに追加
+    m_pAttackCollider->SetTarGetTargetMask(eCollisionGroup::Player_Damage | eCollisionGroup::Player_Parry_Suc);
     m_pAttackCollider->SetAttackAmount(30.0f);
     m_pAttackCollider->SetHeight(5.0f);
     m_pAttackCollider->SetRadius(3.0f);
@@ -122,6 +125,30 @@ void SnowBall::Update()
         {
             // フェード完了で自己消滅フラグを立てる（Manager が削除）
             m_ShouldDestroy = true;
+        }
+        return;
+    }
+
+    // 跳ね返り状態: Boss に到達したら割れて消える
+    if (m_State == State::Parried)
+    {
+        // 移動方向は Boss_Pos - currentPos
+        using namespace DirectX;
+        XMFLOAT3 cur = m_spTransform->Position;
+        XMVECTOR curV = XMLoadFloat3(&cur);
+        XMVECTOR bossV = XMLoadFloat3(&Boss_Pos);
+        XMVECTOR dir = XMVector3Normalize(XMVectorSubtract(bossV, curV));
+        XMVECTOR move = XMVectorScale(dir, m_BounceSpeed * deltaTime);
+        XMVECTOR newPosV = XMVectorAdd(curV, move);
+        XMFLOAT3 newPos; XMStoreFloat3(&newPos, newPosV);
+        m_spTransform->SetPosition(newPos);
+
+        // 近づいたら割れて消える
+        XMVECTOR distV = XMVector3Length(XMVectorSubtract(bossV, newPosV));
+        float dist; XMStoreFloat(&dist, distV);
+        if (dist <= 1.5f)
+        {
+            HandleHitVisual();
         }
         return;
     }
@@ -251,8 +278,11 @@ void SnowBall::HandleCollision()
 		// パリィされた場合.
 		if ((other_group & eCollisionGroup::Player_Parry_Suc) != eCollisionGroup::None)
 		{
-			// パリィされた場合は割れて落下するフロー
-			HandleHitVisual();
+			// パリィ成功: 跳ね返るように振る舞う
+			m_IsParried = true;
+			m_State = State::Parried;
+			// 当たり判定は跳ね返し中不要なので無効化
+			if (m_pAttackCollider) m_pAttackCollider->SetActive(false);
 			return;
 		}
 
@@ -269,12 +299,11 @@ void SnowBall::HandleCollision()
 
 void SnowBall::OnParried()
 {
-	// パリィされたらアニメーション開始.
+	// 旧来の単純な割れ処理は不要になった。
+	// 今は HandleCollision でパリィを検出して State::Parried に遷移する。
+	// この関数は互換性のために残すが、直接状態を操作しない。
 	m_IsParried = true;
 	m_ParriedAnimTime = 0.0f;
 	IsAction = false;
-	
-	// 当たり判定を無効化.
-	if (m_pAttackCollider) m_pAttackCollider->SetActive(false);
 }
 

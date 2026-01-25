@@ -24,7 +24,42 @@ BossJumpOnlState::BossJumpOnlState(Boss* owner)
 	, m_AttackMoveSpeed(80.5f)
 	, m_AttackDistance(9999.0f)
 	, m_DistanceTraveled(0.0f)
+    , m_RiseHeight(6.0f)
+    , m_RiseSpeed(120.0f)
+    , m_ReappearDelay(1.6f)
+    , m_FallSpeed(80.0f)
+    , m_RiseTargetY(0.0f)
+    , m_RiseStarted(false)
+    , m_IsFalling(false)
+    , m_WaitingReappear(false)
+    , m_HasPlayedPreFallEffect(false)
+    , m_PreFallSeconds(0.5f)
 {
+}
+
+void BossJumpOnlState::DrawImGui()
+{
+#if _DEBUG
+    if (!ImGui::Begin(IMGUI_JP("Boss JumpOn State"))) { ImGui::End(); return; }
+
+    ImGui::Text(IMGUI_JP("JumpOn Parameters"));
+    ImGui::SliderFloat(IMGUI_JP("上昇量"), &m_RiseHeight, 0.0f, 20.0f);
+    ImGui::SliderFloat(IMGUI_JP("上昇速度"), &m_RiseSpeed, 0.1f, 50.0f);
+    ImGui::SliderFloat(IMGUI_JP("再出現遅延"), &m_ReappearDelay, 0.0f, 5.0f);
+    ImGui::SliderFloat(IMGUI_JP("落下速度"), &m_FallSpeed, 1.0f, 500.0f);
+    ImGui::SliderFloat(IMGUI_JP("落下モード前の秒数"), &m_PreFallSeconds, 0.0f, 5.0f);
+
+    if (ImGui::Button(IMGUI_JP("即座に実行(デバッグ)"))) {
+        // デバッグ用: すぐに上昇→消失→落下を強制する
+        m_List = enSpecial::Jump;
+        m_RiseStarted = false;
+        m_Timer = 0.0f;
+        DirectX::XMFLOAT3 pos = m_pOwner->GetPosition();
+        m_RiseTargetY = pos.y + m_RiseHeight;
+    }
+
+    ImGui::End();
+#endif
 }
 
 BossJumpOnlState::~BossJumpOnlState()
@@ -37,9 +72,11 @@ void BossJumpOnlState::Enter()
 	m_Velocity = {};
 	m_DistanceTraveled = 0.0f;
 	m_GroundedFrag = true;
-	m_pOwner->SetAnimSpeed(2.0);
-	// 最初の待機モーションへ（必要に応じて追加）
-	m_pOwner->ChangeAnim(Boss::enBossAnim::Idol);
+    m_RiseStarted = false;
+    m_IsFalling = false;
+    m_HasPlayedPreFallEffect = false;
+    m_pOwner->SetAnimSpeed(3.0);
+    m_pOwner->ChangeAnim(Boss::enBossAnim::Special_0);
 }
 
 void BossJumpOnlState::Update()
@@ -132,44 +169,88 @@ void BossJumpOnlState::ChargeTime()
 	{
 		m_Timer = 0.0f;
 		m_Velocity = { 0.0f, 0.0f, 0.0f };
-		m_pOwner->SetAnimSpeed(3.0);
-		m_pOwner->ChangeAnim(Boss::enBossAnim::Special_0);
-		m_List = enSpecial::Jump;
+        // 溜め完了: 溜めモーション -> 上昇処理 (Jump フェーズ)
+        // 設定: 上昇目標Y を現在のY + m_RiseHeight
+        DirectX::XMFLOAT3 pos = m_pOwner->GetPosition();
+        m_RiseTargetY = pos.y + m_RiseHeight;
+        m_RiseStarted = false;
+        m_List = enSpecial::Jump;
 	}
 }
 
 void BossJumpOnlState::JumpTime()
 {
-	if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Special_0))
-	{
-		m_DistanceTraveled = 0.0f;
+ 
+    // Jump フェーズ: Special_0 を最初に再生し、0.9 秒後に上昇を開始。上昇後は一旦消えて delay の後プレイヤー真上から登場
+    float deltaTime = m_pOwner->GetDelta();
 
-		// 空中にワープ
-		XMFLOAT3 CurrentPos = m_pOwner->GetPosition();
-		CurrentPos.y = 10.0f;
-		m_pOwner->SetPosition(CurrentPos);
+    if (!m_RiseStarted && !m_WaitingReappear && !m_IsFalling)
+    {
+        // 初回: Special_0 を再生し、0.9 秒待って上昇開始
+        // 再生開始フラグを立ててアニメ再生
+        // カウントを使って 0.9 秒待つ
+        m_Timer += deltaTime;
+        if (m_Timer >= 0.9f)
+        {
+            m_Timer = 0.0f;
+            m_RiseStarted = true;
+            // rise target は現在位置 + height
+            DirectX::XMFLOAT3 pos = m_pOwner->GetPosition();
+            m_RiseTargetY = pos.y + m_RiseHeight;
+        }
+        return;
+    }
 
-		// ターゲット計算（プレイヤーの手前を狙う）
-		XMFLOAT3 PlayerPos = m_pOwner->GetTargetPos();
-		XMVECTOR bPos = XMLoadFloat3(&CurrentPos);
-		XMVECTOR pPos = XMLoadFloat3(&PlayerPos);
+    // 上昇中
+    if (m_RiseStarted && !m_WaitingReappear)
+    {
+        DirectX::XMFLOAT3 pos = m_pOwner->GetPosition();
+        if (pos.y < m_RiseTargetY)
+        {
+            pos.y += m_RiseSpeed * deltaTime;
+            if (pos.y > m_RiseTargetY) pos.y = m_RiseTargetY;
+            m_pOwner->SetPosition(pos);
+            return;
+        }
 
-		XMVECTOR toPlayerVec = XMVectorSubtract(pPos, bPos);
-		XMVECTOR toPlayerDir = XMVector3Normalize(toPlayerVec);
+        // 上昇完了: 一旦不可視化して再出現待ちに入る
+        m_pOwner->SetIsRenderActive(false);
+        m_WaitingReappear = true;
+        m_HasPlayedPreFallEffect = false;
+        m_Timer = 0.0f;
+        return;
+    }
 
-		// プレイヤーの 3.0f 手前を着地目標にする（通り過ぎ防止）
-		float offsetDist = 3.0f;
-		XMVECTOR targetPos = XMVectorSubtract(pPos, XMVectorScale(toPlayerDir, offsetDist));
-
-		XMVECTOR finalTargetVec = XMVectorSubtract(targetPos, bPos);
-		finalTargetVec = XMVector3Normalize(finalTargetVec);
-
-		DirectX::XMStoreFloat3(&m_TargetDirection, finalTargetVec);
-
-		m_pOwner->SetAnimSpeed(1.0);
-		m_pOwner->ChangeAnim(Boss::enBossAnim::Special_1);
-		m_List = enSpecial::Attack;
-	}
+    // 再出現待ち: delay 経過後にプレイヤー真上から出現
+    if (m_WaitingReappear && !m_IsFalling)
+    {
+        m_Timer += deltaTime;
+        // 落下モードに入る m_PreFallSeconds 秒前のエフェクト再生
+        float prePlayTime = std::max(0.0f, m_ReappearDelay - m_PreFallSeconds);
+        if (!m_HasPlayedPreFallEffect && m_Timer >= prePlayTime)
+        {
+            // プレイヤーの真上に出現してから落下するので、エフェクトはプレイヤー位置で再生
+            DirectX::XMFLOAT3 effectPos = m_pOwner->GetTargetPos();
+            m_pOwner->PlayEffectAtWorldPos("BossJumpUp", effectPos, 5.f);
+            m_HasPlayedPreFallEffect = true;
+        }
+        if (m_Timer >= m_ReappearDelay)
+        {
+            DirectX::XMFLOAT3 playerPos = m_pOwner->GetTargetPos();
+            DirectX::XMFLOAT3 spawnPos = playerPos;
+            spawnPos.y += 12.0f; // 十分上に出現
+            m_pOwner->SetPosition(spawnPos);
+            m_pOwner->SetIsRenderActive(true);
+            m_IsFalling = true;
+            m_HasPlayedPreFallEffect = false;
+            m_WaitingReappear = false;
+            m_RiseStarted = false;
+            m_Timer = 0.0f;
+            m_pOwner->ChangeAnim(Boss::enBossAnim::Special_1);
+            m_List = enSpecial::Attack;
+        }
+        return;
+    }
 }
 
 void BossJumpOnlState::BossAttack()
@@ -193,7 +274,7 @@ void BossJumpOnlState::BossAttack()
 	// 修正：プレイヤーとの距離が近い(2.5f以下)か、地面に付いたら攻撃終了
 	if (CurrentPos.y <= floorY + 0.1f || DistanceToPlayer <= 2.5f)
 	{
-		CurrentPos.y = floorY;
+		CurrentPos.y = 0.f;
 		m_pOwner->SetPosition(CurrentPos);
 		m_Timer = 0.0f;
 		m_pOwner->SetAnimSpeed(3.0);
@@ -202,7 +283,28 @@ void BossJumpOnlState::BossAttack()
 		return;
 	}
 
-	// 追尾（ホーミング）計算
+    // Attack フェーズは、JumpOn の場合は落下処理
+    if (m_IsFalling)
+    {
+        // 真っ直ぐ下に落下
+        CurrentPos.y -= m_FallSpeed * deltaTime;
+        if (CurrentPos.y <= floorY)
+        {
+            CurrentPos.y = floorY;
+            m_pOwner->SetPosition(CurrentPos);
+            // 着地エフェクトやダメージ判定などをここで実行
+            m_pOwner->PlayEffectAtWorldPos("boss_stomp", CurrentPos);
+            m_pOwner->SetAnimSpeed(3.0);
+            m_pOwner->ChangeAnim(Boss::enBossAnim::SpecialToIdol);
+            m_List = enSpecial::CoolTime;
+            m_IsFalling = false;
+            return;
+        }
+        m_pOwner->SetPosition(CurrentPos);
+        return;
+    }
+
+    // 追尾（ホーミング）計算
     DirectX::XMVECTOR CurrentDir = DirectX::XMLoadFloat3(&m_TargetDirection);
     DirectX::XMVECTOR finalMoveDir;
 

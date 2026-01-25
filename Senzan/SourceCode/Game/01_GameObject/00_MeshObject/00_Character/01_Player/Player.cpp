@@ -484,9 +484,7 @@ void Player::HandleParry_SuccessDetection()
 				// パリィ成功時のカメラ演出（シェイク）
 				CameraManager::GetInstance().ShakeCamera(0.15f, 0.3f);
 
-                // ParryManager に成功を通知（ボスをパリィ状態へ遷移させる）
-                // Player_Parry_Suc は遅延ありの挙動を要求
-                ParryManager::GetInstance().OnParrySuccess(true, 2.0f);
+                ParryManager::GetInstance().OnParrySuccess(true);
 
             // パリィエフェクトを衝突点に出す（小さなランダムオフセットを追加）
                 for(int i = 0 ; i < 3; ++i)
@@ -544,6 +542,11 @@ void Player::HandleParry_FailDetection()
 				// パリィ成功時のゲージ増加
 				m_CurrentUltValue += 500.0f;
 
+				// パリィ成功時のカメラ演出（シェイク）
+				CameraManager::GetInstance().ShakeCamera(0.15f, 0.3f);
+			    // Boss に通知（アニメ再生のみ）
+			    ParryManager::GetInstance().OnParrySuccess(false);
+
                 // パリィエフェクトを衝突点に出す（ランダム回転）
                 {
                     static thread_local std::mt19937 s_rng((std::random_device())());
@@ -551,14 +554,6 @@ void Player::HandleParry_FailDetection()
                     DirectX::XMFLOAT3 eulerRot{ rotDist(s_rng), rotDist(s_rng), rotDist(s_rng) };
                     PlayEffectAtWorldPos("Spark", info.ContactPoint, eulerRot);
                 }
-				// パリィ成功時のカメラ演出（シェイク）
-				CameraManager::GetInstance().ShakeCamera(0.15f, 0.3f);
-			    // Boss に通知（アニメ再生のみ）
-			    ParryManager::GetInstance().OnParrySuccess(false, 0.0f);
-
-                // 画面中央に表示
-                DirectX::XMFLOAT2 screenCenter{ WND_WF * 0.5f, WND_HF * 0.3f };
-                PlayEffectUIAtScreenPos("Parry_Flash", screenCenter, 1.0f);
 
 			// 一フレーム1回.
 			return;

@@ -7,16 +7,14 @@ BossParryState::BossParryState(Boss* owner)
     : BossAttackStateBase(owner)
     , m_Phase(ParryPhase::None)
     , m_WithDelay(false)
-    , m_DelaySeconds(0.0f)
     , m_DelayElapsed(0.0f)
 {
 }
 
-BossParryState::BossParryState(Boss* owner, bool withDelay, float delaySeconds)
+BossParryState::BossParryState(Boss* owner, bool withDelay)
     : BossAttackStateBase(owner)
     , m_Phase(ParryPhase::None)
     , m_WithDelay(withDelay)
-    , m_DelaySeconds(delaySeconds)
     , m_DelayElapsed(0.0f)
 {
 }
@@ -36,13 +34,11 @@ void BossParryState::Enter()
     m_pOwner->ChangeAnim(pair.first);
     m_pOwner->SetAnimTime(pair.second);
     m_pOwner->SetAnimSpeed(0.0);
-
 }
 
 void BossParryState::Update()
 {
     m_CurrentTime += m_pOwner->GetDelta();
-
 
     if (!m_IsFastTiming && m_CurrentTime >= 0.1f)
     {
@@ -51,8 +47,8 @@ void BossParryState::Update()
         if (m_WithDelay)
         {
             // Suc の場合: 指定の順番で再生 (bottom-up): FlinchToIdol -> Flinch -> FlinchParis
-            m_pOwner->SetAnimSpeed(1.0f);
-            m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchToIdol);
+            m_pOwner->SetAnimSpeed(2.0f);
+            m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchParis);
             m_Phase = ParryPhase::PlayFlinchToIdol;
         }
         else
@@ -67,9 +63,9 @@ void BossParryState::Update()
     switch (m_Phase)
     {
     case ParryPhase::PlayFlinchToIdol:
-        if (m_pOwner->IsAnimEnd(Boss::enBossAnim::FlinchToIdol))
+        if (m_pOwner->IsAnimEnd(Boss::enBossAnim::FlinchParis))
         {
-            m_pOwner->SetAnimSpeed(2.5f);
+            m_pOwner->SetAnimSpeed(4.0f);
             m_pOwner->ChangeAnim(Boss::enBossAnim::Flinch);
             m_Phase = ParryPhase::PlayFlinch;
         }
@@ -79,13 +75,13 @@ void BossParryState::Update()
         if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Flinch))
         {
             m_pOwner->SetAnimSpeed(3.0f);
-            m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchParis);
+            m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchToIdol);
             m_Phase = ParryPhase::PlayFlinchParis;
         }
         break;
 
     case ParryPhase::PlayFlinchParis:
-        if (m_pOwner->IsAnimEnd(Boss::enBossAnim::FlinchParis))
+        if (m_pOwner->IsAnimEnd(Boss::enBossAnim::FlinchToIdol))
         {
             m_pOwner->GetStateMachine()->ChangeState(std::make_shared<BossIdolState>(m_pOwner));
         }
