@@ -223,7 +223,7 @@ void Boss::Update()
 	m_State->Update();
  
 
-#if 1
+#if _DEBUG
     // デバッグ用: ImGui で任意のボスステートに切り替えられるボタン群
     if (ImGui::Begin(IMGUI_JP("Boss Debug")))
     {
