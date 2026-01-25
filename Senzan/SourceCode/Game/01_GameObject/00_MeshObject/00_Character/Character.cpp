@@ -60,7 +60,7 @@ void Character::Update()
     }
 }
 
-void Character::PlayEffect(const std::string& effectName, const DirectX::XMFLOAT3& offset, float scale)
+void Character::PlayEffect(const std::string& effectName, const DirectX::XMFLOAT3& offset, float scale, bool isUI)
 {
     // EffectResource から取得して Effekseer に再生依頼
     auto effect = EffectResource::GetResource(effectName);
@@ -78,7 +78,59 @@ void Character::PlayEffect(const std::string& effectName, const DirectX::XMFLOAT
         {
             EffekseerManager::GetInstance().GetManager()->SetScale(handle, scale, scale, scale);
         }
-        m_EffectHandles.push_back({ handle, 0 });
+        m_EffectHandles.push_back({ handle, 0, isUI });
+    }
+}
+
+void Character::PlayEffectAtWorldPos(const std::string& effectName, const DirectX::XMFLOAT3& worldPos, float scale, bool isUI)
+{
+    auto effect = EffectResource::GetResource(effectName);
+    if (effect == nullptr) return;
+
+    int handle = EffekseerManager::GetInstance().GetManager()->Play(effect, worldPos.x, worldPos.y, worldPos.z);
+    if (handle != -1)
+    {
+        if (!MyMath::IsNearlyEqual(scale, 1.0f))
+        {
+            EffekseerManager::GetInstance().GetManager()->SetScale(handle, scale, scale, scale);
+        }
+        m_EffectHandles.push_back({ handle, 0, isUI });
+    }
+}
+
+void Character::PlayEffectUIAtScreenPos(const std::string& effectName, const DirectX::XMFLOAT2& screenPos, float scale)
+{
+    auto effect = EffectResource::GetResource(effectName);
+    if (effect == nullptr) return;
+
+    // Effekseer: Play with orthographic coordinates requires using RenderHandleUI later.
+    int handle = EffekseerManager::GetInstance().GetManager()->Play(effect, screenPos.x, screenPos.y, 0.0f);
+    if (handle != -1)
+    {
+        if (!MyMath::IsNearlyEqual(scale, 1.0f))
+        {
+            EffekseerManager::GetInstance().GetManager()->SetScale(handle, scale, scale, scale);
+        }
+        m_EffectHandles.push_back({ handle, 0, true });
+    }
+}
+
+void Character::PlayEffectAtWorldPos(const std::string& effectName, const DirectX::XMFLOAT3& worldPos, const DirectX::XMFLOAT3& eulerRotation, float scale, bool isUI)
+{
+    auto effect = EffectResource::GetResource(effectName);
+    if (effect == nullptr) return;
+
+    int handle = EffekseerManager::GetInstance().GetManager()->Play(effect, worldPos.x, worldPos.y, worldPos.z);
+    if (handle != -1)
+    {
+        // 回転指定がある場合は Effekseer の SetRotation を使用（ラジアンで渡す）
+        EffekseerManager::GetInstance().GetManager()->SetRotation(handle, eulerRotation.x, eulerRotation.y, eulerRotation.z);
+
+        if (!MyMath::IsNearlyEqual(scale, 1.0f))
+        {
+            EffekseerManager::GetInstance().GetManager()->SetScale(handle, scale, scale, scale);
+        }
+        m_EffectHandles.push_back({ handle, 0, isUI });
     }
 }
 
@@ -95,12 +147,15 @@ void Character::Draw()
     if (!m_EffectHandles.empty())
     {
         auto camera = CameraManager::GetInstance().GetCurrentCamera();
-        if (camera)
+        for (auto &entry : m_EffectHandles)
         {
-            for (auto &entry : m_EffectHandles)
-            {
-                if (entry.Handle == -1) continue;
-                EffekseerManager::GetInstance().RenderHandle(entry.Handle, camera.get());
+            if (entry.Handle == -1) continue;
+            if (entry.IsUI) {
+                // UI エフェクトは正射影で描画
+                EffekseerManager::GetInstance().RenderHandleUI(entry.Handle);
+            }
+            else {
+                if (camera) EffekseerManager::GetInstance().RenderHandle(entry.Handle, camera.get());
             }
         }
     }

@@ -95,6 +95,26 @@ void Dodge::Enter()
 
 	SoundManager::GetInstance().Play("Dodge");
 	SoundManager::GetInstance().SetVolume("Dodge", 8500);
+
+    // 回避時に後方へ Dash エフェクトを再生
+    {
+        const float BACK_OFFSET = 1.5f; // プレイヤーの後方へ出す距離
+        DirectX::XMFLOAT3 forward = m_pOwner->GetTransform()->GetForward();
+        // 水平成分のみを使って後方位置を計算
+        DirectX::XMFLOAT3 ownerPos = m_pOwner->GetPosition();
+        DirectX::XMFLOAT3 backPos{
+            ownerPos.x - forward.x * BACK_OFFSET,
+            ownerPos.y,
+            ownerPos.z - forward.z * BACK_OFFSET
+        };
+
+        // プレイヤーの向きに合わせてエフェクトも回転する（Y軸のみ使用）
+        DirectX::XMFLOAT3 forwardVec = m_pOwner->GetTransform()->GetForward();
+        float yaw = atan2f(forwardVec.x, forwardVec.z); // yaw を計算
+        DirectX::XMFLOAT3 eulerRotation{ 0.0f, yaw, 0.0f };
+
+        m_pOwner->PlayEffectAtWorldPos("Dash", backPos, eulerRotation, 1.0f);
+    }
 }
 
 void Dodge::Update()

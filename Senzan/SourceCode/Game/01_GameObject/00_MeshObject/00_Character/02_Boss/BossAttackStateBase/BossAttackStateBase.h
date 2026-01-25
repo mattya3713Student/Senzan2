@@ -68,8 +68,9 @@ struct ColliderWindow
     bool IsAct = false;       // 内部フラグ（判定開始済みか）
     bool IsEnd = false;       // 内部フラグ（判定終了済みか）
     bool IsJustWindow = false; // ジャスト判定フラグ（Start - JustTime ～ Start の間 true）
+    bool JustPlayed = false; // 内部フラグ：ジャスト時演出を一度だけ再生する
 
-    void Reset() { IsAct = false; IsEnd = false; IsJustWindow = false; }
+    void Reset() { IsAct = false; IsEnd = false; IsJustWindow = false; JustPlayed = false; }
 };
 
 // エフェクト再生のタイミングを制御する

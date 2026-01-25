@@ -48,15 +48,16 @@ public:
 		Strafe,
 	};
 
-    // Attack identifiers
+    // Attack identifiers (order matters for arrays)
     enum AttackId {
-        Slash = 0,
-        Stomp = 1,
-        Charge = 2,
-        Shout = 3,
-        Throwing = 4,
-        Spin = 5,
-        Count = 6 };
+        Jump = 0,       // ジャンプ
+        Shout = 1,      // 叫び
+        Slash = 2,      // 通常
+        Spinning = 3,   // 回転
+        Stomp = 4,      // とびかかり
+        Throwing = 5,   // 岩投げ
+        Count = 6
+    };
 
     MovePhase m_Phase = MovePhase::Start;
 public:
@@ -115,22 +116,21 @@ private:
     // Per-attack settings (indexed by AttackId::Count)
     static inline std::array<bool, Count> s_Enable = { true, true, true, true, true, true };
 
-    // Distances: Near / Mid / Far
-    enum DistanceIndex { Near = 0, Mid = 1, Far = 2, DistCount = 3 };
+    // Distances: Near / Mid (遠距離削除)
+    enum DistanceIndex { Near = 0, Mid = 1, DistCount = 2 };
 
     // weights[distance][attack] - stored/edited as percentages that sum to ~100 per distance
     static inline std::array<std::array<float, Count>, DistCount> s_Weight = { {
-        std::array<float, Count>{ 20.0f, 20.0f, 20.0f, 20.0f, 20.0f, 20.0f }, // Near (sum 120)
-        std::array<float, Count>{ 20.0f, 20.0f, 20.0f, 20.0f, 20.0f, 20.0f }, // Mid
-        std::array<float, Count>{ 20.0f, 20.0f, 20.0f, 20.0f, 20.0f, 20.0f }  // Far
+        std::array<float, Count>{ 16.7f, 16.7f, 16.7f, 16.7f, 16.7f, 16.5f }, // Near (sum ~100)
+        std::array<float, Count>{ 16.7f, 16.7f, 16.7f, 16.7f, 16.7f, 16.5f }  // Mid (sum ~100)
     } };
 
-    static inline std::array<float, Count> s_CooldownDefault = { 2.0f, 2.5f, 3.0f, 4.0f, 2.0f, 2.0f };
-    // 表示用日本語ラベル
-    static inline const char* s_AttackNames[Count] = { "斬り", "飛びかかり", "溜め", "叫び", "投擲", "回転" };
+    static inline std::array<float, Count> s_CooldownDefault = { 2.0f, 4.0f, 2.0f, 3.0f, 2.5f, 2.0f };
+    // 表示用日本語ラベル (順序: Jump, Shout, Slash, Spinning, Stomp, Throwing)
+    static inline const char* s_AttackNames[Count] = { "ジャンプ", "叫び", "通常", "回転", "とびかかり", "岩投げ" };
     // 内部保存用ID（英語）。JSONキーなどで使う。
-    static inline const char* s_AttackIds[Count] = { "Slash", "Stomp", "Charge", "Shout", "Throwing", "Spin" };
-    static inline const char* s_DistanceIds[DistCount] = { "Near", "Mid", "Far" };
+    static inline const char* s_AttackIds[Count] = { "Jump", "Shout", "Slash", "Spinning", "Stomp", "Throwing" };
+    static inline const char* s_DistanceIds[DistCount] = { "Near", "Mid" };
 
     // === デバッグ強制攻撃選択 ===
     static inline int s_ForceAttackIndex = -1;    // -1: ランダム, 0-5: 強制選択

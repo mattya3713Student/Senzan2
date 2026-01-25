@@ -43,6 +43,8 @@ public:
     void ResetPosition();
     // 音量調整 (0 ～ 10000)
     void SetVolume(int volume);
+    // 音量取得 (0 ～ 10000)
+    int GetVolume() const;
 
 private:
     // WAVファイルの読み込み

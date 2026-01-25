@@ -38,7 +38,7 @@ void JustDodge::Enter()
     m_pOwner->SetAnimSpeed(JUSTDODGE_ANIM_SPEED);
     m_pOwner->ChangeAnim(Player::eAnim::Dodge);
 
-    PostEffectManager::GetInstance().SetGray(true);
+    PostEffectManager::GetInstance().StartCircleGrayEffect(0.2f, m_MaxTime - 0.5f, 0.3f);
 
     // ゲージ増加
     m_pOwner->m_CurrentUltValue += 300.0f;

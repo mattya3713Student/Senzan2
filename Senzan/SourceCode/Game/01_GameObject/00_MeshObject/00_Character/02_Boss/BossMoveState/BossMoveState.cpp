@@ -5,6 +5,7 @@
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossShoutState/BossShoutState.h"
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossStompState/BossStompState.h"
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossThrowingState/BossThrowingState.h"
+#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossSpinningState/BossSpinningState.h"
 #include "System/Singleton/ImGui/CImGuiManager.h"
 #include <algorithm>
 #include <random>
@@ -59,9 +60,9 @@ void BossMoveState::Update()
     ImGui::Separator();
     ImGui::Text(IMGUI_JP("=== Attack Settings ==="));
     // 各攻撃の UI: 個別に IMGUI_JP マクロで日本語ラベルを指定（動的文字列に IMGUI_JP は使えないため）
-    // Distance view selector for ImGui (0:Near,1:Mid,2:Far)
+    // Distance view selector for ImGui (0:Near,1:Mid)
     static int viewDistance = 0;
-    const char* distLabels[] = { IMGUI_JP("近距離"), IMGUI_JP("中距離"), IMGUI_JP("遠距離") };
+    const char* distLabels[] = { IMGUI_JP("近距離"), IMGUI_JP("中距離") };
     ImGui::Combo(IMGUI_JP("表示距離"), &viewDistance, distLabels, IM_ARRAYSIZE(distLabels));
 
     // 合計での正規化表示用に合計値を取得（現在表示中の距離）
@@ -110,82 +111,99 @@ void BossMoveState::Update()
         }
     };
 
+    // 0: Jump（ジャンプ）
     ImGui::PushID(0);
-    ImGui::Checkbox(IMGUI_JP("斬り"), &s_Enable[0]); ImGui::SameLine();
-    if (ImGui::SliderFloat(IMGUI_JP("重み (%)"), &s_Weight[curDist][0], 0.0f, 100.0f)) { normalizeWeights(0, curDist); }
-    // 再計算
+    ImGui::Checkbox(IMGUI_JP("ジャンプ"), &s_Enable[0]); ImGui::SameLine();
+    ImGui::SetNextItemWidth(100);
+    if (ImGui::SliderFloat(IMGUI_JP("重み"), &s_Weight[curDist][0], 0.0f, 100.0f)) { normalizeWeights(0, curDist); }
     weightTotal = 0.0f; for (int wi = 0; wi < Count; ++wi) weightTotal += s_Weight[curDist][wi];
     {
         float norm = (weightTotal > 0.0001f) ? (s_Weight[curDist][0] / weightTotal * 100.0f) : 0.0f;
         ImGui::SameLine(); ImGui::Text("%0.0f%%", norm);
     }
     ImGui::SameLine();
-    ImGui::SliderFloat(IMGUI_JP("クールダウン (秒)"), &s_CooldownDefault[0], 0.0f, 10.0f);
+    ImGui::SetNextItemWidth(80);
+    ImGui::SliderFloat(IMGUI_JP("CD"), &s_CooldownDefault[0], 0.0f, 10.0f);
     ImGui::PopID();
 
-    ImGui::PushID(5);
-    ImGui::Checkbox(IMGUI_JP("回転"), &s_Enable[5]); ImGui::SameLine();
-    if (ImGui::SliderFloat(IMGUI_JP("重み (%)"), &s_Weight[curDist][5], 0.0f, 100.0f)) { normalizeWeights(5, curDist); }
-    weightTotal = 0.0f; for (int wi = 0; wi < Count; ++wi) weightTotal += s_Weight[curDist][wi];
-    {
-        float norm = (weightTotal > 0.0001f) ? (s_Weight[curDist][5] / weightTotal * 100.0f) : 0.0f;
-        ImGui::SameLine(); ImGui::Text("%0.0f%%", norm);
-    }
-    ImGui::SameLine();
-    ImGui::SliderFloat(IMGUI_JP("クールダウン (秒)"), &s_CooldownDefault[5], 0.0f, 10.0f);
-    ImGui::PopID();
-
+    // 1: Shout（叫び）
     ImGui::PushID(1);
-    ImGui::Checkbox(IMGUI_JP("飛びかかり"), &s_Enable[1]); ImGui::SameLine();
-    if (ImGui::SliderFloat(IMGUI_JP("重み (%)"), &s_Weight[curDist][1], 0.0f, 100.0f)) { normalizeWeights(1, curDist); }
+    ImGui::Checkbox(IMGUI_JP("叫び"), &s_Enable[1]); ImGui::SameLine();
+    ImGui::SetNextItemWidth(100);
+    if (ImGui::SliderFloat(IMGUI_JP("重み"), &s_Weight[curDist][1], 0.0f, 100.0f)) { normalizeWeights(1, curDist); }
     weightTotal = 0.0f; for (int wi = 0; wi < Count; ++wi) weightTotal += s_Weight[curDist][wi];
     {
         float norm = (weightTotal > 0.0001f) ? (s_Weight[curDist][1] / weightTotal * 100.0f) : 0.0f;
         ImGui::SameLine(); ImGui::Text("%0.0f%%", norm);
     }
     ImGui::SameLine();
-    ImGui::SliderFloat(IMGUI_JP("クールダウン (秒)"), &s_CooldownDefault[1], 0.0f, 10.0f);
+    ImGui::SetNextItemWidth(80);
+    ImGui::SliderFloat(IMGUI_JP("CD"), &s_CooldownDefault[1], 0.0f, 10.0f);
     ImGui::PopID();
 
+    // 2: Slash（通常）
     ImGui::PushID(2);
-    ImGui::Checkbox(IMGUI_JP("溜め"), &s_Enable[2]); ImGui::SameLine();
-    if (ImGui::SliderFloat(IMGUI_JP("重み (%)"), &s_Weight[curDist][2], 0.0f, 100.0f)) { normalizeWeights(2, curDist); }
+    ImGui::Checkbox(IMGUI_JP("通常"), &s_Enable[2]); ImGui::SameLine();
+    ImGui::SetNextItemWidth(100);
+    if (ImGui::SliderFloat(IMGUI_JP("重み"), &s_Weight[curDist][2], 0.0f, 100.0f)) { normalizeWeights(2, curDist); }
     weightTotal = 0.0f; for (int wi = 0; wi < Count; ++wi) weightTotal += s_Weight[curDist][wi];
     {
         float norm = (weightTotal > 0.0001f) ? (s_Weight[curDist][2] / weightTotal * 100.0f) : 0.0f;
         ImGui::SameLine(); ImGui::Text("%0.0f%%", norm);
     }
     ImGui::SameLine();
-    ImGui::SliderFloat(IMGUI_JP("クールダウン (秒)"), &s_CooldownDefault[2], 0.0f, 10.0f);
+    ImGui::SetNextItemWidth(80);
+    ImGui::SliderFloat(IMGUI_JP("CD"), &s_CooldownDefault[2], 0.0f, 10.0f);
     ImGui::PopID();
 
+    // 3: Spinning（回転）
     ImGui::PushID(3);
-    ImGui::Checkbox(IMGUI_JP("叫び"), &s_Enable[3]); ImGui::SameLine();
-    if (ImGui::SliderFloat(IMGUI_JP("重み (%)"), &s_Weight[curDist][3], 0.0f, 100.0f)) { normalizeWeights(3, curDist); }
+    ImGui::Checkbox(IMGUI_JP("回転"), &s_Enable[3]); ImGui::SameLine();
+    ImGui::SetNextItemWidth(100);
+    if (ImGui::SliderFloat(IMGUI_JP("重み"), &s_Weight[curDist][3], 0.0f, 100.0f)) { normalizeWeights(3, curDist); }
     weightTotal = 0.0f; for (int wi = 0; wi < Count; ++wi) weightTotal += s_Weight[curDist][wi];
     {
         float norm = (weightTotal > 0.0001f) ? (s_Weight[curDist][3] / weightTotal * 100.0f) : 0.0f;
         ImGui::SameLine(); ImGui::Text("%0.0f%%", norm);
     }
     ImGui::SameLine();
-    ImGui::SliderFloat(IMGUI_JP("クールダウン (秒)"), &s_CooldownDefault[3], 0.0f, 10.0f);
+    ImGui::SetNextItemWidth(80);
+    ImGui::SliderFloat(IMGUI_JP("CD"), &s_CooldownDefault[3], 0.0f, 10.0f);
     ImGui::PopID();
 
+    // 4: Stomp（とびかかり）
     ImGui::PushID(4);
-    ImGui::Checkbox(IMGUI_JP("投擲"), &s_Enable[4]); ImGui::SameLine();
-    if (ImGui::SliderFloat(IMGUI_JP("重み (%)"), &s_Weight[curDist][4], 0.0f, 100.0f)) { normalizeWeights(4, curDist); }
+    ImGui::Checkbox(IMGUI_JP("とびかかり"), &s_Enable[4]); ImGui::SameLine();
+    ImGui::SetNextItemWidth(100);
+    if (ImGui::SliderFloat(IMGUI_JP("重み"), &s_Weight[curDist][4], 0.0f, 100.0f)) { normalizeWeights(4, curDist); }
     weightTotal = 0.0f; for (int wi = 0; wi < Count; ++wi) weightTotal += s_Weight[curDist][wi];
     {
         float norm = (weightTotal > 0.0001f) ? (s_Weight[curDist][4] / weightTotal * 100.0f) : 0.0f;
         ImGui::SameLine(); ImGui::Text("%0.0f%%", norm);
     }
     ImGui::SameLine();
-    ImGui::SliderFloat(IMGUI_JP("クールダウン (秒)"), &s_CooldownDefault[4], 0.0f, 10.0f);
+    ImGui::SetNextItemWidth(80);
+    ImGui::SliderFloat(IMGUI_JP("CD"), &s_CooldownDefault[4], 0.0f, 10.0f);
+    ImGui::PopID();
+
+    // 5: Throwing（岩投げ）
+    ImGui::PushID(5);
+    ImGui::Checkbox(IMGUI_JP("岩投げ"), &s_Enable[5]); ImGui::SameLine();
+    ImGui::SetNextItemWidth(100);
+    if (ImGui::SliderFloat(IMGUI_JP("重み"), &s_Weight[curDist][5], 0.0f, 100.0f)) { normalizeWeights(5, curDist); }
+    weightTotal = 0.0f; for (int wi = 0; wi < Count; ++wi) weightTotal += s_Weight[curDist][wi];
+    {
+        float norm = (weightTotal > 0.0001f) ? (s_Weight[curDist][5] / weightTotal * 100.0f) : 0.0f;
+        ImGui::SameLine(); ImGui::Text("%0.0f%%", norm);
+    }
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(80);
+    ImGui::SliderFloat(IMGUI_JP("CD"), &s_CooldownDefault[5], 0.0f, 10.0f);
     ImGui::PopID();
 
     ImGui::Separator();
     ImGui::Text(IMGUI_JP("=== 強制攻撃 ==="));
-    const char* attackNames[] = { "ランダム", "斬り", "飛びかかり", "溜め", "叫び", "投擲", "回転" };
+    const char* attackNames[] = { IMGUI_JP("ランダム"), IMGUI_JP("ジャンプ"), IMGUI_JP("叫び"), IMGUI_JP("通常"), IMGUI_JP("回転"), IMGUI_JP("とびかかり"), IMGUI_JP("岩投げ") };
     ImGui::Combo(IMGUI_JP("強制攻撃"), &s_ForceAttackIndex, attackNames, IM_ARRAYSIZE(attackNames));
     s_ForceAttackIndex -= 1; // -1 = Random, 0-5 = Each attack
 
@@ -193,10 +211,9 @@ void BossMoveState::Update()
     XMFLOAT3 debugTargetPos = m_pOwner->GetTargetPos();
     XMFLOAT3 debugBossPos = m_pOwner->GetPosition();
     float debugDist = XMVectorGetX(XMVector3Length(XMVectorSubtract(XMLoadFloat3(&debugTargetPos), XMLoadFloat3(&debugBossPos))));
-    ImGui::Text(IMGUI_JP("Current Distance: %.2f"), debugDist);
-    if (debugDist < s_NearRange) ImGui::TextColored(ImVec4(1,0,0,1), "-> Near");
-    else if (debugDist < s_MidRange) ImGui::TextColored(ImVec4(1,1,0,1), "-> Mid");
-    else ImGui::TextColored(ImVec4(0,1,0,1), "-> Far");
+    ImGui::Text(IMGUI_JP("現在の距離: %.2f"), debugDist);
+    if (debugDist < s_NearRange) ImGui::TextColored(ImVec4(1,0,0,1), IMGUI_JP("-> 近距離"));
+    else ImGui::TextColored(ImVec4(1,1,0,1), IMGUI_JP("-> 中距離"));
     
     // 読み込み / 保存 ボタン
     if (ImGui::Button(IMGUI_JP("BossMoveState 読み込み")))
@@ -362,33 +379,32 @@ void BossMoveState::Update()
             weighted.push_back({ factory, w, id });
         };
 
-        // Force attack mode (override weights but still respect cooldown)
-        if (s_ForceAttackIndex >= 0 && s_ForceAttackIndex <= 4)
+        // Build candidates: allow all 6 attack states; use per-distance weights (Near or Mid)
+        int distIndex = (dist < s_NearRange) ? Near : Mid;
+        if (s_ForceAttackIndex >= 0 && s_ForceAttackIndex < Count)
         {
-            switch (s_ForceAttackIndex)
+            // Force a specific attack (respect cooldown inside pushCandidate)
+            int id = s_ForceAttackIndex;
+            switch (id)
             {
-            case 0: pushCandidate(AttackId::Slash, [this]() { return std::make_unique<BossSlashState>(m_pOwner); }, (dist < s_NearRange) ? Near : (dist < s_MidRange ? Mid : Far)); break;
-            case 1: pushCandidate(AttackId::Stomp, [this]() { return std::make_unique<BossStompState>(m_pOwner); }, (dist < s_NearRange) ? Near : (dist < s_MidRange ? Mid : Far)); break;
-            case 3: pushCandidate(AttackId::Shout, [this]() { return std::make_unique<BossShoutState>(m_pOwner); }, (dist < s_NearRange) ? Near : (dist < s_MidRange ? Mid : Far)); break;
-            case 4: pushCandidate(AttackId::Throwing, [this]() { return std::make_unique<BossThrowingState>(m_pOwner); }, (dist < s_NearRange) ? Near : (dist < s_MidRange ? Mid : Far)); break;
+            case AttackId::Jump: pushCandidate(AttackId::Jump, [this]() { return std::make_unique<BossJumpOnlState>(m_pOwner); }, distIndex); break;
+            case AttackId::Shout: pushCandidate(AttackId::Shout, [this]() { return std::make_unique<BossShoutState>(m_pOwner); }, distIndex); break;
+            case AttackId::Slash: pushCandidate(AttackId::Slash, [this]() { return std::make_unique<BossSlashState>(m_pOwner); }, distIndex); break;
+            case AttackId::Spinning: pushCandidate(AttackId::Spinning, [this]() { return std::make_unique<BossSpinningState>(m_pOwner); }, distIndex); break;
+            case AttackId::Stomp: pushCandidate(AttackId::Stomp, [this]() { return std::make_unique<BossStompState>(m_pOwner); }, distIndex); break;
+            case AttackId::Throwing: pushCandidate(AttackId::Throwing, [this]() { return std::make_unique<BossThrowingState>(m_pOwner); }, distIndex); break;
+            default: break;
             }
         }
         else
         {
-            // Near: Slash or Stomp
-            if (dist < s_NearRange) {
-                pushCandidate(AttackId::Slash, [this]() { return std::make_unique<BossSlashState>(m_pOwner); }, Near);
-                pushCandidate(AttackId::Stomp, [this]() { return std::make_unique<BossStompState>(m_pOwner); }, Near);
-            }
-            // Mid: Shout (and possibly Charge in future)
-            else if (dist < s_MidRange) {
-                pushCandidate(AttackId::Shout, [this]() { return std::make_unique<BossShoutState>(m_pOwner); }, Mid);
-            }
-            // Far: Throwing or Stomp
-            else {
-                pushCandidate(AttackId::Throwing, [this]() { return std::make_unique<BossThrowingState>(m_pOwner); }, Far);
-                pushCandidate(AttackId::Stomp, [this]() { return std::make_unique<BossStompState>(m_pOwner); }, Far);
-            }
+            // Add all 6 attacks as candidates; their per-distance weights determine selection probability
+            pushCandidate(AttackId::Jump, [this]() { return std::make_unique<BossJumpOnlState>(m_pOwner); }, distIndex);
+            pushCandidate(AttackId::Shout, [this]() { return std::make_unique<BossShoutState>(m_pOwner); }, distIndex);
+            pushCandidate(AttackId::Slash, [this]() { return std::make_unique<BossSlashState>(m_pOwner); }, distIndex);
+            pushCandidate(AttackId::Spinning, [this]() { return std::make_unique<BossSpinningState>(m_pOwner); }, distIndex);
+            pushCandidate(AttackId::Stomp, [this]() { return std::make_unique<BossStompState>(m_pOwner); }, distIndex);
+            pushCandidate(AttackId::Throwing, [this]() { return std::make_unique<BossThrowingState>(m_pOwner); }, distIndex);
         }
 
         if (!weighted.empty())

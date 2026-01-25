@@ -63,6 +63,9 @@ void EffekseerManager::RenderHandle(::Effekseer::Handle handle, CameraBase* pUse
 	m_pRenderer->EndRendering();
 }
 
+// UI 用描画エントリ (スクリーン座標でプレイされたハンドルを正射影で描画)
+// UI 用描画エントリ (スクリーン座標でプレイされたハンドルを正射影で描画)
+
 //-----------------------------------------------------------------------------------.
 
 void EffekseerManager::RenderHandleUI(::Effekseer::Handle handle)

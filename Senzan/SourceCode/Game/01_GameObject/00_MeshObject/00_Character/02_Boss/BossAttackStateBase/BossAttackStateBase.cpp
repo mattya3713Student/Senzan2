@@ -53,6 +53,29 @@ bool BossAttackStateBase::UpdateColliderWindows(float currentTime, std::vector<C
             }
             window.IsAct = true;
         }
+        // ジャスト時の1回演出: IsJustWindow が true になった瞬間に実行
+        if (window.IsJustWindow && !window.JustPlayed)
+        {
+            // プレイヤーまたはボス固有の演出をここで実行する。
+            // 例: UI の Parry_Flash を画面上に表示させる
+            if (m_pOwner)
+            {
+                // ボスの頭のワールド位置を取得して画面座標に変換して UI 表示
+                DirectX::XMFLOAT3 headPos{0.0f, 0.0f, 0.0f};
+                // Bone 名が設定されていれば、試しに Mesh からボーン位置を取得
+                if (!m_pOwner->GetResourceName().empty()) {
+                    // Boss のメッシュからボーン位置取得 API がある場合は使用する
+                }
+                // とりあえず画面中央上寄せで表示
+                DirectX::XMFLOAT2 screenPos{ WND_WF * 0.5f, WND_HF * 0.25f };
+                auto charPtr = dynamic_cast<Character*>(m_pOwner);
+                if (charPtr)
+                {
+                    charPtr->PlayEffectUIAtScreenPos("Parry_Flash", screenPos, 100.0f);
+                }
+            }
+            window.JustPlayed = true;
+        }
 
         // 当たり判定が有効な間、毎フレームオフセットを更新
         // ColliderBase::GetPosition()が親の回転を自動適用するため、ローカルオフセットをそのまま設定

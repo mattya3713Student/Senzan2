@@ -207,11 +207,10 @@ void Boss::Update()
  
 
 #if _DEBUG
-    // デバッグ用: ImGui で任意のボスステートに切り替えられるパネル
+    // デバッグ用: ImGui で任意のボスステートに切り替えられるボタン群
     if (ImGui::Begin(IMGUI_JP("Boss Debug")))
     {
-        static int sel = 0;
-        const char* items[] = {
+        const char* state_labels[] = {
             IMGUI_JP("Idle"),
             IMGUI_JP("Move"),
             IMGUI_JP("Slash"),
@@ -222,29 +221,40 @@ void Boss::Update()
             IMGUI_JP("Throwing"),
             IMGUI_JP("Parry")
         };
+        constexpr int state_count = static_cast<int>(sizeof(state_labels) / sizeof(state_labels[0]));
+        const int buttons_per_row = 4;
 
-        ImGui::Combo(IMGUI_JP("State"), &sel, items, IM_ARRAYSIZE(items));
-        if (ImGui::Button(IMGUI_JP("Enter State")))
+        for (int i = 0; i < state_count; ++i)
         {
-            switch (sel)
+            if (i > 0 && (i % buttons_per_row) != 0)
             {
-            case 0: m_State->ChangeState(std::make_shared<BossIdolState>(this)); break;
-            case 1: m_State->ChangeState(std::make_shared<BossMoveState>(this)); break;
-            case 2: m_State->ChangeState(std::make_shared<BossSlashState>(this)); break;
-            case 3: m_State->ChangeState(std::make_shared<BossShoutState>(this)); break;
-            case 4: m_State->ChangeState(std::make_shared<BossSpinningState>(this)); break;
-            case 5: m_State->ChangeState(std::make_shared<BossJumpOnlState>(this)); break;
-            case 6: m_State->ChangeState(std::make_shared<BossStompState>(this)); break;
-            case 7: m_State->ChangeState(std::make_shared<BossThrowingState>(this)); break;
-            case 8: m_State->ChangeState(std::make_shared<BossParryState>(this)); break;
-            default: break;
+                ImGui::SameLine();
+            }
+
+            if (ImGui::Button(state_labels[i]))
+            {
+                switch (i)
+                {
+                case 0: m_State->ChangeState(std::make_shared<BossIdolState>(this)); break;
+                case 1: m_State->ChangeState(std::make_shared<BossMoveState>(this)); break;
+                case 2: m_State->ChangeState(std::make_shared<BossSlashState>(this)); break;
+                case 3: m_State->ChangeState(std::make_shared<BossShoutState>(this)); break;
+                case 4: m_State->ChangeState(std::make_shared<BossSpinningState>(this)); break;
+                case 5: m_State->ChangeState(std::make_shared<BossJumpOnlState>(this)); break;
+                case 6: m_State->ChangeState(std::make_shared<BossStompState>(this)); break;
+                case 7: m_State->ChangeState(std::make_shared<BossThrowingState>(this)); break;
+                case 8: m_State->ChangeState(std::make_shared<BossParryState>(this)); break;
+                default: break;
+                }
             }
         }
 
         ImGui::SameLine();
-        if (ImGui::Button(IMGUI_JP("Enter Slash (Hotkey)"))) {
+        if (ImGui::Button(IMGUI_JP("Enter Slash (Hotkey)")))
+        {
             m_State->ChangeState(std::make_shared<BossSpinningState>(this));
         }
+
         ImGui::End();
     }
 #endif
@@ -300,6 +310,9 @@ void Boss::OnParried(bool withDelay, float delaySeconds)
     GetParryAnimPair();
 
     m_IsParried = true;
+
+    // 全ての攻撃コライダーを無効化 (パリィ成功時も攻撃判定を消す)
+    OffAttackCollider();
 
     // BossParryStateへ遷移（遅延フラグと遅延秒を渡す）
     m_State->ChangeState(std::make_shared<BossParryState>(this, withDelay, delaySeconds));

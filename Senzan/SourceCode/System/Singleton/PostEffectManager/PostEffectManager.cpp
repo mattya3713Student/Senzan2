@@ -23,6 +23,15 @@ PostEffectManager::PostEffectManager()
    , m_SceneDSV         (nullptr)
    , m_SceneMSAATex     (nullptr)
    , m_SceneResolvedTex (nullptr)
+   , m_CircleGrayCB     (nullptr)
+   , m_CircleEffectActive(false)
+   , m_CircleRadius     (0.0f)
+   , m_IsExpanding      (true)
+   , m_ExpandDuration   (0.3f)
+   , m_HoldDuration     (0.5f)
+   , m_ShrinkDuration   (0.3f)
+   , m_EffectTimer      (0.0f)
+   , m_EffectPhase      (0)
 {
 }
 
@@ -32,6 +41,7 @@ PostEffectManager::~PostEffectManager()
     SAFE_RELEASE(m_SceneSRV);
     SAFE_RELEASE(m_Sampler);
     SAFE_RELEASE(m_FullscreenVB);
+    SAFE_RELEASE(m_CircleGrayCB);
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------
@@ -99,6 +109,14 @@ void PostEffectManager::Initialize()
     ShaderCompile(new std::string(PS_FILE_PATH), "main", "ps_5_0", pBlob, pErrorBlob);
     m_pPixelShader->Init(pBlob);
     SAFE_RELEASE(pErrorBlob);
+
+    // 定数バッファの作成
+    D3D11_BUFFER_DESC cbDesc{};
+    cbDesc.ByteWidth = sizeof(CircleGrayBuffer);
+    cbDesc.Usage = D3D11_USAGE_DYNAMIC;
+    cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    dev->CreateBuffer(&cbDesc, nullptr, &m_CircleGrayCB);
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------
@@ -144,6 +162,10 @@ void PostEffectManager::DrawToBackBuffer()
     ctx->VSSetShader(m_pVertexShader->GetVertexShader(), nullptr, 0);
     ctx->PSSetShader(m_pPixelShader->GetPixelShader(), nullptr, 0);
 
+    // 定数バッファを更新してセット
+    UpdateConstantBuffer();
+    ctx->PSSetConstantBuffers(0, 1, &m_CircleGrayCB);
+
     // Resolvedされたテクスチャを渡す.
     ctx->PSSetShaderResources(0, 1, &m_SceneSRV);
     ctx->PSSetSamplers(0, 1, &m_Sampler);
@@ -165,4 +187,80 @@ void PostEffectManager::SetGray(bool enable)
 bool PostEffectManager::IsGray() const
 {
     return m_IsGray;
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------
+
+void PostEffectManager::Update(float deltaTime)
+{
+    if (!m_CircleEffectActive) return;
+
+    m_EffectTimer += deltaTime;
+
+    switch (m_EffectPhase)
+    {
+    case 0: // 広がりフェーズ
+        m_IsExpanding = true;
+        m_CircleRadius = (m_EffectTimer / m_ExpandDuration) * 1.5f;  // 0 -> 1.5
+        if (m_EffectTimer >= m_ExpandDuration)
+        {
+            m_CircleRadius = 1.5f;
+            m_EffectTimer = 0.0f;
+            m_EffectPhase = 1;
+        }
+        break;
+
+    case 1: // 維持フェーズ
+        m_CircleRadius = 1.5f;
+        if (m_EffectTimer >= m_HoldDuration)
+        {
+            m_EffectTimer = 0.0f;
+            m_EffectPhase = 2;
+        }
+        break;
+
+    case 2: // 戻りフェーズ（中心から通常色が広がる）
+        m_IsExpanding = false;
+        m_CircleRadius = (m_EffectTimer / m_ShrinkDuration) * 1.5f;  // 0 -> 1.5（中心から広がる）
+        if (m_EffectTimer >= m_ShrinkDuration)
+        {
+            m_CircleRadius = 1.5f;
+            m_CircleEffectActive = false;
+            m_EffectPhase = 0;
+            m_EffectTimer = 0.0f;
+        }
+        break;
+    }
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------
+
+void PostEffectManager::StartCircleGrayEffect(float expandDuration, float holdDuration, float shrinkDuration)
+{
+    m_CircleEffectActive = true;
+    m_CircleRadius = 0.0f;
+    m_IsExpanding = true;
+    m_ExpandDuration = expandDuration;
+    m_HoldDuration = holdDuration;
+    m_ShrinkDuration = shrinkDuration;
+    m_EffectTimer = 0.0f;
+    m_EffectPhase = 0;
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------
+
+void PostEffectManager::UpdateConstantBuffer()
+{
+    auto ctx = DirectX11::GetInstance().GetContext();
+
+    D3D11_MAPPED_SUBRESOURCE mapped;
+    if (SUCCEEDED(ctx->Map(m_CircleGrayCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))
+    {
+        CircleGrayBuffer* cb = static_cast<CircleGrayBuffer*>(mapped.pData);
+        cb->CircleRadius = m_CircleRadius;
+        cb->IsExpanding = m_IsExpanding ? 1.0f : 0.0f;
+        cb->EffectActive = m_CircleEffectActive ? 1.0f : 0.0f;
+        cb->AspectRatio = static_cast<float>(WND_W) / static_cast<float>(WND_H);
+        ctx->Unmap(m_CircleGrayCB, 0);
+    }
 }

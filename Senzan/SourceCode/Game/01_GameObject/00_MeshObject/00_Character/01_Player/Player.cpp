@@ -36,10 +36,8 @@
 #include "System/Singleton/ParryManager/ParryManager.h"
 #include "Graphic/DirectX/DirectX11/DirectX11.h"
 #include "Resource/Effect/EffectResource.h"
+#include <random>
 
-namespace {
-    ::Effekseer::Handle m_EffectHandle = -1;
-}
 Player::Player()
 	: Character         ()
 	, m_RootState       ( std::make_unique<PlayerState::Root>(this) )
@@ -214,9 +212,6 @@ void Player::Draw()
 	Character::Draw();
 
 	m_spTransform->SetRotationY(GetRotation().y - D3DXToRadian(180.0f));
-
-    EffekseerManager::GetInstance().RenderHandle(m_EffectHandle, CameraManager::GetInstance().GetCurrentCamera().get());
-
 }
 
 // ノック中か.
@@ -395,14 +390,24 @@ void Player::HandleAttackDetection()
 
 			eCollisionGroup other_group = otherCollider->GetMyMask();
 
-			if ((other_group & eCollisionGroup::Enemy_Damage) != eCollisionGroup::None)
-			{
-                auto effect = EffectResource::GetResource("Hit2");
+            if ((other_group & eCollisionGroup::Enemy_Damage) != eCollisionGroup::None)
+            {
+                for (int i = 0; i < 3; ++i)
+                { // 小さなランダムオフセットを追加してエフェクト位置に揺らぎを持たせる
+                    static thread_local std::mt19937 s_rng((std::random_device())());
+                    std::uniform_real_distribution<float> dist(-1.2f, 1.2f);
+                    std::uniform_real_distribution<float> rotDist(0.0f, DirectX::XM_2PI);
 
-                m_EffectHandle =
-                    EffekseerManager::GetInstance().GetManager()
-                    ->Play(effect, info.ContactPoint.x, info.ContactPoint.y + 1.5f, info.ContactPoint.z);
+                    DirectX::XMFLOAT3 jitterPos{
+                        info.ContactPoint.x + dist(s_rng),
+                        info.ContactPoint.y + 1.5f + dist(s_rng),
+                        info.ContactPoint.z + dist(s_rng)
+                    };
 
+                    // ランダム回転（ラジアン）を作成してエフェクトに渡す
+                    DirectX::XMFLOAT3 eulerRot{ rotDist(s_rng), rotDist(s_rng), rotDist(s_rng) };
+                    PlayEffectAtWorldPos("Hit2", jitterPos, eulerRot);
+                }
 				SoundManager::GetInstance().Play("Hit1");
 				SoundManager::GetInstance().SetVolume("Hit1", 9000);
 
@@ -483,14 +488,20 @@ void Player::HandleParry_SuccessDetection()
                 // Player_Parry_Suc は遅延ありの挙動を要求
                 ParryManager::GetInstance().OnParrySuccess(true, 2.0f);
 
-			// パリィエフェクトを衝突点に出す
-			auto parryEffect = EffectResource::GetResource("Spark");
-			if (parryEffect != nullptr)
-			{
-				m_EffectHandle =
-					EffekseerManager::GetInstance().GetManager()
-					->Play(parryEffect, info.ContactPoint.x, info.ContactPoint.y, info.ContactPoint.z);
-			}
+            // パリィエフェクトを衝突点に出す（小さなランダムオフセットを追加）
+                for(int i = 0 ; i < 3; ++i)
+            {
+                static thread_local std::mt19937 s_rng((std::random_device())());
+                std::uniform_real_distribution<float> dist(-1.15f, 1.15f);
+                std::uniform_real_distribution<float> rotDist(0.0f, DirectX::XM_2PI);
+                DirectX::XMFLOAT3 jitterPos{
+                    info.ContactPoint.x + dist(s_rng),
+                    info.ContactPoint.y + 3.5f+ dist(s_rng),
+                    info.ContactPoint.z + dist(s_rng)
+                };
+                DirectX::XMFLOAT3 eulerRot{ rotDist(s_rng), rotDist(s_rng), rotDist(s_rng) };
+                PlayEffectAtWorldPos("Spark", jitterPos, eulerRot, 3.f);
+            }
 				
 				// 一フレーム1回.
 				return;
@@ -533,19 +544,21 @@ void Player::HandleParry_FailDetection()
 				// パリィ成功時のゲージ増加
 				m_CurrentUltValue += 500.0f;
 
-                // パリィエフェクトを衝突点に出す
-                auto parryEffect = EffectResource::GetResource("Spark");
-                if (parryEffect != nullptr)
+                // パリィエフェクトを衝突点に出す（ランダム回転）
                 {
-                    m_EffectHandle =
-                        EffekseerManager::GetInstance().GetManager()
-                        ->Play(parryEffect, info.ContactPoint.x, info.ContactPoint.y, info.ContactPoint.z);
+                    static thread_local std::mt19937 s_rng((std::random_device())());
+                    std::uniform_real_distribution<float> rotDist(0.0f, DirectX::XM_2PI);
+                    DirectX::XMFLOAT3 eulerRot{ rotDist(s_rng), rotDist(s_rng), rotDist(s_rng) };
+                    PlayEffectAtWorldPos("Spark", info.ContactPoint, eulerRot);
                 }
 				// パリィ成功時のカメラ演出（シェイク）
 				CameraManager::GetInstance().ShakeCamera(0.15f, 0.3f);
+			    // Boss に通知（アニメ再生のみ）
+			    ParryManager::GetInstance().OnParrySuccess(false, 0.0f);
 
-			// Boss に通知（アニメ再生のみ）
-			ParryManager::GetInstance().OnParrySuccess(false, 0.0f);
+                // 画面中央に表示
+                DirectX::XMFLOAT2 screenCenter{ WND_WF * 0.5f, WND_HF * 0.3f };
+                PlayEffectUIAtScreenPos("Parry_Flash", screenCenter, 1.0f);
 
 			// 一フレーム1回.
 			return;

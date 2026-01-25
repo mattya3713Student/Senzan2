@@ -142,6 +142,9 @@ void GameMain::Update()
     m_upPlayer->SetTargetPos(m_upBoss.get()->GetPosition());
     m_upPlayer->Update();
 
+    // ポストエフェクト更新
+    PostEffectManager::GetInstance().Update(Time::GetInstance().GetDeltaTime());
+
     UIUpdate();
 
 #if _DEBUG
@@ -177,10 +180,11 @@ void GameMain::Draw()
 	Shadow::End();
 
 	const bool useGray = PostEffectManager::GetInstance().IsGray();
-	if (useGray) {
+	const bool useCircleGray = PostEffectManager::GetInstance().IsCircleGrayActive();
+	if (useGray || useCircleGray) {
 		PostEffectManager::GetInstance().BeginSceneRender();
 	}
-
+   
 	m_upGround->Draw();
     m_upSkyDome->Draw();
     m_upBoss->Draw();
@@ -188,7 +192,7 @@ void GameMain::Draw()
 
     SnowBallManager::GetInstance().Draw();
 
-	if (useGray) {
+	if (useGray || useCircleGray) {
 		PostEffectManager::GetInstance().DrawToBackBuffer();
 	}
 

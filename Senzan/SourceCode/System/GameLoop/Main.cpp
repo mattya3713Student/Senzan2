@@ -87,6 +87,9 @@ void Main::Update()
 
 	SceneManager::GetInstance().Update();
 
+    // SoundManager の更新（自動復帰タイマー等）
+    SoundManager::GetInstance().Update(Time::GetInstance().GetDeltaTime());
+
 	// マウスホイールのスクロール方向を初期化.
 	Input::SetWheelDirection(0);
 
