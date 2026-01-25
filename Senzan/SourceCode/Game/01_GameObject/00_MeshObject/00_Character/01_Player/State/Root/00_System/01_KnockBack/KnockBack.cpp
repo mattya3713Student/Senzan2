@@ -47,6 +47,7 @@ void KnockBack::Enter()
         DirectX::XMVectorSet(0.0f, INITIAL_JUMP_SPEED, 0.0f, 0.0f),
         DirectX::XMVectorSelectControl(0, 1, 0, 0));
 
+    m_pOwner->SetPositionY(1.f);
     // 初速を速度変数に格納.
     DirectX::XMStoreFloat3(&m_pOwner->m_KnockBackVec, v_final_velocity);
 }

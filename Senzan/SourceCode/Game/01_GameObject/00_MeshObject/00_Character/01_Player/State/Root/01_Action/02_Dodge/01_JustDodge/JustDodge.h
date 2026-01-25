@@ -32,5 +32,6 @@ protected:
     float m_AfterImageTimer;        // 残像生成タイマー.
     float m_AfterImageInterval;     // 残像生成間隔 (秒).
     float m_AfterImageLifeTime;     // 残像の生存時間 (秒).
+    bool  m_IsEffectStart;          // 一度だけエフェクトを再生.
 };
 }

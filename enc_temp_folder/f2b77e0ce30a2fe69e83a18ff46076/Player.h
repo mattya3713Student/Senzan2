@@ -180,7 +180,7 @@ protected:
 
 public:
 	// ジャスト回避エフェクトを開始する（JustDodge ステートから呼び出す）
-    void StartJustDodgeEffect(const DirectX::XMFLOAT3& startPos, const DirectX::XMFLOAT3& targetPos, float scale = 1.0f, float duration = 1.0f, float extraDistance = 0.0f);
+	void StartJustDodgeEffect(const DirectX::XMFLOAT3& startPos, const DirectX::XMFLOAT3& targetPos, float scale = 1.0f, float duration = 1.0f);
 
 protected:
 	//--- Debug: force state 再入場用 ---.

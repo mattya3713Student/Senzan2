@@ -590,29 +590,13 @@ void Player::HandleParry_FailDetection()
 	}
 }
 
-void Player::StartJustDodgeEffect(const DirectX::XMFLOAT3& startPos, const DirectX::XMFLOAT3& targetPos, float scale, float duration, float extraDistance)
+void Player::StartJustDodgeEffect(const DirectX::XMFLOAT3& startPos, const DirectX::XMFLOAT3& targetPos, float scale, float duration)
 {
     if (!m_pJustDodgeEffect)
     {
         m_pJustDodgeEffect = std::make_unique<JustDodgeEffect>();
     }
-    // Extend the target position in the boss forward direction by extraDistance (if provided)
-    DirectX::XMFLOAT3 finalTarget = targetPos;
-    if (extraDistance != 0.0f)
-    {
-        // compute direction from start to target (XZ) and extend
-        float dx = targetPos.x - startPos.x;
-        float dz = targetPos.z - startPos.z;
-        float len = sqrtf(dx*dx + dz*dz);
-        if (len > 1e-6f)
-        {
-            float nx = dx / len;
-            float nz = dz / len;
-            finalTarget.x += nx * extraDistance;
-            finalTarget.z += nz * extraDistance;
-        }
-    }
-    m_pJustDodgeEffect->Start("JustDodge_Attack", startPos, finalTarget, scale, duration);
+    m_pJustDodgeEffect->Start("JustDodge_Attack", startPos, targetPos, scale, duration);
 }
 
 
