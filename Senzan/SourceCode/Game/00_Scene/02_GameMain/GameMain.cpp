@@ -72,6 +72,7 @@ void GameMain::Initialize()
 	// カメラ設定.
 	m_spCamera = std::make_shared<LockOnCamera>(std::ref(*m_upPlayer), std::ref(*m_upBoss));
 	CameraManager::GetInstance().SetCamera(m_spCamera);
+	CameraManager::GetInstance().SetPosition({ 0.f, 3.f, 40.f });
 
 	// ParryManager に Player と Boss の参照を設定
 	ParryManager::GetInstance().Initialize(m_upPlayer.get(), m_upBoss.get());
@@ -212,8 +213,6 @@ void GameMain::Draw()
 
 HRESULT GameMain::LoadData()
 {
-	// ここで実際のロード処理を行うか、Create()に集約されているのであればE_NOTIMPLのままでもよい
-	// 現在のGameMainではCreate()でほとんどのInit/Load処理が行われているようです
 	return S_OK; // 成功を返す
 }
 

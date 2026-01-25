@@ -46,8 +46,8 @@ void JustDodgeEffect::Start(const std::string& effectName, const DirectX::XMFLOA
             EffekseerManager::GetInstance().GetManager()->SetScale(m_Handle, scale, scale, scale);
         }
         // 向きを目標方向へ向ける (XZ 平面)
-        float dx = m_TargetPos.x - m_StartPos.x;
-        float dz = m_TargetPos.z - m_StartPos.z;
+        float dx = m_StartPos.x - m_TargetPos.x;
+        float dz = m_StartPos.z - m_TargetPos.z;
         if (std::fabs(dx) > 1e-6f || std::fabs(dz) > 1e-6f)
         {
             float yaw = std::atan2f(dx, dz) + DirectX::XM_PI;
