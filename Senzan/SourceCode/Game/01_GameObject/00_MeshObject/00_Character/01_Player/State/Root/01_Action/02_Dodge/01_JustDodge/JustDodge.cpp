@@ -39,19 +39,19 @@ void JustDodge::Enter()
     Dodge::Enter();
 
 	m_Distance = 250.f;
-	m_MaxTime = 1.8f;
+	m_MaxTime = 2.5f;
 
     m_pOwner->SetIsLoop(false);
     m_pOwner->SetAnimSpeed(JUSTDODGE_ANIM_SPEED);
     m_pOwner->ChangeAnim(Player::eAnim::Dodge);
 
-    PostEffectManager::GetInstance().StartCircleGrayEffect(0.2f, m_MaxTime - 0.5f, 0.3f);
+    PostEffectManager::GetInstance().StartCircleGrayEffect(0.2f, m_MaxTime - 1.0f, 0.5f);
 
     // ゲージ増加
     m_pOwner->m_CurrentUltValue += 300.0f;
 
-    // ボスの攻撃判定を全てオフにする
-    ParryManager::GetInstance().DisableBossAttackColliders();
+    // タイムスケールを戻す.
+    ParryManager::GetInstance().StartJustDodge(0.1f);
 
     // 残像エフェクトの初期化.
     m_AfterImageTimer = 0.0f;
@@ -164,8 +164,8 @@ void JustDodge::Exit()
 	Dodge::Exit();
     PostEffectManager::GetInstance().SetGray(false);
 
-    // 残像をクリア（Exit後も残像は表示し続けるためクリアしない場合はコメントアウト）.
-    // m_pAfterImage->Clear();
+    // タイムスケールを戻す.
+    ParryManager::GetInstance().EndJustDodge();
 }
 
 } // PlayerState.

@@ -52,15 +52,31 @@ void ParryManager::OnParrySuccess(bool withDelay)
     }
 }
 
+void ParryManager::StartJustDodge(float TimeScale)
+{
+    if (m_pBoss)
+    {
+        m_pBoss->OffAttackCollider();
+        m_pBoss->SetTimeScale(TimeScale);
+        m_pBoss->SetLockOnPlayer(false);
+    }
+}
+
+void ParryManager::EndJustDodge()
+{
+    if (m_pBoss)
+    {
+        m_pBoss->OffAttackCollider();
+        m_pBoss->SetTimeScale(-1.f);
+        m_pBoss->SetLockOnPlayer(false);
+    }
+}
+
 void ParryManager::DisableBossAttackColliders()
 {
     if (m_pBoss)
     {
-        // Turn off all boss attack colliders using the public API
-        m_pBoss->SetColliderActiveByName("boss_Hand_R", false);
-        m_pBoss->SetColliderActiveByName("boss_pSphere28", false);
-        m_pBoss->SetColliderActiveByName("boss_Shout", false);
-        m_pBoss->SetColliderActiveByName("boss_Spinning", false);
+        m_pBoss->OffAttackCollider();
     }
 }
 
