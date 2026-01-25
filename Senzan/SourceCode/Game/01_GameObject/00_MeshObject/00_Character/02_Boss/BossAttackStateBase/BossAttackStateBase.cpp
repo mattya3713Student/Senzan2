@@ -115,17 +115,7 @@ bool BossAttackStateBase::UpdateColliderWindows(float prevTime, float currentTim
         // Deactivation: for OneShot, deactivate after the next frame (i.e., when currentTime > Start)
         if (!window.IsEnd)
         {
-            if (window.OneShot)
-            {
-                // Deactivate on the frame after the activation: prevTime >= Start indicates we've passed the activation frame
-                if (window.OneShotTriggered && prevTime >= window.Start)
-                {
-                    m_pOwner->SetColliderActiveByName(window.BoneName, false);
-                    window.IsEnd = true;
-                    window.IsAct = false;
-                }
-            }
-            else if (window.IsAct && currentTime >= (window.Start + window.Duration))
+            if (window.IsAct && currentTime >= (window.Start + window.Duration))
             {
                 m_pOwner->SetColliderActiveByName(window.BoneName, false);
                 window.IsEnd = true;
@@ -157,6 +147,9 @@ void BossAttackStateBase::Enter()
 {
     LoadSettings();
     m_CurrentTime = 0.0f;
+    // Reset previous time so UpdateColliderWindows sees a fresh time window on re-entry
+    // Use a negative value to ensure prevTime < Start for OneShot activations that begin at t=0
+    m_PrevTime = -1.0f;
     
     // ウィンドウフラグをリセット
     for (auto& window : m_ColliderWindows)

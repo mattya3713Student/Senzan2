@@ -154,7 +154,7 @@ Boss::Boss()
     m_pSpinningCollider->SetMyMask(eCollisionGroup::Enemy_Attack);
     m_pSpinningCollider->SetTarGetTargetMask(
         eCollisionGroup::Player_Damage
-        | eCollisionGroup::Player_Parry_Suc
+        | eCollisionGroup::Player_Parry_Fai
         | eCollisionGroup::Player_JustDodge);
     m_pSpinningCollider->SetAttackAmount(10.0f);
     m_pSpinningCollider->SetHeight(40.0f);
