@@ -125,6 +125,15 @@ public:
     // PlayerのParry成功時硬直させたいアニメーションとタイミング.
     virtual std::pair<Boss::enBossAnim, float> GetParryAnimPair(); 
 
+    // --- Player を見る（Yaw のみ）ヘルパー ---
+    // 一度だけ即座にプレイヤーの方を見る
+    void FacePlayerInstantYaw();
+    // 毎フレームプレイヤーの方を向き続ける（呼び出し側が毎フレーム呼ぶ）
+    void FacePlayerYawContinuous();
+
+    // Enter 時に自動でプレイヤーを向くか（デフォルト true）
+    bool m_AutoFaceOnEnter = true;
+
 protected:
     // --- 共通タイムベース制御 ---
     float m_CurrentTime = 0.0f;    // ステートに入ってからの経過時間（秒）

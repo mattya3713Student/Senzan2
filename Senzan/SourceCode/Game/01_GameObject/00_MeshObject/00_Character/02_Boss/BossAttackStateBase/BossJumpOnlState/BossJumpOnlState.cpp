@@ -210,6 +210,23 @@ void BossJumpOnlState::JumpTime()
             pos.y += m_RiseSpeed * deltaTime;
             if (pos.y > m_RiseTargetY) pos.y = m_RiseTargetY;
             m_pOwner->SetPosition(pos);
+
+            // 上昇中は常にプレイヤー方向を向く（Yaw のみ）
+            {
+                DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
+                DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&BossPosF);
+                DirectX::XMFLOAT3 PlayerPosF = m_pOwner->GetTargetPos();
+                DirectX::XMVECTOR PlayerPosXM = DirectX::XMLoadFloat3(&PlayerPosF);
+                DirectX::XMVECTOR Direction = DirectX::XMVectorSubtract(PlayerPosXM, BossPosXM);
+                Direction = DirectX::XMVectorSetY(Direction, 0.0f);
+                if (DirectX::XMVectorGetX(DirectX::XMVector3LengthSq(Direction)) > 0.0001f)
+                {
+                    float dx = DirectX::XMVectorGetX(Direction);
+                    float dz = DirectX::XMVectorGetZ(Direction);
+                    float angle_radian = std::atan2f(dx, dz) + XM_PI;
+                    m_pOwner->SetRotationY(angle_radian);
+                }
+            }
             return;
         }
 
@@ -225,6 +242,22 @@ void BossJumpOnlState::JumpTime()
     if (m_WaitingReappear && !m_IsFalling)
     {
         m_Timer += deltaTime;
+        // 再出現待ちの間もプレイヤー方向を向き続ける（Yaw のみ）
+        {
+            DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
+            DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&BossPosF);
+            DirectX::XMFLOAT3 PlayerPosF = m_pOwner->GetTargetPos();
+            DirectX::XMVECTOR PlayerPosXM = DirectX::XMLoadFloat3(&PlayerPosF);
+            DirectX::XMVECTOR Direction = DirectX::XMVectorSubtract(PlayerPosXM, BossPosXM);
+            Direction = DirectX::XMVectorSetY(Direction, 0.0f);
+            if (DirectX::XMVectorGetX(DirectX::XMVector3LengthSq(Direction)) > 0.0001f)
+            {
+                float dx = DirectX::XMVectorGetX(Direction);
+                float dz = DirectX::XMVectorGetZ(Direction);
+                float angle_radian = std::atan2f(dx, dz) + XM_PI;
+                m_pOwner->SetRotationY(angle_radian);
+            }
+        }
         // 落下モードに入る m_PreFallSeconds 秒前のエフェクト再生
         float prePlayTime = std::max(0.0f, m_ReappearDelay - m_PreFallSeconds);
         if (!m_HasPlayedPreFallEffect && m_Timer >= prePlayTime)
@@ -239,6 +272,20 @@ void BossJumpOnlState::JumpTime()
             DirectX::XMFLOAT3 playerPos = m_pOwner->GetTargetPos();
             DirectX::XMFLOAT3 spawnPos = playerPos;
             spawnPos.y += 12.0f; // 十分上に出現
+            // 出現時にプレイヤーの方を向く（Yaw のみ）
+            // 出現前のボス位置とプレイヤー位置のXZで向きを計算する
+            DirectX::XMFLOAT3 prevBossPos = m_pOwner->GetPosition();
+            DirectX::XMVECTOR PrevBossPosXM = DirectX::XMLoadFloat3(&prevBossPos);
+            DirectX::XMVECTOR PlayerPosXM = DirectX::XMLoadFloat3(&playerPos);
+            DirectX::XMVECTOR Dir = DirectX::XMVectorSubtract(PlayerPosXM, PrevBossPosXM);
+            Dir = DirectX::XMVectorSetY(Dir, 0.0f);
+            if (DirectX::XMVectorGetX(DirectX::XMVector3LengthSq(Dir)) > 0.0001f)
+            {
+                float dx = DirectX::XMVectorGetX(Dir);
+                float dz = DirectX::XMVectorGetZ(Dir);
+                float angle_radian = std::atan2f(dx, dz) + XM_PI;
+                m_pOwner->SetRotationY(angle_radian);
+            }
             m_pOwner->SetPosition(spawnPos);
             m_pOwner->SetIsRenderActive(true);
             m_IsFalling = true;

@@ -37,6 +37,7 @@ void BossSpinningState::Update()
     const float dt = m_pOwner->GetDelta();
     UpdateBaseLogic(dt);
 
+    FacePlayerInstantYaw();
     switch (m_List)
     {
     case enSpinning::None:

@@ -92,14 +92,6 @@ void MattyaTestScene::Update()
 	m_upUI->SetPlayerUlt(m_upPlayer->GetMaxUltValue(), m_upPlayer->GetUltValue());
 
 	m_upUI->Update();
-
-    // デバッグ: 'O' でモーションブラーを試す
-    if (Input::IsKeyPress('O'))
-        PostEffectManager::GetInstance().ResetMotionBlurAccumulation();
-    bool holdO = Input::IsKeyDown('O');
-    PostEffectManager::GetInstance().SetMotionBlurEnabled(holdO);
-    if (holdO) PostEffectManager::GetInstance().SetMotionBlurAmount(0.99f);
-    else PostEffectManager::GetInstance().SetMotionBlurAmount(0.5f);
 }
 
 void MattyaTestScene::LateUpdate()

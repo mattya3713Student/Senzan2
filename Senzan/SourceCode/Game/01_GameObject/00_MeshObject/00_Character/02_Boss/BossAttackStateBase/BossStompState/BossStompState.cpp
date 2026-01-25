@@ -241,6 +241,7 @@ void BossStompState::Update()
             }
         }
 
+        FacePlayerInstantYaw();
 		// Special_0 が終了したら座標移動を開始して Special_1 を再生
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Special_0) && !m_IsMoving)
 		{
@@ -285,9 +286,6 @@ void BossStompState::Update()
 			auto* pStompCollider = m_pOwner->GetStompCollider();
 			if (pStompCollider) pStompCollider->SetActive(false);
 		}
-
-
-		// (処理を上に統合したため削除)
 		break;
 	case BossStompState::enAttack::CoolTime:
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::SpecialToIdol))

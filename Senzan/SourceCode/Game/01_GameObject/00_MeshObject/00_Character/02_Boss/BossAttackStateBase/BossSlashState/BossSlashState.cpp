@@ -54,7 +54,8 @@ void BossSlashState::Update()
     switch (m_List)
     {
     case BossSlashState::enList::ChargeSlash:
-       
+        FacePlayerInstantYaw();
+
         if (m_CurrentTime >= m_ChargeTime)
         {
             m_List = enList::SlashAttack;

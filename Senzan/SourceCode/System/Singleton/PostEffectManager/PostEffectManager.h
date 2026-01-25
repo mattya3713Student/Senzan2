@@ -45,8 +45,6 @@ public:
     bool IsMotionBlurEnabled() const { return m_MotionBlurEnabled; }
     void SetMotionBlurAmount(float a) { m_MotionBlurAmount = a; }
     float GetMotionBlurAmount() const { return m_MotionBlurAmount; }
-    // リセット accumulation（モーションブラー初期化）
-    void ResetMotionBlurAccumulation() { m_IsAccumInitialized = false; }
 
 private:
     // シェーダー用定数バッファ構造体

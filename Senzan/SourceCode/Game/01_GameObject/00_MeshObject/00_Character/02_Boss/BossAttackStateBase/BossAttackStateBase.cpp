@@ -147,15 +147,39 @@ void BossAttackStateBase::Enter()
         m_pOwner->SetColliderActiveByName("boss_Shout", false);
         m_pOwner->SetColliderActiveByName("boss_Spinning", false);
 
-        // 攻撃開始時にプレイヤー方向を向く
-        const DirectX::XMFLOAT3& bossPos = m_pOwner->GetPosition();
-        const DirectX::XMFLOAT3& playerPos = m_pOwner->m_PlayerPos;
-        
-        float dx = playerPos.x - bossPos.x;
-        float dz = playerPos.z - bossPos.z;
-        
-        // atan2 でプレイヤー方向への角度を計算（モデルの向きに合わせて調整）
-        float angle_radian = std::atan2f(-dx, -dz);
+        // 攻撃開始時にプレイヤー方向を向く（デフォルトで有効）
+        if (m_AutoFaceOnEnter)
+        {
+            FacePlayerInstantYaw();
+        }
+    }
+}
+
+void BossAttackStateBase::FacePlayerInstantYaw()
+{
+    if (!m_pOwner) return;
+    const DirectX::XMFLOAT3 bossPos = m_pOwner->GetPosition();
+    const DirectX::XMFLOAT3 playerPos = m_pOwner->m_PlayerPos;
+    float dx = playerPos.x - bossPos.x;
+    float dz = playerPos.z - bossPos.z;
+    float angle_radian = std::atan2f(-dx, -dz);
+    m_pOwner->SetRotationY(angle_radian);
+}
+
+void BossAttackStateBase::FacePlayerYawContinuous()
+{
+    if (!m_pOwner) return;
+    DirectX::XMFLOAT3 bossPos = m_pOwner->GetPosition();
+    DirectX::XMFLOAT3 playerPos = m_pOwner->GetTargetPos();
+    DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&bossPos);
+    DirectX::XMVECTOR PlayerPosXM = DirectX::XMLoadFloat3(&playerPos);
+    DirectX::XMVECTOR Dir = DirectX::XMVectorSubtract(PlayerPosXM, BossPosXM);
+    Dir = DirectX::XMVectorSetY(Dir, 0.0f);
+    if (DirectX::XMVectorGetX(DirectX::XMVector3LengthSq(Dir)) > 0.0001f)
+    {
+        float dx = DirectX::XMVectorGetX(Dir);
+        float dz = DirectX::XMVectorGetZ(Dir);
+        float angle_radian = std::atan2f(dx, dz) + DirectX::XM_PI;
         m_pOwner->SetRotationY(angle_radian);
     }
 }
