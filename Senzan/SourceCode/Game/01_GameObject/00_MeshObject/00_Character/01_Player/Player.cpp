@@ -500,6 +500,7 @@ void Player::HandleParry_SuccessDetection()
                 DirectX::XMFLOAT3 eulerRot{ rotDist(s_rng), rotDist(s_rng), rotDist(s_rng) };
                 PlayEffectAtWorldPos("Spark", jitterPos, eulerRot, 3.f);
             }
+                PlayEffectAtWorldPos("Parry_Attack", info.ContactPoint);
 				
 				// 一フレーム1回.
 				return;
@@ -554,6 +555,7 @@ void Player::HandleParry_FailDetection()
                     DirectX::XMFLOAT3 eulerRot{ rotDist(s_rng), rotDist(s_rng), rotDist(s_rng) };
                     PlayEffectAtWorldPos("Spark", info.ContactPoint, eulerRot);
                 }
+                PlayEffectAtWorldPos("Parry_Attack", info.ContactPoint);
 
 			// 一フレーム1回.
 			return;

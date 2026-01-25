@@ -69,7 +69,6 @@ void Parry::Update()
             m_pOwner->GetTransform()->SetRotationY(rad);
 
             m_pOwner->m_MoveVec = diff_vec;
-
         }
         m_ElapsedTime += m_pOwner->GetDelta();
 
