@@ -20,6 +20,13 @@ public:
     void SetGray(bool enable);
     bool IsGray() const;
 
+    // 背景テクスチャ（Resolve済み）を取得（Effekseer歪み用）
+    ID3D11ShaderResourceView* GetSceneSRV() const { return m_SceneSRV; }
+
+    // 内部テクスチャへのアクセス（Resolve用）
+    ID3D11Texture2D* GetSceneMSAATex() const { return m_SceneMSAATex; }
+    ID3D11Texture2D* GetSceneResolvedTex() const { return m_SceneResolvedTex; }
+
 private:
     ID3D11Texture2D* m_SceneMSAATex;
     ID3D11Texture2D* m_SceneResolvedTex;

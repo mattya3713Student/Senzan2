@@ -164,7 +164,7 @@ Boss::Boss()
     m_pSpinningCollider->SetColor(Color::eColor::Red);
 	m_upColliders->AddCollider(std::move(spinning_collider));
 
-    m_State->ChangeState(std::make_shared<BossSpinningState>(this));
+    m_State->ChangeState(std::make_shared<BossShoutState>(this));
     /* BossSlashState
  BossChargeState
  BossChargeSlashState

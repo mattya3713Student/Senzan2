@@ -41,7 +41,7 @@ private:
 private:
 	enShout m_List;
 	float m_ShoutDamage = 10.0f;     // ダメージ量.
-	float m_ShoutRadius = 100.0f;     // 範囲半径.
+	float m_ShoutRadius = 180.0f;     // 範囲半径.
 	float m_KnockBackPower = 15.0f;  // ノックバック力.
     // 叫び判定が広がる時間（秒）。ステート中に半径が 0 -> m_ShoutRadius へ線形補間される
     float m_ShoutExpandTime = 1.0f;
@@ -51,6 +51,6 @@ private:
 
     // エフェクト関連: 一度だけ発火させるためのフラグと設定
     bool m_EffectPlayed = false;
-    DirectX::XMFLOAT3 m_EffectOffset = DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f);
-    float m_EffectScale = 1.0f;
+    DirectX::XMFLOAT3 m_EffectOffset = DirectX::XMFLOAT3(0.0f, 15.0f, 0.0f);
+    float m_EffectScale = 10.0f;
 };

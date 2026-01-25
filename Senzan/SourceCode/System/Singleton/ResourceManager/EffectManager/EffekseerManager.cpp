@@ -163,6 +163,34 @@ const::Effekseer::ManagerRef EffekseerManager::GetManager() const
 
 //-----------------------------------------------------------------------------------.
 
+void EffekseerManager::SetBackgroundTexture(ID3D11ShaderResourceView* pSRV)
+{
+	if (pSRV == nullptr || m_pRenderer == nullptr) {
+		return;
+	}
+
+	// DX11 専用の SetBackground を使用（SRV を直接渡す）
+	// deprecated警告を抑制
+#pragma warning(push)
+#pragma warning(disable: 4996)
+	m_pRenderer->SetBackground(pSRV);
+#pragma warning(pop)
+}
+
+//-----------------------------------------------------------------------------------.
+
+void EffekseerManager::ClearBackgroundTexture()
+{
+	if (m_pRenderer != nullptr) {
+#pragma warning(push)
+#pragma warning(disable: 4996)
+		m_pRenderer->SetBackground(static_cast<ID3D11ShaderResourceView*>(nullptr));
+#pragma warning(pop)
+	}
+}
+
+//-----------------------------------------------------------------------------------.
+
 void EffekseerManager::Initialize()
 {
 	// マネージャーの作成.
