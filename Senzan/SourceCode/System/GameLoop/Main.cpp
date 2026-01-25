@@ -10,6 +10,7 @@
 #include "Singleton/PostEffectManager/PostEffectManager.h"
 #include "02_UIObject/Fade/FadeManager.h"
 
+#include "System/Singleton/ResourceManager/EffectManager/EffekseerManager.h"
 #include "System/Singleton/ImGui/CImGuiManager.h"
 
 #ifdef _DEBUG
@@ -86,6 +87,9 @@ void Main::Update()
 
 	SceneManager::GetInstance().Update();
 
+    // SoundManager の更新（自動復帰タイマー等）
+    SoundManager::GetInstance().Update(Time::GetInstance().GetDeltaTime());
+
 	// マウスホイールのスクロール方向を初期化.
 	Input::SetWheelDirection(0);
 
@@ -126,6 +130,12 @@ void Main::Draw()
 	if (pe.IsGray()) {
 		pe.BeginSceneRender();
 		SceneManager::Draw();
+
+		// 【歪みエフェクト用】シーンをResolveしてから背景テクスチャとしてEffekseerに渡す
+		auto ctx = DirectX11::GetInstance().GetContext();
+		ctx->ResolveSubresource(pe.GetSceneResolvedTex(), 0, pe.GetSceneMSAATex(), 0, DXGI_FORMAT_R8G8B8A8_UNORM);
+		EffekseerManager::GetInstance().SetBackgroundTexture(pe.GetSceneSRV());
+
 		pe.DrawToBackBuffer();
 	}
 	else {

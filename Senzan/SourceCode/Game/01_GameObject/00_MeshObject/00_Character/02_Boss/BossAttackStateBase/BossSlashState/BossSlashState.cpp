@@ -29,7 +29,6 @@ void BossSlashState::Enter()
 
     m_CurrentTime = 0.0f;
     m_AnimSpeed = 0.0f;
-
     m_pOwner->SetIsLoop(false);
     m_pOwner->SetAnimTime(0.0);
     m_pOwner->SetAnimSpeed(m_AnimSpeed);
@@ -48,14 +47,15 @@ void BossSlashState::Update()
 {
     BossAttackStateBase::Update();
 
-    const float dt = Time::GetInstance().GetDeltaTime();
+    const float dt = m_pOwner->GetDelta();
     
     UpdateBaseLogic(dt);
 
     switch (m_List)
     {
     case BossSlashState::enList::ChargeSlash:
-       
+        FacePlayerInstantYaw();
+
         if (m_CurrentTime >= m_ChargeTime)
         {
             m_List = enList::SlashAttack;
@@ -127,6 +127,11 @@ void BossSlashState::Exit()
     BossAttackStateBase::Exit();
 	// window 制御のコライダーを確実にOFF
 	m_pOwner->SetColliderActiveByName("boss_Hand_R", false);
+}
+
+std::pair<Boss::enBossAnim, float> BossSlashState::GetParryAnimPair()
+{
+    return std::pair(Boss::enBossAnim::Slash, 2.383f);
 }
 
 void BossSlashState::DrawImGui()

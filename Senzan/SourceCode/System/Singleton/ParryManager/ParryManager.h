@@ -6,7 +6,7 @@ class Boss;
 
 /**********************************************************************************
 * @author    : 淵脇 未来.
-* @date      : 2026/01/XX.
+* @date      : 2026/01/23.
 * @brief     : パリィ管理クラス.
 *              PlayerとBoss間のパリィ成功処理を仲介する.
 **********************************************************************************/
@@ -26,11 +26,13 @@ public:
 	// 参照をクリア（シーン終了時に呼び出す）.
 	void Clear();
 
-	// パリィ成功を通知（Playerから呼び出される）.
-	void OnParrySuccess();
+    // パリィ成功を通知（Playerから呼び出される）.
+    // withDelay = true の場合、ボスのパリィはアニメ再生後に delay 秒待機する挙動になる。
+    void OnParrySuccess(bool withDelay = false);
 
 	// パリィ成功時のカメラ演出が完了したか.
 	bool IsParryCameraFinished() const;
+
 
 private:
 	Player* m_pPlayer = nullptr;

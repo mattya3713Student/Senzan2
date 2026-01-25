@@ -253,7 +253,10 @@ DirectX::XMVECTOR CapsuleCollider::GetCulcCapsuleSegmentStart(const CapsuleColli
 {
     const float radius = capsule->GetRadius();
     const float height = capsule->GetHeight();
-    const float half_segment_length = (height - 2.0f * radius) * 0.5f;
+    // 線分長さは (height - 2 * radius)。負の値にならないようにクランプする。
+    float segment_length = height - 2.0f * radius;
+    if (segment_length < 0.0f) segment_length = 0.0f;
+    const float half_segment_length = segment_length * 0.5f;
 
 
     if (auto spTransform = capsule->m_wpTransform.lock())
@@ -289,7 +292,10 @@ DirectX::XMVECTOR CapsuleCollider::GetCulcCapsuleSegmentEnd(const CapsuleCollide
 {
     const float radius = capsule->GetRadius();
     const float height = capsule->GetHeight();
-    const float half_segment_length = (height - 2.0f * radius) * 0.5f;
+    // 線分長さは (height - 2 * radius)。負の値にならないようにクランプする。
+    float segment_length = height - 2.0f * radius;
+    if (segment_length < 0.0f) segment_length = 0.0f;
+    const float half_segment_length = segment_length * 0.5f;
 
     if (auto spTransform = capsule->m_wpTransform.lock())
     {

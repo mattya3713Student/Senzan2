@@ -17,7 +17,8 @@ public:
     enum class eCameraMode
     {
         Normal,     // 通常モード.
-        Parry,      // パリィ演出モード（下から潜り込む）.
+        Parry,      // パリィ演出モード(下から潜り込む).
+        Special,    // 必殺技.
     };
 
 public:
@@ -44,6 +45,13 @@ public:
     // パリィカメラ演出中か.
     bool IsParryCameraActive() const { return m_CameraMode == eCameraMode::Parry; }
 
+    // 必殺技カメラ演出開始（ボスをロックオン）.
+    void StartSpecialCamera();
+    // 必殺技カメラ演出終了（通常モードへ復帰）.
+    void EndSpecialCamera();
+    // 必殺技カメラ演出中か.
+    bool IsSpecialCameraActive() const { return m_CameraMode == eCameraMode::Special; }
+
     // 設定の保存/読み込み
     void SaveSettings() const;
     void LoadSettings();
@@ -54,6 +62,8 @@ private:
     void UpdateNormalCamera(float dt);
     // パリィカメラ更新.
     void UpdateParryCamera(float dt);
+    // 必殺技カメラ更新.
+    void UpdateSpecialCamera(float dt);
 
 private:
     std::reference_wrapper<const Player> m_rPlayer;
@@ -71,4 +81,7 @@ private:
     float m_ParryHeightOffset = 1.0f;   // パリィ時の低い高さ.
     float m_ParryLookOffset = 6.0f;     // パリィ時の注視点高さ（見上げる）.
     float m_ParryDistance = 8.0f;       // パリィ時の距離（近づく）.
+
+    // 必殺技カメラ演出用.
+    float m_SpecialLookLerp = 1.0f;     // 必殺技時の注視点補間（1.0=ボス完全ロック）.
 };
