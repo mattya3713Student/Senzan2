@@ -10,26 +10,35 @@
 #include "BossAttackStateBase/BossAttackStateBase.h"
 #include "BossAttackStateBase/BossStompState/BossStompState.h"
 #include "BossAttackStateBase/BossSlashState/BossSlashState.h"
-#include "BossAttackStateBase/BossChargeSlashState/BossChargeSlashState.h"
 #include "BossAttackStateBase/BossShoutState/BossShoutState.h"
 
 #include "System/Utility/StateMachine/StateMachine.h"
 
-#include "BossAttackStateBase/BossSpecialState/BossSpecialState.h"
-#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossLaserState/BossLaserState.h"
+#include "BossAttackStateBase/BossJumpOnlState/BossJumpOnlState.h"
 #include "BossAttackStateBase/BossParryState/BossParryState.h"
 
 #include "Resource/Mesh/02_Skin/SkinMesh.h"
 
 #include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossDeadState/BossDeadState.h"
 
-#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossChargeState/BossChargeState.h"
 
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossThrowingState/BossThrowingState.h"
 
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
 #include "System/Singleton/CameraManager/CameraManager.h"
 #include "System/Singleton/ImGui/CImGuiManager.h"
+#include "System/Singleton/ResourceManager/EffectManager/EffekseerManager.h"
+#include "Resource/Effect/EffectResource.h"
+#include "System/Utility/Math/Math.h"
+
+#include <atomic>
+#include <chrono>
+
+#if _DEBUG
+static std::atomic<uint64_t> g_UpdateColliderFromBoneCalls{0};
+static std::atomic<uint64_t> g_UpdateColliderFromBoneTotalNs{0};
+static std::atomic<uint64_t> g_UpdateColliderFromBoneLastNs{0};
+#endif
 
 
 constexpr float HP_Max = 10000.0f;
@@ -60,7 +69,7 @@ Boss::Boss()
 	m_spTransform->SetScale(scale);
 	m_spTransform->SetRotationDegrees(Rotation);
 
-	m_MaxHP = 1000000.f;
+	m_MaxHP = 5000.f;
 	m_HP = m_MaxHP;
 
 	// 攻撃の追加.
@@ -112,7 +121,7 @@ Boss::Boss()
 
 	m_pSlashCollider = slashCol.get();
 	m_pSlashCollider->SetMyMask(eCollisionGroup::Enemy_Attack);
-	m_pSlashCollider->SetTarGetTargetMask(eCollisionGroup::Player_Damage);
+	m_pSlashCollider->SetTarGetTargetMask(eCollisionGroup::Player_Damage | eCollisionGroup::Player_Parry);
 	m_pSlashCollider->SetAttackAmount(10.0f); 
 	m_pSlashCollider->SetRadius(15.0f);         
 	m_pSlashCollider->SetHeight(40.0f);         
@@ -127,14 +136,14 @@ Boss::Boss()
 	m_pStompCollider = stompCol.get();
 
 	m_pStompCollider->SetMyMask(eCollisionGroup::Enemy_Attack);
-	m_pStompCollider->SetTarGetTargetMask(eCollisionGroup::Player_Damage );
+	m_pStompCollider->SetTarGetTargetMask(eCollisionGroup::Player_Damage | eCollisionGroup::Player_Parry);
 
 	m_pStompCollider->SetAttackAmount(5.0f);
 	m_pStompCollider->SetRadius(30.0f);
 	m_pStompCollider->SetHeight(15.0f);
 
 	m_pStompCollider->SetActive(false);
-	m_pStompCollider->SetColor(Color::eColor::Gray);
+	m_pStompCollider->SetColor(Color::eColor::Red);
 
 	m_upColliders->AddCollider(std::move(stompCol));
 
@@ -142,25 +151,25 @@ Boss::Boss()
 
 	m_pShoutCollider = Shout_collider.get(); 
 
-	Shout_collider->SetColor(Color::eColor::White);
-	Shout_collider->SetHeight(75.0f);
-	Shout_collider->SetRadius(50.0f);
-	Shout_collider->SetPositionOffset(0.f, 1.5f, 0.f);
-	Shout_collider->SetAttackAmount(10.f);
-	Shout_collider->SetMyMask(eCollisionGroup::Enemy_Attack); 
-	Shout_collider->SetTarGetTargetMask(eCollisionGroup::Player_Attack);
+	m_pShoutCollider->SetColor(Color::eColor::Cyan);
+	m_pShoutCollider->SetHeight(1.0f);
+	m_pShoutCollider->SetRadius(1.0f);
+	m_pShoutCollider->SetPositionOffset(0.f, 1.5f, 0.f);
+	m_pShoutCollider->SetAttackAmount(100.f);
+	m_pShoutCollider->SetMyMask(eCollisionGroup::BossPress);
+	m_pShoutCollider->SetTarGetTargetMask(eCollisionGroup::Press | eCollisionGroup::Player_Damage | eCollisionGroup::Player_Parry);
 
 	m_pShoutCollider->SetActive(false);
 	m_upColliders->AddCollider(std::move(Shout_collider));
 
-    m_State->ChangeState(std::make_shared<BossSlashState>(this));
+    m_State->ChangeState(std::make_shared<BossStompState>(this));
     /* BossSlashState
  BossChargeState
  BossChargeSlashState
  BossLaserState
  BossShoutState
  BossSlashState
- BossSpecialState
+ BossJumpOnlState
  BossStompState
  BossThrowingState*/
 	CollisionDetector::GetInstance().RegisterCollider(*m_upColliders);
@@ -168,7 +177,10 @@ Boss::Boss()
 
 Boss::~Boss()
 {
-	CollisionDetector::GetInstance().UnregisterCollider(*m_upColliders);
+    if (m_upColliders)
+    {
+        CollisionDetector::GetInstance().UnregisterCollider(*m_upColliders);
+    }
 }
 
 void Boss::Update()
@@ -179,10 +191,44 @@ void Boss::Update()
 	m_State->Update();
 
 #if _DEBUG
-	if (GetAsyncKeyState(VK_RETURN) & 0x0001)
-	{
-        m_State->ChangeState(std::make_shared<BossSlashState>(this));
-	}
+    // デバッグ用: ImGui で任意のボスステートに切り替えられるパネル
+    if (ImGui::Begin(IMGUI_JP("Boss Debug")))
+    {
+        static int sel = 0;
+        const char* items[] = {
+            IMGUI_JP("Idle"),
+            IMGUI_JP("Move"),
+            IMGUI_JP("Slash"),
+            IMGUI_JP("Shout"),
+            IMGUI_JP("JumpOn"),
+            IMGUI_JP("Stomp"),
+            IMGUI_JP("Throwing"),
+            IMGUI_JP("Parry")
+        };
+
+        ImGui::Combo(IMGUI_JP("State"), &sel, items, IM_ARRAYSIZE(items));
+        if (ImGui::Button(IMGUI_JP("Enter State")))
+        {
+            switch (sel)
+            {
+            case 0: m_State->ChangeState(std::make_shared<BossIdolState>(this)); break;
+            case 1: m_State->ChangeState(std::make_shared<BossMoveState>(this)); break;
+            case 2: m_State->ChangeState(std::make_shared<BossSlashState>(this)); break;
+            case 3: m_State->ChangeState(std::make_shared<BossShoutState>(this)); break;
+            case 4: m_State->ChangeState(std::make_shared<BossJumpOnlState>(this)); break;
+            case 5: m_State->ChangeState(std::make_shared<BossStompState>(this)); break;
+            case 6: m_State->ChangeState(std::make_shared<BossThrowingState>(this)); break;
+            case 7: m_State->ChangeState(std::make_shared<BossParryState>(this)); break;
+            default: break;
+            }
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button(IMGUI_JP("Enter Slash (Hotkey)"))) {
+            m_State->ChangeState(std::make_shared<BossStompState>(this));
+        }
+        ImGui::End();
+    }
 #endif
 }
 
@@ -197,39 +243,6 @@ void Boss::LateUpdate()
 	// ステートマシーンの最終更新を実行.
 	m_State->LateUpdate();
 
-    // アクティブなコライダーがあれば対応するボーンから Transform を更新して外部供給する
-    //if (m_pSlashCollider && m_pSlashCollider->GetActive()) {
-    //    // convert degree Euler offsets to quaternion
-    //    DirectX::XMFLOAT3 deg = m_SlashRotOffsetDeg;
-    //    DirectX::XMVECTOR rotRad = DirectX::XMVectorSet(DirectX::XMConvertToRadians(deg.x), DirectX::XMConvertToRadians(deg.y), DirectX::XMConvertToRadians(deg.z), 0.0f);
-    //    DirectX::XMVECTOR qx = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(1,0,0,0), DirectX::XMVectorGetX(rotRad));
-    //    DirectX::XMVECTOR qy = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(0,1,0,0), DirectX::XMVectorGetY(rotRad));
-    //    DirectX::XMVECTOR qz = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(0,0,1,0), DirectX::XMVectorGetZ(rotRad));
-    //    DirectX::XMVECTOR q = DirectX::XMQuaternionMultiply(DirectX::XMQuaternionMultiply(qz, qy), qx);
-    //    DirectX::XMFLOAT4 rotOffset; DirectX::XMStoreFloat4(&rotOffset, q);
-    //    UpdateColliderFromBone("boss_Hand_R", m_pSlashCollider, m_SlashBoneWorldTransform, true, rotOffset);
-    //}
-    //if (m_pStompCollider && m_pStompCollider->GetActive()) {
-    //    DirectX::XMFLOAT3 deg = m_StompRotOffsetDeg;
-    //    DirectX::XMVECTOR rotRad = DirectX::XMVectorSet(DirectX::XMConvertToRadians(deg.x), DirectX::XMConvertToRadians(deg.y), DirectX::XMConvertToRadians(deg.z), 0.0f);
-    //    DirectX::XMVECTOR qx = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(1,0,0,0), DirectX::XMVectorGetX(rotRad));
-    //    DirectX::XMVECTOR qy = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(0,1,0,0), DirectX::XMVectorGetY(rotRad));
-    //    DirectX::XMVECTOR qz = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(0,0,1,0), DirectX::XMVectorGetZ(rotRad));
-    //    DirectX::XMVECTOR q = DirectX::XMQuaternionMultiply(DirectX::XMQuaternionMultiply(qz, qy), qx);
-    //    DirectX::XMFLOAT4 rotOffset; DirectX::XMStoreFloat4(&rotOffset, q);
-    //    UpdateColliderFromBone("boss_pSphere28", m_pStompCollider, m_StompBoneWorldTransform, true, rotOffset);
-    //}
-    //if (m_pShoutCollider && m_pShoutCollider->GetActive()) {
-    //    DirectX::XMFLOAT3 deg = m_ShoutRotOffsetDeg;
-    //    DirectX::XMVECTOR rotRad = DirectX::XMVectorSet(DirectX::XMConvertToRadians(deg.x), DirectX::XMConvertToRadians(deg.y), DirectX::XMConvertToRadians(deg.z), 0.0f);
-    //    DirectX::XMVECTOR qx = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(1,0,0,0), DirectX::XMVectorGetX(rotRad));
-    //    DirectX::XMVECTOR qy = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(0,1,0,0), DirectX::XMVectorGetY(rotRad));
-    //    DirectX::XMVECTOR qz = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(0,0,1,0), DirectX::XMVectorGetZ(rotRad));
-    //    DirectX::XMVECTOR q = DirectX::XMQuaternionMultiply(DirectX::XMQuaternionMultiply(qz, qy), qx);
-    //    DirectX::XMFLOAT4 rotOffset; DirectX::XMStoreFloat4(&rotOffset, q);
-    //    UpdateColliderFromBone("boss_Shout", m_pShoutCollider, m_ShoutBoneWorldTransform, true, rotOffset);
-    //}
-
     // 衝突処理
     HandleParryDetection();
     HandleDamageDetection();
@@ -241,32 +254,24 @@ void Boss::Draw()
 {
 	MeshObject::Draw();
 	m_State->Draw();
-
-    // ImGui: コライダー回転オフセット（度数法、X/Y/Z）
-#if _DEBUG
-    if (ImGui::Begin(IMGUI_JP("Boss Collider Offsets"))) {
-        ImGui::Text(IMGUI_JP("回転オフセット (度) - X:Pitch, Y:Yaw, Z:Roll"));
-        ImGui::DragFloat3(IMGUI_JP("Slash Rot (deg)"), &m_SlashRotOffsetDeg.x, 1.0f, -180.0f, 180.0f);
-        ImGui::DragFloat3(IMGUI_JP("Stomp Rot (deg)"), &m_StompRotOffsetDeg.x, 1.0f, -180.0f, 180.0f);
-        ImGui::DragFloat3(IMGUI_JP("Shout Rot (deg)"), &m_ShoutRotOffsetDeg.x, 1.0f, -180.0f, 180.0f);
-
-        // 現在のワールド回転（度）を表示
-        DirectX::XMFLOAT3 slashRot = m_SlashBoneWorldTransform.GetRotationDegrees();
-        DirectX::XMFLOAT3 stompRot = m_StompBoneWorldTransform.GetRotationDegrees();
-        DirectX::XMFLOAT3 shoutRot = m_ShoutBoneWorldTransform.GetRotationDegrees();
-        ImGui::Separator();
-        ImGui::Text(IMGUI_JP("Current Collider Rotation (deg)"));
-        ImGui::Text(IMGUI_JP("Slash:  X=%.1f  Y=%.1f  Z=%.1f"), slashRot.x, slashRot.y, slashRot.z);
-        ImGui::Text(IMGUI_JP("Stomp:  X=%.1f  Y=%.1f  Z=%.1f"), stompRot.x, stompRot.y, stompRot.z);
-        ImGui::Text(IMGUI_JP("Shout:  X=%.1f  Y=%.1f  Z=%.1f"), shoutRot.x, shoutRot.y, shoutRot.z);
-
-        ImGui::End();
-    }
-#endif
 }
 
 void Boss::Init()
 {
+}
+
+void Boss::OnParried()
+{
+    // 既にパリィ状態なら何もしない.
+    if (m_IsParried) return;
+
+    m_IsParried = true;
+
+    // 全ての攻撃コライダーを無効化.
+    OffAttackCollider();
+
+    // BossParryStateへ遷移.
+    m_State->ChangeState(std::make_shared<BossParryState>(this));
 }
 
 StateMachine<Boss>* Boss::GetStateMachine()
@@ -315,6 +320,35 @@ void Boss::SetTargetPos(const DirectX::XMFLOAT3 Player_Pos)
 	m_PlayerPos = Player_Pos;
 }
 
+void Boss::SpawnEffect(const std::string& effectName, const DirectX::XMFLOAT3& offset, float scale)
+{
+    // エフェクトリソース取得
+    auto effect = EffectResource::GetResource(effectName);
+    if (effect == nullptr) return;
+
+    // ボスの位置を取得してオフセットを加算
+    DirectX::XMFLOAT3 bossPos = GetPosition();
+    DirectX::XMFLOAT3 spawnPos{
+        bossPos.x + offset.x,
+        bossPos.y + offset.y,
+        bossPos.z + offset.z
+    };
+
+    // Effekseer の Play は座標を float で受け取る（ワールド座標系）
+    m_EffectHandle = EffekseerManager::GetInstance().GetManager()
+        ->Play(effect, spawnPos.x, spawnPos.y, spawnPos.z);
+
+    // スケールを適用
+    if (m_EffectHandle != -1 && !MyMath::IsNearlyEqual(scale, 1.0f)) {
+        EffekseerManager::GetInstance().GetManager()->SetScale(m_EffectHandle, scale, scale, scale);
+    }
+}
+
+void Boss::OffAttackCollider() {
+    m_pSlashCollider->SetActive(false);
+    m_pStompCollider->SetActive(false);
+    m_pShoutCollider->SetActive(false);
+}
 
 // 衝突_被ダメージ.
 void Boss::HandleDamageDetection()
@@ -343,6 +377,8 @@ void Boss::HandleDamageDetection()
 			{
 				// ダメージを適用 
 				ApplyDamage(info.AttackAmount);
+                SoundManager::Play("Damage");
+                SoundManager::SetVolume("Damage", 9000);
 
 				Time::GetInstance().SetWorldTimeScale(0.1f, 0.016f * 5);
 				CameraManager::GetInstance().ShakeCamera(0.1f, 2.5f); // カメラを少し揺らす.
@@ -378,7 +414,7 @@ void Boss::HandleAttackDetection()
 
 			if ((other_group & eCollisionGroup::Player_Damage) != eCollisionGroup::None)
 			{
-				SetAttackColliderActive(false);
+                OffAttackCollider();
 
 				// 1フレームに1回.
 				return;
@@ -496,6 +532,18 @@ bool Boss::UpdateColliderFromBone(
     bool updateRotation,
     const DirectX::XMFLOAT4& rotationOffset)
 {
+#if _DEBUG
+    struct ScopedTimer {
+        std::chrono::time_point<std::chrono::high_resolution_clock> start;
+        ScopedTimer() : start(std::chrono::high_resolution_clock::now()) { ++g_UpdateColliderFromBoneCalls; }
+        ~ScopedTimer() {
+            auto d = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - start).count();
+            g_UpdateColliderFromBoneTotalNs += static_cast<uint64_t>(d);
+            g_UpdateColliderFromBoneLastNs = static_cast<uint64_t>(d);
+        }
+    } _scoped_timer;
+#endif
+
     if (!collider || GetAttachMesh().expired()) return false;
     auto skinMesh = std::dynamic_pointer_cast<SkinMesh>(GetAttachMesh().lock());
     if (!skinMesh) return false;
@@ -521,7 +569,6 @@ bool Boss::UpdateColliderFromBone(
             outTransform.Quaternion = DirectX::XMFLOAT4{0.0f, 0.0f, 0.0f, 1.0f};
             outTransform.Scale = DirectX::XMFLOAT3{1.0f, 1.0f, 1.0f};
         }
-        collider->SetExternalTransformPointer(&outTransform);
         return true;
     }
 
@@ -541,15 +588,6 @@ bool Boss::UpdateColliderFromBone(
         outTransform.UpdateRotationFromQuaternion();
     }
 
-    // compute relative position offset for collider
-    DirectX::XMVECTOR b_pos, b_quat, b_scale;
-    DirectX::XMMatrixDecompose(&b_scale, &b_quat, &b_pos, boss_world_matrix);
-    DirectX::XMVECTOR relative_pos = DirectX::XMVectorSubtract(v_final_pos, b_pos);
-    DirectX::XMFLOAT3 f_relative_pos; DirectX::XMStoreFloat3(&f_relative_pos, relative_pos);
-    collider->SetPositionOffset(f_relative_pos.x, f_relative_pos.y, f_relative_pos.z);
-    collider->SetExternalTransformPointer(&outTransform);
-
-
-
+    // オフセットは各ステートの ColliderWindow で管理
     return true;
 }

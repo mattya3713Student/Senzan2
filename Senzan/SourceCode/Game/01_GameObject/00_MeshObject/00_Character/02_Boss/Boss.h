@@ -32,7 +32,7 @@ class BossStompState;       //踏みつけ攻撃
 class BossSlashState;       //斬る攻撃.
 class BossChargeSlashState; //溜め攻撃.
 class BossShoutState;       //叫び攻撃.
-class BossSpecialState;
+class BossJumpOnlState;
 class BossLaserState;
 class BossDeadState;
 
@@ -56,7 +56,7 @@ class Boss
     friend BossAttackStateBase;
     friend BossChargeSlashState;
     friend BossShoutState;
-    friend BossSpecialState;
+    friend BossJumpOnlState;
     friend BossLaserState;
     friend BossDeadState;
     friend BossChargeState;
@@ -102,10 +102,18 @@ class Boss
     };
 
 public:
-    Boss();
-    ~Boss() override;
+Boss();
+~Boss() override;
 
-    void Update() override;
+void SetAnyAttackJustWindow(bool v) { m_IsAnyAttackJustWindow = v; }
+bool IsAnyAttackJustWindow() const { return m_IsAnyAttackJustWindow; }
+
+// パリィ被弾通知（外部から呼び出す）.
+void OnParried();
+// パリィ被弾フラグを取得.
+bool IsParried() const { return m_IsParried; }
+
+void Update() override;
     void LateUpdate() override;
     void Draw() override;
 
@@ -122,6 +130,16 @@ public:
     // 文字列でコライダーを操作できるようにする
     void SetColliderActiveByName(const std::string& name, bool active);
 
+    /*************************************************************
+    * @brief    エフェクトを指定位置に生成する.
+    * @param[in]    effectName  ：エフェクトリソース名.
+    * @param[in]    offset      ：ボス位置からのオフセット（デフォルト: 0,0,0）.
+    * @param[in]    scale       ：エフェクトのスケール（デフォルト: 1.0f）.
+    * ************************************************************/
+    void SpawnEffect(const std::string& effectName,
+                     const DirectX::XMFLOAT3& offset = DirectX::XMFLOAT3(0.f, 0.f, 0.f),
+                     float scale = 1.0f);
+
 public:
     //プレイヤーの位置を取得するためにここにSetPlayer()を作成する.
     void SetTargetPos(const DirectX::XMFLOAT3 Player_Pos);
@@ -129,6 +147,8 @@ public:
     DirectX::XMFLOAT3 GetTargetPos() { return m_PlayerPos; }
 
 protected:
+    // 全攻撃判定オフ.
+    void OffAttackCollider();
 
     // 衝突_被ダメージ.
     void HandleDamageDetection() override;
@@ -140,10 +160,6 @@ protected:
     // 衝突_パリィ.
     void HandleParryDetection();
 
-
-    // 攻撃判定のActive
-    inline void SetAttackColliderActive(bool Active) const noexcept { m_pAttackCollider->SetActive(Active); }
-
     //当たり判定を取得する.
     //通常攻撃.
     ColliderBase* GetSlashCollider() const;
@@ -151,6 +167,20 @@ protected:
     ColliderBase* GetStompCollider() const;
     //叫び攻撃.
     ColliderBase* GetShoutCollider() const;
+
+    // 統合された攻撃コライダー（各ステートがボーンを指定して使用）
+    ColliderBase* GetAttackCollider() const { return m_spAttackCollider; }
+
+    // 攻撃コライダーが追従するボーンを設定
+    void SetAttackBone(const std::string& boneName);
+    // 攻撃コライダーのサイズを設定
+    void SetAttackColliderSize(float radius, float height);
+    // 名前で指定したコライダーのサイズを設定
+    void SetColliderSizeByName(const std::string& name, float radius, float height);
+    // 名前で指定したコライダーの与えるダメージを設定
+    void SetColliderDamageByName(const std::string& name, float damage);
+    // 攻撃コライダーのダメージを設定
+    void SetAttackColliderDamage(float damage);
 
     /*************************************************************
     * @brief	ボスのワールド行列と掛け合わせてボーンのワールド行列を作成し、
@@ -196,13 +226,19 @@ protected:
     ColliderBase* m_pStompCollider;
     ColliderBase* m_pShoutCollider;
 
-    // 外部供給用のワールドTransformキャッシュ（コライダーが毎フレームメッシュ検索しないようにする）
-    Transform m_SlashBoneWorldTransform;
-    Transform m_StompBoneWorldTransform;
-    Transform m_ShoutBoneWorldTransform;
-    // ImGui 用: コライダー回転オフセット (度数法で編集)
-    DirectX::XMFLOAT3 m_SlashRotOffsetDeg{ 0.0f, 0.0f, 0.0f };
-    DirectX::XMFLOAT3 m_StompRotOffsetDeg{ 0.0f, 0.0f, 0.0f };
-    DirectX::XMFLOAT3 m_ShoutRotOffsetDeg{ 0.0f, 0.0f, 0.0f };
+    // runtime flag indicating any attack's just window is active
+    bool m_IsAnyAttackJustWindow = false;
+
+    // パリィ被弾フラグ.
+    bool m_IsParried = false;
+
+    // 統合された攻撃コライダー（各ステートがボーンを指定）
+    ColliderBase* m_spAttackCollider = nullptr;
+    std::string m_AttackBoneName;  // 現在追従するボーン名
+    LPD3DXFRAME m_pAttackBoneFrame = nullptr;  // ボーンフレームキャッシュ
+    Transform m_AttackBoneWorldTransform;      // ワールドTransformキャッシュ
+
+    // 現在再生中のエフェクトハンドル（-1 = none）
+    int m_EffectHandle = -1;
 };
 

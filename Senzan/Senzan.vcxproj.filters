@@ -26,13 +26,11 @@
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\01_Player\State\PlayerStateBase.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\Boss.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossAttackStateBase.cpp" />
-    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossChargeSlashState\BossChargeSlashState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossShoutState\BossShoutState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossSlashState\BossSlashState.cpp" />
-    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossSpecialState\BossSpecialState.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossJumpOnlState\BossJumpOnlState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossStompState\BossStompState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossIdolState\BossIdolState.cpp" />
-    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossMoveState\BossMoveState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\Character.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\MeshObject.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\01_SpriteObject\CSpriteObject.cpp" />
@@ -94,7 +92,6 @@
     <ClCompile Include="SourceCode\System\Utility\String\String.cpp" />
     <ClCompile Include="SourceCode\System\Utility\Transform\RectTransform.cpp" />
     <ClCompile Include="SourceCode\System\Utility\Transform\Transform.cpp" />
-    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossLaserState\BossLaserState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\01_Player\State\Root\01_Action\00_Movement\00_Idle\Idle.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\01_Player\State\Root\01_Action\00_Movement\01_Run\Run.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\01_Player\State\Root\01_Action\00_Movement\Movement.cpp" />
@@ -120,7 +117,6 @@
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossDeadState\BossDeadState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossThrowingState\BossThrowingState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\03_SnowBall\SnowBall.cpp" />
-    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossChargeState\BossChargeState.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\CollisionDetector\CollisionDetector.cpp" />
     <ClCompile Include="SourceCode\Game\00_Scene\Ex_Test\03_UIEditor\UIEditor.cpp" />
     <ClCompile Include="SourceCode\Game\03_Collision\Sprite\SpriteCollider.cpp" />
@@ -140,6 +136,9 @@
     <ClCompile Include="SourceCode\System\Singleton\PostEffectManager\PostEffectManager.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossParryState\BossParryState.cpp" />
     <ClCompile Include="SourceCode\Game\02_Camera\FirstPersonCamera\FirstPersonCamera.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossMoveState\BossMoveState.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\05_SkyDome\SkyDome.cpp" />
+    <ClCompile Include="SourceCode\System\Singleton\ParryManager\ParryManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SourceCode\Constant.h" />
@@ -175,10 +174,9 @@
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\01_Player\State\PlayerStateBase.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\Boss.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossAttackStateBase.h" />
-    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossChargeSlashState\BossChargeSlashState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossShoutState\BossShoutState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossSlashState\BossSlashState.h" />
-    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossSpecialState\BossSpecialState.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossJumpOnlState\BossJumpOnlState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossStompState\BossStompState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossIdolState\BossIdolState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossMoveState\BossMoveState.h" />
@@ -256,7 +254,6 @@
     <ClInclude Include="SourceCode\System\Utility\String\String.h" />
     <ClInclude Include="SourceCode\System\Utility\Transform\RectTransform.h" />
     <ClInclude Include="SourceCode\System\Utility\Transform\Transform.h" />
-    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossLaserState\BossLaserState.h" />
     <ClInclude Include="SourceCode\Game\02_Camera\ThirdPersonCamera\PlayerThirdPersonCamera.h" />
     <ClInclude Include="SourceCode\Game\05_InputDevice\VirtualPad.h" />
     <ClInclude Include="SourceCode\System\Singleton\Debug\CollisionVisualizer\CollisionVisualizer.h" />
@@ -274,7 +271,6 @@
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossDeadState\BossDeadState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossThrowingState\BossThrowingState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\03_SnowBall\SnowBall.h" />
-    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossChargeState\BossChargeState.h" />
     <ClInclude Include="SourceCode\Game\03_Collision\CollisionInfo.h" />
     <ClInclude Include="SourceCode\System\Singleton\CollisionDetector\CollisionDetector.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\Ex_Test\03_UIEditor\UIEditor.h" />
@@ -295,6 +291,8 @@
     <ClInclude Include="SourceCode\System\Singleton\PostEffectManager\PostEffectManager.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossParryState\BossParryState.h" />
     <ClInclude Include="SourceCode\Game\02_Camera\FirstPersonCamera\FirstPersonCamera.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\05_SkyDome\SkyDome.h" />
+    <ClInclude Include="SourceCode\System\Singleton\ParryManager\ParryManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Shader\PMX\Header.hlsli" />
@@ -302,7 +300,6 @@
     <None Include="SourceCode\System\Utility\Math\Easing\Easing.inl" />
     <None Include="SourceCode\System\Utility\Math\Math.inl" />
     <None Include="SourceCode\System\Utility\String\FilePath\FilePath.inl" />
-    <None Include="SourceCode\Resource\Effect\git認識用フォルダ" />
     <None Include="tools\add_author_header.py" />
   </ItemGroup>
   <ItemGroup>

@@ -36,10 +36,13 @@ private:
     void SaveSettings() const override;
     std::filesystem::path GetSettingsFileName() const override { return std::filesystem::path("BossShoutState.json"); }
 private:
-	std::shared_ptr<BossIdolState> m_pBossIdol;
-
-	// 変換用タイマー
-	float m_TransitionTimer = 60.0f;
-
 	enShout m_List;
+	float m_ShoutDamage = 10.0f;     // ダメージ量.
+	float m_ShoutRadius = 100.0f;     // 範囲半径.
+	float m_KnockBackPower = 15.0f;  // ノックバック力.
+    // 叫び判定が広がる時間（秒）。ステート中に半径が 0 -> m_ShoutRadius へ線形補間される
+    float m_ShoutExpandTime = 1.0f;
+    // ランタイム用: 経過時間と開始半径
+    float m_ShoutElapsed = 0.0f;
+    float m_ShoutStartRadius = 0.0f;
 };

@@ -24,10 +24,14 @@ constexpr PlayerState::eID AttackCombo_0::GetStateID() const { return PlayerStat
 
 void AttackCombo_0::Enter()
 {
+
     Combat::Enter();
 
+    SoundManager::GetInstance().Play("Swing");
+    SoundManager::GetInstance().SetVolume("Swing", 7000);
     m_pOwner->SetIsLoop(false);
     m_pOwner->SetAnimTime(0.0);
+        
     m_pOwner->SetAnimSpeed(m_AnimSpeed);
     m_pOwner->ChangeAnim(Player::eAnim::Attack_0);
 
@@ -52,9 +56,10 @@ void AttackCombo_0::Enter()
 
 void AttackCombo_0::Update()
 {
+    static bool isStop = false;
+#if _DEBUG
     ImGui::Begin(IMGUI_JP("AttackCombo_0 デバッグ"));
 
-    static bool isStop = false;
     ImGui::Checkbox(IMGUI_JP("ストップ"), &isStop);
 
     RenderColliderWindowsUI("AttackCombo_0 Collider Windows");
@@ -119,8 +124,12 @@ void AttackCombo_0::Update()
         }
         catch (...) {}
     }
+    if (ImGui::Button(IMGUI_JP("Restert"))) {
+        this->Enter();
+    }
 
     ImGui::End();
+#endif
 
     if (!isStop)
     {
@@ -155,9 +164,6 @@ void AttackCombo_0::LateUpdate()
     Combat::LateUpdate();
 
     float dt = m_pOwner->GetDelta();
-    m_currentTime += dt;
-
-    // movement optional
     DirectX::XMFLOAT3 moveDirection = { m_pOwner->m_MoveVec.x, 0.0f, m_pOwner->m_MoveVec.z };
     float movement_speed = m_Distance / m_ComboEndTime;
     float move_amount = movement_speed * dt;
@@ -168,7 +174,8 @@ void AttackCombo_0::LateUpdate()
     m_pOwner->AddPosition(movement);
 }
 
-void AttackCombo_0::Draw() {
+void AttackCombo_0::Draw()
+{
     Combat::Draw();
 }
 

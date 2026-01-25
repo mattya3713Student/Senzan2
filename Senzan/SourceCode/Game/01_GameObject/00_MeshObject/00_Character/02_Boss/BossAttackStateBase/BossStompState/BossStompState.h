@@ -49,6 +49,8 @@ private:
 	float m_Gravity;
 	//ジャンプ中のフラグ.
 	bool m_JumpFrag;
+	// 前フレームの Y 値を保持してスムーズに移動させる
+	// float m_LastY; // 一時無効化: Y 制御オフ
 	//着地フラグ.
 	//この時に時間を取得して3秒後にIdolに遷移等を書く.
 	bool m_GroundedFrag;
@@ -62,4 +64,25 @@ private:
 
 	//上がる速度のスピード設定用.
 	float m_UpSpeed;
+
+	// State timers / flags
+	float m_WaitSeconds = 0.4f;    // seconds before slowing animation
+	float m_SlowAnimSpeed = 0.5f;  // slowed animation speed value
+	bool  m_AnimSlowed = false;    // whether animation was slowed
+	bool  m_IsMoving = false;      // whether boss is currently moving (stomp phase)
+	float m_StateTimer = 0.0f;     // generic timer used for state timing
+
+	// movement easing params
+	float m_MoveDuration = 0.8f;   // duration of the movement/easing (seconds)
+	float m_MoveTimer = 0.0f;      // elapsed time since movement started
+	float m_Distance = 0.0f;       // total horizontal distance to move
+	DirectX::XMFLOAT3 m_MoveVec;   // normalized horizontal direction vector
+
+	//====================================================
+	// 飛びかかり（前方移動）用メンバ変数.
+	//====================================================
+	float m_ForwardSpeed;           // 前方移動速度.
+	DirectX::XMFLOAT3 m_TargetPos;  // 目標位置（プレイヤー位置）.
+	DirectX::XMFLOAT3 m_StartPos_Stomp;   // 開始位置.
+    bool m_HasLanded;               // 着地済みフラグ（ダメージ1回のみ）
 };

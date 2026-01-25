@@ -10,7 +10,6 @@
 
 BossShoutState::BossShoutState(Boss* owner)
 	: BossAttackStateBase (owner)
-    , m_pBossIdol()
     , m_List(enShout::none)
 {
 }
@@ -22,13 +21,9 @@ BossShoutState::~BossShoutState()
 void BossShoutState::Enter()
 {
 
-    if (auto* shoutCol = m_pOwner->GetShoutCollider()) 
-    {
-        shoutCol->SetActive(true);
-    }
-
-    // 当たり判定を有効化.
-    m_pOwner->SetAttackColliderActive(true);
+    // 初期値リセット。コライダーは実際のシャウト開始時に有効化する
+    m_ShoutElapsed = 0.0f;
+    m_ShoutStartRadius = 0.0f;
 
     //ボスの向きを設定.
     const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
@@ -68,11 +63,39 @@ void BossShoutState::Update()
         {
             m_pOwner->SetAnimSpeed(1.0);
             m_pOwner->ChangeAnim(Boss::enBossAnim::Laser);
+            // シャウト発動: コライダーを有効化し、半径を徐々に広げる準備
+            if (auto* shoutCol = m_pOwner->GetShoutCollider()) {
+                shoutCol->SetActive(true);
+                shoutCol->SetAttackAmount(m_ShoutDamage);
+                m_ShoutElapsed = 0.0f;
+                m_ShoutStartRadius = 0.0f;
+                if (m_ShoutExpandTime <= 0.0f) {
+                    shoutCol->SetRadius(m_ShoutRadius);
+                } else {
+                    shoutCol->SetRadius(m_ShoutStartRadius);
+                }
+            }
             m_List = enShout::ShoutTime;
         }
         break;
 
     case BossShoutState::enShout::ShoutTime:
+        // 更新: コライダー半径を徐々に拡大
+        if (auto* shoutCol = m_pOwner->GetShoutCollider()) {
+            if (shoutCol->GetActive()) {
+                float dt = Time::GetInstance().GetDeltaTime();
+                m_ShoutElapsed += dt;
+                if (m_ShoutExpandTime > 0.0f) {
+                    float t = m_ShoutElapsed / m_ShoutExpandTime;
+                    if (t > 1.0f) t = 1.0f;
+                    float radius = m_ShoutStartRadius + (m_ShoutRadius - m_ShoutStartRadius) * t;
+                    shoutCol->SetRadius(radius);
+                    shoutCol->SetHeight(radius);
+                } else {
+                    shoutCol->SetRadius(m_ShoutRadius);
+                }
+            }
+        }
         if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Laser))
         {
             m_pOwner->SetAnimSpeed(1.5);
@@ -107,16 +130,20 @@ void BossShoutState::Draw()
 }
 
 void BossShoutState::Exit()
-{	// 当たり判定を無効化.
-    m_pOwner->SetAttackColliderActive(false);
+{
   
 }
 
 void BossShoutState::DrawImGui()
 {
+#if _DEBUG
     ImGui::Begin(IMGUI_JP("BossShout State"));
+    CImGuiManager::Slider<float>(IMGUI_JP("ダメージ量"), m_ShoutDamage, 0.0f, 50.0f, true);
+    CImGuiManager::Slider<float>(IMGUI_JP("範囲半径"), m_ShoutRadius, 5.0f, 60.0f, true);
+    CImGuiManager::Slider<float>(IMGUI_JP("ノックバック力"), m_KnockBackPower, 0.0f, 30.0f, true);
     BossAttackStateBase::DrawImGui();
     ImGui::End();
+#endif  
 }
 
 void BossShoutState::LoadSettings()
@@ -126,12 +153,18 @@ void BossShoutState::LoadSettings()
     auto filePath = srcDir / GetSettingsFileName();
     if (!std::filesystem::exists(filePath)) return;
     json j = FileManager::JsonLoad(filePath);
-    // No shout-specific fields yet
+    if (j.contains("ShoutDamage")) m_ShoutDamage = j["ShoutDamage"].get<float>();
+    if (j.contains("ShoutRadius")) m_ShoutRadius = j["ShoutRadius"].get<float>();
+    if (j.contains("KnockBackPower")) m_KnockBackPower = j["KnockBackPower"].get<float>();
+    // オフセットは ColliderWindow で管理
 }
 
 void BossShoutState::SaveSettings() const
 {
     json j = SerializeSettings();
+    j["ShoutDamage"] = m_ShoutDamage;
+    j["ShoutRadius"] = m_ShoutRadius;
+    j["KnockBackPower"] = m_KnockBackPower;
     auto srcDir = std::filesystem::path(__FILE__).parent_path();
     auto filePath = srcDir / GetSettingsFileName();
     FileManager::JsonSave(filePath, j);

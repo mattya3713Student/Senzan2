@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "../../00_Base/SceneBase.h"
+#include "System/Utility/Transform/Transform.h"
 
 class Ground;
 class Player;
@@ -9,10 +10,6 @@ class CameraBase;
 class DirectionLight;
 class CapsuleCollider;
 class UIGameMain;
-
-
-#include <vector>
-
 
 /*********************************************
 *	ゲームメイン画像クラス.
@@ -38,8 +35,10 @@ private:
 	std::shared_ptr<CameraBase>			m_pCamera;			// カメラ.
 	std::shared_ptr<DirectionLight>		m_pLight;			// ライト
 
+
 	std::unique_ptr<CapsuleCollider>		m_TestPressCollision;
 	std::unique_ptr<CapsuleCollider>		m_TestAttackCollision;
+
 
 	std::unique_ptr<Ground>		m_upGround;
 	std::unique_ptr<Player>		m_upPlayer;

@@ -66,7 +66,6 @@
 #include "System/Singleton/SingletonTemplate.h"	// シングルトンテンプレト.	
 #include "System/Singleton/Debug/Log/DebugLog.h"	// シングルトンテンプレト.	
 
-#define _DEBUG 1
 #define _SOUND_STOP_DEBUG 1
 
 #if _DEBUG

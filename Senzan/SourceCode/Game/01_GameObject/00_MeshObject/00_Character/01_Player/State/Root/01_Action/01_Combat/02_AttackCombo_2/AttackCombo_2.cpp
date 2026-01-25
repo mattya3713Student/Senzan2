@@ -31,6 +31,9 @@ constexpr PlayerState::eID AttackCombo_2::GetStateID() const
 
 void AttackCombo_2::Enter()
 {
+    SoundManager::GetInstance().Play("Swing");
+    SoundManager::GetInstance().SetVolume("Swing", 7000);
+
     Combat::Enter();
 
     // アニメーション設定.
@@ -85,9 +88,10 @@ void AttackCombo_2::Enter()
 
 void AttackCombo_2::Update()
 {
+    static bool isStop = false;
+#if _DEBUG
     ImGui::Begin(IMGUI_JP("AttackCombo_2 デバッグ"));
 
-    static bool isStop = false;
     ImGui::Checkbox(IMGUI_JP("ストップ"), &isStop);
 
     RenderColliderWindowsUI("AttackCombo_2 Collider Windows");
@@ -153,8 +157,12 @@ void AttackCombo_2::Update()
         }
         catch (...) {}
     }
+    if (ImGui::Button(IMGUI_JP("Restert"))) {
+        this->Enter();
+    }
 
     ImGui::End();
+#endif
 
     if (!isStop)
     {
@@ -187,11 +195,8 @@ void AttackCombo_2::LateUpdate()
 {
     Combat::LateUpdate();
 
-    // 経過時間を加算.
-    float delta_time = m_pOwner->GetDelta();
-    m_currentTime += delta_time;
-
     // 移動量の算出.
+    float delta_time = m_pOwner->GetDelta();
     float movement_speed = m_Distance / m_ComboEndTime;
     float move_amount = movement_speed * delta_time;
 

@@ -1,34 +1,37 @@
-#pragma once
+ï»¿#pragma once
 #include "02_UIObject/UIObject.h"
 
 /*********************************************
-*	ƒGƒ“ƒfƒBƒ“ƒOUIƒNƒ‰ƒX.
+*	ã‚¨ãƒ³ãƒ‡ã‚£ãƒ³ã‚°UIã‚¯ãƒ©ã‚¹.
 **/
 class Select;
 
 class UIEnding
 {
 public:
-	UIEnding();
-	~UIEnding();
+    UIEnding();
+    ~UIEnding();
 
-	void Update();
-	void LateUpdate();
-	void Draw();
-
-private:
-	// ‘I‘ğˆ¶¬.
-	void SelectCreate();
-	void SelectUpdate();
-	void SelectLateUpdate(std::shared_ptr<UIObject> ui);
-	void AnimUpdate();
+    void Update();
+    void LateUpdate();
+    void Draw();
 
 private:
-	std::vector<std::shared_ptr<UIObject>> m_pUIs;
-	std::shared_ptr<Select> m_pSelect;
+    // é¸æŠè‚¢ç”Ÿæˆ.
+    void SelectCreate();
+    void SelectUpdate();
+    void SelectLateUpdate(std::shared_ptr<UIObject> ui);
+    void AnimUpdate();
 
-	float	m_AnimeSpeed;
-	bool	m_AnimReturn;
-	float	m_InitAlpha;
-	float	m_SelectAlpha;
+private:
+    std::vector<std::shared_ptr<UIObject>> m_pUIs;
+    std::shared_ptr<Select> m_pSelect;
+
+    float	m_AnimeSpeed;
+    bool	m_AnimReturn;
+    float	m_InitAlpha;
+    float	m_SelectAlpha;
+    float   m_GlobalAlpha;
+    bool    m_IsFadeIn;
+    float   m_FadeSpeed;
 };

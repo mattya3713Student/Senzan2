@@ -50,7 +50,7 @@ bool SoundManager::LoadAllInternal(HWND hWnd) {
 void SoundManager::Play(const std::string& name, bool isLoop) {
 #ifdef _SOUND_STOP_DEBUG
     return;
-#endif // _SOUND_STOP_DEBUG.
+#endif
 
     auto& sounds = GetInstance().m_pDxSounds;
     if (sounds.count(name)) sounds[name]->Play(isLoop);

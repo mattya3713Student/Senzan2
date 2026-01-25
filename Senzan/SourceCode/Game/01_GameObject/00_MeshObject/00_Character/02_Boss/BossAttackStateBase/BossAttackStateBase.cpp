@@ -36,6 +36,39 @@ void BossAttackStateBase::Enter()
 {
     LoadSettings();
     m_CurrentTime = 0.0f;
+    
+    // ウィンドウフラグをリセット
+    for (auto& window : m_ColliderWindows)
+    {
+        window.Reset();
+    }
+    for (auto& mv : m_MovementWindows)
+    {
+        mv.Reset();
+    }
+    for (auto& eff : m_EffectWindows)
+    {
+        eff.Reset();
+    }
+    
+    // 全ての攻撃コライダーを最初に非アクティブにする
+    if (m_pOwner)
+    {
+        m_pOwner->SetColliderActiveByName("boss_Hand_R", false);
+        m_pOwner->SetColliderActiveByName("boss_pSphere28", false);
+        m_pOwner->SetColliderActiveByName("boss_Shout", false);
+
+        // 攻撃開始時にプレイヤー方向を向く
+        const DirectX::XMFLOAT3& bossPos = m_pOwner->GetPosition();
+        const DirectX::XMFLOAT3& playerPos = m_pOwner->m_PlayerPos;
+        
+        float dx = playerPos.x - bossPos.x;
+        float dz = playerPos.z - bossPos.z;
+        
+        // atan2 でプレイヤー方向への角度を計算（モデルの向きに合わせて調整）
+        float angle_radian = std::atan2f(-dx, -dz);
+        m_pOwner->SetRotationY(angle_radian);
+    }
 }
 
 void BossAttackStateBase::Update()
@@ -77,21 +110,82 @@ void BossAttackStateBase::UpdateBaseLogic(float dt)
     m_pOwner->SetAnimSpeed(currentAnimSpeed);
 
     // 当たり判定更新.
-	for (auto& window : m_ColliderWindows)
+    bool anyJust = false;
+    for (auto& window : m_ColliderWindows)
 	{
         if (window.IsEnd) { continue; }
+
+        // ジャストタイム判定更新（開始時間 - JustTime ～ 開始時間 の間 true）
+        float justWindowStart = window.Start - window.JustTime;
+        if (window.JustTime > 0.0f && m_CurrentTime >= justWindowStart && m_CurrentTime < window.Start)
+        {
+            window.IsJustWindow = true;
+            anyJust = true;
+        }
+        else
+        {
+            window.IsJustWindow = false;
+        }
 
         if (!window.IsAct && m_CurrentTime >= window.Start)
 		{
 			m_pOwner->SetColliderActiveByName(window.BoneName, true);
+			// apply current state collider settings to the activated collider so UI changes take effect
+			{
+				ColliderBase* targetCol = nullptr;
+				if (window.BoneName == "boss_Hand_R") targetCol = m_pOwner->GetSlashCollider();
+				else if (window.BoneName == "boss_pSphere28") targetCol = m_pOwner->GetStompCollider();
+				else if (window.BoneName == "boss_Shout") targetCol = m_pOwner->GetShoutCollider();
+				if (targetCol) {
+					if (auto* cap = dynamic_cast<CapsuleCollider*>(targetCol)) {
+						cap->SetRadius(m_ColliderWidth);
+						cap->SetHeight(m_ColliderHeight);
+						cap->SetAttackAmount(m_AttackAmount);
+					}
+				}
+			}
 			window.IsAct = true;
 		}
+
+        // 当たり判定が有効な間、毎フレームオフセットを更新
+        // ColliderBase::GetPosition()が親の回転を自動適用するため、ローカルオフセットをそのまま設定
+        if (window.IsAct && !window.IsEnd)
+        {
+            ColliderBase* targetCol = nullptr;
+            if (window.BoneName == "boss_Hand_R") targetCol = m_pOwner->GetSlashCollider();
+            else if (window.BoneName == "boss_pSphere28") targetCol = m_pOwner->GetStompCollider();
+            else if (window.BoneName == "boss_Shout") targetCol = m_pOwner->GetShoutCollider();
+            if (targetCol) {
+                if (auto* cap = dynamic_cast<CapsuleCollider*>(targetCol)) {
+                    cap->SetPositionOffset(window.Offset.x, window.Offset.y, window.Offset.z);
+                }
+            }
+        }
+
         if (window.IsAct && !window.IsEnd && m_CurrentTime >= (window.Start + window.Duration))
 		{
 			m_pOwner->SetColliderActiveByName(window.BoneName, false);
 			window.IsEnd = true;
 		}
 	}
+
+    if (m_pOwner) {
+        m_pOwner->SetAnyAttackJustWindow(anyJust);
+    }
+
+    // エフェクト再生更新
+    for (auto& eff : m_EffectWindows)
+    {
+        if (!eff.IsPlayed && m_CurrentTime >= eff.Start)
+        {
+            // エフェクトを再生
+            if (m_pOwner)
+            {
+                m_pOwner->SpawnEffect(eff.EffectName, eff.Offset, eff.Scale);
+            }
+            eff.IsPlayed = true;
+        }
+    }
 
     // 動き更新 (イージング適用).
     for (auto& mv : m_MovementWindows)
@@ -130,6 +224,33 @@ void BossAttackStateBase::UpdateBaseLogic(float dt)
                 // 初期化フラグと LastEasedPos を設定.
                 mv.Initialized = true;
                 mv.LastEasedPos = mv.StartPos;
+
+                // 追加: 方向オフセットが有効なら、プレイヤー方向に対して指定角度だけ回転させた方向を EndPos とする
+                if (mv.UseDirectionOffset)
+                {
+                    // プレイヤー方向ベクトル（XZ）
+                    DirectX::XMVECTOR pos_v = DirectX::XMLoadFloat3(&mv.StartPos);
+                    DirectX::XMVECTOR target_v = DirectX::XMLoadFloat3(&pos_target);
+                    DirectX::XMVECTOR dir = DirectX::XMVectorSubtract(target_v, pos_v);
+                    // XZ 平面に投影
+                    DirectX::XMFLOAT3 fdir; DirectX::XMStoreFloat3(&fdir, dir);
+                    DirectX::XMFLOAT3 dir_xz = { fdir.x, 0.0f, fdir.z };
+                    DirectX::XMVECTOR v_dir_xz = DirectX::XMLoadFloat3(&dir_xz);
+                    float len_dir = DirectX::XMVectorGetX(DirectX::XMVector3Length(v_dir_xz));
+                    if (len_dir > EPSILON_E6)
+                    {
+                        DirectX::XMVECTOR dir_n = DirectX::XMVector3Normalize(v_dir_xz);
+                        // 回転角をラジアンで作成
+                        float rad = DirectX::XMConvertToRadians(mv.DirectionOffsetDeg);
+                        DirectX::XMVECTOR rot = DirectX::XMQuaternionRotationAxis(DirectX::XMVectorSet(0,1,0,0), rad);
+                        DirectX::XMVECTOR rotated = DirectX::XMVector3Rotate(dir_n, rot);
+                        // EndPos = StartPos + rotated * (Speed * Duration * Distance)
+                        DirectX::XMVECTOR move_amount = DirectX::XMVectorScale(rotated, mv.Speed * mv.Duration * mv.Distance);
+                        DirectX::XMVECTOR end_pos_v = DirectX::XMVectorAdd(pos_v, move_amount);
+                        DirectX::XMFLOAT3 fend; DirectX::XMStoreFloat3(&fend, end_pos_v);
+                        mv.EndPos = fend;
+                    }
+                }
 
                 // 回転.
                 float dx = mv.EndPos.x - mv.StartPos.x;
@@ -175,6 +296,14 @@ void BossAttackStateBase::UpdateBaseLogic(float dt)
 
 void BossAttackStateBase::Exit()
 {
+    // 全ての攻撃コライダーを非アクティブにする
+    if (m_pOwner)
+    {
+        m_pOwner->SetColliderActiveByName("boss_Hand_R", false);
+        m_pOwner->SetColliderActiveByName("boss_pSphere28", false);
+        m_pOwner->SetColliderActiveByName("boss_Shout", false);
+    }
+    
     for (auto& w : m_ColliderWindows) { w.Reset(); }
     for (auto& w : m_MovementWindows) { w.Reset(); }
 
@@ -187,6 +316,7 @@ void BossAttackStateBase::DrawImGui()
     // ImGui を用いた攻撃パラメータ編集パネル
     // このパネルからダメージ、当たり判定サイズ、フェーズ毎のアニメ速度
     // などのパラメータを調整できます。実行時のみの編集用です。
+#if _DEBUG
 	if (!ImGui::Begin(IMGUI_JP("Boss Attack State"))) {
 		ImGui::End();
 		return;
@@ -198,8 +328,11 @@ void BossAttackStateBase::DrawImGui()
     ImGui::SliderFloat(IMGUI_JP("攻撃力"), &m_AttackAmount, 0.0f, 9999.0f);
 
     // 当たり判定サイズ
-    ImGui::SliderFloat(IMGUI_JP("判定幅"), &m_ColliderWidth, 0.0f, 20.0f);
-    ImGui::SliderFloat(IMGUI_JP("判定高さ"), &m_ColliderHeight, 0.0f, 10.0f);
+    ImGui::SliderFloat(IMGUI_JP("判定半径"), &m_ColliderWidth, 0.0f, 100.0f);
+    ImGui::SliderFloat(IMGUI_JP("判定高さ"), &m_ColliderHeight, 0.0f, 100.0f);
+
+    // ボーン名表示
+    ImGui::Text(IMGUI_JP("追従ボーン: %s"), m_AttackBoneName.empty() ? "None" : m_AttackBoneName.c_str());
 
     // ステートの時間設定
     ImGui::SliderFloat(IMGUI_JP("ステート全体の長さ"), &m_EndTime, 0.0f, 10.0f);
@@ -208,7 +341,7 @@ void BossAttackStateBase::DrawImGui()
 
 	ImGui::Separator();
 	ImGui::Text(IMGUI_JP("アニメーション速度"));
-    ImGui::SliderFloat("Anim Speed - Charge", &m_AnimSpeedCharge, 0.1f, 3.0f);
+    ImGui::SliderFloat("Anim Speed - Charge", &m_AnimSpeedCharge, 0.0f, 3.0f);
     ImGui::SliderFloat("Anim Speed - Attack", &m_AnimSpeedAttack, 0.1f, 10.0f);
     ImGui::SliderFloat("Anim Speed - Exit", &m_AnimSpeedExit, 0.1f, 3.0f);
 
@@ -233,15 +366,59 @@ void BossAttackStateBase::DrawImGui()
     // コライダーウィンドウ編集
     ImGui::Separator();
     ImGui::Text(IMGUI_JP("当たり判定ウィンドウ"));
+    
+    // デバッグ: ボスの回転情報を表示
+    if (m_pOwner)
+    {
+        const auto& quat = m_pOwner->GetTransform()->Quaternion;
+        ImGui::Text(IMGUI_JP("Boss Quat: (%.3f, %.3f, %.3f, %.3f)"), quat.x, quat.y, quat.z, quat.w);
+        DirectX::XMFLOAT3 forward = m_pOwner->GetTransform()->GetForward();
+        ImGui::Text(IMGUI_JP("Boss Forward: (%.3f, %.3f, %.3f)"), forward.x, forward.y, forward.z);
+    }
+    
     for (size_t i = 0; i < m_ColliderWindows.size(); ++i)
     {
         auto &w = m_ColliderWindows[i];
         ImGui::PushID((int)i);
         // 開始時刻／継続時間
         ImGui::DragFloat(IMGUI_JP("開始時刻 (秒)"), &w.Start, 0.01f, 0.0f, m_EndTime);
-       // ImGui::SameLine();
         ImGui::DragFloat(IMGUI_JP("継続時間 (秒)"), &w.Duration, 0.01f, 0.0f, m_EndTime);
-       // ImGui::SameLine();
+        // オフセット編集（Bossのローカル座標系: X=横, Y=上, Z=前方）
+        float offset[3] = { w.Offset.x, w.Offset.y, w.Offset.z };
+        if (ImGui::DragFloat3(IMGUI_JP("オフセット (横/上/前)"), offset, 0.5f, -500.0f, 500.0f)) {
+            w.Offset.x = offset[0];
+            w.Offset.y = offset[1];
+            w.Offset.z = offset[2];
+        }
+        
+        // デバッグ: 回転後のオフセットを表示
+        if (m_pOwner && w.IsAct && !w.IsEnd)
+        {
+            float yaw = m_pOwner->GetTransform()->Rotation.y;
+
+            // XMMatrixRotationY と一致: (-sin(y), 0, cos(y))
+            DirectX::XMVECTOR v_forward = DirectX::XMVectorSet(-sinf(yaw), 0.0f, cosf(yaw), 0.0f);
+            DirectX::XMVECTOR v_up = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+            DirectX::XMVECTOR v_right = DirectX::XMVector3Cross(v_up, v_forward);
+
+            DirectX::XMVECTOR v_worldOffset = DirectX::XMVectorAdd(
+                DirectX::XMVectorAdd(
+                    DirectX::XMVectorScale(v_right, w.Offset.x),
+                    DirectX::XMVectorScale(v_up, w.Offset.y)
+                ),
+                DirectX::XMVectorScale(v_forward, w.Offset.z)
+            );
+
+            DirectX::XMFLOAT3 rotated;
+            DirectX::XMStoreFloat3(&rotated, v_worldOffset);
+            DirectX::XMFLOAT3 fwd;
+            DirectX::XMStoreFloat3(&fwd, v_forward);
+
+            ImGui::Text(IMGUI_JP("Yaw(rad): %.3f (deg: %.1f)"), yaw, yaw * 180.0f / 3.14159f);
+            ImGui::Text(IMGUI_JP("計算された前方: (%.2f, %.2f, %.2f)"), fwd.x, fwd.y, fwd.z);
+            ImGui::Text(IMGUI_JP("回転後オフセット: (%.2f, %.2f, %.2f)"), rotated.x, rotated.y, rotated.z);
+        }
+        
         // ボーン名編集
         char buf[128];
 #ifdef _MSC_VER
@@ -252,6 +429,10 @@ void BossAttackStateBase::DrawImGui()
         if (ImGui::InputText(IMGUI_JP("ボーン名"), buf, sizeof(buf))) {
             w.BoneName = std::string(buf);
         }
+        // ジャストタイム編集
+        ImGui::DragFloat(IMGUI_JP("ジャストタイム (秒)"), &w.JustTime, 0.01f, 0.0f, 5.0f);
+        // ジャスト判定状態表示
+        ImGui::Text(IMGUI_JP("ジャスト判定: %s"), w.IsJustWindow ? "ON" : "OFF");
         ImGui::SameLine();
         if (ImGui::Button(IMGUI_JP("削除"))) { m_ColliderWindows.erase(m_ColliderWindows.begin() + i); ImGui::PopID(); break; }
         ImGui::PopID();
@@ -288,10 +469,18 @@ void BossAttackStateBase::DrawImGui()
         // 移動量係数の編集
         ImGui::PushItemWidth(100);
         ImGui::DragFloat(IMGUI_JP("距離"), &mv.Distance, 0.01f, 0.0f, 1000.0f);
+        ImGui::PushItemWidth(100);
+        if (ImGui::Checkbox(IMGUI_JP("方向オフセットを使用"), &mv.UseDirectionOffset)) {
+            mv.Initialized = false;
+            mv.LastEasedPos = mv.StartPos;
+        }
+        ImGui::PushItemWidth(80);
+        ImGui::DragFloat(IMGUI_JP("方向オフセット(deg)"), &mv.DirectionOffsetDeg, 1.0f, -180.0f, 180.0f);
         ImGui::PopItemWidth();
         ImGui::SameLine();
         if (ImGui::Button(IMGUI_JP("削除"))) { m_MovementWindows.erase(m_MovementWindows.begin() + i); ImGui::PopID(); break; }
         ImGui::PopID();
+        ImGui::SameLine();
     }
     if (ImGui::Button(IMGUI_JP("移動ウィンドウを追加"))) { MovementWindow mv; mv.Start = 0.0f; mv.Duration = 0.2f; mv.Speed = 10.0f; m_MovementWindows.push_back(mv); }
 
@@ -317,6 +506,7 @@ void BossAttackStateBase::DrawImGui()
     }
 
     ImGui::End();
+#endif
 }
 
 void BossAttackStateBase::LoadSettings()
@@ -339,6 +529,7 @@ void BossAttackStateBase::LoadSettings()
     if (j.contains("m_TransitionOnAnimEnd_Charge")) m_TransitionOnAnimEnd_Charge = j["m_TransitionOnAnimEnd_Charge"].get<bool>();
     if (j.contains("m_TransitionOnAnimEnd_Attack")) m_TransitionOnAnimEnd_Attack = j["m_TransitionOnAnimEnd_Attack"].get<bool>();
     if (j.contains("m_TransitionOnAnimEnd_Exit")) m_TransitionOnAnimEnd_Exit = j["m_TransitionOnAnimEnd_Exit"].get<bool>();
+    if (j.contains("m_AttackBoneName")) m_AttackBoneName = j["m_AttackBoneName"].get<std::string>();
     if (j.contains("AnimSpeeds") && j["AnimSpeeds"].is_object()) {
         auto& a = j["AnimSpeeds"];
         if (a.contains("Charge")) m_AnimSpeedCharge = a["Charge"].get<float>();
@@ -353,6 +544,16 @@ void BossAttackStateBase::LoadSettings()
                 w.Start = entry["start"].get<float>();
                 w.Duration = entry["duration"].get<float>();
                 if (entry.contains("BoneName")) w.BoneName = entry["BoneName"].get<std::string>();
+                // オフセット読み込み
+                if (entry.contains("offset") && entry["offset"].is_array() && entry["offset"].size() >= 3) {
+                    w.Offset.x = entry["offset"][0].get<float>();
+                    w.Offset.y = entry["offset"][1].get<float>();
+                    w.Offset.z = entry["offset"][2].get<float>();
+                }
+                // ジャストタイム読み込み
+                if (entry.contains("justTime")) {
+                    w.JustTime = entry["justTime"].get<float>();
+                }
                 m_ColliderWindows.push_back(w);
             }
         }
@@ -371,6 +572,21 @@ void BossAttackStateBase::LoadSettings()
                 }
                 if (entry.contains("distance")) {
                     mv.Distance = entry["distance"].get<float>();
+                }
+                // 互換性: 旧フォーマットの "reverse" を読めるようにする
+                if (entry.contains("use_direction_offset")) {
+                    mv.UseDirectionOffset = entry["use_direction_offset"].get<bool>();
+                }
+                if (entry.contains("direction_offset_deg")) {
+                    mv.DirectionOffsetDeg = entry["direction_offset_deg"].get<float>();
+                }
+                if (entry.contains("reverse")) {
+                    bool rev = entry["reverse"].get<bool>();
+                    if (rev) {
+                        mv.UseDirectionOffset = true;
+                        // 旧 reverse の意味は 180deg 回転に等しい
+                        mv.DirectionOffsetDeg = 180.0f;
+                    }
                 }
                 m_MovementWindows.push_back(mv);
             }
@@ -397,6 +613,7 @@ void BossAttackStateBase::SaveSettings() const
     j["m_TransitionOnAnimEnd_Charge"] = m_TransitionOnAnimEnd_Charge;
     j["m_TransitionOnAnimEnd_Attack"] = m_TransitionOnAnimEnd_Attack;
     j["m_TransitionOnAnimEnd_Exit"] = m_TransitionOnAnimEnd_Exit;
+    j["m_AttackBoneName"] = m_AttackBoneName;
     j["AnimSpeeds"] = json::object();
     j["AnimSpeeds"]["Charge"] = m_AnimSpeedCharge;
     j["AnimSpeeds"]["Attack"] = m_AnimSpeedAttack;
@@ -408,6 +625,8 @@ void BossAttackStateBase::SaveSettings() const
         e["start"] = w.Start;
         e["duration"] = w.Duration;
         e["BoneName"] = w.BoneName;
+        e["offset"] = { w.Offset.x, w.Offset.y, w.Offset.z };
+        e["justTime"] = w.JustTime;
         j["ColliderWindows"].push_back(e);
     }
 
@@ -417,6 +636,8 @@ void BossAttackStateBase::SaveSettings() const
         e["start"] = mv.Start;
         e["duration"] = mv.Duration;
         e["speed"] = mv.Speed;
+        e["use_direction_offset"] = mv.UseDirectionOffset;
+        e["direction_offset_deg"] = mv.DirectionOffsetDeg;
         e["easing"] = static_cast<int>(mv.EasingType);
         e["distance"] = mv.Distance;
         j["MovementWindows"].push_back(e);
@@ -437,6 +658,7 @@ nlohmann::json BossAttackStateBase::SerializeSettings() const
     j["m_TransitionOnAnimEnd_Charge"] = m_TransitionOnAnimEnd_Charge;
     j["m_TransitionOnAnimEnd_Attack"] = m_TransitionOnAnimEnd_Attack;
     j["m_TransitionOnAnimEnd_Exit"] = m_TransitionOnAnimEnd_Exit;
+    j["m_AttackBoneName"] = m_AttackBoneName;
     j["AnimSpeeds"] = nlohmann::json::object();
     j["AnimSpeeds"]["Charge"] = m_AnimSpeedCharge;
     j["AnimSpeeds"]["Attack"] = m_AnimSpeedAttack;
@@ -457,6 +679,9 @@ nlohmann::json BossAttackStateBase::SerializeSettings() const
         e["start"] = mv.Start;
         e["duration"] = mv.Duration;
         e["speed"] = mv.Speed;
+        e["distance"] = mv.Distance;
+        e["use_direction_offset"] = mv.UseDirectionOffset;
+        e["direction_offset_deg"] = mv.DirectionOffsetDeg;
         e["easing"] = static_cast<int>(mv.EasingType);
         j["MovementWindows"].push_back(e);
     }

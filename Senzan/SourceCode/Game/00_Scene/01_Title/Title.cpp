@@ -1,4 +1,4 @@
-#include "Title.h"
+ï»¿#include "Title.h"
 #include "02_UIObject/UIObject.h"
 #include "02_UIObject/UITitle/UITitle.h"
 #include "Game/05_InputDevice/Input.h"
@@ -24,8 +24,8 @@ void Title::Initialize()
 
 void Title::Create()
 {
-	SoundManager::GetInstance().Play("Sunlight—zË‚µ", true);
-	SoundManager::GetInstance().SetVolume("Sunlight—zË‚µ", 8000);
+	SoundManager::GetInstance().Play("Title", true);
+	SoundManager::GetInstance().SetVolume("Title", 8000);
 }
 
 void Title::Update()
@@ -38,6 +38,8 @@ void Title::Update()
 	||	Input::IsKeyDown('C')
 	||	Input::IsButtonDown(XInput::Key::B))
 	{
+        SoundManager::GetInstance().Play("Decide");
+        SoundManager::GetInstance().SetVolume("Decide",8000);
 		if (m_pUI->GetSelected() == m_pUI->Items::Start) {
 			SceneManager::LoadScene(eList::GameMain);
 			return;

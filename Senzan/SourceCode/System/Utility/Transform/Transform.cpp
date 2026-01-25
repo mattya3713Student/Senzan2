@@ -74,9 +74,9 @@ void Transform::Rotate(const DirectX::XMFLOAT3& eulerAngles)
 void Transform::RotateDegrees(const DirectX::XMFLOAT3& eulerAnglesInDegrees)
 {
 	Rotate(DirectX::XMFLOAT3(
-		DirectX::XMConvertToDegrees(eulerAnglesInDegrees.x),
-		DirectX::XMConvertToDegrees(eulerAnglesInDegrees.y),
-		DirectX::XMConvertToDegrees(eulerAnglesInDegrees.z)
+        DirectX::XMConvertToRadians(eulerAnglesInDegrees.x),
+        DirectX::XMConvertToRadians(eulerAnglesInDegrees.y),
+        DirectX::XMConvertToRadians(eulerAnglesInDegrees.z)
 	));
 }
 

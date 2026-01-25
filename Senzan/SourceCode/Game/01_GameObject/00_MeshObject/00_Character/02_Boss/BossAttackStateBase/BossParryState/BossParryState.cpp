@@ -16,9 +16,6 @@ void BossParryState::Enter()
 {
     m_CurrentTime = 0.0f;
 
-    // パリィ中は攻撃判定を止める
-    m_pOwner->SetAttackColliderActive(false);
-
     m_pOwner->SetAnimSpeed(3.0);
     m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchParis);
     m_Phase = ParryPhase::Flinch;
@@ -68,6 +65,6 @@ void BossParryState::Draw()
 
 void BossParryState::Exit()
 {
-    // 念のため攻撃判定はOFFのまま
-    m_pOwner->SetAttackColliderActive(false);
+    // パリィフラグをリセット.
+    m_pOwner->m_IsParried = false;
 }

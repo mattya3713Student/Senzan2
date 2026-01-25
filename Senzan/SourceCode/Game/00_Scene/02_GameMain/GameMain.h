@@ -1,20 +1,23 @@
-#pragma once
+ï»¿#pragma once
 
 #include "../00_Base/SceneBase.h"
 
 class Ground;
+class SkyDome;
 class Player;
 class MeshBase;
 class Boss;
 class CameraBase;
 class DirectionLight;
 class UIGameMain;
+class UIGameOver;
+class UIEnding;
 
 #include <vector>
 
 
 /*********************************************
-*	ƒQ[ƒ€ƒƒCƒ“‰æ‘œƒNƒ‰ƒX.
+*	ã‚²ãƒ¼ãƒ ãƒ¡ã‚¤ãƒ³ç”»åƒã‚¯ãƒ©ã‚¹.
 **/
 
 class GameMain
@@ -33,15 +36,22 @@ public:
 	HRESULT LoadData();
 
 private:
+	void UIUpdate();
 
-	std::shared_ptr<CameraBase>			m_spCamera;			// ƒJƒƒ‰.
-	std::shared_ptr<DirectionLight>		m_spLight;			// ƒ‰ƒCƒg
+private:
+
+	std::shared_ptr<CameraBase>			m_spCamera;			// ã‚«ãƒ¡ãƒ©.
+	std::shared_ptr<DirectionLight>		m_spLight;			// ãƒ©ã‚¤ãƒˆ
 
 	std::unique_ptr<Ground>		m_upGround;
+	std::unique_ptr<SkyDome>	m_upSkyDome;
 	
-	//ˆê“I‚È•\¦—p.
+	//ä¸€æ™‚çš„ãªè¡¨ç¤ºç”¨.
 	std::unique_ptr<Boss>		m_upBoss;
 	std::unique_ptr<Player>		m_upPlayer;
 
 	std::shared_ptr<UIGameMain>	m_upUI;
+	std::shared_ptr<UIGameOver> m_upUIOver;
+	std::shared_ptr<UIEnding>   m_upUIEnding;
+	float m_TimeLimit;
 };

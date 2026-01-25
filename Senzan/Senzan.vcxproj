@@ -82,7 +82,8 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>L_PC</PreprocessorDefinitions>
+      <PreprocessorDefinitions>
+      </PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>;SourceCode;Data</AdditionalIncludeDirectories>
     </ClCompile>
@@ -97,7 +98,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>L_PC</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>;SourceCode</AdditionalIncludeDirectories>
     </ClCompile>
@@ -112,12 +113,13 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>MATTYA_PC</PreprocessorDefinitions>
+      <PreprocessorDefinitions>
+      </PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp23</LanguageStandard>
       <AdditionalIncludeDirectories>SourceCode;SourceCode\Ggraphic;SourceCode\Resource;SourceCode\System;SourceCode\System\GameLoop;SourceCode\System\Singleton;SourceCode\System\Utility;SourceCode\Game\Scene;SourceCode\Game\01_GameObject;Data;Data/Library/Effekseer/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
       <EnableModules>true</EnableModules>
       <BuildStlModules>true</BuildStlModules>
@@ -139,12 +141,12 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>L_PC</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp23</LanguageStandard>
       <AdditionalIncludeDirectories>SourceCode;SourceCode\Ggraphic;SourceCode\Resource;SourceCode\System;SourceCode\System\GameLoop;SourceCode\System\Singleton;SourceCode\System\Utility;SourceCode\Game\Scene;SourceCode\Game\01_GameObject;Data;Data/Library/Effekseer/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
       <EnableModules>true</EnableModules>
       <BuildStlModules>true</BuildStlModules>
@@ -164,7 +166,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="Data\Shader\PMX\Header.hlsli" />
-    <None Include="SourceCode\Resource\Effect\git認識用フォルダ" />
     <None Include="SourceCode\System\Utility\Assert\Assert.inl" />
     <None Include="SourceCode\System\Utility\Math\Easing\Easing.inl" />
     <None Include="SourceCode\System\Utility\Math\Math.inl" />
@@ -262,20 +263,18 @@
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\01_Player\State\PlayerStateBase.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\Boss.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossAttackStateBase.cpp" />
-    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossChargeSlashState\BossChargeSlashState.cpp" />
-    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossChargeState\BossChargeState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossParryState\BossParryState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossThrowingState\BossThrowingState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossDeadState\BossDeadState.cpp" />
-    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossLaserState\BossLaserState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossShoutState\BossShoutState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossSlashState\BossSlashState.cpp" />
-    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossSpecialState\BossSpecialState.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossJumpOnlState\BossJumpOnlState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossStompState\BossStompState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossIdolState\BossIdolState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossMoveState\BossMoveState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\04_BackGround\BackGround.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\03_SnowBall\SnowBall.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\05_SkyDome\SkyDome.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\Character.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\MeshObject.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\01_SpriteObject\CSpriteObject.cpp" />
@@ -342,6 +341,7 @@
     <ClCompile Include="SourceCode\System\GameLoop\WinMain.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\Debug\CollisionVisualizer\CollisionVisualizer.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\ImGui\CImGuiManager.cpp" />
+    <ClCompile Include="SourceCode\System\Singleton\ParryManager\ParryManager.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\PostEffectManager\PostEffectManager.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\ResourceManager\EffectManager\EffekseerManager.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\ResourceManager\ResourceManager.cpp" />
@@ -371,6 +371,7 @@
     <ClInclude Include="SourceCode\Constant.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\Ex_Test\04_AnimationTuning\AnimationTuningScene.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossParryState\BossParryState.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\05_SkyDome\SkyDome.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\Select\Select.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\UIGameMain\UIGameMain.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\04_BackGround\BackGround.h" />
@@ -386,6 +387,7 @@
     <ClInclude Include="SourceCode\Game\03_Collision\Sprite\SpriteCollider.h" />
     <ClInclude Include="SourceCode\Resource\Effect\EffectResource.h" />
     <ClInclude Include="SourceCode\Resource\Sound\DirectSound.h" />
+    <ClInclude Include="SourceCode\System\Singleton\ParryManager\ParryManager.h" />
     <ClInclude Include="SourceCode\System\Singleton\PostEffectManager\PostEffectManager.h" />
     <ClInclude Include="SourceCode\System\Singleton\ResourceManager\EffectManager\EffekseerManager.h" />
     <ClInclude Include="SourceCode\System\Singleton\ResourceManager\SoundManager\SoundManager.h" />
@@ -423,14 +425,11 @@
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\01_Player\State\PlayerStateBase.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\Boss.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossAttackStateBase.h" />
-    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossChargeSlashState\BossChargeSlashState.h" />
-    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossChargeState\BossChargeState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossThrowingState\BossThrowingState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossDeadState\BossDeadState.h" />
-    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossLaserState\BossLaserState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossShoutState\BossShoutState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossSlashState\BossSlashState.h" />
-    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossSpecialState\BossSpecialState.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossJumpOnlState\BossJumpOnlState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossStompState\BossStompState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossIdolState\BossIdolState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossMoveState\BossMoveState.h" />

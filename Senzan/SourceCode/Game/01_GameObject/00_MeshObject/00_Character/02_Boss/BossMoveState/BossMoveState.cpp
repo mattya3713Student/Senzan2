@@ -1,10 +1,7 @@
 ﻿#include "BossMoveState.h"
 #include "Game/04_Time/Time.h"
-#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossSpecialState/BossSpecialState.h"
-#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossChargeSlashState/BossChargeSlashState.h"
+#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossJumpOnlState/BossJumpOnlState.h"
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossSlashState/BossSlashState.h"
-#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossChargeState/BossChargeState.h"
-#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossLaserState/BossLaserState.h"
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossShoutState/BossShoutState.h"
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossStompState/BossStompState.h"
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossThrowingState/BossThrowingState.h"
@@ -46,26 +43,60 @@ void BossMoveState::Update()
 {
 	using namespace DirectX;
 
+	// === ImGui Debug Window ===
+#if _DEBUG
+	ImGui::Begin(IMGUI_JP("Boss Attack Debug"));
+	
+	ImGui::Text(IMGUI_JP("=== Distance Settings ==="));
+	ImGui::SliderFloat(IMGUI_JP("Near Range"), &s_NearRange, 5.0f, 50.0f);
+	ImGui::SliderFloat(IMGUI_JP("Mid Range"), &s_MidRange, 20.0f, 80.0f);
+	ImGui::SliderFloat(IMGUI_JP("Attack Delay(sec)"), &s_AttackDelay, 0.1f, 5.0f);
+	
+	ImGui::Separator();
+	ImGui::Text(IMGUI_JP("=== Attack ON/OFF ==="));
+	ImGui::Checkbox(IMGUI_JP("Slash (Near)"), &s_EnableSlash);
+	ImGui::Checkbox(IMGUI_JP("Stomp (Near/Far)"), &s_EnableStomp);
+	ImGui::Checkbox(IMGUI_JP("Charge (Mid)"), &s_EnableCharge);
+	ImGui::Checkbox(IMGUI_JP("Shout (Mid)"), &s_EnableShout);
+	ImGui::Checkbox(IMGUI_JP("Throwing (Far)"), &s_EnableThrowing);
+	
+	ImGui::Separator();
+	ImGui::Text(IMGUI_JP("=== Force Attack ==="));
+	const char* attackNames[] = { "Random", "Slash", "Stomp", "Charge", "Shout", "Throwing" };
+	ImGui::Combo(IMGUI_JP("Force Attack"), &s_ForceAttackIndex, attackNames, IM_ARRAYSIZE(attackNames));
+	s_ForceAttackIndex -= 1; // -1 = Random, 0-4 = Each attack
+
+	ImGui::Separator();
+	XMFLOAT3 debugTargetPos = m_pOwner->GetTargetPos();
+	XMFLOAT3 debugBossPos = m_pOwner->GetPosition();
+	float debugDist = XMVectorGetX(XMVector3Length(XMVectorSubtract(XMLoadFloat3(&debugTargetPos), XMLoadFloat3(&debugBossPos))));
+	ImGui::Text(IMGUI_JP("Current Distance: %.2f"), debugDist);
+	if (debugDist < s_NearRange) ImGui::TextColored(ImVec4(1,0,0,1), "-> Near");
+	else if (debugDist < s_MidRange) ImGui::TextColored(ImVec4(1,1,0,1), "-> Mid");
+	else ImGui::TextColored(ImVec4(0,1,0,1), "-> Far");
+	
+	ImGui::End();
+#endif
+
 	float delta = Time::GetInstance().GetDeltaTime();
 
-	// 攻撃時間の加算
+	// Attack timer
 	m_Timer += delta;
 
-	// 1. 座標情報の取得
+	// 1. Get position info
 	XMVECTOR vBossPos = XMLoadFloat3(&m_pOwner->GetPosition());
 	XMFLOAT3 playerPosF = m_pOwner->GetTargetPos();
 	XMVECTOR vTarget = XMLoadFloat3(&playerPosF);
 
-	// プレイヤーへの方向ベクトルと距離
+	// Direction vector and distance to player
 	XMVECTOR vToPlayer = XMVectorSubtract(vTarget, vBossPos);
-	vToPlayer = XMVectorSetY(vToPlayer, 0.0f); // 高さ無視
+	vToPlayer = XMVectorSetY(vToPlayer, 0.0f);
 	float distanceToPlayer = XMVectorGetX(XMVector3Length(vToPlayer));
 
-	// 判定基準
 	constexpr float STRAFE_RANGE = 20.0f;
 
 	// --------------------------------------------------------
-	// 2. フェーズ別移動・アニメーション処理
+	// 2. Phase-based movement and animation
 	// --------------------------------------------------------
 	switch (m_Phase)
 	{
@@ -108,8 +139,7 @@ void BossMoveState::Update()
 
 	case MovePhase::Strafe:
 	{
-		// --- 1. ボス自身の理想の角度更新 ---
-		m_RotationAngle += m_RotationSpeed * delta * m_rotationDirection;
+		m_RotationAngle += static_cast<float>(m_RotationSpeed) * delta * m_rotationDirection;
 		const float MAX_SWAY = XM_PIDIV4;
 		if (fabsf(m_RotationAngle) > MAX_SWAY)
 		{
@@ -117,7 +147,6 @@ void BossMoveState::Update()
 			m_RotationAngle = std::clamp(m_RotationAngle, -MAX_SWAY, MAX_SWAY);
 		}
 
-		// --- 2. 理想の座標計算（プレイヤー位置に即座に同期した地点） ---
 		float finalAngle = m_BaseAngle + m_RotationAngle;
 		XMVECTOR vOffset = XMVectorSet(
 			sinf(finalAngle) * STRAFE_RANGE,
@@ -127,8 +156,6 @@ void BossMoveState::Update()
 		);
 		XMVECTOR vIdealPos = XMVectorAdd(vTarget, vOffset);
 
-		// --- 3. 【追尾を遅らせる】補間処理 ---
-		// 【調整】1.5f -> 0.7f (プレイヤーの動きにわざと遅れてついていく)
 		constexpr float TRACKING_DELAY = 0.7f;
 
 		XMVECTOR vCurrentPos = XMLoadFloat3(&m_pOwner->GetPosition());
@@ -137,14 +164,11 @@ void BossMoveState::Update()
 
 		XMVECTOR vNextPos = XMVectorLerp(vCurrentPos, vIdealPos, lerpFactor);
 
-		// 座標更新（高さ維持）
 		XMFLOAT3 finalPosF;
 		XMStoreFloat3(&finalPosF, vNextPos);
 		finalPosF.y = m_pOwner->GetPosition().y;
 		m_pOwner->SetPosition(finalPosF);
 
-		// --- 4. アニメーション速度の調整 ---
-		// 【調整】20.0 -> 12.0 (移動が遅いので足踏みもゆっくりにする)
 		m_pOwner->SetAnimSpeed(3.0);
 		if (m_rotationDirection > 0)
 			m_pOwner->ChangeAnim(Boss::enBossAnim::LeftMove);
@@ -155,7 +179,7 @@ void BossMoveState::Update()
 	}
 
 	// --------------------------------------------------------
-	// 3. 常にプレイヤーを向く
+	// 3. Always face player
 	// --------------------------------------------------------
 	XMVECTOR vFinalBossPos = XMLoadFloat3(&m_pOwner->GetPosition());
 	XMVECTOR vLookAt = XMVectorSubtract(vTarget, vFinalBossPos);
@@ -165,35 +189,41 @@ void BossMoveState::Update()
 	m_pOwner->SetRotationY(angle);
 
 	// --------------------------------------------------------
-	// 4. 攻撃判定
+	// 4. Attack selection (distance-based)
 	// --------------------------------------------------------
-	constexpr float AttackDelay = 1.0f;
-	if (m_Timer >= AttackDelay)
+	if (m_Timer >= s_AttackDelay)
 	{
 		float dist = XMVectorGetX(XMVector3Length(vLookAt));
 		std::vector<std::function<std::unique_ptr<StateBase<Boss>>()>> candidates;
 
-		if (dist < 15.0f) {
-			candidates = {
-				//[this]() { return std::make_unique<BossSlashState>(m_pOwner); },
-				//[this]() { return std::make_unique<BossChargeState>(m_pOwner); },
-				//[this]() { return std::make_unique<BossStompState>(m_pOwner); }
-				//[this]() { return std::make_unique<BossShoutState>(m_pOwner); }
-
-			};
+		// Force attack mode
+		if (s_ForceAttackIndex >= 0 && s_ForceAttackIndex <= 4)
+		{
+			switch (s_ForceAttackIndex)
+			{
+			case 0: if (s_EnableSlash) candidates = { [this]() { return std::make_unique<BossSlashState>(m_pOwner); } }; break;
+			case 1: if (s_EnableStomp) candidates = { [this]() { return std::make_unique<BossStompState>(m_pOwner); } }; break;
+			case 3: if (s_EnableShout) candidates = { [this]() { return std::make_unique<BossShoutState>(m_pOwner); } }; break;
+			case 4: if (s_EnableThrowing) candidates = { [this]() { return std::make_unique<BossThrowingState>(m_pOwner); } }; break;
+			}
 		}
-		//else if (dist < 40.0f) {
-		//	candidates = {
-		//		[this]() { return std::make_unique<BossThrowingState>(m_pOwner); },
-		//		[this]() { return std::make_unique<BossShoutState>(m_pOwner); }
-		//	};
-		//}
-		//else {
-		//	candidates = {
-		//		[this]() { return std::make_unique<BossSpecialState>(m_pOwner); },
-		//		[this]() { return std::make_unique<BossLaserState>(m_pOwner); }
-		//	};
-		//}
+		else
+		{
+			// Near: Slash or Stomp
+			if (dist < s_NearRange) {
+				if (s_EnableSlash) candidates.push_back([this]() { return std::make_unique<BossSlashState>(m_pOwner); });
+				if (s_EnableStomp) candidates.push_back([this]() { return std::make_unique<BossStompState>(m_pOwner); });
+			}
+			// Mid: Charge or Shout
+			else if (dist < s_MidRange) {
+				if (s_EnableShout) candidates.push_back([this]() { return std::make_unique<BossShoutState>(m_pOwner); });
+			}
+			// Far: Throwing or Stomp
+			else {
+				if (s_EnableThrowing) candidates.push_back([this]() { return std::make_unique<BossThrowingState>(m_pOwner); });
+				if (s_EnableStomp) candidates.push_back([this]() { return std::make_unique<BossStompState>(m_pOwner); });
+			}
+		}
 
 		if (!candidates.empty())
 		{

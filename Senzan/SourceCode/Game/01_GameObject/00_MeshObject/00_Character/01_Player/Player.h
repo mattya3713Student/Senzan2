@@ -83,10 +83,13 @@ protected:
 	static constexpr float m_MoveVecDeceleration = 0.05f;
 
 public:
-	Player();
-	virtual ~Player() override;
+Player();
+virtual ~Player() override;
 
-	virtual void Update() override;
+// Set just-dodge timing flag (used by Scene to propagate enemy just-windows)
+void SetIsJustDodgeTiming(bool v) { m_IsJustDodgeTiming = v; }
+
+virtual void Update() override;
 	virtual void LateUpdate() override;
 	virtual void Draw() override;
 
@@ -169,6 +172,7 @@ protected:
 	
 	//---Dodge関連---.
 	bool				m_IsJustDodgeTiming; // ジャスト回避のタイミング.
+	::Effekseer::Handle m_UIEffectHandle = -1; // UI用エフェクトハンドル.
 
 	//--- Debug: force state 再入場用 ---.
 	PlayerState::eID    m_DebugForcedState;     // None == 無効.

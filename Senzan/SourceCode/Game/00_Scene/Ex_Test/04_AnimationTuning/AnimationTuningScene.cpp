@@ -65,8 +65,9 @@ void AnimationTuningScene::Create()
 
 void AnimationTuningScene::Update()
 {
+#if _DEBUG
     // ウィンドウとして独立させる
-    ImGui::Begin("Performance Monitor");
+    ImGui::Begin("d");
 
     // 1. 基本的なFPS表示
     float fps = ImGui::GetIO().Framerate;
@@ -84,11 +85,12 @@ void AnimationTuningScene::Update()
 
     ImGui::Separator();
     ImGui::End();
+#endif // _DEBUG
 
     Input::Update();
 
     m_upPlayer->SetTargetPos(m_upBoss.get()->GetPosition());
-    m_upPlayer->Update();
+    //m_upPlayer->Update();
     m_upBoss->Update();
 
 }

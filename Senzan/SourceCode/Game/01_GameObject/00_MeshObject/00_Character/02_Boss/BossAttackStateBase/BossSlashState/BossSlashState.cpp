@@ -37,9 +37,6 @@ void BossSlashState::Enter()
     // 斬るアニメーションの再生.
     m_pOwner->ChangeAnim(Boss::enBossAnim::Slash);
 
-    m_pOwner->SetAttackColliderActive(false);
-
-
 	// 初期位置を保存.
 	const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
 	DirectX::XMStoreFloat3(&m_StartPos, DirectX::XMLoadFloat3(&BossPosF));
@@ -130,58 +127,28 @@ void BossSlashState::Exit()
     BossAttackStateBase::Exit();
 	// window 制御のコライダーを確実にOFF
 	m_pOwner->SetColliderActiveByName("boss_Hand_R", false);
-	m_pOwner->SetAttackColliderActive(false);
 }
 
 void BossSlashState::DrawImGui()
 {
+#if _DEBUG
     ImGui::Begin(IMGUI_JP("ボス斬撃設定"));
-    ImGui::Text(IMGUI_JP("斬撃設定"));
-    CImGuiManager::Slider<float>(IMGUI_JP("斬撃開始"), m_SlashStart, 0.0f, 1.0f, true);
-    CImGuiManager::Slider<float>(IMGUI_JP("斬撃持続"), m_SlashDuration, 0.0f, 1.0f, true);
-    CImGuiManager::Slider<float>(IMGUI_JP("ホーミング終了時間"), m_HomingEndTime, 0.0f, 2.0f, true);
     ImGui::Separator();
-    ImGui::Text(IMGUI_JP("踏み込み設定"));
-    CImGuiManager::Slider<float>(IMGUI_JP("踏み込み開始"), m_StepStart, 0.0f, 1.0f, true);
-    CImGuiManager::Slider<float>(IMGUI_JP("踏み込み持続"), m_StepDuration, 0.0f, 1.0f, true);
-    CImGuiManager::Slider<float>(IMGUI_JP("踏み込み速度"), m_StepSpeed, 0.0f, 200.0f, true);
 
-    ImGui::Separator();
+    // オフセットは ColliderWindow で管理するため、ここでは基底クラスのImGuiのみ呼ぶ
     BossAttackStateBase::DrawImGui();
     ImGui::End();
+#endif
 }
 
 void BossSlashState::LoadSettings()
 {
-    // 基底の読み込みを行った後、Data/Json/Boss/<file> から派生項目を読み込む
+    // 基底の読み込みのみ
     BossAttackStateBase::LoadSettings();
-    auto filePath = GetSettingsFileName();
-    if (!filePath.is_absolute()) {
-        filePath = std::filesystem::current_path() / "Data" / "Json" / "Boss" / filePath;
-    }
-    if (!std::filesystem::exists(filePath)) return;
-    json j = FileManager::JsonLoad(filePath);
-    if (j.contains("SlashStart")) m_SlashStart = j["SlashStart"].get<float>();
-    if (j.contains("SlashDuration")) m_SlashDuration = j["SlashDuration"].get<float>();
-    if (j.contains("HomingEndTime")) m_HomingEndTime = j["HomingEndTime"].get<float>();
-    if (j.contains("StepStart")) m_StepStart = j["StepStart"].get<float>();
-    if (j.contains("StepDuration")) m_StepDuration = j["StepDuration"].get<float>();
-    if (j.contains("StepSpeed")) m_StepSpeed = j["StepSpeed"].get<float>();
 }
 
 void BossSlashState::SaveSettings() const
 {
-    // ベースの設定を取得して派生固有情報を追加して一度だけ保存する
-    json j = SerializeSettings();
-    j["SlashStart"] = m_SlashStart;
-    j["SlashDuration"] = m_SlashDuration;
-    j["HomingEndTime"] = m_HomingEndTime;
-    j["StepStart"] = m_StepStart;
-    j["StepDuration"] = m_StepDuration;
-    j["StepSpeed"] = m_StepSpeed;
-
-    auto srcDir = std::filesystem::path(__FILE__).parent_path();
-    auto filePath = std::filesystem::current_path() / "Data" / "Json" / "Boss" / GetSettingsFileName();
-    std::filesystem::create_directories(filePath.parent_path());
-    FileManager::JsonSave(filePath, j);
+    // 基底の保存のみ
+    BossAttackStateBase::SaveSettings();
 }
