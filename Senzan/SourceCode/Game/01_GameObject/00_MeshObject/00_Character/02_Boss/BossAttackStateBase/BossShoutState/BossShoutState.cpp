@@ -53,11 +53,6 @@ void BossShoutState::Enter()
 
 void BossShoutState::Update()
 {
-    if (!m_EffectPlayed && m_pOwner)
-    {
-        m_pOwner->PlayEffect("Shout", m_EffectOffset, m_EffectScale);
-        m_EffectPlayed = true;
-    }
     switch (m_List)
     {
     case BossShoutState::enShout::none:
@@ -69,6 +64,11 @@ void BossShoutState::Update()
         {
             m_pOwner->SetAnimSpeed(1.0);
             m_pOwner->ChangeAnim(Boss::enBossAnim::Laser);
+            if (!m_EffectPlayed && m_pOwner)
+            {
+                m_pOwner->PlayEffect("Shout", m_EffectOffset, m_EffectScale);
+                m_EffectPlayed = true;
+            }
             // シャウト発動: コライダーを有効化し、半径を徐々に広げる準備
             if (auto* shoutCol = m_pOwner->GetShoutCollider()) {
                 shoutCol->SetActive(true);
