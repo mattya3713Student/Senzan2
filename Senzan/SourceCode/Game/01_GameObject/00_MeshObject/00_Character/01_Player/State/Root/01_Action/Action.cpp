@@ -25,7 +25,7 @@ void Action::Enter()
 
 void Action::Update()
 {
-	// 必殺技ボタンが押されたら（ゲージMAX時のみ）
+	// 必殺技ボタンが押されたら(ゲージMAX時のみ).
 	if (VirtualPad::GetInstance().IsActionDown(VirtualPad::eGameAction::SpecialAttack))
 	{
 		if (m_pOwner->m_CurrentUltValue >= m_pOwner->m_MaxUltValue)
