@@ -88,8 +88,7 @@ void ParryManager::DamageToBoss(float DamageAmount)
 {
     if (m_pBoss)
     {
-        // 引数でダメージを与える用になってるはず.
-        m_pBoss->Hit();
+        m_pBoss->Hit(DamageAmount);
     }
 }
 
