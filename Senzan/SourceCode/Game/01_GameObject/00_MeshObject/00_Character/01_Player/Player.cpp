@@ -31,6 +31,7 @@
 #include "Game/03_Collision/00_Core/Ex_CompositeCollider/CompositeCollider.h"
 
 #include "Game/04_Time/Time.h"
+#include "Game/05_InputDevice/Input.h"
 
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
 #include "System/Singleton/CameraManager/CameraManager.h"
