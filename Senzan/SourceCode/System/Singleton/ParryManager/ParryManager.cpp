@@ -57,6 +57,7 @@ void ParryManager::StartJustDodge(float TimeScale)
 {
     if (m_pBoss)
     {
+        JustCancelAttackCollider();
         m_pBoss->OffAttackCollider();
         m_pBoss->SetTimeScale(TimeScale);
         m_pBoss->SetLockOnPlayer(false);
@@ -92,4 +93,12 @@ bool ParryManager::IsParryCameraFinished() const
 		return !lockOnCamera->IsParryCameraActive();
 	}
 	return true;
+}
+
+void ParryManager::JustCancelAttackCollider()
+{
+    if (m_pBoss)
+    {
+        m_pBoss->SetNextAttackCansel();
+    }
 }

@@ -392,6 +392,20 @@ void Boss::OffAttackCollider() {
     m_pLaserCollider->SetActive(false);
 }
 
+void Boss::SetNextAttackCansel()
+{
+    if (m_State && m_State->m_pCurrentState)
+    {
+        // BossAttackStateBase へキャストして設定を取得する
+        auto attackBase = std::dynamic_pointer_cast<BossAttackStateBase>(m_State->m_pCurrentState);
+        if (attackBase)
+        {
+            attackBase->SetNextAttackCansel();
+            return;
+        }
+    }
+}
+
 // 衝突_被ダメージ.
 void Boss::HandleDamageDetection()
 {

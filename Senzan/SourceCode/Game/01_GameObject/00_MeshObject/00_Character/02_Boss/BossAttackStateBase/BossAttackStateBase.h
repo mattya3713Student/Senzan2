@@ -130,6 +130,7 @@ public:
     // PlayerのParry成功時硬直させたいアニメーションとタイミング.
     virtual std::pair<Boss::enBossAnim, float> GetParryAnimPair(); 
 
+    void SetNextAttackCansel();
     // --- Player を見る（Yaw のみ）ヘルパー ---
     // 一度だけ即座にプレイヤーの方を見る
     void FacePlayerInstantYaw();

@@ -368,7 +368,7 @@ void Player::HandleDamageDetection()
 				ApplyDamage(info.AttackAmount);
 
 				// ボスからPlayerへのベクトルを計算.
-				DirectX::XMFLOAT3 bossPos = otherCollider->GetPosition();
+				DirectX::XMFLOAT3 bossPos = m_TargetPos;
 				DirectX::XMFLOAT3 playerPos = GetPosition();
 				DirectX::XMVECTOR vBossToPlayer = DirectX::XMVectorSubtract(
 					DirectX::XMLoadFloat3(&playerPos),

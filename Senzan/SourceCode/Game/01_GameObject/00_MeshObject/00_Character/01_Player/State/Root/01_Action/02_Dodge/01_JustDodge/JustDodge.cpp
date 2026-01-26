@@ -55,7 +55,7 @@ void JustDodge::Enter()
     // ゲージ増加
     m_pOwner->m_CurrentUltValue += 300.0f;
 
-    // タイムスケールを戻す.
+    // タイムスケールを戻す && Boss攻撃判定を消す.
     ParryManager::GetInstance().StartJustDodge(0.1f);
 
     // 残像エフェクトの初期化.

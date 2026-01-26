@@ -152,7 +152,10 @@ public:
     // 全攻撃判定オフ.
     void OffAttackCollider();
 
-    // 全攻撃判定オフ.
+    // 次の攻撃判定を非アクティブ登録する.
+    void SetNextAttackCansel();
+
+    // Playerロックオン.
     void SetLockOnPlayer(bool IslockOnPlayer) { m_IslockOnPlayer = IslockOnPlayer; }
 protected:
 
