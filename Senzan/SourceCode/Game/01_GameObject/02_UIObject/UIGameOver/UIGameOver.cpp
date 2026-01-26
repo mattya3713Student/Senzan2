@@ -105,6 +105,8 @@ void UIGameOver::SelectUpdate()
 		if (m_Select == Items::Continue) { return; }
 		InitAnim(Items::Continue);
 		m_IsSelected = true;
+        SoundManager::Play("Selector");
+        SoundManager::SetVolume("Selector", 7500);
 	}
 	else if (Input::IsKeyDown('S')
 	||	Input::IsKeyDown(VK_DOWN)
@@ -113,6 +115,8 @@ void UIGameOver::SelectUpdate()
 		if (m_Select == Items::End) { return; }
 		InitAnim(Items::End);
 		m_IsSelected = true;
+        SoundManager::Play("Selector");
+        SoundManager::SetVolume("Selector", 7500);
 	}
 	
 	AnimUpdate();
