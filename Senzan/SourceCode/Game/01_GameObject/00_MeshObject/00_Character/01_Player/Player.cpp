@@ -214,11 +214,18 @@ void Player::LateUpdate()
 
 void Player::Draw()
 {
-	// モデルの関係で前後反転.
-	m_spTransform->SetRotationY(GetRotation().y + D3DXToRadian(180.0f));
+    // モデルの関係で前後反転.
+    // X/Z 軸の回転が描画時に変わらないよう、元の回転を保持して
+    // 一時的に Y 軸のみを変更して描画を行い、その後に復元する。
+    DirectX::XMFLOAT3 originalRot = m_spTransform->Rotation;
+    DirectX::XMFLOAT3 tempRot = originalRot;
+    tempRot.x = 0.0f; // X軸回転を無効化
+    tempRot.z = 0.0f; // Z軸回転を無効化
+    tempRot.y = originalRot.y + D3DXToRadian(180.0f);
+    m_spTransform->SetRotation(tempRot);
 
     m_RootState->Draw();
-	Character::Draw();
+    Character::Draw();
 
     // ジャスト回避エフェクトの描画
     if (m_pJustDodgeEffect && m_pJustDodgeEffect->IsPlaying())
@@ -226,7 +233,8 @@ void Player::Draw()
         m_pJustDodgeEffect->Draw();
     }
 
-	m_spTransform->SetRotationY(GetRotation().y - D3DXToRadian(180.0f));
+    // 回転を元に戻す
+    m_spTransform->SetRotation(originalRot);
 }
 
 // ノック中か.
