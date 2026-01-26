@@ -77,7 +77,7 @@ Player::Player()
 	DirectX::XMFLOAT3 scale = { 3.f, 3.f, 3.f };
 	m_spTransform->SetScale(scale);
 
-	m_MaxHP = 10000.f;
+	m_MaxHP = 100.f;
 	m_HP = m_MaxHP;
 
 	// 被ダメの追加.
@@ -140,7 +140,7 @@ Player::Player()
 
 	attackCollider->SetActive(false);
 	attackCollider->SetColor(Color::eColor::Red);
-	attackCollider->SetAttackAmount(100.0f);
+	attackCollider->SetAttackAmount(25.0f);
 	attackCollider->SetHeight(3.0f);
 	attackCollider->SetRadius(1.0f);
 	attackCollider->SetPositionOffset(0.f, 1.5f, 2.f);
@@ -435,7 +435,7 @@ void Player::HandleAttackDetection()
 				SoundManager::GetInstance().SetVolume("Hit1", 9000);
 
 				++m_Combo;
-				m_CurrentUltValue = std::clamp(m_CurrentUltValue + (static_cast<float>(m_Combo) * 5.f), 0.0f, m_MaxUltValue);
+				m_CurrentUltValue = std::clamp(m_CurrentUltValue + (static_cast<float>(m_Combo) * 50.f), 0.0f, m_MaxUltValue);
 				SetAttackColliderActive(false);
 
 				// 一フレーム1回.

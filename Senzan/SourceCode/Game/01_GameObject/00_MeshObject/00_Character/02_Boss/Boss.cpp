@@ -36,13 +36,6 @@
 #include <atomic>
 #include <chrono>
 
-#if _DEBUG
-static std::atomic<uint64_t> g_UpdateColliderFromBoneCalls{0};
-static std::atomic<uint64_t> g_UpdateColliderFromBoneTotalNs{0};
-static std::atomic<uint64_t> g_UpdateColliderFromBoneLastNs{0};
-#endif
-
-
 constexpr float HP_Max = 10000.0f;
 
 Boss::Boss()
@@ -53,7 +46,6 @@ Boss::Boss()
 	, m_MoveSpeed(0.3f)
 	, m_vCurrentMoveVelocity(0.f, 0.f, 0.f)
 	, deleta_time(0.f)
-	, m_HitPoint(0.0f)
 
 	, m_pSlashCollider(nullptr)
 
@@ -71,11 +63,8 @@ Boss::Boss()
 	m_spTransform->SetScale(scale);
 	m_spTransform->SetRotationDegrees(Rotation);
 
-	m_MaxHP = 5000000.f;
+	m_MaxHP = 10000.f;
 	m_HP = m_MaxHP;
-
-    //ボスの最大体力.
-	m_HitPoint = HP_Max;
 
 	// 被ダメの追加.
 	std::unique_ptr<CapsuleCollider> damage_collider = std::make_unique<CapsuleCollider>(m_spTransform);
@@ -347,35 +336,17 @@ LPD3DXANIMATIONCONTROLLER Boss::GetAnimCtrl() const
 	return m_pAnimCtrl;
 }
 
-void Boss::Hit()
+void Boss::Hit(float damage)
 {
-	//ボスの体力の最小値.
-	constexpr float zero = 0.0f;
-	//ボスがPlayerからの攻撃を受けるダメージ変数.
-	//このダメージは今は仮でおいているだけです
-	//通常攻撃.
-	constexpr float ten = 10.0f;
-	//必殺技.
-	constexpr float twenty = 20.0f;
-	//ジャスト回避時の攻撃.
-	constexpr float Five = 5.0f;
-	//パリィの時の与えるダメージ.
-	constexpr float Fifteen = 15.0f;
+    m_HP -= damage;
+    //いったんこの10ダメだけにしておく.
+    //最後はTenをBaseにして+や-を使用する感じになると思っている.
+    if (m_HP <= 0.0f)
+    {
+        //死んだときにDeadStateclassに入る.
+        m_State->ChangeState(std::make_shared<BossDeadState>(this));
+    }
 
-	//Bossの体力でのステートにいれる.
-	constexpr float Dead_HP = zero;
-
-
-	//いったんこの10ダメだけにしておく.
-	//最後はTenをBaseにして+や-を使用する感じになると思っている.
-	m_HitPoint -= ten;
-	if (m_HitPoint <= 0.0f)
-	{
-		//死んだときにDeadStateclassに入る.
-		m_State->ChangeState(std::make_shared<BossDeadState>(this));
-	}
-
-	Update();
 }
 
 void Boss::SetTargetPos(const DirectX::XMFLOAT3 Player_Pos)
@@ -609,18 +580,6 @@ bool Boss::UpdateColliderFromBone(
     bool updateRotation,
     const DirectX::XMFLOAT4& rotationOffset)
 {
-#if _DEBUG
-    struct ScopedTimer {
-        std::chrono::time_point<std::chrono::high_resolution_clock> start;
-        ScopedTimer() : start(std::chrono::high_resolution_clock::now()) { ++g_UpdateColliderFromBoneCalls; }
-        ~ScopedTimer() {
-            auto d = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - start).count();
-            g_UpdateColliderFromBoneTotalNs += static_cast<uint64_t>(d);
-            g_UpdateColliderFromBoneLastNs = static_cast<uint64_t>(d);
-        }
-    } _scoped_timer;
-#endif
-
     if (!collider || GetAttachMesh().expired()) return false;
     auto skinMesh = std::dynamic_pointer_cast<SkinMesh>(GetAttachMesh().lock());
     if (!skinMesh) return false;

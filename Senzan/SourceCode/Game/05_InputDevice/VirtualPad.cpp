@@ -325,7 +325,7 @@ void VirtualPad::SetupDefaultBindings()
         eActionType::Button,
         {
             { ESource::KeyBorad, 'Q' },
-            { ESource::ControllerButton, 0, EKey::RB }
+            { ESource::ControllerButton, 0, EKey::Y }
         }
     };
 
