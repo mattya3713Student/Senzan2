@@ -106,7 +106,7 @@ void BossJumpOnlState::Update()
 	case BossJumpOnlState::enSpecial::CoolTime:
 		m_Timer += deltaTime;
 		// SpecialToIdolアニメーションが終了したら遷移
-		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::SpecialToIdol))
+		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::LaserEnd))
 		{
 			m_List = enSpecial::Trans;
 		}
@@ -225,7 +225,7 @@ void BossJumpOnlState::JumpTime()
                 {
                     float dx = DirectX::XMVectorGetX(Direction);
                     float dz = DirectX::XMVectorGetZ(Direction);
-                    float angle_radian = std::atan2f(dx, dz) + XM_PI;
+                    float angle_radian = std::atan2f(dx, dz);
                     m_pOwner->SetRotationY(angle_radian);
                 }
             }
@@ -272,11 +272,25 @@ void BossJumpOnlState::JumpTime()
         if (m_Timer >= m_ReappearDelay)
         {
             DirectX::XMFLOAT3 playerPos = m_pOwner->GetTargetPos();
-            DirectX::XMFLOAT3 spawnPos = playerPos;
+            // 着地点をプレイヤーの位置からボスの方へ10.f移動させた位置に設定
+            DirectX::XMFLOAT3 prevBossPos = m_pOwner->GetPosition();
+            DirectX::XMVECTOR BossPosXM_forLanding = DirectX::XMLoadFloat3(&prevBossPos);
+            DirectX::XMVECTOR PlayerPosXM_forLanding = DirectX::XMLoadFloat3(&playerPos);
+            DirectX::XMVECTOR toBoss = DirectX::XMVectorSubtract(BossPosXM_forLanding, PlayerPosXM_forLanding);
+            toBoss = DirectX::XMVectorSetY(toBoss, 0.0f);
+            DirectX::XMFLOAT3 landingPos = playerPos;
+            if (DirectX::XMVectorGetX(DirectX::XMVector3LengthSq(toBoss)) > 0.0001f)
+            {
+                DirectX::XMVECTOR dirToBoss = DirectX::XMVector3Normalize(toBoss);
+                DirectX::XMVECTOR offset = DirectX::XMVectorScale(dirToBoss, 10.0f);
+                DirectX::XMVECTOR landingXM = DirectX::XMVectorAdd(PlayerPosXM_forLanding, offset);
+                DirectX::XMStoreFloat3(&landingPos, landingXM);
+            }
+
+            DirectX::XMFLOAT3 spawnPos = landingPos;
             spawnPos.y += 12.0f; // 十分上に出現
             // 出現時にプレイヤーの方を向く（Yaw のみ）
             // 出現前のボス位置とプレイヤー位置のXZで向きを計算する
-            DirectX::XMFLOAT3 prevBossPos = m_pOwner->GetPosition();
             DirectX::XMVECTOR PrevBossPosXM = DirectX::XMLoadFloat3(&prevBossPos);
             DirectX::XMVECTOR PlayerPosXM = DirectX::XMLoadFloat3(&playerPos);
             DirectX::XMVECTOR Dir = DirectX::XMVectorSubtract(PlayerPosXM, PrevBossPosXM);
@@ -291,6 +305,8 @@ void BossJumpOnlState::JumpTime()
             m_pOwner->SetPosition(spawnPos);
             m_pOwner->SetIsRenderActive(true);
             m_IsFalling = true;
+            // 落下開始時にプレイヤーの方向を向く（基底のヘルパーを使用）
+            FacePlayerInstantYaw();
             m_HasPlayedPreFallEffect = false;
             m_WaitingReappear = false;
             m_RiseStarted = false;
@@ -327,7 +343,7 @@ void BossJumpOnlState::BossAttack()
 		m_pOwner->SetPosition(CurrentPos);
 		m_Timer = 0.0f;
 		m_pOwner->SetAnimSpeed(3.0);
-		m_pOwner->ChangeAnim(Boss::enBossAnim::SpecialToIdol);
+		m_pOwner->ChangeAnim(Boss::enBossAnim::LaserEnd);
 		m_List = enSpecial::CoolTime;
 		return;
 	}
@@ -344,7 +360,7 @@ void BossJumpOnlState::BossAttack()
             // 着地エフェクトやダメージ判定などをここで実行
             m_pOwner->PlayEffectAtWorldPos("boss_stomp", CurrentPos);
             m_pOwner->SetAnimSpeed(3.0);
-            m_pOwner->ChangeAnim(Boss::enBossAnim::SpecialToIdol);
+            m_pOwner->ChangeAnim(Boss::enBossAnim::LaserEnd);
             m_List = enSpecial::CoolTime;
             m_IsFalling = false;
             SoundManager::GetInstance().Play("Landing", false);
