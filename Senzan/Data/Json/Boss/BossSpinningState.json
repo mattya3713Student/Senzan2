@@ -8,7 +8,7 @@
     {
       "BoneName": "boss_Spinning",
       "duration": 0.333,
-      "justTime": 0.5,
+      "justTime": 0.4,
       "offset": [
         0.0,
         0.0,
@@ -19,7 +19,7 @@
     {
       "BoneName": "boss_Spinning",
       "duration": 0.2,
-      "justTime": 0.5,
+      "justTime": 0.4,
       "offset": [
         0.0,
         0.0,

@@ -161,10 +161,12 @@ void BossLaserState::DrawImGui()
 
 void BossLaserState::LoadSettings()
 {
-    BossAttackStateBase::LoadSettings();
-    auto srcDir = std::filesystem::path(__FILE__).parent_path();
-    auto filePath = srcDir / GetSettingsFileName();
+    auto filePath = GetSettingsFileName();
+    if (!filePath.is_absolute()) {
+        filePath = std::filesystem::current_path() / "Data" / "Json" / "Boss" / filePath;
+    }
     if (!std::filesystem::exists(filePath)) return;
+
     json j = FileManager::JsonLoad(filePath);
     if (j.contains("ChargeDuration")) m_ChargeDuration = j["ChargeDuration"].get<float>();
     if (j.contains("FireDuration")) m_FireDuration = j["FireDuration"].get<float>();
@@ -175,13 +177,17 @@ void BossLaserState::LoadSettings()
 
 void BossLaserState::SaveSettings() const
 {
+    auto filePath = GetSettingsFileName();
+    if (!filePath.is_absolute()) {
+        auto dir = std::filesystem::current_path() / "Data" / "Json" / "Boss";
+        std::filesystem::create_directories(dir);
+        filePath = dir / filePath;
+    }
     json j = SerializeSettings();
     j["ChargeDuration"] = m_ChargeDuration;
     j["FireDuration"] = m_FireDuration;
     j["LaserDamage"] = m_LaserDamage;
     j["LaserRadius"] = m_LaserRadius;
     j["LaserRange"] = m_LaserRange;
-    auto srcDir = std::filesystem::path(__FILE__).parent_path();
-    auto filePath = srcDir / GetSettingsFileName();
     FileManager::JsonSave(filePath, j);
 }

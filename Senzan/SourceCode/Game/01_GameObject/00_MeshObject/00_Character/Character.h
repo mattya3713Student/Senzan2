@@ -47,7 +47,7 @@ protected:
 	// 衝突_攻撃判定.
 	virtual void HandleAttackDetection() = 0;
 	// 衝突_回避.
-	virtual void HandleDodgeDetection() = 0;
+    virtual void HandleDodgeDetection() {};
 
 
 protected:

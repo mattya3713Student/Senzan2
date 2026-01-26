@@ -163,11 +163,6 @@ protected:
     void HandleDamageDetection() override;
     // 衝突_攻撃判定.
     void HandleAttackDetection() override;
-    // 衝突_回避.
-    void HandleDodgeDetection() override;
-
-    // 衝突_パリィ.
-    void HandleParryDetection();
 
     //当たり判定を取得する.
     //通常攻撃.
