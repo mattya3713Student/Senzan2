@@ -3,6 +3,7 @@
 #include "Game/01_GameObject/00_MeshObject/00_Character/01_Player/Player.h"
 #include "Game/04_Time/Time.h"
 #include "System/Singleton/CameraManager/CameraManager.h"
+#include "System/Singleton/ParryManager/ParryManager.h"
 
 namespace PlayerState {
 SpecialAttack::SpecialAttack(Player* owner)
@@ -35,6 +36,7 @@ void SpecialAttack::Enter()
 
     // カメラ演出（シェイク）
     CameraManager::GetInstance().ShakeCamera(0.2f, 0.5f);
+    m_pOwner->PlayEffectAtWorldPos("Special", m_pOwner->GetPosition(), 15.f);
 }
 void SpecialAttack::Update()
 {
@@ -47,6 +49,10 @@ void SpecialAttack::Update()
         m_HasActivated = true;
         m_pOwner->SetAttackColliderActive(true);
         m_pOwner->m_pAttackCollider->SetAttackAmount(m_AttackDamage);
+    }
+
+    {
+        ParryManager::GetInstance().DamageToBoss(10000.0f);
     }
 
     // 演出終了
