@@ -115,9 +115,8 @@ void SceneManager::Update()
     // フェード自体の更新.
     fade.Update();
 
-    // シーンの更新 (遷移中も更新を続けるか、止めるかは仕様に合わせて調整).
-    // 一般的には遷移中は Update を止めることが多いです.
-    if (!pI.m_IsSceneChanging && pI.m_pScene) {
+    // シーンの更新.
+    if (pI.m_pScene) {
         pI.m_pScene->Update();
 
         CollisionDetector::GetInstance().ExecuteCollisionDetection();
@@ -171,7 +170,6 @@ void SceneManager::LoadScene(eList Scene)
     pI.m_NextSceneID = Scene;
     pI.m_IsSceneChanging = true;
 
-    // 「暗くする」ので FadeOut を指定
     FadeManager::GetInstance().StartFade(Fade::FadeType::FadeOut);
 }
 

@@ -82,6 +82,15 @@ void ParryManager::DisableBossAttackColliders()
     }
 }
 
+void ParryManager::DamageToBoss(float DamageAmount)
+{
+    if (m_pBoss)
+    {
+        // 引数でダメージを与える用になってるはず.
+        m_pBoss->Hit();
+    }
+}
+
 bool ParryManager::IsParryCameraFinished() const
 {
 	auto camera = CameraManager::GetInstance().GetCurrentCamera();

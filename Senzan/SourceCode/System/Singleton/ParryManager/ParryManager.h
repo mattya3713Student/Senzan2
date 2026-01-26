@@ -44,7 +44,8 @@ public:
     // ボスの攻撃判定を全てオフにする（プレイヤー側からのユーティリティ）
     void DisableBossAttackColliders();
 
-
+    // ボスへダメージ.
+    void DamageToBoss(float DamageAmount);
 private:
 	Player* m_pPlayer = nullptr;
 	Boss* m_pBoss = nullptr;
