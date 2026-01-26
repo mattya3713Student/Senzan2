@@ -32,6 +32,7 @@ public:
 
 	// パリィ成功時のカメラ演出が完了したか.
 	bool IsParryCameraFinished() const;
+    void JustCancelAttackCollider();
 
     // ジャスト回避開始.
     // @param TimeScale: 使用されるワールド時間スケール (0.0 ~ 1.0 の値推奨).

@@ -794,3 +794,17 @@ std::pair<Boss::enBossAnim, float> BossAttackStateBase::GetParryAnimPair()
     return { Boss::enBossAnim::none, 0.0f };
 }
 
+// 次にアクティブなる予定の当たり判定のIsEndをtrueにする.
+void BossAttackStateBase::SetNextAttackCansel()
+{
+    for (auto& window : m_ColliderWindows)
+    {
+        // まだアクティブになっていない、かつ開始時刻が現在時刻以降のウィンドウをキャンセル
+        if (!window.IsAct && !window.IsEnd && window.Start >= m_CurrentTime)
+        {
+            window.IsEnd = true;
+            return;
+        }
+    }
+}
+
