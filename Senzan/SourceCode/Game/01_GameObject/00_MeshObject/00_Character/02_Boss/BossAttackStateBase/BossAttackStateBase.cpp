@@ -228,8 +228,6 @@ void BossAttackStateBase::Update()
     {
         return;
     }
-
-    // Update では時間更新は行わない。時間は UpdateBaseLogic の呼び出し側が dt を渡して更新する。
 }
 
 void BossAttackStateBase::UpdateBaseLogic(float dt)
@@ -386,14 +384,6 @@ void BossAttackStateBase::UpdateBaseLogic(float dt)
 
 void BossAttackStateBase::Exit()
 {
-    // 全ての攻撃コライダーを非アクティブにする
-    if (m_pOwner)
-    {
-        m_pOwner->SetColliderActiveByName("boss_Hand_R", false);
-        m_pOwner->SetColliderActiveByName("boss_pSphere28", false);
-        m_pOwner->SetColliderActiveByName("boss_Shout", false);
-    }
-    
     for (auto& w : m_ColliderWindows) { w.Reset(); }
     for (auto& w : m_MovementWindows) { w.Reset(); }
 

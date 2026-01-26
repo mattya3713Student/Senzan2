@@ -397,7 +397,7 @@ void DirectX11::Present()
 {
 	DirectX11& pI = GetInstance();
 
-	pI.m_pSwapChain->Present(0, 0);
+    pI.m_pSwapChain->Present(1, 0);
 }
 
 //バックバッファ作成:カラー用レンダーターゲットビュー作成.
