@@ -50,6 +50,7 @@ void ParryManager::OnParrySuccess(bool withDelay)
     if (m_pBoss)
     {
         m_pBoss->OnParried(withDelay);
+        m_pBoss->Hit(50.f);
     }
 }
 
@@ -69,6 +70,7 @@ void ParryManager::EndJustDodge()
     if (m_pBoss)
     {
         m_pBoss->OffAttackCollider();
+        m_pBoss->Hit(50.f);
         m_pBoss->SetTimeScale(-1.f);
         m_pBoss->SetLockOnPlayer(true);
     }

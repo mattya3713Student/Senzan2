@@ -137,7 +137,7 @@ public:
     //アニメーション再生時に必要になるGet関数になっている.
     LPD3DXANIMATIONCONTROLLER GetAnimCtrl() const;
 
-    void Hit();
+    void Hit(float damage);
 
     // 文字列でコライダーを操作できるようにする
     void SetColliderActiveByName(const std::string& name, bool active);
@@ -220,8 +220,6 @@ protected:
     ColliderBase* m_pAttackCollider;     // 攻撃判定.
 
     float deleta_time;
-
-    float m_HitPoint;
 
     //当たり判定のメンバ変数.
     ColliderBase* m_pSlashCollider;
