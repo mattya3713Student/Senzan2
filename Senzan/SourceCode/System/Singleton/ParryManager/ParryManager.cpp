@@ -32,21 +32,22 @@ void ParryManager::Clear()
 
 void ParryManager::OnParrySuccess(bool withDelay)
 {
-    // カメラ演出（シェイク + パリィカメラ）.
+    // カメラ演出(シェイク + パリィカメラ).
     CameraManager::GetInstance().ShakeCamera(0.15f, 0.3f);
     CameraManager::GetInstance().StartParryCamera();
 
-    // 円状グレースケールエフェクト開始
+    // 円状グレースケールエフェクト開始.
     PostEffectManager::GetInstance().StartCircleGrayEffect(0.0f, 0.016f * 5, 0.016f * 2);
-    // 一時的にワールド時間を止める（短時間）
+
+    // 一時的にワールド時間を止める(短時間).
     Time::GetInstance().SetWorldTimeScale(0.01f, 0.016f * 5, true);
-    // BGMをフェードで少し下げて自動で戻す
-    // 下げ時間:0.2s, 保持:1.8s, 戻す:0.4s -> 合計約2.4s
+
+    // BGMのフェードアウト.
     SoundManager::LowerCurrentBGMVolumeTemporarily(6500, 0.2f, 0.4f, 0.4f);
 
 
-    // Bossにパリィ被弾を通知（パリィステートへ遷移）。
-    // withDelay フラグは Boss 側で解釈して遅延挙動を組み込む。
+    // Bossにパリィ被弾を通知（パリィステートへ遷移）.
+    // withDelay フラグは Boss 側で解釈して遅延挙動を組み込む.
     if (m_pBoss)
     {
         m_pBoss->OnParried(withDelay);

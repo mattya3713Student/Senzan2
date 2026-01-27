@@ -386,7 +386,7 @@ void Player::HandleDamageDetection()
 				vBossToPlayer = DirectX::XMVector3Normalize(vBossToPlayer);
 				DirectX::XMStoreFloat3(&m_KnockBackVec, vBossToPlayer);
 
-				m_KnockBackPower = 100.f;
+				m_KnockBackPower = 40.f;
 
 				// 状態をノックバックに遷移させる
 				ChangeState(PlayerState::eID::KnockBack);

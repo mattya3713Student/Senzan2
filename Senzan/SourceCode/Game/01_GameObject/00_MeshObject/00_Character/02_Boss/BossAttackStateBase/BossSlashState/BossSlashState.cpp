@@ -135,7 +135,7 @@ void BossSlashState::Exit()
 
 std::pair<Boss::enBossAnim, float> BossSlashState::GetParryAnimPair()
 {
-    return std::pair(Boss::enBossAnim::Slash, 2.383f);
+    return std::pair(Boss::enBossAnim::Slash, 2.360f);
 }
 
 void BossSlashState::DrawImGui()

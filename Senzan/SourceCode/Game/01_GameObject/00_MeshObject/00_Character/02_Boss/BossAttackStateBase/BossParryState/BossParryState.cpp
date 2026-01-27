@@ -40,7 +40,7 @@ void BossParryState::Update()
 {
     m_CurrentTime += m_pOwner->GetDelta();
 
-    if (!m_IsFastTiming && m_CurrentTime >= 0.1f)
+    if (!m_IsFastTiming && m_CurrentTime >= 0.03f)
     {
         m_IsFastTiming = true;
         m_pOwner->m_TimeScale = 1.f;
@@ -48,6 +48,7 @@ void BossParryState::Update()
         {
             // Suc の場合: 指定の順番で再生 (bottom-up): FlinchToIdol -> Flinch -> FlinchParis
             m_pOwner->SetAnimSpeed(2.0f);
+            m_pOwner->SetAnimTime(0.889);
             m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchParis);
             m_Phase = ParryPhase::PlayFlinchToIdol;
         }

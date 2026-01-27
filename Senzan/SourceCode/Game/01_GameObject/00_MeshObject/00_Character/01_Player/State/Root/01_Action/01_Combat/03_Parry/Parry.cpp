@@ -49,7 +49,8 @@ void Parry::Update()
     {
         if (!m_IsFastTime)
         {
-            m_pOwner->SetAnimSpeed(1.7f);
+            m_pOwner->SetAnimSpeed(2.3f);
+            m_pOwner->SetAnimTime(static_cast<float>(m_PauseThreshold));
             m_IsFastTime = true;
             m_ElapsedTime = 0.f;
 

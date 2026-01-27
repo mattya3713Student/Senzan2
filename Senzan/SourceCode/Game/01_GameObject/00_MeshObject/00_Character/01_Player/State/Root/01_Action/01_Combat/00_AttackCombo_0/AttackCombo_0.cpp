@@ -24,26 +24,25 @@ constexpr PlayerState::eID AttackCombo_0::GetStateID() const { return PlayerStat
 
 void AttackCombo_0::Enter()
 {
-
     Combat::Enter();
 
     SoundManager::GetInstance().Play("Swing");
     SoundManager::GetInstance().SetVolume("Swing", 7000);
+
+    // 初期設定.
     m_pOwner->SetIsLoop(false);
     m_pOwner->SetAnimTime(0.0);
-        
     m_pOwner->SetAnimSpeed(m_AnimSpeed);
     m_pOwner->ChangeAnim(Player::eAnim::Attack_0);
-
     m_pOwner->SetAttackColliderActive(false);
 
+    // 目標座標,方向 の算出.
     DirectX::XMFLOAT3 target_pos = m_pOwner->m_TargetPos;
     DirectX::XMVECTOR v_target_pos = DirectX::XMLoadFloat3(&target_pos);
     v_target_pos = DirectX::XMVectorSetY(v_target_pos, 0.f);
     DirectX::XMFLOAT3 player_pos = m_pOwner->GetPosition();
     DirectX::XMVECTOR v_player_pos = DirectX::XMLoadFloat3(&player_pos);
     v_player_pos = DirectX::XMVectorSetY(v_player_pos, 0.f);
-
     DirectX::XMVECTOR v_diff_vec = DirectX::XMVectorSubtract(v_target_pos, v_player_pos);
     DirectX::XMVECTOR v_Lenght = DirectX::XMVector3Length(v_diff_vec);
     DirectX::XMStoreFloat(&m_Distance, v_Lenght);
@@ -56,7 +55,7 @@ void AttackCombo_0::Enter()
 
 void AttackCombo_0::Update()
 {
-    static bool isStop = false;
+//    static bool isStop = false;
 //#if _DEBUG
 //    ImGui::Begin(IMGUI_JP("AttackCombo_0 デバッグ"));
 //
@@ -131,32 +130,32 @@ void AttackCombo_0::Update()
 //    ImGui::End();
 //#endif
 
-    if (!isStop)
-    {
-        Combat::Update();
+//  if (!isStop)
+//    {
+    Combat::Update();
 
         // コンボ入力受付.
-        if (m_currentTime >= m_ComboStartTime && m_currentTime <= m_ComboEndTime)
+    if (m_currentTime >= m_ComboStartTime && m_currentTime <= m_ComboEndTime)
+    {
+        if (VirtualPad::GetInstance().IsActionPress(VirtualPad::eGameAction::Attack))
         {
-            if (VirtualPad::GetInstance().IsActionPress(VirtualPad::eGameAction::Attack))
-            {
-                m_IsComboAccepted = true;
-            }
-        }
-
-        // コンボが確定しており、かつ最短遷移時間を過ぎていれば即座に次へ.
-        if (m_IsComboAccepted && m_currentTime >= m_MinComboTransTime)
-        {
-            m_pOwner->ChangeState(PlayerState::eID::AttackCombo_1);
-            return;
-        }
-
-        // コンボ不成立のまま最後まで到達.
-        if (m_currentTime >= m_ComboEndTime)
-        {
-            m_pOwner->ChangeState(PlayerState::eID::Idle);
+            m_IsComboAccepted = true;
         }
     }
+
+        // コンボが確定しており、かつ最短遷移時間を過ぎていれば即座に次へ.
+    if (m_IsComboAccepted && m_currentTime >= m_MinComboTransTime)
+    {
+        m_pOwner->ChangeState(PlayerState::eID::AttackCombo_1);
+        return;
+    }
+
+        // コンボ不成立のまま最後まで到達.
+    if (m_currentTime >= m_ComboEndTime)
+    {
+        m_pOwner->ChangeState(PlayerState::eID::Idle);
+    }
+//    }
 }
 
 void AttackCombo_0::LateUpdate()

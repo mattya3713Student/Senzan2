@@ -78,14 +78,14 @@ void BossLaserState::Update()
             }
             m_EffectPlayed = true;
         }
-        if (auto* col = m_pOwner->GetShoutCollider()) {
-            if (col->GetActive()) {
-                float t = (m_FireElapsed / (m_FireDuration > 0.0f ? m_FireDuration : 1.0f));
-                if (t > 1.0f) t = 1.0f;
-                float radius = m_LaserRadius * t;
-                col->SetRadius(radius);
-                col->SetPositionOffset(0.0f, 0.0f, radius * 0.5f);
-            }
+        if (auto* col = m_pOwner->GetLaserCollider()) {
+            col->SetActive(true);
+            float t = (m_FireElapsed / (m_FireDuration > 0.0f ? m_FireDuration : 1.0f));
+            if (t > 1.0f) t = 1.0f;
+            float radius = m_LaserRadius * t;
+            col->SetRadius(radius);
+            col->SetPositionOffset(0.0f, 0.0f, radius);
+
         }
         if (m_FireElapsed >= m_FireDuration || m_pOwner->IsAnimEnd(Boss::enBossAnim::Laser)) {
             if (auto* col = m_pOwner->GetShoutCollider()) {

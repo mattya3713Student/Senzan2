@@ -13,6 +13,9 @@ namespace {
 	static constexpr float ASPECT = WND_WF / WND_HF;
 }
 
+// Module-scope FOV that can be changed at runtime by cameras.
+static float g_FOV_ANGLE_RAD = FOV_ANGLE_RAD;
+
 CameraBase::CameraBase()
 	: m_spTransform			()
 	, m_LookPos				({ 0.f, 0.f, 0.f })
@@ -199,10 +202,20 @@ void CameraBase::ProjectionUpdate()
 {
 	// DirectXMathの関数でプロジェクション行列を更新
 	m_Proj = DirectX::XMMatrixPerspectiveFovLH(
-		FOV_ANGLE_RAD,
+        g_FOV_ANGLE_RAD,
 		ASPECT,
 		NEAR_CLIP,
 		FAR_CLIP);
+}
+
+void CameraBase::SetFOV(float fovRadians)
+{
+    g_FOV_ANGLE_RAD = fovRadians;
+}
+
+float CameraBase::GetFOV() const
+{
+    return g_FOV_ANGLE_RAD;
 }
 
 //---------------------------------------------------------------------.

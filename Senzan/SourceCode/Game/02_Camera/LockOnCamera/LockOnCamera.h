@@ -84,4 +84,16 @@ private:
 
     // 必殺技カメラ演出用.
     float m_SpecialLookLerp = 1.0f;     // 必殺技時の注視点補間（1.0=ボス完全ロック）.
+
+    // FOV control for parry and special effects (radians).
+    // Defaults: 50deg and 40deg in radians
+    float m_DefaultFOV = 0.872664626f; // 50deg
+    float m_ParryFOV = 0.698131700f;   // 40deg
+    float m_CurrentFOV = 0.872664626f; // current active FOV
+    
+    // Getter/Setter for FOV
+    void SetDefaultFOV(float radians) { m_DefaultFOV = radians; }
+    float GetDefaultFOV() const { return m_DefaultFOV; }
+    void SetParryFOV(float radians) { m_ParryFOV = radians; }
+    float GetParryFOV() const { return m_ParryFOV; }
 };

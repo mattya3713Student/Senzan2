@@ -93,6 +93,10 @@ public: // Getter、Setter.
 	// シェイクオフセットの設定.
 	void SetShakeOffset(const DirectX::XMFLOAT3& offset);
 
+	// FOVの設定・取得（ラジアン）.
+	void SetFOV(float fovRadians);
+	float GetFOV() const;
+
 protected:
 
 	/****************************************************
