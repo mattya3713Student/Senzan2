@@ -1,5 +1,5 @@
 {
-  "AttackDelay": 2.0,
+  "AttackDelay": 0.5,
   "Jump_Cooldown": 2.0,
   "Jump_Enable": true,
   "Jump_Mid_Weight": 10.348241806030273,
