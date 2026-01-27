@@ -46,7 +46,12 @@ public:
 
     // ボスへダメージ.
     void DamageToBoss(float DamageAmount);
+    // Notification that the last parried object was a snowball
+    void NotifyParriedBySnowball();
+    bool WasLastParriedBySnowball() const;
+    void ClearLastParriedFlag();
 private:
 	Player* m_pPlayer = nullptr;
 	Boss* m_pBoss = nullptr;
+    bool m_LastParriedBySnowball = false;
 };

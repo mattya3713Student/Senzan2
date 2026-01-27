@@ -426,7 +426,8 @@ void Player::HandleAttackDetection()
             if ((other_group & eCollisionGroup::Enemy_Damage) != eCollisionGroup::None)
             {
                 for (int i = 0; i < 3; ++i)
-                { // 小さなランダムオフセットを追加してエフェクト位置に揺らぎを持たせる
+                {
+                    // ランダムオフセット.
                     static thread_local std::mt19937 s_rng((std::random_device())());
                     std::uniform_real_distribution<float> dist(-1.2f, 1.2f);
                     std::uniform_real_distribution<float> rotDist(0.0f, DirectX::XM_2PI);
@@ -437,7 +438,7 @@ void Player::HandleAttackDetection()
                         info.ContactPoint.z + dist(s_rng)
                     };
 
-                    // ランダム回転（ラジアン）を作成してエフェクトに渡す
+                    // ランダム回転.
                     DirectX::XMFLOAT3 eulerRot{ rotDist(s_rng), rotDist(s_rng), rotDist(s_rng) };
                     PlayEffectAtWorldPos("Hit2", jitterPos, eulerRot);
                 }
@@ -445,7 +446,7 @@ void Player::HandleAttackDetection()
 				SoundManager::GetInstance().SetVolume("Hit1", 9000);
 
 				++m_Combo;
-				m_CurrentUltValue = std::clamp(m_CurrentUltValue + (static_cast<float>(m_Combo) * 5.f), 0.0f, m_MaxUltValue);
+				m_CurrentUltValue = std::clamp(m_CurrentUltValue + static_cast<float>(m_Combo), 0.0f, m_MaxUltValue);
 				SetAttackColliderActive(false);
 
 				// 一フレーム1回.
@@ -518,7 +519,7 @@ void Player::HandleParry_SuccessDetection()
 				m_IsSuccessParry = true;
 				
 				// パリィ成功時のゲージ増加
-				m_CurrentUltValue += 500.0f;
+				m_CurrentUltValue += 5000.0f;
 
 				// パリィ成功時のカメラ演出（シェイク）
 				CameraManager::GetInstance().ShakeCamera(0.15f, 0.3f);

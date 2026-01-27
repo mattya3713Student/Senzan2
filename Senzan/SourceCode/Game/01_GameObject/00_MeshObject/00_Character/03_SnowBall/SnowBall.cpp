@@ -286,6 +286,8 @@ void SnowBall::HandleCollision()
 			m_ParryDuration = 1.0f; // 1秒で到達する
 			// 当たり判定は跳ね返し中不要なので無効化
 			if (m_pAttackCollider) m_pAttackCollider->SetActive(false);
+            // ParryManager に雪玉がパリィされたことを通知
+            ParryManager::GetInstance().NotifyParriedBySnowball();
 			return;
 		}
 

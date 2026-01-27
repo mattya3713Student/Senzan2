@@ -55,6 +55,21 @@ void ParryManager::OnParrySuccess(bool withDelay)
     }
 }
 
+void ParryManager::NotifyParriedBySnowball()
+{
+    m_LastParriedBySnowball = true;
+}
+
+bool ParryManager::WasLastParriedBySnowball() const
+{
+    return m_LastParriedBySnowball;
+}
+
+void ParryManager::ClearLastParriedFlag()
+{
+    m_LastParriedBySnowball = false;
+}
+
 void ParryManager::StartJustDodge(float TimeScale)
 {
     if (m_pBoss)
