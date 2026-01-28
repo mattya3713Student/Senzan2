@@ -39,6 +39,10 @@
 #include "Resource/Effect/EffectResource.h"
 #include <random>
 
+#if _DEBUG
+#include "System/Singleton/ImGui/CImGuiManager.h"
+#endif
+
 Player::Player()
 	: Character         ()
 	, m_RootState       ( std::make_unique<PlayerState::Root>(this) )
@@ -187,6 +191,15 @@ void Player::Update()
     {
         m_pJustDodgeEffect->Update(GetDelta());
     }
+
+#if _DEBUG
+    ImGui::Begin("PlayerStateDebug");
+    if (ImGui::Button("SpecialCharge")) {
+        m_CurrentUltValue = m_MaxUltValue;
+    }
+    ImGui::End();
+#endif
+
 }
 
 void Player::LateUpdate()

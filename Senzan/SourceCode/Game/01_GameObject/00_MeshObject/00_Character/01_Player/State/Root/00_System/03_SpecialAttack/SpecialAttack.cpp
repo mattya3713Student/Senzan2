@@ -8,7 +8,8 @@
 namespace PlayerState {
 SpecialAttack::SpecialAttack(Player* owner)
 	: System(owner)
-    , m_AttackDuration(60.0f*m_pOwner->GetDelta())
+    , m_AttackDuration(90.0f * m_pOwner->GetDelta())
+    , m_LastAttackMove(2.0f)
 {
 }
 SpecialAttack::~SpecialAttack()
@@ -29,7 +30,7 @@ void SpecialAttack::Enter()
 
     // 必殺技アニメーション開始
     m_pOwner->SetIsLoop(false);
-    m_pOwner->SetAnimSpeed(5.0);
+    m_pOwner->SetAnimSpeed(5.0f);
     m_pOwner->ChangeAnim(Player::eAnim::SpecialAttack_0);
 
     // 時間スケールを遅くして演出
@@ -37,13 +38,34 @@ void SpecialAttack::Enter()
 
     // カメラ演出（シェイク）
     CameraManager::GetInstance().ShakeCamera(0.2f, 0.5f);
-    m_pOwner->PlayEffectAtWorldPos("Special", m_pOwner->GetPosition(), 15.f);
+    m_pOwner->PlayEffectAtWorldPos("Special", m_pOwner->GetPosition(), 8.f);
+
+    // 移動量処理.
+    DirectX::XMFLOAT3 target_pos = m_pOwner->m_TargetPos;
+    DirectX::XMVECTOR v_target_pos = DirectX::XMLoadFloat3(&target_pos);
+    v_target_pos = DirectX::XMVectorSetY(v_target_pos, 0.f);
+    DirectX::XMFLOAT3 player_pos = m_pOwner->GetPosition();
+    DirectX::XMVECTOR v_player_pos = DirectX::XMLoadFloat3(&player_pos);
+    v_player_pos = DirectX::XMVectorSetY(v_player_pos, 0.f);
+
+    DirectX::XMVECTOR v_diff_vec = DirectX::XMVectorSubtract(v_target_pos, v_player_pos);
+    DirectX::XMVECTOR v_Lenght = DirectX::XMVector3Length(v_diff_vec);
+    DirectX::XMStoreFloat(&m_Distance, v_Lenght);
+    v_diff_vec = DirectX::XMVector3Normalize(v_diff_vec);
+    DirectX::XMFLOAT3 diff_vec; DirectX::XMStoreFloat3(&diff_vec, v_diff_vec);
+    m_pOwner->GetTransform()->RotateToDirection(diff_vec);
+
+    m_pOwner->m_MoveVec = diff_vec;
 }
 void SpecialAttack::Update()
 {
     float deltaTime = m_pOwner->GetDelta();
     m_CurrentTime += deltaTime;
     m_DurationTimer += deltaTime;
+    if (m_pOwner->IsAnimEnd(Player::eAnim::SpecialAttack_0)) {
+        m_pOwner->SetAnimSpeed(5.0f);
+        m_pOwner->ChangeAnim(Player::eAnim::SpecialAttack_1);
+    }
 
     // 攻撃判定発生（演出中盤）
     if(m_DurationTime < m_DurationTimer && m_CurrentTime <= m_AttackDuration)
@@ -53,10 +75,25 @@ void SpecialAttack::Update()
         m_DurationTimer = 0.0f;
         SoundManager::GetInstance().Play("Damage");
         SoundManager::GetInstance().SetVolume("Damage", 8500);
+        if (m_pOwner->IsAnimEnd(Player::eAnim::SpecialAttack_1) && m_pOwner->IsAnimEnd(Player::eAnim::SpecialAttack_2)) {
+            m_pOwner->SetAnimSpeed(1.0f);
+            m_pOwner->ChangeAnim(Player::eAnim::SpecialAttack_2);
+        }
     }
     else if (!m_HasActivated && m_CurrentTime >= m_AttackDuration)
     {
+        // 最後の一撃の移動処理.
+        DirectX::XMFLOAT3 moveDirection = { m_pOwner->m_MoveVec.x, 0.0f, m_pOwner->m_MoveVec.z };
+        DirectX::XMFLOAT3 movement = {};
+        movement.x = moveDirection.x * m_Distance * m_LastAttackMove;
+        movement.y = 0.f;
+        movement.z = moveDirection.z * m_Distance * m_LastAttackMove;
+        m_pOwner->AddPosition(movement);
+
+
+
         m_HasActivated = true;
+        m_pOwner->PlayEffectAtWorldPos("Special2", m_pOwner->GetPosition(), 8.f);
         ParryManager::GetInstance().DamageToBoss(m_AttackDamage);
         SoundManager::GetInstance().Play("Throw");
         SoundManager::GetInstance().SetVolume("Throw", 8500);
