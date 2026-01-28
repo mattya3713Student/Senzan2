@@ -25,6 +25,7 @@
 #include "State/Root/01_Action/02_Dodge/Dodge.h"
 #include "State/Root/01_Action/02_Dodge/00_DodgeExecute/DodgeExecute.h"
 #include "State/Root/01_Action/02_Dodge/01_JustDodge/JustDodge.h"
+#include "State/Root/01_Action/02_Dodge/01_JustDodge/JustDodgeEffect.h"
 
 #include "Game/03_Collision/00_Core/01_Capsule/CapsuleCollider.h"
 #include "Game/03_Collision/00_Core/Ex_CompositeCollider/CompositeCollider.h"
@@ -76,7 +77,7 @@ Player::Player()
 	DirectX::XMFLOAT3 scale = { 3.f, 3.f, 3.f };
 	m_spTransform->SetScale(scale);
 
-	m_MaxHP = 10000.f;
+	m_MaxHP = 100.f;
 	m_HP = m_MaxHP;
 
 	// 被ダメの追加.
@@ -139,7 +140,7 @@ Player::Player()
 
 	attackCollider->SetActive(false);
 	attackCollider->SetColor(Color::eColor::Red);
-	attackCollider->SetAttackAmount(100.0f);
+	attackCollider->SetAttackAmount(25.0f);
 	attackCollider->SetHeight(3.0f);
 	attackCollider->SetRadius(1.0f);
 	attackCollider->SetPositionOffset(0.f, 1.5f, 2.f);
@@ -180,6 +181,12 @@ void Player::Update()
 	m_IsJustDodgeTiming = false;
 
     EffekseerManager::GetInstance().GetManager()->Update();
+
+    // ジャスト回避エフェクトの更新（ステートに依存しない）
+    if (m_pJustDodgeEffect && m_pJustDodgeEffect->IsPlaying())
+    {
+        m_pJustDodgeEffect->Update(GetDelta());
+    }
 }
 
 void Player::LateUpdate()
@@ -209,7 +216,14 @@ void Player::Draw()
 	// モデルの関係で前後反転.
 	m_spTransform->SetRotationY(GetRotation().y + D3DXToRadian(180.0f));
 
+    m_RootState->Draw();
 	Character::Draw();
+
+    // ジャスト回避エフェクトの描画
+    if (m_pJustDodgeEffect && m_pJustDodgeEffect->IsPlaying())
+    {
+        m_pJustDodgeEffect->Draw();
+    }
 
 	m_spTransform->SetRotationY(GetRotation().y - D3DXToRadian(180.0f));
 }
@@ -353,7 +367,16 @@ void Player::HandleDamageDetection()
 				// ダメージを適用 
 				ApplyDamage(info.AttackAmount);
 
-				m_KnockBackVec = info.Normal;
+				// ボスからPlayerへのベクトルを計算.
+				DirectX::XMFLOAT3 bossPos = m_TargetPos;
+				DirectX::XMFLOAT3 playerPos = GetPosition();
+				DirectX::XMVECTOR vBossToPlayer = DirectX::XMVectorSubtract(
+					DirectX::XMLoadFloat3(&playerPos),
+					DirectX::XMLoadFloat3(&bossPos)
+				);
+				vBossToPlayer = DirectX::XMVector3Normalize(vBossToPlayer);
+				DirectX::XMStoreFloat3(&m_KnockBackVec, vBossToPlayer);
+
 				m_KnockBackPower = 100.f;
 
 				// 状態をノックバックに遷移させる
@@ -438,12 +461,18 @@ void Player::HandleDodgeDetection()
 
 		for (const CollisionInfo& info : current_collider->GetCollisionEvents())
 		{
-			if (!info.IsHit) continue;
-			const ColliderBase* otherCollider = info.ColliderB;
-			if (!otherCollider) { continue; }
 
-			// ジャスト回避成功
-			m_IsJustDodgeTiming = true;
+            if (!info.IsHit) continue;
+            const ColliderBase* otherCollider = info.ColliderB;
+            if (!otherCollider) { continue; }
+
+            eCollisionGroup other_group = otherCollider->GetMyMask();
+
+            if ((other_group & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None)
+            {
+                // ジャスト回避タイミング.
+                m_IsJustDodgeTiming = true;
+            }
 		}
 	}
 }
@@ -500,10 +529,6 @@ void Player::HandleParry_SuccessDetection()
                 DirectX::XMFLOAT3 eulerRot{ rotDist(s_rng), rotDist(s_rng), rotDist(s_rng) };
                 PlayEffectAtWorldPos("Spark", jitterPos, eulerRot, 3.f);
             }
-
-                DirectX::XMFLOAT3 pos = info.ContactPoint;
-                pos.y += 8.5f;
-                PlayEffectAtWorldPos("Parry_Attack", info.ContactPoint);
 				// 一フレーム1回.
 				return;
 			}
@@ -558,14 +583,36 @@ void Player::HandleParry_FailDetection()
                     PlayEffectAtWorldPos("Spark", info.ContactPoint, eulerRot);
                 }
 
-                DirectX::XMFLOAT3 pos = info.ContactPoint;
-                pos.y += 8.5f;
-                PlayEffectAtWorldPos("Parry_Attack", info.ContactPoint);
-
 			// 一フレーム1回.
 			return;
 			}
 		}
 	}
 }
+
+void Player::StartJustDodgeEffect(const DirectX::XMFLOAT3& startPos, const DirectX::XMFLOAT3& targetPos, float scale, float duration, float extraDistance)
+{
+    if (!m_pJustDodgeEffect)
+    {
+        m_pJustDodgeEffect = std::make_unique<JustDodgeEffect>();
+    }
+    // Extend the target position in the boss forward direction by extraDistance (if provided)
+    DirectX::XMFLOAT3 finalTarget = targetPos;
+    if (extraDistance != 0.0f)
+    {
+        // compute direction from start to target (XZ) and extend
+        float dx = targetPos.x - startPos.x;
+        float dz = targetPos.z - startPos.z;
+        float len = sqrtf(dx*dx + dz*dz);
+        if (len > 1e-6f)
+        {
+            float nx = dx / len;
+            float nz = dz / len;
+            finalTarget.x += nx * extraDistance;
+            finalTarget.z += nz * extraDistance;
+        }
+    }
+    m_pJustDodgeEffect->Start("JustDodge_Attack", startPos, finalTarget, scale, duration);
+}
+
 

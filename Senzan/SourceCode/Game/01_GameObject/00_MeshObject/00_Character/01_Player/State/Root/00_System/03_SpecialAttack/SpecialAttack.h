@@ -26,8 +26,12 @@ namespace PlayerState {
 
     private:
         float m_CurrentTime = 0.0f;       // 経過時間
-        float m_AttackDuration = 2.0f;    // 攻撃演出時間
-        float m_AttackDamage = 250.0f;     // 必殺技ダメージ
+        float m_DurationTime = 0.06f;       // 攻撃間隔
+        float m_DurationTimer = 0.0f;       // 攻撃間隔タイマー
+
+        float m_AttackDuration;    // 攻撃演出時間
+        float m_OraOraDamage = 25.0f;     // 連続ダメージ
+        float m_AttackDamage = 300.0f;     // 必殺技ダメージ
         bool m_HasActivated = false;       // 攻撃判定発生済みか
     };
 }

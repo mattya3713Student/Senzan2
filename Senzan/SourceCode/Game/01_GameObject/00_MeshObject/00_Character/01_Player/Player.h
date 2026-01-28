@@ -7,6 +7,7 @@ template<typename FSM_Owner> class StateMachine;
 
 class PlayerStateBase;
 class CameraManager;
+class JustDodgeEffect;
 
 // 前方宣言.
 namespace PlayerState {
@@ -174,6 +175,14 @@ protected:
 	//---Dodge関連---.
 	bool				m_IsJustDodgeTiming; // ジャスト回避のタイミング.
 
+	// ジャスト回避エフェクト（ステートに依存せず Player が管理）
+	std::unique_ptr<JustDodgeEffect> m_pJustDodgeEffect;
+
+public:
+	// ジャスト回避エフェクトを開始する（JustDodge ステートから呼び出す）
+    void StartJustDodgeEffect(const DirectX::XMFLOAT3& startPos, const DirectX::XMFLOAT3& targetPos, float scale = 1.0f, float duration = 1.0f, float extraDistance = 0.0f);
+
+protected:
 	//--- Debug: force state 再入場用 ---.
 	PlayerState::eID    m_DebugForcedState;     // None == 無効.
 	bool                m_DebugRepeatOnExit;

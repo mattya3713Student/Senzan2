@@ -1,6 +1,6 @@
 ﻿{
   "AnimSpeeds": {
-    "Attack": 6.385,
+    "Attack": 120.0,
     "Charge": 1.5,
     "Exit": 1.5
   },
@@ -50,7 +50,7 @@
     }
   ],
   "RotateTotalDeg": 0.0,
-  "m_AttackAmount": 0.0,
+  "m_AttackAmount": 8.0,
   "m_AttackBoneName": "boss_Spinning",
   "m_AttackTime": 2.778,
   "m_ChargeTime": 1.574,

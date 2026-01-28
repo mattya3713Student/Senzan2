@@ -3,10 +3,12 @@
 #include "Game/01_GameObject/00_MeshObject/00_Character/01_Player/Player.h"
 #include "Game/04_Time/Time.h"
 #include "System/Singleton/CameraManager/CameraManager.h"
+#include "System/Singleton/ParryManager/ParryManager.h"
 
 namespace PlayerState {
 SpecialAttack::SpecialAttack(Player* owner)
 	: System(owner)
+    , m_AttackDuration(60.0f*m_pOwner->GetDelta())
 {
 }
 SpecialAttack::~SpecialAttack()
@@ -27,7 +29,7 @@ void SpecialAttack::Enter()
 
     // 必殺技アニメーション開始
     m_pOwner->SetIsLoop(false);
-    m_pOwner->SetAnimSpeed(1.0);
+    m_pOwner->SetAnimSpeed(5.0);
     m_pOwner->ChangeAnim(Player::eAnim::SpecialAttack_0);
 
     // 時間スケールを遅くして演出
@@ -35,18 +37,33 @@ void SpecialAttack::Enter()
 
     // カメラ演出（シェイク）
     CameraManager::GetInstance().ShakeCamera(0.2f, 0.5f);
+    m_pOwner->PlayEffectAtWorldPos("Special", m_pOwner->GetPosition(), 15.f);
 }
 void SpecialAttack::Update()
 {
     float deltaTime = m_pOwner->GetDelta();
     m_CurrentTime += deltaTime;
+    m_DurationTimer += deltaTime;
 
     // 攻撃判定発生（演出中盤）
-    if (!m_HasActivated && m_CurrentTime >= m_AttackDuration * 0.5f)
+    if(m_DurationTime < m_DurationTimer && m_CurrentTime <= m_AttackDuration)
+    {
+        ParryManager::GetInstance().DamageToBoss(m_OraOraDamage);
+        m_pOwner->m_Combo++;
+        m_DurationTimer = 0.0f;
+        SoundManager::GetInstance().Play("Damage");
+        SoundManager::GetInstance().SetVolume("Damage", 8500);
+    }
+    else if (!m_HasActivated && m_CurrentTime >= m_AttackDuration)
     {
         m_HasActivated = true;
-        m_pOwner->SetAttackColliderActive(true);
-        m_pOwner->m_pAttackCollider->SetAttackAmount(m_AttackDamage);
+        ParryManager::GetInstance().DamageToBoss(m_AttackDamage);
+        SoundManager::GetInstance().Play("Throw");
+        SoundManager::GetInstance().SetVolume("Throw", 8500);
+        SoundManager::GetInstance().Play("BreakSnow");
+        SoundManager::GetInstance().SetVolume("BreakSnow", 8500);
+        SoundManager::GetInstance().Play("Hit2");
+        SoundManager::GetInstance().SetVolume("Hit2", 8500);
     }
 
     // 演出終了

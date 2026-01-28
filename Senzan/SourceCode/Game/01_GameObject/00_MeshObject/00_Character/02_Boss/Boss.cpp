@@ -24,6 +24,7 @@
 
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossThrowingState/BossThrowingState.h"
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossSpinningState/BossSpinningState.h"
+#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossLaserState/BossLaserState.h"
 
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
 #include "System/Singleton/CameraManager/CameraManager.h"
@@ -35,13 +36,6 @@
 #include <atomic>
 #include <chrono>
 
-#if _DEBUG
-static std::atomic<uint64_t> g_UpdateColliderFromBoneCalls{0};
-static std::atomic<uint64_t> g_UpdateColliderFromBoneTotalNs{0};
-static std::atomic<uint64_t> g_UpdateColliderFromBoneLastNs{0};
-#endif
-
-
 constexpr float HP_Max = 10000.0f;
 
 Boss::Boss()
@@ -52,7 +46,6 @@ Boss::Boss()
 	, m_MoveSpeed(0.3f)
 	, m_vCurrentMoveVelocity(0.f, 0.f, 0.f)
 	, deleta_time(0.f)
-	, m_HitPoint(0.0f)
 
 	, m_pSlashCollider(nullptr)
 
@@ -70,11 +63,8 @@ Boss::Boss()
 	m_spTransform->SetScale(scale);
 	m_spTransform->SetRotationDegrees(Rotation);
 
-	m_MaxHP = 5000000.f;
+	m_MaxHP = 10000.f;
 	m_HP = m_MaxHP;
-
-    //ボスの最大体力.
-	m_HitPoint = HP_Max;
 
 	// 被ダメの追加.
 	std::unique_ptr<CapsuleCollider> damage_collider = std::make_unique<CapsuleCollider>(m_spTransform);
@@ -154,7 +144,7 @@ Boss::Boss()
     m_pSpinningCollider->SetMyMask(eCollisionGroup::Enemy_Attack);
     m_pSpinningCollider->SetTarGetTargetMask(
         eCollisionGroup::Player_Damage
-        | eCollisionGroup::Player_Parry_Suc
+        | eCollisionGroup::Player_Parry_Fai
         | eCollisionGroup::Player_JustDodge);
     m_pSpinningCollider->SetAttackAmount(10.0f);
     m_pSpinningCollider->SetHeight(40.0f);
@@ -163,6 +153,22 @@ Boss::Boss()
     m_pSpinningCollider->SetActive(false);
     m_pSpinningCollider->SetColor(Color::eColor::Red);
 	m_upColliders->AddCollider(std::move(spinning_collider));
+
+    // 回転攻撃の当たり判定作成.
+    auto laser_collider = std::make_unique<CapsuleCollider>(m_spTransform);
+	m_pLaserCollider = laser_collider.get();
+    m_pLaserCollider->SetMyMask(eCollisionGroup::Enemy_Attack);
+    m_pLaserCollider->SetTarGetTargetMask(
+        eCollisionGroup::Player_Damage
+        | eCollisionGroup::Player_Parry_Fai
+        | eCollisionGroup::Player_JustDodge);
+    m_pLaserCollider->SetAttackAmount(10.0f);
+    m_pLaserCollider->SetHeight(40.0f);
+    m_pLaserCollider->SetRadius(15.0f);
+    m_pLaserCollider->SetPositionOffset(0.0f, 0.0f, 0.0f);
+    m_pLaserCollider->SetActive(false);
+    m_pLaserCollider->SetColor(Color::eColor::Red);
+	m_upColliders->AddCollider(std::move(laser_collider));
 
     m_State->ChangeState(std::make_shared<BossShoutState>(this));
     /* BossSlashState
@@ -206,7 +212,7 @@ void Boss::Update()
 	m_State->Update();
  
 
-#if 1
+#if _DEBUG
     // デバッグ用: ImGui で任意のボスステートに切り替えられるボタン群
     if (ImGui::Begin(IMGUI_JP("Boss Debug")))
     {
@@ -219,7 +225,8 @@ void Boss::Update()
             IMGUI_JP("JumpOn"),
             IMGUI_JP("Stomp"),
             IMGUI_JP("Throwing"),
-            IMGUI_JP("Parry")
+            IMGUI_JP("Parry"),
+            IMGUI_JP("Laser")
         };
         constexpr int state_count = static_cast<int>(sizeof(state_labels) / sizeof(state_labels[0]));
         const int buttons_per_row = 4;
@@ -244,6 +251,7 @@ void Boss::Update()
                 case 6: m_State->ChangeState(std::make_shared<BossStompState>(this)); break;
                 case 7: m_State->ChangeState(std::make_shared<BossThrowingState>(this)); break;
                 case 8: m_State->ChangeState(std::make_shared<BossParryState>(this)); break;
+                case 9: m_State->ChangeState(std::make_shared<BossLaserState>(this)); break;
                 default: break;
                 }
             }
@@ -328,35 +336,17 @@ LPD3DXANIMATIONCONTROLLER Boss::GetAnimCtrl() const
 	return m_pAnimCtrl;
 }
 
-void Boss::Hit()
+void Boss::Hit(float damage)
 {
-	//ボスの体力の最小値.
-	constexpr float zero = 0.0f;
-	//ボスがPlayerからの攻撃を受けるダメージ変数.
-	//このダメージは今は仮でおいているだけです
-	//通常攻撃.
-	constexpr float ten = 10.0f;
-	//必殺技.
-	constexpr float twenty = 20.0f;
-	//ジャスト回避時の攻撃.
-	constexpr float Five = 5.0f;
-	//パリィの時の与えるダメージ.
-	constexpr float Fifteen = 15.0f;
+    m_HP -= damage;
+    //いったんこの10ダメだけにしておく.
+    //最後はTenをBaseにして+や-を使用する感じになると思っている.
+    if (m_HP <= 0.0f)
+    {
+        //死んだときにDeadStateclassに入る.
+        m_State->ChangeState(std::make_shared<BossDeadState>(this));
+    }
 
-	//Bossの体力でのステートにいれる.
-	constexpr float Dead_HP = zero;
-
-
-	//いったんこの10ダメだけにしておく.
-	//最後はTenをBaseにして+や-を使用する感じになると思っている.
-	m_HitPoint -= ten;
-	if (m_HitPoint <= 0.0f)
-	{
-		//死んだときにDeadStateclassに入る.
-		m_State->ChangeState(std::make_shared<BossDeadState>(this));
-	}
-
-	Update();
 }
 
 void Boss::SetTargetPos(const DirectX::XMFLOAT3 Player_Pos)
@@ -370,6 +360,21 @@ void Boss::OffAttackCollider() {
     m_pStompCollider->SetActive(false);
     m_pShoutCollider->SetActive(false);
     m_pSpinningCollider->SetActive(false);
+    m_pLaserCollider->SetActive(false);
+}
+
+void Boss::SetNextAttackCansel()
+{
+    if (m_State && m_State->m_pCurrentState)
+    {
+        // BossAttackStateBase へキャストして設定を取得する
+        auto attackBase = std::dynamic_pointer_cast<BossAttackStateBase>(m_State->m_pCurrentState);
+        if (attackBase)
+        {
+            attackBase->SetNextAttackCansel();
+            return;
+        }
+    }
 }
 
 // 衝突_被ダメージ.
@@ -533,6 +538,11 @@ ColliderBase* Boss::GetSpinningCollider() const
     return m_pSpinningCollider;
 }
 
+ColliderBase* Boss::GetLaserCollider() const
+{
+    return m_pLaserCollider;
+}
+
 void Boss::SetColliderActiveByName(const std::string& name, bool active)
 {
 	// NOTE: 文字列は typo を避けるため定数化推奨
@@ -556,6 +566,11 @@ void Boss::SetColliderActiveByName(const std::string& name, bool active)
         if (auto* col = GetSpinningCollider()) col->SetActive(active);
         return;
     }
+    if (name == "boss_Laser")
+    {
+        if (auto* col = GetLaserCollider()) col->SetActive(active);
+        return;
+    }
 }
 
 bool Boss::UpdateColliderFromBone(
@@ -565,18 +580,6 @@ bool Boss::UpdateColliderFromBone(
     bool updateRotation,
     const DirectX::XMFLOAT4& rotationOffset)
 {
-#if _DEBUG
-    struct ScopedTimer {
-        std::chrono::time_point<std::chrono::high_resolution_clock> start;
-        ScopedTimer() : start(std::chrono::high_resolution_clock::now()) { ++g_UpdateColliderFromBoneCalls; }
-        ~ScopedTimer() {
-            auto d = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - start).count();
-            g_UpdateColliderFromBoneTotalNs += static_cast<uint64_t>(d);
-            g_UpdateColliderFromBoneLastNs = static_cast<uint64_t>(d);
-        }
-    } _scoped_timer;
-#endif
-
     if (!collider || GetAttachMesh().expired()) return false;
     auto skinMesh = std::dynamic_pointer_cast<SkinMesh>(GetAttachMesh().lock());
     if (!skinMesh) return false;

@@ -57,79 +57,79 @@ void AttackCombo_0::Enter()
 void AttackCombo_0::Update()
 {
     static bool isStop = false;
-#if _DEBUG
-    ImGui::Begin(IMGUI_JP("AttackCombo_0 デバッグ"));
-
-    ImGui::Checkbox(IMGUI_JP("ストップ"), &isStop);
-
-    RenderColliderWindowsUI("AttackCombo_0 Collider Windows");
-
-    bool isAccepting = (m_currentTime >= m_ComboStartTime && m_currentTime <= m_ComboEndTime);
-    if (isAccepting) {
-        ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), IMGUI_JP("入力受付中"));
-    }
-    else {
-        ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), IMGUI_JP("受付外"));
-    }
-    ImGui::Separator();
-    ImGui::DragFloat(IMGUI_JP("コンボ入力開始時間 (ComboStart)"), &m_ComboStartTime, 0.01f, 0.0f, m_ComboEndTime);
-    ImGui::DragFloat(IMGUI_JP("次コンボ最低開始時間 (ComboStart)"), &m_MinComboTransTime, 0.01f, 0.0f, m_ComboEndTime);
-    ImGui::Text(IMGUI_JP("入力受付時間: %.3f - %.3f"), m_ComboStartTime, m_ComboEndTime);
-
-
-    ImGui::Separator();
-    ImGui::Text(IMGUI_JP("時間: %.3f / %.3f"), m_currentTime, m_ComboEndTime);
-    ImGui::DragFloat(IMGUI_JP("アニメ速度"), &m_AnimSpeed, 0.1f, 0.1f, 60.0f);
-    ImGui::DragFloat(IMGUI_JP("ステート持続時間 (MaxTime)"), &m_ComboEndTime, 0.01f, 0.1f, 10.0f);
-
-    if (ImGui::Button(IMGUI_JP("Load"))) {
-        try {
-            std::filesystem::path filePath = std::filesystem::current_path() / "Data" / "Json" / "Player" / "AttackCombo" / "AttackCombo_0.json";
-            if (std::filesystem::exists(filePath)) {
-                json j = FileManager::JsonLoad(filePath);
-                if (j.contains("m_AnimSpeed")) m_AnimSpeed = j["m_AnimSpeed"].get<float>();
-                if (j.contains("m_MinComboTransTime")) m_MinComboTransTime = j["m_MinComboTransTime"].get<float>();
-                if (j.contains("m_ComboStartTime")) m_ComboStartTime = j["m_ComboStartTime"].get<float>();
-                if (j.contains("m_ComboEndTime")) m_ComboEndTime = j["m_ComboEndTime"].get<float>();
-
-                if (j.contains("ColliderWindows") && j["ColliderWindows"].is_array()) {
-                    m_ColliderWindows.clear();
-                    for (const auto& entry : j["ColliderWindows"]) {
-                        if (entry.contains("start") && entry.contains("duration")) {
-                            AddColliderWindow(entry["start"].get<float>(), entry["duration"].get<float>());
-                        }
-                    }
-                }
-
-                m_pOwner->SetAnimSpeed(m_AnimSpeed);
-            }
-        }
-        catch (...) {}
-    }
-    ImGui::SameLine();
-    if (ImGui::Button(IMGUI_JP("Save"))) {
-        try {
-            std::filesystem::path dir = std::filesystem::current_path() / "Data" / "Json" / "Player" / "AttackCombo";
-            std::filesystem::create_directories(dir);
-            std::filesystem::path filePath = dir / "AttackCombo_0.json";
-
-            json j;
-            j["m_AnimSpeed"] = m_AnimSpeed;
-            j["m_MinComboTransTime"] = m_MinComboTransTime;
-            j["m_ComboStartTime"] = m_ComboStartTime;
-            j["m_ComboEndTime"] = m_ComboEndTime;
-            j["ColliderWindows"] = json::array();
-            for (const auto& w : m_ColliderWindows) { json e; e["start"] = w.Start; e["duration"] = w.Duration; j["ColliderWindows"].push_back(e); }
-            FileManager::JsonSave(filePath, j);
-        }
-        catch (...) {}
-    }
-    if (ImGui::Button(IMGUI_JP("Restert"))) {
-        this->Enter();
-    }
-
-    ImGui::End();
-#endif
+//#if _DEBUG
+//    ImGui::Begin(IMGUI_JP("AttackCombo_0 デバッグ"));
+//
+//    ImGui::Checkbox(IMGUI_JP("ストップ"), &isStop);
+//
+//    RenderColliderWindowsUI("AttackCombo_0 Collider Windows");
+//
+//    bool isAccepting = (m_currentTime >= m_ComboStartTime && m_currentTime <= m_ComboEndTime);
+//    if (isAccepting) {
+//        ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), IMGUI_JP("入力受付中"));
+//    }
+//    else {
+//        ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), IMGUI_JP("受付外"));
+//    }
+//    ImGui::Separator();
+//    ImGui::DragFloat(IMGUI_JP("コンボ入力開始時間 (ComboStart)"), &m_ComboStartTime, 0.01f, 0.0f, m_ComboEndTime);
+//    ImGui::DragFloat(IMGUI_JP("次コンボ最低開始時間 (ComboStart)"), &m_MinComboTransTime, 0.01f, 0.0f, m_ComboEndTime);
+//    ImGui::Text(IMGUI_JP("入力受付時間: %.3f - %.3f"), m_ComboStartTime, m_ComboEndTime);
+//
+//
+//    ImGui::Separator();
+//    ImGui::Text(IMGUI_JP("時間: %.3f / %.3f"), m_currentTime, m_ComboEndTime);
+//    ImGui::DragFloat(IMGUI_JP("アニメ速度"), &m_AnimSpeed, 0.1f, 0.1f, 60.0f);
+//    ImGui::DragFloat(IMGUI_JP("ステート持続時間 (MaxTime)"), &m_ComboEndTime, 0.01f, 0.1f, 10.0f);
+//
+//    if (ImGui::Button(IMGUI_JP("Load"))) {
+//        try {
+//            std::filesystem::path filePath = std::filesystem::current_path() / "Data" / "Json" / "Player" / "AttackCombo" / "AttackCombo_0.json";
+//            if (std::filesystem::exists(filePath)) {
+//                json j = FileManager::JsonLoad(filePath);
+//                if (j.contains("m_AnimSpeed")) m_AnimSpeed = j["m_AnimSpeed"].get<float>();
+//                if (j.contains("m_MinComboTransTime")) m_MinComboTransTime = j["m_MinComboTransTime"].get<float>();
+//                if (j.contains("m_ComboStartTime")) m_ComboStartTime = j["m_ComboStartTime"].get<float>();
+//                if (j.contains("m_ComboEndTime")) m_ComboEndTime = j["m_ComboEndTime"].get<float>();
+//
+//                if (j.contains("ColliderWindows") && j["ColliderWindows"].is_array()) {
+//                    m_ColliderWindows.clear();
+//                    for (const auto& entry : j["ColliderWindows"]) {
+//                        if (entry.contains("start") && entry.contains("duration")) {
+//                            AddColliderWindow(entry["start"].get<float>(), entry["duration"].get<float>());
+//                        }
+//                    }
+//                }
+//
+//                m_pOwner->SetAnimSpeed(m_AnimSpeed);
+//            }
+//        }
+//        catch (...) {}
+//    }
+//    ImGui::SameLine();
+//    if (ImGui::Button(IMGUI_JP("Save"))) {
+//        try {
+//            std::filesystem::path dir = std::filesystem::current_path() / "Data" / "Json" / "Player" / "AttackCombo";
+//            std::filesystem::create_directories(dir);
+//            std::filesystem::path filePath = dir / "AttackCombo_0.json";
+//
+//            json j;
+//            j["m_AnimSpeed"] = m_AnimSpeed;
+//            j["m_MinComboTransTime"] = m_MinComboTransTime;
+//            j["m_ComboStartTime"] = m_ComboStartTime;
+//            j["m_ComboEndTime"] = m_ComboEndTime;
+//            j["ColliderWindows"] = json::array();
+//            for (const auto& w : m_ColliderWindows) { json e; e["start"] = w.Start; e["duration"] = w.Duration; j["ColliderWindows"].push_back(e); }
+//            FileManager::JsonSave(filePath, j);
+//        }
+//        catch (...) {}
+//    }
+//    if (ImGui::Button(IMGUI_JP("Restert"))) {
+//        this->Enter();
+//    }
+//
+//    ImGui::End();
+//#endif
 
     if (!isStop)
     {
