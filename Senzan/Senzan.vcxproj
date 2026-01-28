@@ -283,6 +283,7 @@
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\TimerWarning\TimerWarning.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\ULTSparkle\ULTSparkle.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\FrameCaptureManager\FrameCaptureManager.cpp" />
+    <ClCompile Include="SourceCode\System\Singleton\ParryManager\ParryManager.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\SnowBallManager\SnowBallManager.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\04_BackGround\BackGround.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\03_SnowBall\SnowBall.cpp" />

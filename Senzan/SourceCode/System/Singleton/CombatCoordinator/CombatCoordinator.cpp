@@ -2,6 +2,7 @@
 
 #include "Game/01_GameObject/00_MeshObject/00_Character/01_Player/Player.h"
 #include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/Boss.h"
+#include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossSpecialDamageState/BossSpecialDamageState.h"
 #include "System/Singleton/CameraManager/CameraManager.h"
 #include "System/Singleton/PostEffectManager/PostEffectManager.h"
 #include "Game/02_Camera/LockOnCamera/LockOnCamera.h"
@@ -11,6 +12,15 @@ CombatCoordinator::CombatCoordinator()
 	: m_pPlayer(nullptr)
 	, m_pBoss(nullptr)
 {
+}
+
+void CombatCoordinator::Enter()
+{
+    // If boss is present, transition it to special damage state
+    if (m_pBoss)
+    {
+        m_pBoss->GetStateMachine()->ChangeState(std::make_shared<BossSpecialDamageState>(m_pBoss));
+    }
 }
 
 CombatCoordinator::~CombatCoordinator()
