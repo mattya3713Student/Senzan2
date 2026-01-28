@@ -111,7 +111,7 @@ Player::Player()
 	parry_collider->SetHeight(2.0f);
 	parry_collider->SetRadius(0.5f);
 	parry_collider->SetPositionOffset(0.f, 1.5f, 0.f);
-	parry_collider->SetMyMask(eCollisionGroup::Player_Parry_Fai | eCollisionGroup::Player_Parry_Suc);
+	parry_collider->SetMyMask(eCollisionGroup::Player_Parry_Fai | eCollisionGroup::Player_Parry_Suc| eCollisionGroup::Player_Parry_Noc);
 	parry_collider->SetTarGetTargetMask(eCollisionGroup::Enemy_Attack);
 	m_upColliders->AddCollider(std::move(parry_collider));
 
@@ -195,9 +195,6 @@ void Player::Update()
     }
 
 #if _DEBUG
-    m_HP = m_MaxHP;
-
-
     ImGui::Begin("PlayerStateDebug");
     if (ImGui::Button("SpecialCharge")) {
         m_CurrentUltValue = m_MaxUltValue;
@@ -224,6 +221,7 @@ void Player::LateUpdate()
     // 衝突イベント処理を実行
     if (IsSpecial()){return;}
 
+    HandleParry_NocDetection();
     HandleParry_SuccessDetection();
     HandleParry_FailDetection();
 	HandleDamageDetection();
@@ -622,6 +620,67 @@ void Player::HandleParry_FailDetection()
 			}
 		}
 	}
+}
+
+void Player::HandleParry_NocDetection()
+{
+    if (!m_upColliders) return;
+
+    const auto& internal_colliders = m_upColliders->GetInternalColliders();
+
+    for (const auto& collider_ptr : internal_colliders)
+    {
+        const ColliderBase* current_collider = collider_ptr.get();
+
+        if ((current_collider->GetMyMask() & eCollisionGroup::Player_Parry_Noc) == eCollisionGroup::None) {
+            continue;
+        }
+
+        for (const CollisionInfo& info : current_collider->GetCollisionEvents())
+        {
+            if (!info.IsHit) continue;
+            const ColliderBase* otherCollider = info.ColliderB;
+            if (!otherCollider) { continue; }
+
+            eCollisionGroup other_group = otherCollider->GetMyMask();
+            eCollisionGroup other_target_group = otherCollider->GetTargetMask();
+
+            if ((other_group & eCollisionGroup::Enemy_Attack) != eCollisionGroup::None
+                && (other_target_group & eCollisionGroup::Player_Parry_Noc) != eCollisionGroup::None)
+            {
+                SoundManager::GetInstance().Play("Damage");
+                SoundManager::GetInstance().SetVolume("Damage", 7000);
+
+                // 既にスタン中や無敵時間であれば処理を中断
+                if (IsKnockBack() || IsDead()) { continue; }
+
+                m_Combo = 0;
+
+                // ダメージを適用 
+                ApplyDamage(info.AttackAmount);
+
+                // ボスからPlayerへのベクトルを計算.
+                DirectX::XMFLOAT3 bossPos = m_TargetPos;
+                DirectX::XMFLOAT3 playerPos = GetPosition();
+                DirectX::XMVECTOR vBossToPlayer = DirectX::XMVectorSubtract(
+                    DirectX::XMLoadFloat3(&playerPos),
+                    DirectX::XMLoadFloat3(&bossPos)
+                );
+                vBossToPlayer = DirectX::XMVector3Normalize(vBossToPlayer);
+                DirectX::XMStoreFloat3(&m_KnockBackVec, vBossToPlayer);
+
+                m_KnockBackPower = 40.f;
+
+                // 状態をノックバックに遷移させる
+                ChangeState(PlayerState::eID::KnockBack);
+
+                CameraManager::GetInstance().ShakeCamera(0.5f, 4.5f); // カメラを少し揺らす.
+
+                // 1フレームに1回.
+                return;
+            }
+        }
+    }
 }
 
 void Player::StartJustDodgeEffect(const DirectX::XMFLOAT3& startPos, const DirectX::XMFLOAT3& targetPos, float scale, float duration, float extraDistance)

@@ -46,6 +46,19 @@ void BossLaserState::Update()
     float dt = m_pOwner->GetDelta();
     UpdateBaseLogic(dt);
 
+    if (m_State == enLaser::Fire
+        || m_State == enLaser::Cool)
+    {
+        if (auto* col = m_pOwner->GetLaserCollider()) {
+            col->SetActive(true);
+            float t = (m_FireElapsed / (m_FireDuration > 0.0f ? m_FireDuration : 1.0f));
+            if (t > 1.0f) t = 1.0f;
+            float radius = m_LaserRadius * t;
+            col->SetRadius(radius);
+            col->SetPositionOffset(0.0f, 0.0f,( radius * -30.f ) + (35.f));
+        }
+    }
+
     switch (m_State) {
     case enLaser::Charge:
         m_ChargeElapsed += dt;
@@ -61,9 +74,7 @@ void BossLaserState::Update()
         m_FireElapsed += dt;
         if (!m_EffectPlayed) {
             if (m_pOwner) {
-                // play laser effect aligned with boss orientation
                 DirectX::XMFLOAT3 bossPos = m_pOwner->GetPosition();
-                // local offset in boss local space (X right, Y up, Z forward)
                 DirectX::XMFLOAT3 localOffset{0.0f, 12.0f, -5.0f};
                 float yaw = m_pOwner->GetTransform()->Rotation.y;
                 float c = cosf(yaw);
@@ -78,24 +89,17 @@ void BossLaserState::Update()
             }
             m_EffectPlayed = true;
         }
-        if (auto* col = m_pOwner->GetLaserCollider()) {
-            col->SetActive(true);
-            float t = (m_FireElapsed / (m_FireDuration > 0.0f ? m_FireDuration : 1.0f));
-            if (t > 1.0f) t = 1.0f;
-            float radius = m_LaserRadius * t;
-            col->SetRadius(radius);
-            col->SetPositionOffset(0.0f, 0.0f, radius * -15.f);
-        }
         if (m_FireElapsed >= m_FireDuration || m_pOwner->IsAnimEnd(Boss::enBossAnim::Laser)) {
-            if (auto* col = m_pOwner->GetShoutCollider()) {
-                col->SetActive(false);
-            }
+          
             m_pOwner->SetAnimSpeed(1.5);
             m_pOwner->ChangeAnim(Boss::enBossAnim::LaserEnd);
             m_State = enLaser::Cool;
         }
         break;
     case enLaser::Cool:
+        if (auto* col = m_pOwner->GetLaserCollider()) {
+        col->SetActive(false);
+    }
         if (m_pOwner->IsAnimEnd(Boss::enBossAnim::LaserEnd)) {
             m_State = enLaser::Trans;
         }

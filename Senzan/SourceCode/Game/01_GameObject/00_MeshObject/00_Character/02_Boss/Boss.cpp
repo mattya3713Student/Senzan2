@@ -159,10 +159,11 @@ Boss::Boss()
     // レーザー攻撃の当たり判定作成.
     auto laser_collider = std::make_unique<CapsuleCollider>(m_spTransform);
 	m_pLaserCollider = laser_collider.get();
-    m_pLaserCollider->SetMyMask(eCollisionGroup::Enemy_Attack);
+    m_pLaserCollider->SetMyMask(eCollisionGroup::Enemy_Attack );
     m_pLaserCollider->SetTarGetTargetMask(
         eCollisionGroup::Player_Damage
-        | eCollisionGroup::Player_JustDodge);
+        | eCollisionGroup::Player_JustDodge
+        | eCollisionGroup::Player_Parry_Noc);
     m_pLaserCollider->SetAttackAmount(10.0f);
     m_pLaserCollider->SetHeight(40.0f);
     m_pLaserCollider->SetRadius(15.0f);

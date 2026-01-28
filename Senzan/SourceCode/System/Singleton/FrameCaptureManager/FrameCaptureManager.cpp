@@ -643,7 +643,7 @@ void FrameCaptureManager::RenderPlayback(float deltaTime)
         if (m_bReloadOnComplete)
         {
             m_bReloadOnComplete = false;
-            SceneManager::GetInstance().LoadScene(eList::GameMain);
+            SceneManager::GetInstance().MakeScene(eList::GameMain);
         }
         return;
     }
