@@ -219,6 +219,8 @@ void Player::LateUpdate()
 	HandleCollisionResponse();
 
     // 衝突イベント処理を実行
+    if (IsSpecial()){return;}
+
     HandleParry_SuccessDetection();
     HandleParry_FailDetection();
 	HandleDamageDetection();
@@ -272,6 +274,11 @@ bool Player::IsParry() const noexcept
 bool Player::IsPaused() const noexcept
 {
 	return false;
+}
+
+bool Player::IsSpecial() const noexcept
+{
+    return m_IsSpecial;
 }
 
 // ステートの変更.
@@ -639,4 +646,7 @@ void Player::StartJustDodgeEffect(const DirectX::XMFLOAT3& startPos, const Direc
     m_pJustDodgeEffect->Start("JustDodge_Attack", startPos, finalTarget, scale, duration);
 }
 
-
+void Player::SetSpecial(bool enable)
+{
+    m_IsSpecial = enable;
+}
