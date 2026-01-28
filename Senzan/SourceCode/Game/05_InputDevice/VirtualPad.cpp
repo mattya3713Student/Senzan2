@@ -316,7 +316,8 @@ void VirtualPad::SetupDefaultBindings()
         {
             { ESource::KeyBorad, VK_LSHIFT },
             { ESource::ControllerButton, 0, EKey::LB },
-            { ESource::ControllerButton, 0, EKey::RB }
+            { ESource::ControllerButton, 0, EKey::RB },
+            { ESource::ControllerButton, 0, EKey::A }
         }
     };
 

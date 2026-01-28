@@ -1,74 +1,75 @@
 #ifndef SKIN_MESH_HLSLI
 #define SKIN_MESH_HLSLI
 
-// ƒ{[ƒ“Å‘å”.
+// ãƒœãƒ¼ãƒ³æœ€å¤§æ•°.
 static const int MAX_BONE_MATRICES = 255;
 
-Texture2D g_Texture     : register(t0);// ƒeƒNƒXƒ`ƒƒ.
-Texture2D g_ShadowMap   : register(t1);// ƒVƒƒƒhƒEƒ}ƒbƒv.
+Texture2D g_Texture     : register(t0);// ãƒ†ã‚¯ã‚¹ãƒãƒ£.
+Texture2D g_ShadowMap   : register(t1);// ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—.
 
-SamplerState g_SamLinear : register(s0); //ƒTƒ“ƒvƒ‰
+SamplerState g_SamLinear : register(s0); //ã‚µãƒ³ãƒ—ãƒ©
 
-// ƒƒbƒVƒ…’PˆÊ.
+// ãƒ¡ãƒƒã‚·ãƒ¥å˜ä½.
 cbuffer mesh : register(b0)
 {
-    matrix cb_mW;      // ƒ[ƒ‹ƒhs—ñ.
-    matrix cb_mWVP;    // ƒ[ƒ‹ƒhAƒrƒ…[AƒvƒƒWƒFƒNƒVƒ‡ƒ“‚Ì‡¬s—ñ.
-    matrix cb_mWLVP;   // ƒ[ƒ‹ƒhAƒ‰ƒCƒgƒrƒ…[Aƒ‰ƒCƒgƒvƒƒWƒFƒNƒVƒ‡ƒ“‚Ì‡¬s—ñ.
+    matrix cb_mW;      // ãƒ¯ãƒ¼ãƒ«ãƒ‰è¡Œåˆ—.
+    matrix cb_mWVP;    // ãƒ¯ãƒ¼ãƒ«ãƒ‰ã€ãƒ“ãƒ¥ãƒ¼ã€ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³ã®åˆæˆè¡Œåˆ—.
+    matrix cb_mWLVP;   // ãƒ¯ãƒ¼ãƒ«ãƒ‰ã€ãƒ©ã‚¤ãƒˆãƒ“ãƒ¥ãƒ¼ã€ãƒ©ã‚¤ãƒˆãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³ã®åˆæˆè¡Œåˆ—.
 }
 
-// ƒ}ƒeƒŠƒAƒ‹’PˆÊ.
+// ãƒãƒ†ãƒªã‚¢ãƒ«å˜ä½.
 cbuffer material : register(b1)
 {
-    float4 cb_Diffuse; // ŠgU”½ËF.
-    float4 cb_Ambient; // ŠÂ‹«F.
-    float4 cb_Specular;// ‹¾–Ê”½ËF.
-    float4 cb_Emissive;// ©ŒÈ”­ŒõF.
+    float4 cb_Diffuse; // æ‹¡æ•£åå°„è‰².
+    float4 cb_Ambient; // ç’°å¢ƒè‰².
+    float4 cb_Specular;// é¡é¢åå°„è‰².
+    float4 cb_Emissive;// è‡ªå·±ç™ºå…‰è‰².
+    float4 cb_Dissolve;// ãƒ‡ã‚£ã‚¾ãƒ«ãƒ– (x=é–¾å€¤, y=ã‚¨ãƒƒã‚¸å¹…, z=æœ‰åŠ¹ãƒ•ãƒ©ã‚°, w=äºˆç´„).
 }
 
-// ƒtƒŒ[ƒ€’PˆÊ.
+// ãƒ•ãƒ¬ãƒ¼ãƒ å˜ä½.
 cbuffer frame : register(b2)
 {
-    float4 cb_CameraPosition;   // ƒJƒƒ‰À•Wi‹“_j.
-    float4 cb_LightDirection;   // ƒ‰ƒCƒg•ûŒü.
-    float4 cb_IsLight;          // ƒ‰ƒCƒg‚ğg—p‚·‚é‚©ix‚Ì‚İg—pj.
-    float4 cb_IsShadow;         // ‰e‚ğ“K—p‚·‚é‚©ix‚Ì‚İg—pj.
+    float4 cb_CameraPosition;   // ã‚«ãƒ¡ãƒ©åº§æ¨™ï¼ˆè¦–ç‚¹ï¼‰.
+    float4 cb_LightDirection;   // ãƒ©ã‚¤ãƒˆæ–¹å‘.
+    float4 cb_IsLight;          // ãƒ©ã‚¤ãƒˆã‚’ä½¿ç”¨ã™ã‚‹ã‹ï¼ˆxã®ã¿ä½¿ç”¨ï¼‰.
+    float4 cb_IsShadow;         // å½±ã‚’é©ç”¨ã™ã‚‹ã‹ï¼ˆxã®ã¿ä½¿ç”¨ï¼‰.
 }
 
-// ƒ{[ƒ“‚Ìƒ|[ƒYs—ñ.
+// ãƒœãƒ¼ãƒ³ã®ãƒãƒ¼ã‚ºè¡Œåˆ—.
 cbuffer bones : register(b3)
 {
     float4x4 cb_mConstBoneWorld[MAX_BONE_MATRICES];
 }
 
-// ƒXƒLƒ“Œã‚Ì’¸“_E–@ü.
+// ã‚¹ã‚­ãƒ³å¾Œã®é ‚ç‚¹ãƒ»æ³•ç·š.
 struct Skin
 {
     float4 position;
     float4 normal;
 };
 
-// ’¸“_ƒoƒbƒtƒ@[‚Ì“ü—Í.
+// é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡ãƒ¼ã®å…¥åŠ›.
 struct VSSkinIn
 {
-    float3 position	: POSITION;		// ˆÊ’u.  
-    float3 normal   : NORMAL;       // ’¸“_–@ü.
-	float2 uv		: TEXCOORD;		// UVÀ•WiƒeƒNƒXƒ`ƒƒ[À•Wj.
-	uint4  bones	: BONE_INDEX;	// ƒ{[ƒ“‚ÌƒCƒ“ƒfƒbƒNƒX.
-	float4 weights	: BONE_WEIGHT;	// ƒ{[ƒ“‚Ìd‚İ.
+    float3 position	: POSITION;		// ä½ç½®.  
+    float3 normal   : NORMAL;       // é ‚ç‚¹æ³•ç·š.
+	float2 uv		: TEXCOORD;		// UVåº§æ¨™ï¼ˆãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒ¼åº§æ¨™ï¼‰.
+	uint4  bones	: BONE_INDEX;	// ãƒœãƒ¼ãƒ³ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹.
+	float4 weights	: BONE_WEIGHT;	// ãƒœãƒ¼ãƒ³ã®é‡ã¿.
 };
 
-//ƒsƒNƒZƒ‹ƒVƒF[ƒ_[‚Ì“ü—Íi’¸“_ƒoƒbƒtƒ@[‚Ìo—Íj@
+//ãƒ”ã‚¯ã‚»ãƒ«ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ã®å…¥åŠ›ï¼ˆé ‚ç‚¹ãƒãƒƒãƒ•ã‚¡ãƒ¼ã®å‡ºåŠ›ï¼‰ã€€
 struct PSSkinIn
 {
-    float4 position         : SV_Position;  // ˆÊ’u.
-    float3 normal           : TEXCOORD0;    // ’¸“_–@ü.
-    float2 uv               : TEXCOORD1;    // UVÀ•WiƒeƒNƒXƒ`ƒƒ[À•Wj.
-	float3 lightDirection	: TEXCOORD2;	// ƒ‰ƒCƒg.
-	float3 eyeVector	    : TEXCOORD3;	// ‹üƒxƒNƒgƒ‹.
-	float4 worldPosition    : TEXCOORD4;	// ƒ[ƒ‹ƒhÀ•W.
-    float4 lightViewPosition: TEXCOORD5;    // ƒ‰ƒCƒgƒrƒ…[À•W.
-	float4 color		    : COLOR;		// ÅIƒJƒ‰[i’¸“_ƒVƒF[ƒ_[‚É‚¨‚¢‚Ä‚Ìj.
+    float4 position         : SV_Position;  // ä½ç½®.
+    float3 normal           : TEXCOORD0;    // é ‚ç‚¹æ³•ç·š.
+    float2 uv               : TEXCOORD1;    // UVåº§æ¨™ï¼ˆãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒ¼åº§æ¨™ï¼‰.
+	float3 lightDirection	: TEXCOORD2;	// ãƒ©ã‚¤ãƒˆ.
+	float3 eyeVector	    : TEXCOORD3;	// è¦–ç·šãƒ™ã‚¯ãƒˆãƒ«.
+	float4 worldPosition    : TEXCOORD4;	// ãƒ¯ãƒ¼ãƒ«ãƒ‰åº§æ¨™.
+    float4 lightViewPosition: TEXCOORD5;    // ãƒ©ã‚¤ãƒˆãƒ“ãƒ¥ãƒ¼åº§æ¨™.
+	float4 color		    : COLOR;		// æœ€çµ‚ã‚«ãƒ©ãƒ¼ï¼ˆé ‚ç‚¹ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ã«ãŠã„ã¦ã®ï¼‰.
 };
 
 #endif // SKIN_MESH_HLSLI

@@ -47,7 +47,7 @@ void ParryManager::OnParrySuccess(bool withDelay)
     if (m_pBoss)
     {
         m_pBoss->OnParried(withDelay);
-        m_pBoss->Hit(50.f);
+        m_pBoss->Hit(250.f);
     }
 }
 

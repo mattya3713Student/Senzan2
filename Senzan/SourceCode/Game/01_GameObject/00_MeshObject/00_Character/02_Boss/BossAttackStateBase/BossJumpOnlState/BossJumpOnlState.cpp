@@ -141,6 +141,8 @@ void BossJumpOnlState::Exit()
     m_SpecialFrag = false;
     m_AttackTimer = 0.0f;
 
+    m_pOwner->SetIsRenderActive(true);
+
     // 終了時にプレイヤーの方を向き直す
     const DirectX::XMFLOAT3 BossPosF = m_pOwner->GetPosition();
     DirectX::XMVECTOR BossPosXM = DirectX::XMLoadFloat3(&BossPosF);

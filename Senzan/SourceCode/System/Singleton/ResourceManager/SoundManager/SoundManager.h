@@ -48,6 +48,8 @@ private:
     std::vector<std::string> m_keys;
     // 再生中のBGM名 (空なら無し)
     std::string m_currentBGMName;
+    // 再生中の効果音バッファ（重複再生のために一時的に保持）
+    std::vector<LPDIRECTSOUNDBUFFER> m_activeSEBuffers;
     // 自動復帰用
     int m_prevBGMVolume = 10000;
     // フェード用
