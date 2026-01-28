@@ -64,6 +64,18 @@ void CameraManager::EndSpecialCamera()
 	}
 }
 
+// 最終ポーズカメラ演出を開始.
+void CameraManager::StartFinalPoseCamera()
+{
+	if (m_wpCamera.expired()) { return; }
+
+	auto lockOnCamera = std::dynamic_pointer_cast<LockOnCamera>(m_wpCamera.lock());
+	if (lockOnCamera)
+	{
+		lockOnCamera->StartFinalPoseCamera();
+	}
+}
+
 void CameraManager::LateUpdate()
 {
     if (m_wpCamera.expired()) { return; }

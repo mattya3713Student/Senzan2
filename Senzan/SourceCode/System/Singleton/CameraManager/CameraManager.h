@@ -32,6 +32,8 @@ public:
 	void StartSpecialCamera();
 	// 必殺技カメラ演出を終了.
 	void EndSpecialCamera();
+	// 最終ポーズカメラ演出を開始.
+	void StartFinalPoseCamera();
 
 	// カメラの更新.
 	void LateUpdate();

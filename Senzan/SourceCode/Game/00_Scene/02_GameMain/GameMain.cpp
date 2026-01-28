@@ -141,7 +141,7 @@ void GameMain::Update()
     if (m_upBoss->GetHP() <= 0 && !m_upUIEnding) {
         m_upUIEnding = std::make_shared<UIEnding>();
         // エンディング画面ではキャプチャを停止
-    //    FrameCaptureManager::GetInstance().PauseRollingCapture();
+        FrameCaptureManager::GetInstance().PauseRollingCapture();
         SoundManager::Stop("Main");
         SoundManager::Play("Ending");
         SoundManager::SetVolume("Ending", 8000);
@@ -149,7 +149,7 @@ void GameMain::Update()
     else if ((m_upPlayer->GetHP() <= 0 || Time::GetInstance().IsTimerJustFinished()) && !m_upUIOver) {
         m_upUIOver = std::make_shared<UIGameOver>();
         // コンテニュー画面ではキャプチャを停止（バッファに入れない）
-        //FrameCaptureManager::GetInstance().PauseRollingCapture();
+        FrameCaptureManager::GetInstance().PauseRollingCapture();
         SoundManager::Stop("Main");
         SoundManager::Play("Over");
         SoundManager::SetVolume("Over", 8000);

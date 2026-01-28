@@ -142,6 +142,7 @@ protected:
 	inline void SetAttackColliderActive(bool Active) const noexcept { if (m_pAttackCollider) m_pAttackCollider->SetActive(Active); }
 	inline void SetDamageColliderActive(bool Active) const noexcept { if (m_pDamageCollider) m_pDamageCollider->SetActive(Active); }
 	inline void SetParryColliderActive(bool Active) const noexcept { if (m_pParryCollider) m_pParryCollider->SetActive(Active); }
+	inline void SetPressColliderActive(bool Active) const noexcept { if (m_pPressCollider) m_pPressCollider->SetActive(Active); }
 
 protected:
 	std::unique_ptr<PlayerState::Root> m_RootState; 	// ステートマシーン.
@@ -165,7 +166,8 @@ protected:
 
 	ColliderBase* m_pDamageCollider; 	// 被ダメ判定.
 	ColliderBase* m_pAttackCollider; 	// 攻撃判定.
-	ColliderBase* m_pParryCollider; 		// パリィ判定.
+	ColliderBase* m_pParryCollider; 	// パリィ判定.
+	ColliderBase* m_pPressCollider; 	// 押し戻し判定.
 
 	//---System関連---.
 	bool				m_IsKnockBack; 		// ノックバック中か否か.
@@ -194,6 +196,9 @@ protected:
 public:
 	// ジャスト回避エフェクトを開始する（JustDodge ステートから呼び出す）
     void StartJustDodgeEffect(const DirectX::XMFLOAT3& startPos, const DirectX::XMFLOAT3& targetPos, float scale = 1.0f, float duration = 1.0f, float extraDistance = 0.0f);
+
+    // アニメーションコントローラを取得（分身描画用）
+    LPD3DXANIMATIONCONTROLLER GetAnimationController() const { return m_pAnimCtrl; }
 
 protected:
 	//--- Debug: force state 再入場用 ---.
