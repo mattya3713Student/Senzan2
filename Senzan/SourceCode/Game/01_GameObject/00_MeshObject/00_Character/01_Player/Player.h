@@ -131,6 +131,8 @@ private:
 	void HandleParry_FailDetection();
 	void HandleParry_NocDetection();
 
+    float ComboMultiplier() const noexcept;
+
 protected:
 
 	// 攻撃判定のActive

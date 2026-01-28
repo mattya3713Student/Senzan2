@@ -446,33 +446,22 @@ void Player::HandleAttackDetection()
 
             if ((other_group & eCollisionGroup::Enemy_Damage) != eCollisionGroup::None)
             {
-                for (int i = 0; i < 3; ++i)
-                {
-                    // ランダムオフセット.
-                    static thread_local std::mt19937 s_rng((std::random_device())());
-                    std::uniform_real_distribution<float> dist(-1.2f, 1.2f);
-                    std::uniform_real_distribution<float> rotDist(0.0f, DirectX::XM_2PI);
+                static thread_local std::mt19937 s_rng((std::random_device())());
+               
+                SoundManager::GetInstance().Play("Hit1");
+                SoundManager::GetInstance().SetVolume("Hit1", 9000);
 
-                    DirectX::XMFLOAT3 jitterPos{
-                        info.ContactPoint.x + dist(s_rng),
-                        info.ContactPoint.y + 1.5f + dist(s_rng),
-                        info.ContactPoint.z + dist(s_rng)
-                    };
+                float upper = 6.0f * (static_cast<float>(m_Combo) / 100.0f);
+                if (upper < 3.0f) upper = 3.0f; 
 
-                    // ランダム回転.
-                    DirectX::XMFLOAT3 eulerRot{ rotDist(s_rng), rotDist(s_rng), rotDist(s_rng) };
-                    PlayEffectAtWorldPos("Hit2", jitterPos, eulerRot);
-                }
-				SoundManager::GetInstance().Play("Hit1");
-				SoundManager::GetInstance().SetVolume("Hit1", 9000);
+                std::uniform_real_distribution<float> randomUp(3.0f, upper);
+                m_Combo += static_cast<int>(randomUp(s_rng));
+                m_CurrentUltValue = std::clamp(m_CurrentUltValue + static_cast<float>(m_Combo), 0.0f, m_MaxUltValue);
+                SetAttackColliderActive(false);
 
-				++m_Combo;
-				m_CurrentUltValue = std::clamp(m_CurrentUltValue + static_cast<float>(m_Combo), 0.0f, m_MaxUltValue);
-				SetAttackColliderActive(false);
-
-				// 一フレーム1回.
-				return;
-			}
+                // 一フレーム1回.
+                return;
+            }
 		}
 	}
 }
@@ -540,7 +529,7 @@ void Player::HandleParry_SuccessDetection()
 				m_IsSuccessParry = true;
 				
 				// パリィ成功時のゲージ増加
-				m_CurrentUltValue += 5000.0f;
+				m_CurrentUltValue += 100.0f * ComboMultiplier();
 
 				// パリィ成功時のカメラ演出（シェイク）
 				CameraManager::GetInstance().ShakeCamera(0.15f, 0.3f);
@@ -598,9 +587,9 @@ void Player::HandleParry_FailDetection()
 				SoundManager::GetInstance().Play("Parry");
 				SoundManager::GetInstance().SetVolume("Parry",7000);
 				m_IsSuccessParry = true;
-				
-				// パリィ成功時のゲージ増加
-				m_CurrentUltValue += 500.0f;
+
+                // パリィ成功時のゲージ増加
+                m_CurrentUltValue += 100.0f * ComboMultiplier();
 
 				// パリィ成功時のカメラ演出（シェイク）
 				CameraManager::GetInstance().ShakeCamera(0.15f, 0.3f);
@@ -681,6 +670,13 @@ void Player::HandleParry_NocDetection()
             }
         }
     }
+}
+
+float Player::ComboMultiplier() const noexcept
+{
+    float handledCombo = static_cast<float>(m_Combo) / 100.f; 
+
+    return 1.f + (handledCombo * 0.05f);
 }
 
 void Player::StartJustDodgeEffect(const DirectX::XMFLOAT3& startPos, const DirectX::XMFLOAT3& targetPos, float scale, float duration, float extraDistance)

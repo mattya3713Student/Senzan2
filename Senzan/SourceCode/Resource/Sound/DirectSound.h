@@ -36,7 +36,9 @@ public:
     void Release();
 
     // 再生
-    void Play(bool isLoop);
+    // 再生
+    // 戻り値: 重複再生用に作成したバッファを返す（NULL なら内部バッファを再利用）
+    LPDIRECTSOUNDBUFFER Play(bool isLoop);
     // 停止
     void Stop();
     // 再生位置を最初に戻す
@@ -45,6 +47,10 @@ public:
     void SetVolume(int volume);
     // 音量取得 (0 ～ 10000)
     int GetVolume() const;
+    // 周波数設定 (ピッチ調整)
+    bool SetFrequency(DWORD frequency);
+    // 元のサンプルレートを取得
+    DWORD GetOriginalFrequency() const;
 
 private:
     // WAVファイルの読み込み
@@ -52,4 +58,13 @@ private:
 
 private:
     LPDIRECTSOUNDBUFFER m_lpSoundBuffer;    // セカンダリバッファ
+    DWORD m_originalFrequency; // 元のサンプルレート
+    // 所有している DirectSound インターフェース（バッファ複製に使用）
+    LPDIRECTSOUND8 m_lpDSInterface = nullptr;
+    // WAV データのコピー（複製バッファ作成のために保持）
+    std::vector<char> m_bufferData;
+    WAVEFORMATEX m_wavFormat = {};
+    DWORD m_bufferSize = 0;
+    // 最後に設定された再生周波数（ピッチ調整後）
+    DWORD m_currentFrequency = 0;
 };

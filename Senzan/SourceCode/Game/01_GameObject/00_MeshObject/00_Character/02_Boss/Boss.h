@@ -108,10 +108,13 @@ class Boss
     };
 
 public:
-    Boss();
-    ~Boss() override;
+Boss();
+~Boss() override;
 
-    void SetAnyAttackJustWindow(bool v) { m_IsAnyAttackJustWindow = v; }
+// HPを倍率で設定（コンテニュー時に使用）
+void SetHPMultiplier(float multiplier);
+
+void SetAnyAttackJustWindow(bool v) { m_IsAnyAttackJustWindow = v; }
     bool IsAnyAttackJustWindow() const { return m_IsAnyAttackJustWindow; }
 
     // パリィ被弾通知（外部から呼び出す）。

@@ -1,15 +1,15 @@
-#pragma once
+ï»¿#pragma once
 
-//Œx‚É‚Â‚¢‚Ä‚ÌƒR[ƒh•ªÍ‚ğ–³Œø‚É‚·‚é. 4005:Ä’è‹`.
+//è­¦å‘Šã«ã¤ã„ã¦ã®ã‚³ãƒ¼ãƒ‰åˆ†æã‚’ç„¡åŠ¹ã«ã™ã‚‹. 4005:å†å®šç¾©.
 #pragma warning( disable:4005)
 
-//_declspec()	:DLL‚©‚ç(ŠÖ”,ƒNƒ‰ƒX,ƒNƒ‰ƒX‚Ìƒƒ“ƒoŠÖ”‚ğ)ƒGƒNƒXƒ|[ƒg‚·‚é.
-//align()		:(‹­§“I‚É)16byte ‚Åg—p‚·‚é.
+//_declspec()	:DLLã‹ã‚‰(é–¢æ•°,ã‚¯ãƒ©ã‚¹,ã‚¯ãƒ©ã‚¹ã®ãƒ¡ãƒ³ãƒé–¢æ•°ã‚’)ã‚¨ã‚¯ã‚¹ãƒãƒ¼ãƒˆã™ã‚‹.
+//align()		:(å¼·åˆ¶çš„ã«)16byte ã§ä½¿ç”¨ã™ã‚‹.
 #define ALIGN16	_declspec( align(16) )
 
-#include <DirectXMath.h>	// DirectXMathƒ‰ƒCƒuƒ‰ƒŠ.
+#include <DirectXMath.h>	// DirectXMathãƒ©ã‚¤ãƒ–ãƒ©ãƒª.
 
-//‘O•ûéŒ¾.
+//å‰æ–¹å®£è¨€.
 class DirectX9;
 class DirectX11;
 class CameraBase;
@@ -17,131 +17,132 @@ class VertexShaderBase;
 class PixelShaderBase;
 
 /***********************************************************************
-*	ƒƒbƒVƒ…ƒx[ƒXƒNƒ‰ƒX.
+*	ãƒ¡ãƒƒã‚·ãƒ¥ãƒ™ãƒ¼ã‚¹ã‚¯ãƒ©ã‚¹.
 ***********************************************************************/
 class MeshBase
 {
 public:
 	//======================================
-	//	\‘¢‘Ì.
+	//	æ§‹é€ ä½“.
 	//======================================s
-	// ƒRƒ“ƒXƒ^ƒ“ƒgƒoƒbƒtƒ@‚ÌƒAƒvƒŠ‘¤‚Ì’è‹`.
-	// ¦ƒVƒF[ƒ_“à‚ÌƒRƒ“ƒXƒ^ƒ“ƒgƒoƒbƒtƒ@‚Æˆê’v‚µ‚Ä‚¢‚é•K—v‚ ‚è.
-	// ƒƒbƒVƒ…’PˆÊ.
+	// ã‚³ãƒ³ã‚¹ã‚¿ãƒ³ãƒˆãƒãƒƒãƒ•ã‚¡ã®ã‚¢ãƒ—ãƒªå´ã®å®šç¾©.
+	// â€»ã‚·ã‚§ãƒ¼ãƒ€å†…ã®ã‚³ãƒ³ã‚¹ã‚¿ãƒ³ãƒˆãƒãƒƒãƒ•ã‚¡ã¨ä¸€è‡´ã—ã¦ã„ã‚‹å¿…è¦ã‚ã‚Š.
+	// ãƒ¡ãƒƒã‚·ãƒ¥å˜ä½.
 	struct CBUFFER_PER_MESH
 	{
-		DirectX::XMMATRIX mW;			// ƒ[ƒ‹ƒhs—ñ.
-		DirectX::XMMATRIX mWVP;		// ƒ[ƒ‹ƒh‚©‚çË‰e‚Ü‚Å‚Ì•ÏŠ·s—ñ.
-		DirectX::XMMATRIX mWLVP;		// ƒ[ƒ‹ƒhƒ‰ƒCƒgƒvƒƒWƒFƒNƒVƒ‡ƒ“.		
+		DirectX::XMMATRIX mW;			// ãƒ¯ãƒ¼ãƒ«ãƒ‰è¡Œåˆ—.
+		DirectX::XMMATRIX mWVP;		// ãƒ¯ãƒ¼ãƒ«ãƒ‰ã‹ã‚‰å°„å½±ã¾ã§ã®å¤‰æ›è¡Œåˆ—.
+		DirectX::XMMATRIX mWLVP;		// ãƒ¯ãƒ¼ãƒ«ãƒ‰ãƒ©ã‚¤ãƒˆãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³.		
 	};
 
 
-	//ƒ}ƒeƒŠƒAƒ‹’PˆÊ.
+	//ãƒãƒ†ãƒªã‚¢ãƒ«å˜ä½.
 	struct CBUFFER_PER_MATERIAL
 	{
-		DirectX::XMFLOAT4 Diffuse;	// ŠgU”½ËŒõiƒfƒBƒtƒ…[ƒYj.
-		DirectX::XMFLOAT4 Ambient;	// ŠÂ‹«ŒõiƒAƒ“ƒrƒGƒ“ƒgj.
-		DirectX::XMFLOAT4 Specular;	// ‹¾–Ê”½ËŒõiƒXƒyƒLƒ…ƒ‰j.
-		DirectX::XMFLOAT4 Emissive;	// ©ŒÈ”­ŒõiƒGƒ~ƒbƒVƒuj.
+		DirectX::XMFLOAT4 Diffuse;	// æ‹¡æ•£åå°„å…‰ï¼ˆãƒ‡ã‚£ãƒ•ãƒ¥ãƒ¼ã‚ºï¼‰.
+		DirectX::XMFLOAT4 Ambient;	// ç’°å¢ƒå…‰ï¼ˆã‚¢ãƒ³ãƒ“ã‚¨ãƒ³ãƒˆï¼‰.
+		DirectX::XMFLOAT4 Specular;	// é¡é¢åå°„å…‰ï¼ˆã‚¹ãƒšã‚­ãƒ¥ãƒ©ï¼‰.
+		DirectX::XMFLOAT4 Emissive;	// è‡ªå·±ç™ºå…‰ï¼ˆã‚¨ãƒŸãƒƒã‚·ãƒ–ï¼‰.
+		DirectX::XMFLOAT4 Dissolve;	// ãƒ‡ã‚£ã‚¾ãƒ«ãƒ– (x=é–¾å€¤, y=ã‚¨ãƒƒã‚¸å¹…, z=æœ‰åŠ¹ãƒ•ãƒ©ã‚°, w=äºˆç´„).
 	};
 
-	//ƒVƒF[ƒ_[‚É“n‚·’l.
+	//ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ã«æ¸¡ã™å€¤.
 	struct CBUFFER_PER_FRAME
 	{
-		DirectX::XMFLOAT4 CameraPos;		// ƒJƒƒ‰ˆÊ’u.
-		DirectX::XMFLOAT4 vLightDir;		// ƒ‰ƒCƒg•ûŒü.
-		DirectX::XMFLOAT4 isLight;		// ƒ‰ƒCƒgg—pƒtƒ‰ƒO.
-		DirectX::XMFLOAT4 isShadow;		// ‰eg—pƒtƒ‰ƒO.
+		DirectX::XMFLOAT4 CameraPos;		// ã‚«ãƒ¡ãƒ©ä½ç½®.
+		DirectX::XMFLOAT4 vLightDir;		// ãƒ©ã‚¤ãƒˆæ–¹å‘.
+		DirectX::XMFLOAT4 isLight;		// ãƒ©ã‚¤ãƒˆä½¿ç”¨ãƒ•ãƒ©ã‚°.
+		DirectX::XMFLOAT4 isShadow;		// å½±ä½¿ç”¨ãƒ•ãƒ©ã‚°.
 	};
 
-	//’¸“_\‘¢‘Ì.
+	//é ‚ç‚¹æ§‹é€ ä½“.
 	struct VERTEX
 	{
-		DirectX::XMFLOAT3	Position;	// ’¸“_ˆÊ’u.
-		DirectX::XMFLOAT3	Normal;		// ’¸“_–@ü.
-		DirectX::XMFLOAT2	Texture;	// UVÀ•W.
+		DirectX::XMFLOAT3	Position;	// é ‚ç‚¹ä½ç½®.
+		DirectX::XMFLOAT3	Normal;		// é ‚ç‚¹æ³•ç·š.
+		DirectX::XMFLOAT2	Texture;	// UVåº§æ¨™.
 	};
 
 public:
 	MeshBase();
 	virtual ~MeshBase();
 
-	// ‰Šú‰».
+	// åˆæœŸåŒ–.
 	virtual HRESULT Init(std::string FileName, const std::string& Name) = 0;
 
-public: // GetterASetter.
+public: // Getterã€Setter.
 
 	/******************************************************************
-	* @brief À•W‚ğİ’è.
+	* @brief åº§æ¨™ã‚’è¨­å®š.
 	******************************************************************/
 	void SetPosition(const DirectX::XMFLOAT3& Position);
 
 
 	/******************************************************************
-	* @brief ‰ñ“]‚ğİ’è.
+	* @brief å›è»¢ã‚’è¨­å®š.
 	******************************************************************/
 	void SetRotation(const DirectX::XMFLOAT3& Rotation);
 
 
 	/******************************************************************
-	* @brief ƒNƒH[ƒ^ƒjƒIƒ“‚ğİ’è.
+	* @brief ã‚¯ã‚©ãƒ¼ã‚¿ãƒ‹ã‚ªãƒ³ã‚’è¨­å®š.
 	******************************************************************/
 	void SetQuaternion(const DirectX::XMFLOAT4& quaternion);
 
 	/******************************************************************
-	* @brief Šgk‚ğİ’è.
+	* @brief æ‹¡ç¸®ã‚’è¨­å®š.
 	******************************************************************/
 	void SetScale(const DirectX::XMFLOAT3& Scale);
 
 
 	/******************************************************************
-	* @brief ƒ‰ƒCƒg‚ğg—p‚·‚é‚©İ’è.
+	* @brief ãƒ©ã‚¤ãƒˆã‚’ä½¿ç”¨ã™ã‚‹ã‹è¨­å®š.
 	******************************************************************/
 	void SetIsLight(const bool& isLight);
 
 
 	/******************************************************************
-	* @brief ‰e‚ğ—‚Æ‚·‚©İ’è.
+	* @brief å½±ã‚’è½ã¨ã™ã‹è¨­å®š.
 	******************************************************************/
 	void SetIsShadow(const bool& isShadow);
 
 
 	/******************************************************************
-	* @brief ƒ‚ƒfƒ‹–¼‚ğæ“¾.
+	* @brief ãƒ¢ãƒ‡ãƒ«åã‚’å–å¾—.
 	******************************************************************/
 	const std::string& GetResourceName() const;
 
 protected:
-	// ƒ[ƒ‹ƒhs—ñ‚ğŒvZ.
+	// ãƒ¯ãƒ¼ãƒ«ãƒ‰è¡Œåˆ—ã‚’è¨ˆç®—.
 	void CalcWorldMatrix();
 protected:
-	//@Dx9.
+	//ã€€Dx9.
 	LPDIRECT3DDEVICE9	m_pDevice9;
 
-	//@Dx11.
+	//ã€€Dx11.
 	ID3D11Device* m_pDevice11;
 	ID3D11DeviceContext* m_pContext11;
 
-	std::unique_ptr<VertexShaderBase>	m_pVertexShader;// ’¸“_ƒVƒF[ƒ_[.
-	std::unique_ptr<PixelShaderBase>	m_pPixelShader;	// ƒsƒNƒZƒ‹ƒVƒF[ƒ_[.
-	ID3D11SamplerState* m_pSampleLinear;	//@ƒTƒ“ƒvƒ‰:ƒeƒNƒXƒ`ƒƒ‚ÉŠeíƒtƒBƒ‹ƒ^‚ğ‚©‚¯‚é.
+	std::unique_ptr<VertexShaderBase>	m_pVertexShader;// é ‚ç‚¹ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼.
+	std::unique_ptr<PixelShaderBase>	m_pPixelShader;	// ãƒ”ã‚¯ã‚»ãƒ«ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼.
+	ID3D11SamplerState* m_pSampleLinear;	//ã€€ã‚µãƒ³ãƒ—ãƒ©:ãƒ†ã‚¯ã‚¹ãƒãƒ£ã«å„ç¨®ãƒ•ã‚£ãƒ«ã‚¿ã‚’ã‹ã‘ã‚‹.
 
-	ID3D11Buffer* m_pCBufferPerMesh;		// ƒRƒ“ƒXƒ^ƒ“ƒgƒoƒbƒtƒ@(ƒƒbƒVƒ…–ˆ).
-	ID3D11Buffer* m_pCBufferPerMaterial;	// ƒRƒ“ƒXƒ^ƒ“ƒgƒoƒbƒtƒ@(ƒ}ƒeƒŠƒAƒ‹–ˆ).
-	ID3D11Buffer* m_pCBufferPerFrame;		// ƒRƒ“ƒXƒ^ƒ“ƒgƒoƒbƒtƒ@(ƒtƒŒ[ƒ€–ˆ).
+	ID3D11Buffer* m_pCBufferPerMesh;		// ã‚³ãƒ³ã‚¹ã‚¿ãƒ³ãƒˆãƒãƒƒãƒ•ã‚¡(ãƒ¡ãƒƒã‚·ãƒ¥æ¯).
+	ID3D11Buffer* m_pCBufferPerMaterial;	// ã‚³ãƒ³ã‚¹ã‚¿ãƒ³ãƒˆãƒãƒƒãƒ•ã‚¡(ãƒãƒ†ãƒªã‚¢ãƒ«æ¯).
+	ID3D11Buffer* m_pCBufferPerFrame;		// ã‚³ãƒ³ã‚¹ã‚¿ãƒ³ãƒˆãƒãƒƒãƒ•ã‚¡(ãƒ•ãƒ¬ãƒ¼ãƒ æ¯).
 
 	Transform		m_spTransform;
 	DirectX::XMFLOAT4	m_Quaternion;
 
-	DirectX::XMMATRIX		m_WorldMatrix;// ƒ[ƒ‹ƒhs—ñ.
+	DirectX::XMMATRIX		m_WorldMatrix;// ãƒ¯ãƒ¼ãƒ«ãƒ‰è¡Œåˆ—.
 
-	std::string m_ResourceName;// ƒ‚ƒfƒ‹ŒÅ—L‚Ì–¼‘O.
+	std::string m_ResourceName;// ãƒ¢ãƒ‡ãƒ«å›ºæœ‰ã®åå‰.
 
-	float m_OriginalRadius;// ƒ‚ƒfƒ‹‚ÌƒIƒŠƒWƒiƒ‹”¼Œa.
-	float m_Radius;// ƒ‚ƒfƒ‹‚Ì”¼Œa.
+	float m_OriginalRadius;// ãƒ¢ãƒ‡ãƒ«ã®ã‚ªãƒªã‚¸ãƒŠãƒ«åŠå¾„.
+	float m_Radius;// ãƒ¢ãƒ‡ãƒ«ã®åŠå¾„.
 
-	DirectX::XMFLOAT3 m_CenterPosition;// ƒ‚ƒfƒ‹‚Ì’†SÀ•W.
+	DirectX::XMFLOAT3 m_CenterPosition;// ãƒ¢ãƒ‡ãƒ«ã®ä¸­å¿ƒåº§æ¨™.
 
-	bool m_IsLight; // ƒ‰ƒCƒg‚ğg—p‚·‚é‚©.
-	bool m_IsShadow;// ‰e‚ğg—p‚·‚é‚©.
+	bool m_IsLight; // ãƒ©ã‚¤ãƒˆã‚’ä½¿ç”¨ã™ã‚‹ã‹.
+	bool m_IsShadow;// å½±ã‚’ä½¿ç”¨ã™ã‚‹ã‹.
 };

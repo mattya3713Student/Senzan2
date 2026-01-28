@@ -88,6 +88,14 @@ public:
     void SetGlobalAlpha(float alpha) { m_GlobalAlpha = alpha; }
     float GetGlobalAlpha() const { return m_GlobalAlpha; }
 
+    // ディゾルブエフェクト制御
+    void SetDissolveEnabled(bool enable) { m_DissolveEnabled = enable; }
+    bool IsDissolveEnabled() const { return m_DissolveEnabled; }
+    void SetDissolveThreshold(float threshold) { m_DissolveThreshold = (threshold < 0.0f) ? 0.0f : ((threshold > 1.0f) ? 1.0f : threshold); }
+    float GetDissolveThreshold() const { return m_DissolveThreshold; }
+    void SetDissolveEdgeWidth(float width) { m_DissolveEdgeWidth = (width < 0.0f) ? 0.0f : ((width > 0.5f) ? 0.5f : width); }
+    float GetDissolveEdgeWidth() const { return m_DissolveEdgeWidth; }
+
 
 private:
 	LPD3DXFRAME FindFrame(LPD3DXFRAME frame, LPCSTR frameName);
@@ -137,6 +145,10 @@ private:
 	int			m_Frame;			// アニメーションフレーム. (変更なし)
 	// グローバルアルファ値（1.0 = 不透明）
 	float m_GlobalAlpha;
+	// ディゾルブエフェクト
+	bool  m_DissolveEnabled = false;     // ディゾルブ有効フラグ
+	float m_DissolveThreshold = 0.0f;    // ディゾルブ閾値 (0.0~1.0)
+	float m_DissolveEdgeWidth = 0.05f;   // エッジ発光幅
     // (no scene-wide alpha)
 };
 

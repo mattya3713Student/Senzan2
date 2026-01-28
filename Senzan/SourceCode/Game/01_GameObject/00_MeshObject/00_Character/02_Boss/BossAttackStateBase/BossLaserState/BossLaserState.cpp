@@ -38,6 +38,8 @@ void BossLaserState::Enter()
     FacePlayerInstantYaw();
     m_pOwner->SetAnimSpeed(1.0);
     m_pOwner->ChangeAnim(Boss::enBossAnim::LaserCharge);
+
+    
 }
 
 void BossLaserState::Update()
@@ -86,6 +88,8 @@ void BossLaserState::Update()
                 DirectX::XMFLOAT3 effectPos{ bossPos.x + worldOffset.x, bossPos.y + worldOffset.y, bossPos.z + worldOffset.z };
                 DirectX::XMFLOAT3 eulerRot{ 0.0f, yaw, 0.0f };
                 m_pOwner->PlayEffectAtWorldPos("Boss_Laser", effectPos, eulerRot, 2.0f, false);
+                SoundManager::GetInstance().Play("Beam");
+                SoundManager::GetInstance().SetVolume("Beam", 9000);
             }
             m_EffectPlayed = true;
         }

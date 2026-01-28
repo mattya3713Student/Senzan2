@@ -30,7 +30,7 @@ void Movement::Update()
 {
     Action::Update();
 
-	if (VirtualPad::GetInstance().IsActionDown(VirtualPad::eGameAction::Attack))
+	if (VirtualPad::GetInstance().IsActionPress(VirtualPad::eGameAction::Attack))
 	{
 		m_pOwner->ChangeState(PlayerState::eID::AttackCombo_0);
 		return;

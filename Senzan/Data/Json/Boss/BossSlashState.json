@@ -37,7 +37,7 @@
       "use_direction_offset": true
     }
   ],
-  "m_AttackAmount": 800.0,
+  "m_AttackAmount": 8.0,
   "m_AttackBoneName": "",
   "m_AttackTime": 0.658,
   "m_ChargeTime": 0.874,

@@ -13,6 +13,7 @@
 
 #include "System/Singleton/ResourceManager/EffectManager/EffekseerManager.h"
 #include "System/Singleton/ImGui/CImGuiManager.h"
+#include "System/Singleton/ResourceManager/MeshManager/MeshManager.h"
 
 #ifdef _DEBUG
 #include <crtdbg.h>
@@ -420,6 +421,70 @@ void Main::DebugImgui()
 
 	// 現在の time scale をテキスト表示
 	ImGui::Text("Current: %.2f", Time::GetInstance().GetWorldTimeScale());
+
+	ImGui::Separator();
+
+	// --- ディゾルブエフェクト デバッグ ---
+	ImGui::Text(IMGUI_JP("ディゾルブエフェクト"));
+	
+	// スキンメッシュリストを取得
+	static int selectedMeshIndex = 0;
+	auto meshList = MeshManager::GetSkinMeshList();
+	
+	if (!meshList.empty())
+	{
+		// メッシュ選択コンボボックス
+		if (ImGui::BeginCombo(IMGUI_JP("対象メッシュ"), meshList[selectedMeshIndex].c_str()))
+		{
+			for (int i = 0; i < static_cast<int>(meshList.size()); i++)
+			{
+				bool isSelected = (selectedMeshIndex == i);
+				if (ImGui::Selectable(meshList[i].c_str(), isSelected))
+				{
+					selectedMeshIndex = i;
+				}
+				if (isSelected)
+				{
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+		
+		// 選択されたメッシュのディゾルブ設定
+		auto pMesh = MeshManager::GetSkinMesh(meshList[selectedMeshIndex]);
+		if (pMesh)
+		{
+			bool dissolveEnabled = pMesh->IsDissolveEnabled();
+			if (ImGui::Checkbox(IMGUI_JP("ディゾルブ有効"), &dissolveEnabled))
+			{
+				pMesh->SetDissolveEnabled(dissolveEnabled);
+			}
+			
+			if (dissolveEnabled)
+			{
+				float threshold = pMesh->GetDissolveThreshold();
+				if (ImGui::SliderFloat(IMGUI_JP("消失度 (閾値)"), &threshold, 0.0f, 1.0f, "%.2f"))
+				{
+					pMesh->SetDissolveThreshold(threshold);
+				}
+				
+				float edgeWidth = pMesh->GetDissolveEdgeWidth();
+				if (ImGui::SliderFloat(IMGUI_JP("エッジ幅"), &edgeWidth, 0.0f, 0.3f, "%.3f"))
+				{
+					pMesh->SetDissolveEdgeWidth(edgeWidth);
+				}
+				
+				ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), 
+					IMGUI_JP("※ 閾値を上げると徐々に消えます"));
+			}
+		}
+	}
+	else
+	{
+		ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), 
+			IMGUI_JP("スキンメッシュが読み込まれていません"));
+	}
 
 	ImGui::Separator();
 
