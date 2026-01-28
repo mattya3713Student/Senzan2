@@ -6,6 +6,7 @@
 
 #include "System/Utility/SingleTrigger/SingleTrigger.h"
 #include "System/Singleton/ImGui/CImGuiManager.h"
+#include "System/Singleton/CameraManager/CameraManager.h"
 #include "System/Utility/FileManager/FileManager.h"
 
 // 攻撃開始までの速度.
@@ -69,12 +70,28 @@ void AttackCombo_2::Enter()
     DirectX::XMFLOAT2 input_vec = VirtualPad::GetInstance().GetAxisInput(VirtualPad::eGameAxisAction::Move);
     DirectX::XMVECTOR input_vec_v = DirectX::XMVectorSet(input_vec.x, 0.0f, input_vec.y, 0.0f);
 
-    // 少し近づく.
-    float inputLenSq = DirectX::XMVectorGetX(DirectX::XMVector3LengthSq(input_vec_v));
+    // カメラの前方向と右方向を取得.
+    DirectX::XMFLOAT3 cam_forward = CameraManager::GetInstance().GetLookDirection();
+    cam_forward.y = 0.0f;
+    DirectX::XMVECTOR v_forward = DirectX::XMLoadFloat3(&cam_forward);
+    v_forward = DirectX::XMVector3Normalize(v_forward);
+
+    // 右方向を計算.
+    DirectX::XMVECTOR v_up = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+    DirectX::XMVECTOR v_right = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(v_up, v_forward));
+
+    // 入力ベクトルをカメラ基準でワールド空間に変換.
+    DirectX::XMVECTOR v_move = DirectX::XMVectorZero();
+    v_move = DirectX::XMVectorAdd(
+        DirectX::XMVectorScale(v_right, input_vec.x),
+        DirectX::XMVectorScale(v_forward, input_vec.y)
+    );
+
+    float inputLenSq = DirectX::XMVectorGetX(DirectX::XMVector3LengthSq(v_move));
     if (inputLenSq > EPSILON_E4)
     {
         // 入力ベクトルを正規化して m_MoveVec に格納.
-        DirectX::XMVECTOR v_in_norm = DirectX::XMVector3Normalize(input_vec_v);
+        DirectX::XMVECTOR v_in_norm = DirectX::XMVector3Normalize(v_move);
         DirectX::XMFLOAT3 out_move = {};
         DirectX::XMStoreFloat3(&out_move, v_in_norm);
         m_pOwner->m_MoveVec = out_move;

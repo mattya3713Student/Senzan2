@@ -77,11 +77,47 @@ private:
     // パリィカメラ演出用.
     eCameraMode m_CameraMode = eCameraMode::Normal;
     float m_ParryTime = 0.0f;           // パリィ演出経過時間.
-    float m_ParryDuration = 0.8f;       // パリィ演出時間.
+    // パリィ演出時間を3フェーズに分割:
+    // m_ParryPhaseInDuration: カメラが目標地点へ移動する時間
+    // m_ParryHoldDuration: 目標地点で留まる時間
+    // m_ParryOutDuration: 元に戻る時間
+    float m_ParryPhaseInDuration = 0.3f;
+    float m_ParryHoldDuration = 0.2f;
+    float m_ParryOutDuration = 0.3f;
     float m_ParryHeightOffset = 1.0f;   // パリィ時の低い高さ.
     float m_ParryLookOffset = 6.0f;     // パリィ時の注視点高さ（見上げる）.
     float m_ParryDistance = 8.0f;       // パリィ時の距離（近づく）.
+    // パリィ時の移動オフセット（ワールド単位）
+    // m_ParryHorizontalOffset: プレイヤーの左右方向へのオフセット（正は右）
+    // m_ParryForwardOffset: プレイヤーの前方（ボス方向）への追加前進距離（正は前）
+    float m_ParryHorizontalOffset = 0.0f;
+    float m_ParryForwardOffset = 0.0f;
+
+    // 明示的な目標/注視点モード
+    bool m_UseExplicitTarget = false; // true の時は m_ExplicitCameraPosOffset / m_ExplicitLookPosOffset を使用
+    DirectX::XMFLOAT3 m_ExplicitCameraPosOffset = { 0.0f, 0.0f, 0.0f };
+    DirectX::XMFLOAT3 m_ExplicitLookPosOffset = { 0.0f, 0.0f, 0.0f };
+
+    void SetUseExplicitTarget(bool v) { m_UseExplicitTarget = v; }
+    bool IsUsingExplicitTarget() const { return m_UseExplicitTarget; }
+    void SetExplicitCameraPosOffset(const DirectX::XMFLOAT3& off) { m_ExplicitCameraPosOffset = off; }
+    void SetExplicitLookPosOffset(const DirectX::XMFLOAT3& off) { m_ExplicitLookPosOffset = off; }
 
     // 必殺技カメラ演出用.
     float m_SpecialLookLerp = 1.0f;     // 必殺技時の注視点補間（1.0=ボス完全ロック）.
+
+    // FOV control for parry and special effects (radians).
+    // Defaults: 50deg and 40deg in radians
+    float m_DefaultFOV = 0.872664626f; // 50deg
+    float m_ParryFOV = 0.698131700f;   // 40deg
+    float m_CurrentFOV = 0.872664626f; // current active FOV
+    
+    // Getter/Setter for FOV
+    void SetDefaultFOV(float radians) { m_DefaultFOV = radians; }
+    float GetDefaultFOV() const { return m_DefaultFOV; }
+    void SetParryFOV(float radians) { m_ParryFOV = radians; }
+    float GetParryFOV() const { return m_ParryFOV; }
+
+    // パリィが雪玉由来かを示すフラグ（雪玉のときはXZを固定してYのみ更新）
+    bool m_ParryBySnowball = false;
 };

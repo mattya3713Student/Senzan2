@@ -33,5 +33,13 @@ namespace PlayerState {
         bool m_IsPaused = false;
         bool m_IsAnimEndStart = false;
         bool m_IsFastTime = false;
+        // 強制位置移動の設定
+        bool m_UseForceOffset = false;
+        DirectX::XMFLOAT3 m_ForceOffset = { 0.0f, 0.0f, 0.0f };
+
+    public:
+        // パリィ開始時にターゲット位置からのオフセットでプレイヤー位置を強制設定する機能
+        void EnableForceOffset(bool v) { m_UseForceOffset = v; }
+        void SetForceOffset(const DirectX::XMFLOAT3& off) { m_ForceOffset = off; }
     };
 }

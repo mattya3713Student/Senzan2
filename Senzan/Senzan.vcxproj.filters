@@ -142,6 +142,10 @@
     <ClCompile Include="SourceCode\System\Singleton\SnowBallManager\SnowBallManager.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\03_SnowBall\SnowBallManager.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossSpinningState\BossSpinningState.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\01_Player\State\Root\01_Action\02_Dodge\01_JustDodge\AfterImage.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\01_Player\State\Root\01_Action\02_Dodge\01_JustDodge\JustDodgeEffect.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossLaserState\BossLaserState.cpp" />
+    <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\ULTSparkle\ULTSparkle.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SourceCode\Constant.h" />
@@ -299,6 +303,10 @@
     <ClInclude Include="SourceCode\System\Singleton\SnowBallManager\SnowBallManager.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\03_SnowBall\SnowBallManager.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossSpinningState\BossSpinningState.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\01_Player\State\Root\01_Action\02_Dodge\01_JustDodge\AfterImage.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\01_Player\State\Root\01_Action\02_Dodge\01_JustDodge\JustDodgeEffect.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossLaserState\BossLaserState.h" />
+    <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\ULTSparkle\ULTSparkle.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Shader\PMX\Header.hlsli" />
@@ -307,6 +315,7 @@
     <None Include="SourceCode\System\Utility\Math\Math.inl" />
     <None Include="SourceCode\System\Utility\String\FilePath\FilePath.inl" />
     <None Include="tools\add_author_header.py" />
+    <None Include="Data\Shader\Blur\GaussianBlurRuntime.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <Font Include="Data\ImGui\Font\arial.ttf" />

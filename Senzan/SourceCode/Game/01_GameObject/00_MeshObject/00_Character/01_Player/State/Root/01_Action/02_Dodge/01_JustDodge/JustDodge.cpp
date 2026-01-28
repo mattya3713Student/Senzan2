@@ -149,7 +149,7 @@ void JustDodge::Update()
         DirectX::XMFLOAT3 playerPos = m_pOwner->GetPosition();
         DirectX::XMFLOAT3 bossPos = m_pOwner->m_TargetPos;
         // エフェクトの終点をボスより奥にする（例: +10.0f）
-        m_pOwner->StartJustDodgeEffect(playerPos, bossPos, 10.0f, 1.0f, 10.0f);
+        m_pOwner->StartJustDodgeEffect(playerPos, bossPos, 10.0f, 1.0f, 2.0f);
         m_IsEffectStart = true;
     }
 

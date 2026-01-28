@@ -147,7 +147,7 @@ void BossSpinningState::Exit()
 
 std::pair<Boss::enBossAnim, float> BossSpinningState::GetParryAnimPair()
 {
-    return std::pair(Boss::enBossAnim::ChargeAttack, 2.466f);
+    return std::pair(Boss::enBossAnim::ChargeAttack, 0.215f);
 }
 
 void BossSpinningState::DrawImGui()

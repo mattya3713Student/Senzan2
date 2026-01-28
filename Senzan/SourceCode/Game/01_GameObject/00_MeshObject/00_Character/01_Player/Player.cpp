@@ -12,6 +12,7 @@
 #include "State/Root/00_System/02_Dead/Dead.h"
 #include "State/Root/00_System/03_SpecialAttack/SpecialAttack.h"
 
+
 #include "State/Root/01_Action/Action.h"
 #include "State/Root/01_Action/00_Movement/Movement.h"
 #include "State/Root/01_Action/00_Movement/00_Idle/Idle.h"
@@ -31,6 +32,7 @@
 #include "Game/03_Collision/00_Core/Ex_CompositeCollider/CompositeCollider.h"
 
 #include "Game/04_Time/Time.h"
+#include "Game/05_InputDevice/Input.h"
 
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
 #include "System/Singleton/CameraManager/CameraManager.h"
@@ -213,11 +215,18 @@ void Player::LateUpdate()
 
 void Player::Draw()
 {
-	// モデルの関係で前後反転.
-	m_spTransform->SetRotationY(GetRotation().y + D3DXToRadian(180.0f));
+    // モデルの関係で前後反転.
+    // X/Z 軸の回転が描画時に変わらないよう、元の回転を保持して
+    // 一時的に Y 軸のみを変更して描画を行い、その後に復元する。
+    DirectX::XMFLOAT3 originalRot = m_spTransform->Rotation;
+    DirectX::XMFLOAT3 tempRot = originalRot;
+    tempRot.x = 0.0f; // X軸回転を無効化
+    tempRot.z = 0.0f; // Z軸回転を無効化
+    tempRot.y = originalRot.y + D3DXToRadian(180.0f);
+    m_spTransform->SetRotation(tempRot);
 
     m_RootState->Draw();
-	Character::Draw();
+    Character::Draw();
 
     // ジャスト回避エフェクトの描画
     if (m_pJustDodgeEffect && m_pJustDodgeEffect->IsPlaying())
@@ -225,7 +234,8 @@ void Player::Draw()
         m_pJustDodgeEffect->Draw();
     }
 
-	m_spTransform->SetRotationY(GetRotation().y - D3DXToRadian(180.0f));
+    // 回転を元に戻す
+    m_spTransform->SetRotation(originalRot);
 }
 
 // ノック中か.
@@ -377,7 +387,7 @@ void Player::HandleDamageDetection()
 				vBossToPlayer = DirectX::XMVector3Normalize(vBossToPlayer);
 				DirectX::XMStoreFloat3(&m_KnockBackVec, vBossToPlayer);
 
-				m_KnockBackPower = 100.f;
+				m_KnockBackPower = 40.f;
 
 				// 状態をノックバックに遷移させる
 				ChangeState(PlayerState::eID::KnockBack);
@@ -416,7 +426,8 @@ void Player::HandleAttackDetection()
             if ((other_group & eCollisionGroup::Enemy_Damage) != eCollisionGroup::None)
             {
                 for (int i = 0; i < 3; ++i)
-                { // 小さなランダムオフセットを追加してエフェクト位置に揺らぎを持たせる
+                {
+                    // ランダムオフセット.
                     static thread_local std::mt19937 s_rng((std::random_device())());
                     std::uniform_real_distribution<float> dist(-1.2f, 1.2f);
                     std::uniform_real_distribution<float> rotDist(0.0f, DirectX::XM_2PI);
@@ -427,7 +438,7 @@ void Player::HandleAttackDetection()
                         info.ContactPoint.z + dist(s_rng)
                     };
 
-                    // ランダム回転（ラジアン）を作成してエフェクトに渡す
+                    // ランダム回転.
                     DirectX::XMFLOAT3 eulerRot{ rotDist(s_rng), rotDist(s_rng), rotDist(s_rng) };
                     PlayEffectAtWorldPos("Hit2", jitterPos, eulerRot);
                 }
@@ -435,7 +446,7 @@ void Player::HandleAttackDetection()
 				SoundManager::GetInstance().SetVolume("Hit1", 9000);
 
 				++m_Combo;
-				m_CurrentUltValue = std::clamp(m_CurrentUltValue + (static_cast<float>(m_Combo) * 5.f), 0.0f, m_MaxUltValue);
+				m_CurrentUltValue = std::clamp(m_CurrentUltValue + static_cast<float>(m_Combo), 0.0f, m_MaxUltValue);
 				SetAttackColliderActive(false);
 
 				// 一フレーム1回.
@@ -508,7 +519,7 @@ void Player::HandleParry_SuccessDetection()
 				m_IsSuccessParry = true;
 				
 				// パリィ成功時のゲージ増加
-				m_CurrentUltValue += 500.0f;
+				m_CurrentUltValue += 5000.0f;
 
 				// パリィ成功時のカメラ演出（シェイク）
 				CameraManager::GetInstance().ShakeCamera(0.15f, 0.3f);

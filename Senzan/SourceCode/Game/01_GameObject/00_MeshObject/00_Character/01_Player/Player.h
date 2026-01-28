@@ -161,7 +161,7 @@ protected:
 	//---System関連---.
 	bool				m_IsKnockBack; 		// ノックバック中か否か.
 	DirectX::XMFLOAT3	m_KnockBackVec; 	// ノックバックのベクトル.
-	float				m_KnockBackPower; 	// ノックバックの強さ(被ダメの量に比例する予定).
+	float				m_KnockBackPower; 	// ノックバックの強さ.
 	bool				m_IsDead; 			// 死亡中か否か.
 
 	//---MoveMent関連---.

@@ -4,6 +4,9 @@
     "Charge": 1.8289999961853027,
     "Exit": 1.5
   },
+  "AscentDuration": 0.25,
+  "AscentEasing": 2,
+  "AscentHeight": 10.0,
   "ColliderWindows": [
     {
       "BoneName": "boss_pSphere28",
@@ -12,12 +15,14 @@
       "offset": [
         0.0,
         0.0,
-        -15.0
+        -10.0
       ],
       "oneShot": true,
-      "start": 3.061000108718872
+      "start": 2.6610000133514404
     }
   ],
+  "DescentDuration": 0.1889999955892563,
+  "DescentEasing": 4,
   "ForwardSpeed": 15.0,
   "Gravity": 1.5,
   "JumpPower": 5.0,
@@ -28,6 +33,7 @@
   "StompDamage": 10.0,
   "StompRadius": 7.5,
   "UpSpeed": 1.0,
+  "UseVerticalEasing": true,
   "WaitSeconds": 1.343000054359436,
   "m_AttackAmount": 10.0,
   "m_AttackBoneName": "",

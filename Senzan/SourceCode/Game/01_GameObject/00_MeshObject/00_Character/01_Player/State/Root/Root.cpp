@@ -72,7 +72,7 @@ void Root::Enter()
     m_pParry = std::make_unique<Parry>(m_pOwner);
     m_pDodgeExecute = std::make_unique<DodgeExecute>(m_pOwner);
     m_pJustDodge = std::make_unique<JustDodge>(m_pOwner);
-    m_CurrentActiveState = std::ref(*m_pRun.get());
+    m_CurrentActiveState = std::ref(*m_pIdle.get());
 }
 
 void Root::Update()

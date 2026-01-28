@@ -5,6 +5,7 @@
 #include "Game/04_Time/Time.h"
 #include "System/Singleton/ImGui/CImGuiManager.h"
 #include "System/Utility/FileManager/FileManager.h"
+#include "System/Singleton/ParryManager/ParryManager.h"
 
 LockOnCamera::LockOnCamera(const Player& player, const Boss& target)
     : m_rPlayer(player)
@@ -18,42 +19,83 @@ LockOnCamera::LockOnCamera(const Player& player, const Boss& target)
 {
     m_Distance = 15.0f; // カメラからプレイヤーまでの距離.
     try { LoadSettings(); } catch (...) {}
+
+    // 初期FOVをCameraBaseへ適用
+    SetFOV(m_CurrentFOV);
 }
 
 void LockOnCamera::Update()
 {
     float dt = Time::GetInstance().GetDeltaTime();
 
-//#if _DEBUG
-//	if (ImGui::Begin(IMGUI_JP("LockOnCamera Debug")))
-//	{
-//		ImGui::DragFloat(IMGUI_JP("距離"), &m_Distance, 0.1f, 1.0f, 50.0f);
-//		ImGui::DragFloat(IMGUI_JP("追従速度"), &m_FollowSpeed, 0.05f, 0.1f, 10.0f);
-//		ImGui::DragFloat(IMGUI_JP("高さオフセット"), &m_HeightOffset, 0.1f, 0.0f, 20.0f);
-//		ImGui::DragFloat(IMGUI_JP("注視点高さ"), &m_LookOffset, 0.1f, 0.0f, 20.0f);
-//		ImGui::DragFloat(IMGUI_JP("注視点補間"), &m_LookLerp, 0.01f, 0.0f, 1.0f);
-//
-//        ImGui::Separator();
-//        ImGui::Text(IMGUI_JP("パリィカメラ設定"));
-//        ImGui::DragFloat(IMGUI_JP("パリィ演出時間"), &m_ParryDuration, 0.05f, 0.1f, 3.0f);
-//        ImGui::DragFloat(IMGUI_JP("パリィ時高さ"), &m_ParryHeightOffset, 0.1f, -5.0f, 10.0f);
-//        ImGui::DragFloat(IMGUI_JP("パリィ時注視点高さ"), &m_ParryLookOffset, 0.1f, 0.0f, 15.0f);
-//        ImGui::DragFloat(IMGUI_JP("パリィ時距離"), &m_ParryDistance, 0.1f, 1.0f, 20.0f);
-//        
-//        if (ImGui::Button(IMGUI_JP("パリィカメラテスト"))) {
-//            StartParryCamera();
-//        }
-//
-//		if (ImGui::Button(IMGUI_JP("Load"))) {
-//			try { LoadSettings(); } catch (...) {}
-//		}
-//		ImGui::SameLine();
-//		if (ImGui::Button(IMGUI_JP("Save"))) {
-//			try { SaveSettings(); } catch (...) {}
-//		}
-//		ImGui::End();
-//	}
-//#endif
+#if _DEBUG
+	if (ImGui::Begin(IMGUI_JP("LockOnCamera Debug")))
+	{
+		// 距離は明示的ターゲット使用時は無効化
+		if (!m_UseExplicitTarget) {
+			ImGui::DragFloat(IMGUI_JP("距離"), &m_Distance, 0.1f, 1.0f, 50.0f);
+		} else {
+			ImGui::Text(IMGUI_JP("距離: 明示的ターゲット使用中で無効"));
+		}
+		ImGui::DragFloat(IMGUI_JP("追従速度"), &m_FollowSpeed, 0.05f, 0.1f, 10.0f);
+		ImGui::DragFloat(IMGUI_JP("高さオフセット"), &m_HeightOffset, 0.1f, 0.0f, 20.0f);
+		ImGui::DragFloat(IMGUI_JP("注視点高さ"), &m_LookOffset, 0.1f, 0.0f, 20.0f);
+		ImGui::DragFloat(IMGUI_JP("注視点補間"), &m_LookLerp, 0.01f, 0.0f, 1.0f);
+
+		// FOV controls (display as degrees)
+		float defaultFovDeg = DirectX::XMConvertToDegrees(m_DefaultFOV);
+		float parryFovDeg = DirectX::XMConvertToDegrees(m_ParryFOV);
+		if (ImGui::DragFloat(IMGUI_JP("デフォルトFOV(度)"), &defaultFovDeg, 0.1f, 10.0f, 170.0f))
+		{
+			m_DefaultFOV = DirectX::XMConvertToRadians(defaultFovDeg);
+			if (m_CameraMode != eCameraMode::Parry)
+			{
+				m_CurrentFOV = m_DefaultFOV;
+				SetFOV(m_CurrentFOV);
+			}
+		}
+		if (ImGui::DragFloat(IMGUI_JP("パリィFOV(度)"), &parryFovDeg, 0.1f, 10.0f, 170.0f))
+		{
+			m_ParryFOV = DirectX::XMConvertToRadians(parryFovDeg);
+		}
+
+		ImGui::Separator();
+		ImGui::Text(IMGUI_JP("パリィカメラ設定"));
+		ImGui::DragFloat(IMGUI_JP("パリィ: 到達時間"), &m_ParryPhaseInDuration, 0.01f, 0.01f, 3.0f);
+		ImGui::DragFloat(IMGUI_JP("パリィ: 滞在時間"), &m_ParryHoldDuration, 0.01f, 0.0f, 3.0f);
+		ImGui::DragFloat(IMGUI_JP("パリィ: 戻る時間"), &m_ParryOutDuration, 0.01f, 0.01f, 3.0f);
+		ImGui::DragFloat(IMGUI_JP("パリィ時高さ"), &m_ParryHeightOffset, 0.1f, -5.0f, 10.0f);
+		ImGui::DragFloat(IMGUI_JP("パリィ時注視点高さ"), &m_ParryLookOffset, 0.1f, 0.0f, 15.0f);
+		ImGui::DragFloat(IMGUI_JP("パリィ時距離"), &m_ParryDistance, 0.1f, 1.0f, 20.0f);
+		ImGui::DragFloat(IMGUI_JP("パリィ: 横オフセット"), &m_ParryHorizontalOffset, 0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat(IMGUI_JP("パリィ: 前方オフセット"), &m_ParryForwardOffset, 0.01f, -10.0f, 10.0f);
+
+		ImGui::Separator();
+		ImGui::Text(IMGUI_JP("明示的ターゲット"));
+		ImGui::Checkbox(IMGUI_JP("明示的な目標/注視点を使用"), &m_UseExplicitTarget);
+		float camOff[3] = { m_ExplicitCameraPosOffset.x, m_ExplicitCameraPosOffset.y, m_ExplicitCameraPosOffset.z };
+		if (ImGui::DragFloat3(IMGUI_JP("カメラ位置オフセット (相対: x,y,z)"), camOff, 0.1f)) {
+			m_ExplicitCameraPosOffset = { camOff[0], camOff[1], camOff[2] };
+		}
+		float lookOff[3] = { m_ExplicitLookPosOffset.x, m_ExplicitLookPosOffset.y, m_ExplicitLookPosOffset.z };
+		if (ImGui::DragFloat3(IMGUI_JP("注視点オフセット (相対: x,y,z)"), lookOff, 0.1f)) {
+			m_ExplicitLookPosOffset = { lookOff[0], lookOff[1], lookOff[2] };
+		}
+
+		if (ImGui::Button(IMGUI_JP("パリィカメラテスト"))) {
+			StartParryCamera();
+		}
+
+		if (ImGui::Button(IMGUI_JP("Load"))) {
+			try { LoadSettings(); } catch (...) {}
+		}
+		ImGui::SameLine();
+		if (ImGui::Button(IMGUI_JP("Save"))) {
+			try { SaveSettings(); } catch (...) {}
+		}
+		ImGui::End();
+	}
+#endif
 
     // カメラモードに応じて更新処理を分岐.
     switch (m_CameraMode)
@@ -136,9 +178,9 @@ void LockOnCamera::UpdateNormalCamera(float dt)
 void LockOnCamera::UpdateParryCamera(float dt)
 {
     m_ParryTime += dt;
-
-    // 演出終了判定.
-    if (m_ParryTime >= m_ParryDuration)
+    // 演出終了判定: 合計フェーズ時間を超えたら終了
+    float totalDuration = m_ParryPhaseInDuration + m_ParryHoldDuration + m_ParryOutDuration;
+    if (m_ParryTime >= totalDuration)
     {
         EndParryCamera();
         UpdateNormalCamera(dt);
@@ -148,28 +190,39 @@ void LockOnCamera::UpdateParryCamera(float dt)
     const auto& player = m_rPlayer.get();
     const auto& target = m_rTarget.get();
 
-    // イージング進行率（0.0 ~ 1.0）.
-    float t = m_ParryTime / m_ParryDuration;
-    
-    // 前半は潜り込み、後半は戻り.
-    float easedT;
-    if (t < 0.5f)
+    // totalDuration は上で計算済みなのでここでは再計算しない
+    // (全体進行率 t はフェーズごとの計算で不要)
+    static bool isSlow = false;
+    // フェーズ別の進行率を計算
+    float easedT = 0.0f;
+    if (m_ParryTime <= m_ParryPhaseInDuration)
     {
-        // 前半: 通常→パリィ位置へ（EaseOutQuad: 1 - (1-t)^2）.
-        float halfT = t * 2.0f;
-        easedT = 1.0f - (1.0f - halfT) * (1.0f - halfT);
+        // フェーズ入力: 通常→パリィ位置へ（EaseOutQuad）
+        float phaseT = m_ParryTime / m_ParryPhaseInDuration; // 0..1
+        easedT = 1.0f - (1.0f - phaseT) * (1.0f - phaseT);
     }
-    else if (t < 0.6f)
+    else if (m_ParryTime <= m_ParryPhaseInDuration + m_ParryHoldDuration)
     {
-        float halfT = 0.5f * 2.0f;
-        easedT = 1.0f - (1.0f - halfT) * (1.0f - halfT);
-        // 一瞬止まる.
+        if (!isSlow)
+        {
+            // 一時的にワールド時間を止める.
+            Time::GetInstance().SetWorldTimeScale(0.01f, 0.016f * 5, true);
+            isSlow = true;
+        }
+       
+        // ホールドフェーズ: 完全にパリィ位置に固定
+        easedT = 1.0f;
     }
-    else 
+    else
     {
-        // 後半: パリィ位置→通常へ（EaseInQuad: t^2）.
-        float halfT = (t - 0.5f) * 2.0f;
-        easedT = 1.0f - (halfT * halfT);
+        isSlow = false;
+
+        // フェーズアウト: パリィ位置→通常へ（EaseInQuad）
+        float outTime = m_ParryTime - (m_ParryPhaseInDuration + m_ParryHoldDuration);
+        float phaseT = outTime / m_ParryOutDuration; // 0..1
+        float inv = 1.0f - phaseT;
+        easedT = 1.0f - (inv * inv); // ease in reversed to go from 1->0
+        easedT = 1.0f - easedT; // invert to go from 1->0 over phase
     }
 
     // 1. 各座標を取得.
@@ -194,23 +247,72 @@ void LockOnCamera::UpdateParryCamera(float dt)
     float currentLookOffset = m_LookOffset + (m_ParryLookOffset - m_LookOffset) * easedT;
     float currentDistance = m_Distance + (m_ParryDistance - m_Distance) * easedT;
 
+    // FOVを補間して演出（狭める）
+    m_CurrentFOV = m_DefaultFOV + (m_ParryFOV - m_DefaultFOV) * easedT;
+    SetFOV(m_CurrentFOV);
+
     // 注視点を計算（パリィ時はボス寄りにして見上げる）.
     float parryLookLerp = m_LookLerp + (0.9f - m_LookLerp) * easedT;
     DirectX::XMVECTOR vMidPoint = DirectX::XMVectorLerp(vPlayerPos, vBossPos, parryLookLerp);
     vMidPoint = DirectX::XMVectorAdd(vMidPoint, DirectX::XMVectorSet(0.0f, currentLookOffset, 0.0f, 0.0f));
 
-    // 3. 理想のカメラ位置を計算（低い位置から）.
-    DirectX::XMVECTOR vIdealPos = DirectX::XMVectorAdd(vPlayerPos, DirectX::XMVectorScale(vToPlayerDir, currentDistance));
+    // 3. 理想のカメラ位置を計算（低い位置から）。
+    DirectX::XMVECTOR vIdealPos;
+    if (m_UseExplicitTarget)
+    {
+        // 明示的ターゲットモード: プレイヤー位置にオフセットを加える。
+        DirectX::XMVECTOR vCamOffset = DirectX::XMLoadFloat3(&m_ExplicitCameraPosOffset);
+        vIdealPos = DirectX::XMVectorAdd(vPlayerPos, vCamOffset);
+    }
+    else
+    {
+        vIdealPos = DirectX::XMVectorAdd(vPlayerPos, DirectX::XMVectorScale(vToPlayerDir, currentDistance));
+        // パリィ時は左右・前方へのオフセットも適用（easedT で補間）
+        // 右方向ベクトルを計算（ローカル変数名が後で重複しないよう専用名を使う）
+        DirectX::XMVECTOR vUpForOffset = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+        DirectX::XMVECTOR vRightForOffset = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(vUpForOffset, vToPlayerDir));
+        // オフセットベクトル
+        DirectX::XMVECTOR vHorizontalOffset = DirectX::XMVectorScale(vRightForOffset, m_ParryHorizontalOffset * easedT);
+        DirectX::XMVECTOR vForwardOffset = DirectX::XMVectorScale(vToPlayerDir, m_ParryForwardOffset * easedT);
+        vIdealPos = DirectX::XMVectorAdd(vIdealPos, vHorizontalOffset);
+        vIdealPos = DirectX::XMVectorAdd(vIdealPos, vForwardOffset);
+    }
+    // 高さを追加
     vIdealPos = DirectX::XMVectorAdd(vIdealPos, DirectX::XMVectorSet(0.0f, currentHeight, 0.0f, 0.0f));
 
     // 4. カメラ位置を更新（パリィ中は高速追従）.
     DirectX::XMVECTOR vCurrentPos = DirectX::XMLoadFloat3(&m_spTransform.Position);
     float lerpFactor = std::clamp(m_FollowSpeed * 3.0f * dt, 0.0f, 1.0f);
     DirectX::XMVECTOR vNextPos = DirectX::XMVectorLerp(vCurrentPos, vIdealPos, lerpFactor);
+
+    // 雪玉由来のパリィだったら、XZ成分は現在値を維持してYだけ補間する
+    if (!m_ParryBySnowball && ParryManager::GetInstance().WasLastParriedBySnowball())
+    {
+        m_ParryBySnowball = true;
+        ParryManager::GetInstance().ClearLastParriedFlag();
+    }
+    if (m_ParryBySnowball)
+    {
+        float curX = DirectX::XMVectorGetX(vCurrentPos);
+        float curZ = DirectX::XMVectorGetZ(vCurrentPos);
+        float nextY = DirectX::XMVectorGetY(vNextPos);
+        vNextPos = DirectX::XMVectorSet(curX, nextY, curZ, 0.0f);
+    }
+
     DirectX::XMStoreFloat3(&m_spTransform.Position, vNextPos);
 
     // 5. 注視点の適用.
-    DirectX::XMStoreFloat3(&m_LookPos, vMidPoint);
+    if (m_UseExplicitTarget)
+    {
+        // 明示的注視点モード: ボス/プレイヤー間の代わりにプレイヤー位置 + オフセットを使う
+        DirectX::XMVECTOR vLookOffset = DirectX::XMLoadFloat3(&m_ExplicitLookPosOffset);
+        DirectX::XMVECTOR vExplicitLook = DirectX::XMVectorAdd(vPlayerPos, vLookOffset);
+        DirectX::XMStoreFloat3(&m_LookPos, vExplicitLook);
+    }
+    else
+    {
+        DirectX::XMStoreFloat3(&m_LookPos, vMidPoint);
+    }
 
     // 前方ベクトル・右方ベクトル・行列更新.
     DirectX::XMVECTOR vForward = DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(vMidPoint, vNextPos));
@@ -229,22 +331,36 @@ void LockOnCamera::StartParryCamera()
 {
     m_CameraMode = eCameraMode::Parry;
     m_ParryTime = 0.0f;
+    // パリィ開始時は雪玉フラグをクリアしておく
+    m_ParryBySnowball = false;
 }
 
 void LockOnCamera::EndParryCamera()
 {
     m_CameraMode = eCameraMode::Normal;
     m_ParryTime = 0.0f;
+
+    // 雪玉モードを終了
+    m_ParryBySnowball = false;
+
+    // パリィ終了時にはFOVを元に戻す
+    m_CurrentFOV = m_DefaultFOV;
+    SetFOV(m_CurrentFOV);
 }
 
 void LockOnCamera::StartSpecialCamera()
 {
     m_CameraMode = eCameraMode::Special;
+    // 必殺技開始時に少しFOVを広げる演出例
+    m_CurrentFOV = m_DefaultFOV + DirectX::XMConvertToRadians(5.0f);
+    SetFOV(m_CurrentFOV);
 }
 
 void LockOnCamera::EndSpecialCamera()
 {
     m_CameraMode = eCameraMode::Normal;
+    m_CurrentFOV = m_DefaultFOV;
+    SetFOV(m_CurrentFOV);
 }
 
 void LockOnCamera::UpdateSpecialCamera(float dt)
@@ -310,6 +426,16 @@ void LockOnCamera::SaveSettings() const
     j["HeightOffset"] = m_HeightOffset;
     j["LookOffset"] = m_LookOffset;
     j["LookLerp"] = m_LookLerp;
+    j["ParryPhaseInDuration"] = m_ParryPhaseInDuration;
+    j["ParryHoldDuration"] = m_ParryHoldDuration;
+    j["ParryOutDuration"] = m_ParryOutDuration;
+    j["ParryHorizontalOffset"] = m_ParryHorizontalOffset;
+    j["ParryForwardOffset"] = m_ParryForwardOffset;
+    j["UseExplicitTarget"] = m_UseExplicitTarget;
+    j["ExplicitCameraPosOffset"] = { m_ExplicitCameraPosOffset.x, m_ExplicitCameraPosOffset.y, m_ExplicitCameraPosOffset.z };
+    j["ExplicitLookPosOffset"] = { m_ExplicitLookPosOffset.x, m_ExplicitLookPosOffset.y, m_ExplicitLookPosOffset.z };
+    j["DefaultFOV"] = m_DefaultFOV;
+    j["ParryFOV"] = m_ParryFOV;
 
     auto filePath = GetSettingsFileName();
     if (!filePath.is_absolute()) {
@@ -333,4 +459,23 @@ void LockOnCamera::LoadSettings()
     if (j.contains("HeightOffset")) m_HeightOffset = j["HeightOffset"].get<float>();
     if (j.contains("LookOffset")) m_LookOffset = j["LookOffset"].get<float>();
     if (j.contains("LookLerp")) m_LookLerp = j["LookLerp"].get<float>();
+    if (j.contains("ParryPhaseInDuration")) m_ParryPhaseInDuration = j["ParryPhaseInDuration"].get<float>();
+    if (j.contains("ParryHoldDuration")) m_ParryHoldDuration = j["ParryHoldDuration"].get<float>();
+    if (j.contains("ParryOutDuration")) m_ParryOutDuration = j["ParryOutDuration"].get<float>();
+    if (j.contains("ParryHorizontalOffset")) m_ParryHorizontalOffset = j["ParryHorizontalOffset"].get<float>();
+    if (j.contains("ParryForwardOffset")) m_ParryForwardOffset = j["ParryForwardOffset"].get<float>();
+    if (j.contains("UseExplicitTarget")) m_UseExplicitTarget = j["UseExplicitTarget"].get<bool>();
+    if (j.contains("ExplicitCameraPosOffset") && j["ExplicitCameraPosOffset"].is_array()) {
+        auto arr = j["ExplicitCameraPosOffset"];
+        m_ExplicitCameraPosOffset = { arr[0].get<float>(), arr[1].get<float>(), arr[2].get<float>() };
+    }
+    if (j.contains("ExplicitLookPosOffset") && j["ExplicitLookPosOffset"].is_array()) {
+        auto arr = j["ExplicitLookPosOffset"];
+        m_ExplicitLookPosOffset = { arr[0].get<float>(), arr[1].get<float>(), arr[2].get<float>() };
+    }
+    if (j.contains("DefaultFOV")) m_DefaultFOV = j["DefaultFOV"].get<float>();
+    if (j.contains("ParryFOV")) m_ParryFOV = j["ParryFOV"].get<float>();
+    // Apply loaded/default FOV
+    m_CurrentFOV = m_DefaultFOV;
+    CameraBase::SetFOV(m_CurrentFOV);
 }
