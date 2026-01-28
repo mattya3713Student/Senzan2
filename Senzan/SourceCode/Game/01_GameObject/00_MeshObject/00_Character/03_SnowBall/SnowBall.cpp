@@ -42,7 +42,7 @@ SnowBall::SnowBall()
     // パリィで跳ね返す挙動に対応するために Player_Parry_Suc をターゲットに追加
     m_pAttackCollider->SetTarGetTargetMask(eCollisionGroup::Player_Damage | eCollisionGroup::Player_Parry_Suc);
     m_pAttackCollider->SetPositionOffset({ 0.0f, 10.f, 0.0f });
-    m_pAttackCollider->SetAttackAmount(8.0f);
+    m_pAttackCollider->SetAttackAmount(2.0f);
     m_pAttackCollider->SetHeight(25.0f);
     m_pAttackCollider->SetRadius(8.f);
     m_pAttackCollider->SetActive(true);

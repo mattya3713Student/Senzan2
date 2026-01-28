@@ -48,7 +48,7 @@ public:
 
     // Render an arbitrary SRV through the post-effect pipeline and output to backbuffer.
     // srcW/srcH are the source SRV dimensions and are used for blur/motion blur texel calculations.
-    void RenderSRVWithPostEffects(ID3D11ShaderResourceView* srcSRV, int srcW, int srcH);
+    void RenderSRVWithPostEffects(ID3D11ShaderResourceView* srcSRV, int srcW, int srcH, bool forceFullGray = false);
 
 private:
     // シェーダー用定数バッファ構造体

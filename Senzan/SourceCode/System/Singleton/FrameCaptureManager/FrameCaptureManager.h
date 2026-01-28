@@ -81,8 +81,7 @@ public:
     bool IsRolling() const { return m_bRolling; }
 
 	// 再生トリガーキー（VK_F9をデフォルトとする）
-	void SetPlaybackTriggerKey(int vkKey) { m_PlaybackTriggerKey = vkKey; }
-	int  GetPlaybackTriggerKey() const { return m_PlaybackTriggerKey; }
+	void SetPlaybackTriggerKey(bool isplayback) { m_IsPlaybackTriggerKey = isplayback; }
 
 private:
 	// フレーム保存用テクスチャの作成
@@ -117,7 +116,7 @@ private:
     float m_PlaybackIntervalBackup;
 
 	// 操作トリガー
-	int   m_PlaybackTriggerKey;     // 再生開始キー（VKコード）
+	bool   m_IsPlaybackTriggerKey;     // 再生開始キー（VKコード）
 
 	// DirectX11リソース
 	std::vector<ID3D11Texture2D*>          m_CaptureTextures;   // キャプチャ用テクスチャ

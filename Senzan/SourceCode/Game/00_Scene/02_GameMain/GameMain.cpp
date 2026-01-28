@@ -47,7 +47,7 @@ GameMain::GameMain()
     , m_upBoss        (std::make_unique<Boss>())
     , m_upPlayer    (std::make_unique<Player>())
     , m_upUI        (std::make_shared<UIGameMain>())
-    , m_TimeLimit   (10800.0f*Time::GetInstance().GetDeltaTime())
+    , m_TimeLimit   (10800.0f/**Time::GetInstance().GetDeltaTime()*/)
     , m_upUIOver    ()
     , m_upUIEnding  ()
 {
@@ -75,8 +75,15 @@ void GameMain::Initialize()
     CameraManager::GetInstance().SetCamera(m_spCamera);
     CameraManager::GetInstance().SetPosition({ 0.f, 3.f, 40.f });
 
+    // 雪玉設定.
+    SnowBallManager::GetInstance().Init();
+
     // ParryManager に Player と Boss の参照を設定
     ParryManager::GetInstance().Initialize(m_upPlayer.get(), m_upBoss.get());
+
+    // ポストエフェクトのキャンセル.
+    PostEffectManager::GetInstance().SetGray(false);
+    PostEffectManager::GetInstance().SetBlurEnabled(false);
 
     SoundManager::GetInstance().Play("Main", true);
     SoundManager::GetInstance().SetVolume("Main", 8000);
@@ -122,7 +129,11 @@ void GameMain::Update()
             if (!decidecontinue) {
                 SoundManager::GetInstance().Play("Decide");
                 SoundManager::GetInstance().SetVolume("Decide", 8000);
-                SceneManager::LoadScene(eList::GameMain);
+
+                // 巻き戻し開始.
+                FrameCaptureManager::GetInstance().SetPlaybackTriggerKey(true);
+                return;
+                SceneManager::LoadScene(eList::GameMain, false);
             }
             else{
                 SoundManager::GetInstance().Play("Decide");

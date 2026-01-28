@@ -74,6 +74,7 @@ void BossJumpOnlState::Enter()
 	m_GroundedFrag = true;
     m_RiseStarted = false;
     m_IsFalling = false;
+    Isfast = false;
     m_HasPlayedPreFallEffect = false;
     m_pOwner->SetAnimSpeed(3.0);
     m_pOwner->ChangeAnim(Boss::enBossAnim::Special_0);
@@ -105,6 +106,11 @@ void BossJumpOnlState::Update()
 
 	case BossJumpOnlState::enSpecial::CoolTime:
 		m_Timer += deltaTime;
+
+        if (auto* col = m_pOwner->GetLaserCollider()) {
+            col->SetActive(false);
+        }
+
 		// SpecialToIdolアニメーションが終了したら遷移
 		if (m_pOwner->IsAnimEnd(Boss::enBossAnim::LaserEnd))
 		{
@@ -351,6 +357,15 @@ void BossJumpOnlState::BossAttack()
     // Attack フェーズは、JumpOn の場合は落下処理
     if (m_IsFalling)
     {
+        if (auto* col = m_pOwner->GetLaserCollider()) {
+            if (!Isfast)
+            {
+                Isfast = true;
+                col->SetActive(true);
+                col->SetAttackAmount(2.5f);
+                col->SetPositionOffset(0.f, 0.f, 0.f);
+            }
+        }
         // 真っ直ぐ下に落下
         CurrentPos.y -= m_FallSpeed * deltaTime;
         if (CurrentPos.y <= floorY)

@@ -26,6 +26,7 @@
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossThrowingState/BossThrowingState.h"
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossSpinningState/BossSpinningState.h"
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossLaserState/BossLaserState.h"
+#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossSpecialDamageState/BossSpecialDamageState.h"
 
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
 #include "System/Singleton/CameraManager/CameraManager.h"
@@ -158,11 +159,11 @@ Boss::Boss()
     // レーザー攻撃の当たり判定作成.
     auto laser_collider = std::make_unique<CapsuleCollider>(m_spTransform);
 	m_pLaserCollider = laser_collider.get();
-    m_pLaserCollider->SetMyMask(eCollisionGroup::Enemy_Attack);
+    m_pLaserCollider->SetMyMask(eCollisionGroup::Enemy_Attack );
     m_pLaserCollider->SetTarGetTargetMask(
         eCollisionGroup::Player_Damage
-        | eCollisionGroup::Player_Parry_Fai
-        | eCollisionGroup::Player_JustDodge);
+        | eCollisionGroup::Player_JustDodge
+        | eCollisionGroup::Player_Parry_Noc);
     m_pLaserCollider->SetAttackAmount(10.0f);
     m_pLaserCollider->SetHeight(40.0f);
     m_pLaserCollider->SetRadius(15.0f);
@@ -222,12 +223,13 @@ void Boss::Update()
             IMGUI_JP("Move"),
             IMGUI_JP("Slash"),
             IMGUI_JP("Shout"),
-            IMGUI_JP("BossSpinningState"),
+            IMGUI_JP("Spinning"),
             IMGUI_JP("JumpOn"),
             IMGUI_JP("Stomp"),
             IMGUI_JP("Throwing"),
             IMGUI_JP("Parry"),
-            IMGUI_JP("Laser")
+            IMGUI_JP("Laser"),
+            IMGUI_JP("SpecialDamage")
         };
         constexpr int state_count = static_cast<int>(sizeof(state_labels) / sizeof(state_labels[0]));
         const int buttons_per_row = 4;
@@ -253,6 +255,7 @@ void Boss::Update()
                 case 7: m_State->ChangeState(std::make_shared<BossThrowingState>(this)); break;
                 case 8: m_State->ChangeState(std::make_shared<BossParryState>(this)); break;
                 case 9: m_State->ChangeState(std::make_shared<BossLaserState>(this)); break;
+                case 10: m_State->ChangeState(std::make_shared<BossSpecialDamageState>(this)); break;
                 default: break;
                 }
             }

@@ -12,6 +12,9 @@ public:
     SnowBallManager() = default;
     ~SnowBallManager() = default;
 
+    // 初期化.
+    void Init();
+    // 生成.
     void Spawn(const DirectX::XMFLOAT3& playerPos, const DirectX::XMFLOAT3& bossPos);
     void Update();
     void Draw();

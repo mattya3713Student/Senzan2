@@ -129,6 +129,7 @@ private:
 	// 衝突_パリィ.
 	void HandleParry_SuccessDetection();
 	void HandleParry_FailDetection();
+	void HandleParry_NocDetection();
 
 protected:
 
