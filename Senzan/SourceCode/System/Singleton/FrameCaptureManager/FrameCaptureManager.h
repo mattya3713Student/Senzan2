@@ -83,6 +83,12 @@ public:
 	// 再生トリガーキー（VK_F9をデフォルトとする）
 	void SetPlaybackTriggerKey(bool isplayback) { m_IsPlaybackTriggerKey = isplayback; }
 
+    // シーンリロード要求をチェック（Update内で呼ぶ）
+    bool ConsumeReloadRequest();
+
+    // キャプチャ状態をリセット（新しいシーン開始時に呼ぶ）
+    void ResetCapture();
+
 private:
 	// フレーム保存用テクスチャの作成
 	void CreateCaptureTextures();
@@ -147,6 +153,8 @@ private:
     bool m_bRewindMode;
     // 再読み込みフラグ（巻き戻し完了後にシーンを再構築）
     bool m_bReloadOnComplete;
+    // シーンリロード要求フラグ（次フレームでシーンをリロード）
+    bool m_bRequestSceneReload;
 
 	// フルスクリーンクワッド用リソース
 	ID3D11Buffer*             m_pFullscreenVB;      // 頂点バッファ

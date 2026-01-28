@@ -108,6 +108,7 @@ FrameCaptureManager::FrameCaptureManager()
     , m_bRolling(false)
     , m_bRewindMode(false)
     , m_bReloadOnComplete(false)
+    , m_bRequestSceneReload(false)
     , m_SampleIntervalFrames(30)
     , m_AssumedFPS(60)
     , m_FrameCounter(0)
@@ -261,7 +262,9 @@ void FrameCaptureManager::Update(float deltaTime)
             m_PlaybackIntervalBackup = m_FrameInterval;
             m_FrameInterval = 1.0f / 60.0f;
             m_bPlaying = true; // reuse playing state for rendering rewind
+            m_bLoopPlayback = false; // 巻き戻しはループしない
             m_bReloadOnComplete = true; // シーン再構築を行う
+            m_IsPlaybackTriggerKey = false; // トリガーをリセット
         }
 	}
 }
@@ -590,6 +593,39 @@ void FrameCaptureManager::StopPlayback()
 	}
 }
 
+// シーンリロード要求をチェックして消費
+bool FrameCaptureManager::ConsumeReloadRequest()
+{
+    if (m_bRequestSceneReload)
+    {
+        m_bRequestSceneReload = false;
+        return true;
+    }
+    return false;
+}
+
+// キャプチャ状態をリセット（新しいシーン開始時に呼ぶ）
+void FrameCaptureManager::ResetCapture()
+{
+    StopPlayback();
+    m_bCapturing = false;
+    m_bRolling = false;
+    m_bRewindMode = false;
+    m_bReloadOnComplete = false;
+    m_bRequestSceneReload = false;
+    m_IsPlaybackTriggerKey = false;
+    m_CaptureTimer = 0.0f;
+    m_FrameAccumulator = 0.0f;
+    m_WriteIndex = 0;
+    m_CapturedFrameCount = 0;
+    m_PlaybackIndex = 0;
+    m_PlaybackAccumulator = 0.0f;
+    m_FrameCounter = 0;
+    
+    // テクスチャは解放して新しいシーンでCreate時に再作成される
+    ReleaseCaptureTextures();
+}
+
 // 再生用描画
 void FrameCaptureManager::RenderPlayback(float deltaTime)
 {
@@ -607,24 +643,38 @@ void FrameCaptureManager::RenderPlayback(float deltaTime)
         if (m_bRewindMode)
         {
             m_PlaybackIndex--;
+            // 巻き戻し完了チェック
+            if (m_PlaybackIndex < 0)
+            {
+                // 巻き戻し完了
+                m_bRewindMode = false;
+                m_bPlaying = false;
+                m_bRolling = false; // ロールキャプチャも停止
+                if (m_bReloadOnComplete)
+                {
+                    m_bReloadOnComplete = false;
+                    // Draw内でシーン破棄は危険なのでフラグを立てて次フレームで処理
+                    m_bRequestSceneReload = true;
+                }
+                return;
+            }
         }
         else
         {
             m_PlaybackIndex++;
+            if (m_PlaybackIndex >= m_CapturedFrameCount)
+            {
+                if (m_bLoopPlayback)
+                {
+                    m_PlaybackIndex = 0;
+                }
+                else
+                {
+                    StopPlayback();
+                    return;
+                }
+            }
         }
-
-		if (m_PlaybackIndex >= m_CapturedFrameCount)
-		{
-			if (m_bLoopPlayback)
-			{
-				m_PlaybackIndex = 0;
-			}
-			else
-			{
-				StopPlayback();
-				return;
-			}
-		}
 	}
 
     // 現在のフレームを描画
@@ -634,19 +684,7 @@ void FrameCaptureManager::RenderPlayback(float deltaTime)
         return;
     }
 
-    // 巻き戻し時の完了チェック（負インデックスになる前に検出）
-    if (m_bRewindMode && m_PlaybackIndex < 0)
-    {
-        // 巻き戻し完了
-        m_bRewindMode = false;
-        m_bPlaying = false;
-        if (m_bReloadOnComplete)
-        {
-            m_bReloadOnComplete = false;
-            SceneManager::GetInstance().MakeScene(eList::GameMain);
-        }
-        return;
-    }
+    // 巻き戻し完了チェックはwhileループ内で処理済み
 
     int frameIndex = 0;
     if (m_bRewindMode)

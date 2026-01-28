@@ -598,9 +598,9 @@ void Player::HandleParry_FailDetection()
 				SoundManager::GetInstance().Play("Parry");
 				SoundManager::GetInstance().SetVolume("Parry",7000);
 				m_IsSuccessParry = true;
-				
-				// パリィ成功時のゲージ増加
-				m_CurrentUltValue += 500.0f;
+
+                // パリィ成功時のゲージ増加
+                m_CurrentUltValue += 5000.0f;
 
 				// パリィ成功時のカメラ演出（シェイク）
 				CameraManager::GetInstance().ShakeCamera(0.15f, 0.3f);

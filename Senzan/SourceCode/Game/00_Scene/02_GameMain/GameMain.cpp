@@ -97,6 +97,25 @@ void GameMain::Create()
 
 void GameMain::Update()
 {
+    auto& fcm = FrameCaptureManager::GetInstance();
+    
+    // 巻き戻し完了後のシーンリロード要求をチェック
+    if (fcm.ConsumeReloadRequest())
+    {
+        // キャプチャ状態をリセットしてシーンをリロード
+        fcm.ResetCapture();
+        SceneManager::LoadScene(eList::GameMain, false);
+        return;
+    }
+
+    // 巻き戻し再生中はゲームロジックをスキップ（FrameCaptureManagerが描画を担当）
+    if (fcm.IsPlaying())
+    {
+        // 巻き戻し再生の更新のみ実行
+        fcm.Update(Time::GetInstance().GetDeltaTime());
+        return;
+    }
+
     Input::Update();
     if (m_upBoss->GetHP() <= 0 && !m_upUIEnding) {
         m_upUIEnding = std::make_shared<UIEnding>();
@@ -130,10 +149,9 @@ void GameMain::Update()
                 SoundManager::GetInstance().Play("Decide");
                 SoundManager::GetInstance().SetVolume("Decide", 8000);
 
-                // 巻き戻し開始.
+                // 巻き戻し開始（FrameCaptureManagerが巻き戻し完了後にシーンをリセットする）
                 FrameCaptureManager::GetInstance().SetPlaybackTriggerKey(true);
                 return;
-                SceneManager::LoadScene(eList::GameMain, false);
             }
             else{
                 SoundManager::GetInstance().Play("Decide");
@@ -193,6 +211,14 @@ void GameMain::LateUpdate()
 
 void GameMain::Draw()
 {
+    // 巻き戻し再生中はキャプチャフレームを描画
+    auto& fcm = FrameCaptureManager::GetInstance();
+    if (fcm.IsPlaying())
+    {
+        fcm.RenderPlayback(Time::GetInstance().GetDeltaTime());
+        return;
+    }
+
     Shadow::Begin();
     m_upGround->DrawDepth();
     Shadow::End();
