@@ -163,6 +163,7 @@ void SceneManager::LoadScene(eList Scene, bool useFade /*= true*/)
     SceneManager& pI = GetInstance();
     if (!useFade)
     {
+        // Immediately replace the scene without fade.
         if (pI.m_pScene) {
             pI.m_pScene.reset();
         }

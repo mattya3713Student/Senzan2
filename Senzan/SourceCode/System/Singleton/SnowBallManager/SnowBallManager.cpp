@@ -36,6 +36,12 @@ void SnowBallManager::Draw()
     }
 }
 
+// 初期化.
+void SnowBallManager::Init()
+{
+    m_Pool.clear();
+}
+
 void SnowBallManager::Spawn(const DirectX::XMFLOAT3& playerPos, const DirectX::XMFLOAT3& bossPos)
 {
     auto up = std::make_unique<SnowBall>();

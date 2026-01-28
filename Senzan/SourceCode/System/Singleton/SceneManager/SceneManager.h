@@ -40,7 +40,9 @@ private:
 public:
 	~SceneManager();
 
-    // Returns true when the currently active scene is the Mattya test scene.
+    // シーンの読み込み.
+    static void LoadScene(eList Scene, bool useFade = true);
+        
     bool IsCurrentSceneMattya() const;
 
 	// データの読み込み.
@@ -49,8 +51,8 @@ public:
 	static void Update();
 	static void Draw();
 
-	// シーンの読み込み.
-	static void LoadScene(eList Scene);
+    // シーンを作成.
+    void MakeScene(eList Scene);
 
 private:
 #if _DEBUG
@@ -69,8 +71,6 @@ private:
 #endif // _DEBUG
 
 private:
-	// シーンを作成.
-	void MakeScene(eList Scene);
 
 private:
 	std::unique_ptr<SceneBase> 		m_pScene;

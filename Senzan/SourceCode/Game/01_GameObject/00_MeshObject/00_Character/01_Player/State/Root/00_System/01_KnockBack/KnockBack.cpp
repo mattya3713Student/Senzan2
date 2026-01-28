@@ -5,8 +5,8 @@
 #include "System/Singleton/Debug/Log/DebugLog.h"
 
 
-static constexpr float INITIAL_JUMP_SPEED   = 8.0f;    // 垂直速度. 
-static constexpr float GRAVITY_ACCELERATION = -9.8f;     // 重力.
+static constexpr float INITIAL_JUMP_SPEED   = 6.0f;    // 垂直速度. 
+static constexpr float GRAVITY_ACCELERATION = -9.8f * 2.5f;     // 重力.
 static constexpr float DAMPING_FACTOR       = 0.99f;    // 減衰率.
 
 namespace PlayerState {
