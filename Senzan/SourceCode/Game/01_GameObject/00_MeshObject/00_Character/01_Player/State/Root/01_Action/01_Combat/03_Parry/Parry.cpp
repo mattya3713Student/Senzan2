@@ -146,7 +146,7 @@ void Parry::Update()
         m_ElapsedTime += m_pOwner->GetDelta();
 
         // アニメーション終了時の処理
-        if (m_ElapsedTime >= 1.8f) {
+        if (m_ElapsedTime >= 0.6f) {
             m_pOwner->ChangeState(PlayerState::eID::Idle); // 失敗時も Idle に遷移
         }
     }
