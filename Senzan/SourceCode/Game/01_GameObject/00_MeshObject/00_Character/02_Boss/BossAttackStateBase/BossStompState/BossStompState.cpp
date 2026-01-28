@@ -367,6 +367,7 @@ void BossStompState::Exit()
 	// 保存: 実行時に ImGui 等で変更した設定を永続化
 	try { SaveSettings(); } catch (...) {}
 
+    m_pOwner->SetPositionY(m_StartY);
 	// 退出時に念のため stomp コライダーを無効化
 	if (m_pOwner && m_pOwner->GetStompCollider()) {
 		m_pOwner->GetStompCollider()->SetActive(false);

@@ -11,7 +11,9 @@ namespace PlayerState {
 Parry::Parry(Player* owner)
 	: Combat(owner)
 {
+    m_ForceOffset = { 0.f,0.f,-15.f };
 }
+
 Parry::~Parry()
 {
 }
@@ -97,21 +99,20 @@ void Parry::Update()
 
             m_pOwner->m_MoveVec = diff_vec;
             // パリィ成功時に強制オフセットが有効なら、ただし雪玉でパリィされた場合は適用しない
-            if (m_UseForceOffset)
-            {
+           
                 // 雪玉によるパリィだったらオフセット適用をスキップ
-                if (ParryManager::GetInstance().WasLastParriedBySnowball())
-                {
-                    ParryManager::GetInstance().ClearLastParriedFlag();
-                }
-                else
-                {
-                    DirectX::XMVECTOR v_offset = DirectX::XMLoadFloat3(&m_ForceOffset);
-                    DirectX::XMVECTOR v_new_pos = DirectX::XMVectorAdd(v_target_pos, v_offset);
-                    DirectX::XMFLOAT3 new_pos; DirectX::XMStoreFloat3(&new_pos, v_new_pos);
-                    m_pOwner->SetPosition(new_pos);
-                }
+            if (ParryManager::GetInstance().WasLastParriedBySnowball())
+            {
+                ParryManager::GetInstance().ClearLastParriedFlag();
             }
+            else
+            {
+                DirectX::XMVECTOR v_offset = DirectX::XMLoadFloat3(&m_ForceOffset);
+                DirectX::XMVECTOR v_new_pos = DirectX::XMVectorAdd(v_target_pos, v_offset);
+                DirectX::XMFLOAT3 new_pos; DirectX::XMStoreFloat3(&new_pos, v_new_pos);
+                m_pOwner->SetPosition(new_pos);
+            }
+            
 
             DirectX::XMFLOAT3 pos = { 0.f, 3.5f, 0.f };
             m_pOwner->PlayEffect("Parry_Attack", pos);
