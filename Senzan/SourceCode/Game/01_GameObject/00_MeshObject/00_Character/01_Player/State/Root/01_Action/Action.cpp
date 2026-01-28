@@ -65,6 +65,14 @@ void Action::Update()
         }
         return;
     }
+
+    // パリィボタンが押されたら.
+	
+    if (VirtualPad::GetInstance().IsActionDown(VirtualPad::eGameAction::Parry))
+    {
+        m_pOwner->ChangeState(PlayerState::eID::Parry);
+        return;
+    }
 }
 
 void Action::LateUpdate()

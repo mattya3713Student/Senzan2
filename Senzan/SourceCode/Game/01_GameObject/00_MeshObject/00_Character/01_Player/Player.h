@@ -109,6 +109,9 @@ virtual void Update() override;
 	// ステートの変更.
 	void ChangeState(PlayerState::eID id);
 
+    void SetSpecial(bool enable);
+    bool IsSpecial() const noexcept;
+
 	std::reference_wrapper<PlayerStateBase> GetStateReference(PlayerState::eID id);
 
 private:
@@ -174,6 +177,10 @@ protected:
 	
 	//---Dodge関連---.
 	bool				m_IsJustDodgeTiming; // ジャスト回避のタイミング.
+
+    //---Special関連---.
+    bool                m_IsSpecial; // 無敵状態かどうか.
+
 
 	// ジャスト回避エフェクト（ステートに依存せず Player が管理）
 	std::unique_ptr<JustDodgeEffect> m_pJustDodgeEffect;

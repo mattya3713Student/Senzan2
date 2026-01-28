@@ -29,11 +29,18 @@ namespace PlayerState {
         float m_DurationTime = 0.04f;       // 攻撃間隔
         float m_DurationTimer = 0.0f;       // 攻撃間隔タイマー
 
+
         float m_AttackDuration;    // 攻撃演出時間
+        float m_EffectDuration;    // エフェクト演出時間
+        float m_HoldTime;    // タメ時間
         float m_OraOraDamage = 25.0f;     // 連続ダメージ
         float m_AttackDamage = 300.0f;    // 必殺技ダメージ
-        bool m_HasActivated = false;      // 攻撃判定発生済みか
         float m_Distance;                 // Bossとの距離.
         float m_LastAttackMove;           // 最終段の移動倍率.
+
+        bool m_Anim1Changed = false;
+        bool m_Anim2Changed = false;
+        bool m_HasMoved = false;
+        bool m_HasActivated = false;
     };
 }
