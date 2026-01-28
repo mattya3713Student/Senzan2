@@ -114,9 +114,6 @@ FrameCaptureManager::FrameCaptureManager()
     , m_FrameCounter(0)
     , m_DownsampleFactor(1)
     , m_PlaybackIntervalBackup(0.0f)
-    , m_bSkipOnLowFPS(true)
-    , m_MinFPSThreshold(60.0f)
-    , m_SkippedFrameCount(0)
 {
 }
 
@@ -240,26 +237,6 @@ void FrameCaptureManager::Update(float deltaTime)
     // ロールバッファ常時キャプチャ
     if (m_bRolling)
     {
-        // FPS低下時のスキップ判定
-        if (m_bSkipOnLowFPS && deltaTime > 0.0f)
-        {
-            float currentFPS = 1.0f / deltaTime;
-            if (currentFPS < m_MinFPSThreshold)
-            {
-                // FPSが閾値を下回っている場合はキャプチャをスキップ
-                m_SkippedFrameCount++;
-#if _DEBUG
-                if (m_SkippedFrameCount % 60 == 1) // ログ出力は60フレームに1回程度に抑制
-                {
-                    std::stringstream ss;
-                    ss << "FrameCapture: Skipping due to low FPS (" << currentFPS << " < " << m_MinFPSThreshold << ")";
-                    Log::GetInstance().LogInfo(ss.str());
-                }
-#endif
-                return; // このフレームの処理をスキップ
-            }
-        }
-
         // フレーム単位でカウントして、sample interval毎に1キャプチャを行う
         m_FrameCounter++;
         if (m_FrameCounter >= m_SampleIntervalFrames)
@@ -644,7 +621,6 @@ void FrameCaptureManager::ResetCapture()
     m_PlaybackIndex = 0;
     m_PlaybackAccumulator = 0.0f;
     m_FrameCounter = 0;
-    m_SkippedFrameCount = 0;
     
     // テクスチャは解放して新しいシーンでCreate時に再作成される
     ReleaseCaptureTextures();
@@ -1036,10 +1012,6 @@ void FrameCaptureManager::LoadSettings(const std::string& filePath)
 			m_CaptureFPS = j["CaptureFPS"].get<int>();
 		if (j.contains("PlaybackTriggerKey"))
             m_IsPlaybackTriggerKey = j["PlaybackTriggerKey"].get<bool>();
-		if (j.contains("SkipOnLowFPS"))
-			m_bSkipOnLowFPS = j["SkipOnLowFPS"].get<bool>();
-		if (j.contains("MinFPSThreshold"))
-			m_MinFPSThreshold = j["MinFPSThreshold"].get<float>();
 	}
 	catch (...)
 	{
@@ -1054,8 +1026,6 @@ void FrameCaptureManager::SaveSettings(const std::string& filePath)
 	j["CaptureDuration"] = m_CaptureDuration;
 	j["CaptureFPS"] = m_CaptureFPS;
 	j["PlaybackTriggerKey"] = m_IsPlaybackTriggerKey;
-	j["SkipOnLowFPS"] = m_bSkipOnLowFPS;
-	j["MinFPSThreshold"] = m_MinFPSThreshold;
 
 	std::ofstream file(filePath);
 	if (file.is_open())
@@ -1107,17 +1077,6 @@ void FrameCaptureManager::DebugImGui()
 		int estimatedFrames = static_cast<int>(m_CaptureDuration * m_CaptureFPS);
 		float estimatedMemoryMB = estimatedFrames * (1920.0f * 1080.0f * 4.0f) / (1024.0f * 1024.0f);
 		ImGui::Text(IMGUI_JP("推定メモリ使用量: %.1f MB"), estimatedMemoryMB);
-
-		ImGui::Separator();
-		ImGui::Text(IMGUI_JP("FPS低下時スキップ設定"));
-
-		ImGui::Checkbox(IMGUI_JP("FPS低下時にキャプチャをスキップ"), &m_bSkipOnLowFPS);
-
-		if (m_bSkipOnLowFPS)
-		{
-			ImGui::SliderFloat(IMGUI_JP("最低FPS閾値"), &m_MinFPSThreshold, 30.0f, 120.0f, "%.0f FPS");
-			ImGui::Text(IMGUI_JP("スキップしたフレーム数: %d"), m_SkippedFrameCount);
-		}
 
 		ImGui::Separator();
 

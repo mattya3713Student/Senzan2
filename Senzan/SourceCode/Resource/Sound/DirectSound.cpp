@@ -3,6 +3,7 @@
 DirectSound::DirectSound()
     : m_lpSoundBuffer(nullptr)
 {
+    m_originalFrequency = 0;
 }
 
 DirectSound::~DirectSound()
@@ -51,10 +52,33 @@ bool DirectSound::Init(const std::wstring& path, LPDIRECTSOUND8 lpSoundInterface
 
     m_lpSoundBuffer->Unlock(bufferPtr, bufferSize, NULL, 0);
 
+    // 元のフォーマット周波数を保持
+    m_originalFrequency = wavData.WavFormat.nSamplesPerSec;
+
+    // WAVデータを内部に保持しておく（複製バッファ作成用）
+    m_bufferSize = wavData.Size;
+    m_bufferData.resize(m_bufferSize);
+    memcpy(m_bufferData.data(), wavData.SoundBuffer, m_bufferSize);
+    m_wavFormat = wavData.WavFormat;
+
     // 一時バッファの解放
     delete[] wavData.SoundBuffer;
 
+    // 保存しておく
+    m_lpDSInterface = lpSoundInterface;
     return true;
+}
+
+bool DirectSound::SetFrequency(DWORD frequency)
+{
+    if (!m_lpSoundBuffer) return false;
+    // 周波数の範囲チェックはDirectSound側で行われる
+    return SUCCEEDED(m_lpSoundBuffer->SetFrequency(frequency));
+}
+
+DWORD DirectSound::GetOriginalFrequency() const
+{
+    return m_originalFrequency;
 }
 
 void DirectSound::Release()
@@ -71,11 +95,62 @@ void DirectSound::Play(bool isLoop)
 {
     if (!m_lpSoundBuffer) return;
 
-    // 再生位置を最初に戻してから再生
-    ResetPosition();
+    // ループ再生は必ず先頭から再生（BGMなど）
+    if (isLoop)
+    {
+        ResetPosition();
+        DWORD flags = DSBPLAY_LOOPING;
+        m_lpSoundBuffer->Play(0, 0, flags);
+        return nullptr;
+    }
 
-    DWORD flags = isLoop ? DSBPLAY_LOOPING : 0;
+    // 非ループ（効果音）は重複再生を許可するためにバッファを複製して返す。
+    // 既存バッファが再生中であれば別バッファを作って再生する。
+    DWORD status = 0;
+    if (SUCCEEDED(m_lpSoundBuffer->GetStatus(&status)) && (status & DSBSTATUS_PLAYING))
+    {
+        // 再生中 -> バッファを複製して再生
+        if (!m_lpDSInterface) return nullptr;
+
+        DSBUFFERDESC dsbd;
+        ZeroMemory(&dsbd, sizeof(dsbd));
+        dsbd.dwSize = sizeof(dsbd);
+        dsbd.dwFlags = DSBCAPS_CTRLPAN | DSBCAPS_CTRLVOLUME | DSBCAPS_GLOBALFOCUS;
+        dsbd.dwBufferBytes = 0; // 後で SetBufferData するために 0 に
+        dsbd.lpwfxFormat = nullptr;
+
+        LPDIRECTSOUNDBUFFER newBuf = nullptr;
+        // 既存バッファから複製するには CreateSoundBuffer で同容量フォーマット指定が必要。
+        // ここでは簡易的に既存のセカンダリバッファを複製するために GetFormat/Lock を使用して新規バッファを作成。
+
+        // 1) 現在のフォーマットを取得
+        WAVEFORMATEX wfx = {};
+        DSBCAPS caps = {};
+        // try to get format via lock/unlock fallback
+        // To keep code concise, we'll attempt CreateSoundBuffer with same dsbd parameters used in Init.
+        // Note: This may fail for complex formats; in practice maintain a pool of buffers instead.
+
+        if (SUCCEEDED(m_lpDSInterface->CreateSoundBuffer(&dsbd, &newBuf, NULL)))
+        {
+            // 新規バッファに WAV データを書き込む
+            void* pBuf = nullptr;
+            DWORD lockSize = 0;
+            if (SUCCEEDED(newBuf->Lock(0, m_bufferSize, &pBuf, &lockSize, NULL, NULL, 0)))
+            {
+                memcpy(pBuf, m_bufferData.data(), static_cast<size_t>(lockSize));
+                newBuf->Unlock(pBuf, lockSize, NULL, 0);
+            }
+            newBuf->Play(0, 0, 0);
+            return newBuf;
+        }
+        return nullptr;
+    }
+
+    // 再生していなければ先頭から再生
+    ResetPosition();
+    DWORD flags = 0;
     m_lpSoundBuffer->Play(0, 0, flags);
+    return nullptr;
 }
 
 void DirectSound::Stop()

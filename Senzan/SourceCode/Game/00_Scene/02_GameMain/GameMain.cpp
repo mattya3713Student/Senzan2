@@ -37,6 +37,22 @@
 
 #include <algorithm> // std::min のために必要
 
+// コンテニュー回数の静的変数定義
+int GameMain::s_ContinueCount = 0;
+
+// コンテニュー回数に応じたBoss HP倍率を取得
+float GameMain::GetBossHPMultiplier()
+{
+	switch (s_ContinueCount)
+	{
+	case 0:  return 1.0f;   // 100%
+	case 1:  return 0.9f;   // 90%
+	case 2:  return 0.8f;   // 80%
+	case 3:  return 0.6f;   // 60%
+	default: return 0.5f;   // 4回以降は50%
+	}
+}
+
 // コンストラクタ.
 GameMain::GameMain()
     : SceneBase        ()
@@ -66,6 +82,9 @@ GameMain::~GameMain()
 
 void GameMain::Initialize()
 {
+    // コンテニュー回数に応じてBossのHPを設定
+    m_upBoss->SetHPMultiplier(GetBossHPMultiplier());
+
     // ライト設定.
     m_spLight->SetDirection(DirectX::XMFLOAT3(1.5f, 1.f, -1.f));
     LightManager::AttachDirectionLight(m_spLight);
@@ -132,10 +151,10 @@ void GameMain::Update()
 
     if (m_upUIOver || m_upUIEnding)
     {
-        bool decidecontinue = true;
+        UIGameOver::Items selectedItem = UIGameOver::Items::End; // デフォルトは終了
         if (m_upUIOver) {
             m_upUIOver->Update();
-            decidecontinue = m_upUIOver->GetSelected();
+            selectedItem = m_upUIOver->GetSelected();
         }
         else {
             m_upUIEnding->Update();
@@ -145,17 +164,26 @@ void GameMain::Update()
             || Input::IsKeyDown('C')
             || Input::IsButtonDown(XInput::Key::B))
         {
-            if (!decidecontinue) {
+            if (selectedItem == UIGameOver::Items::Continue) {
+                // コンテニュー選択 → 巻き戻し開始
                 SoundManager::GetInstance().Play("Decide");
                 SoundManager::GetInstance().SetVolume("Decide", 8000);
 
                 // 巻き戻し開始（FrameCaptureManagerが巻き戻し完了後にシーンをリセットする）
                 FrameCaptureManager::GetInstance().SetPlaybackTriggerKey(true);
+                // コンテニュー回数をインクリメント（次回シーンロード時にBoss HPに反映）
+                IncrementContinueCount();
+
                 return;
             }
-            else{
+            else {
+                // 終了選択 → タイトルへ
                 SoundManager::GetInstance().Play("Decide");
                 SoundManager::GetInstance().SetVolume("Decide", 8000);
+
+                // タイトルへ戻る際にコンテニュー回数をリセット
+                ResetContinueCount();
+
                 SceneManager::LoadScene(eList::Title);
             }
         }

@@ -193,6 +193,12 @@ Boss::~Boss()
     }
 }
 
+void Boss::SetHPMultiplier(float multiplier)
+{
+    m_MaxHP = 20000.f * multiplier;
+    m_HP = m_MaxHP;
+}
+
 void Boss::GetParryAnimPair()
 {
     if (m_State && m_State->m_pCurrentState)
@@ -410,10 +416,64 @@ void Boss::HandleDamageDetection()
 
 			if ((other_group & eCollisionGroup::Player_Attack) != eCollisionGroup::None)
 			{
-				// ダメージを適用 
-				ApplyDamage(info.AttackAmount);
-                SoundManager::Play("Damage");
-                SoundManager::SetVolume("Damage", 9000);
+                bool IsEffectBack = false;
+
+					// プレイヤーがボスの後方（ボスの前方ベクトルとの内積が負）から攻撃していたらダメージを1.4倍にする
+					float damageToApply = info.AttackAmount;
+					
+                    // ボス中心からプレイヤー方向ベクトルを計算（Y成分は無視）
+                    DirectX::XMFLOAT3 bossPos = GetPosition();
+                    DirectX::XMFLOAT3 playerPos = otherCollider->GetPosition();
+                    DirectX::XMVECTOR vBossToPlayer = DirectX::XMVectorSubtract(DirectX::XMLoadFloat3(&playerPos), DirectX::XMLoadFloat3(&bossPos));
+                    vBossToPlayer = DirectX::XMVectorSetY(vBossToPlayer, 0.0f);
+                    if (!DirectX::XMVector3NearEqual(vBossToPlayer, DirectX::XMVectorZero(), DirectX::XMVectorReplicate(1e-6f)))
+                    {
+                        vBossToPlayer = DirectX::XMVector3Normalize(vBossToPlayer);
+                        // ボスの前方ベクトル
+                        DirectX::XMFLOAT3 fwd = m_spTransform->GetForward();
+                        DirectX::XMVECTOR vFwd = DirectX::XMLoadFloat3(&fwd);
+                        vFwd = DirectX::XMVectorSetY(vFwd, 0.0f);
+                        vFwd = DirectX::XMVector3Normalize(vFwd);
+                        float dot = DirectX::XMVectorGetX(DirectX::XMVector3Dot(vFwd, vBossToPlayer));
+                        // 内積が負なら後方からの攻撃
+                        if (dot < 0.0f)
+                        {
+                            SoundManager::Play("Damage_Back");
+                            SoundManager::SetVolume("Damage_Back", 9000);
+                        }
+                        else
+                        {
+                            damageToApply *= 1.4f;
+                            SoundManager::Play("Damage");
+                            SoundManager::SetVolume("Damage", 9000);
+                            IsEffectBack = true;
+                        }
+                    }
+
+                    static thread_local std::mt19937 s_rng((std::random_device())());
+                    for (int i = 0; i < 3; ++i)
+                    {
+                        // ランダムオフセット.
+                        std::uniform_real_distribution<float> dist(-1.2f, 1.2f);
+                        std::uniform_real_distribution<float> rotDist(0.0f, DirectX::XM_2PI);
+
+                        DirectX::XMFLOAT3 jitterPos{
+                            info.ContactPoint.x + dist(s_rng),
+                            info.ContactPoint.y + 1.5f + dist(s_rng),
+                            info.ContactPoint.z + dist(s_rng)
+                        };
+
+                        // ランダム回転.
+                        DirectX::XMFLOAT3 eulerRot{ rotDist(s_rng), rotDist(s_rng), rotDist(s_rng) };
+                        if (IsEffectBack)
+                        {
+                            PlayEffectAtWorldPos("Hit2_Back", jitterPos, eulerRot);
+                        }
+                        else {
+                            PlayEffectAtWorldPos("Hit2", jitterPos, eulerRot);                   
+                        }
+                    }
+                    ApplyDamage(damageToApply);
 
 				Time::GetInstance().SetWorldTimeScale(0.1f, 0.016f * 5);
 				CameraManager::GetInstance().ShakeCamera(0.1f, 2.5f); // カメラを少し揺らす.
