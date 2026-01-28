@@ -13,7 +13,7 @@ namespace {
 }
 
 // Render an external SRV through post effects and output to backbuffer.
-void PostEffectManager::RenderSRVWithPostEffects(ID3D11ShaderResourceView* srcSRV, int srcW, int srcH)
+void PostEffectManager::RenderSRVWithPostEffects(ID3D11ShaderResourceView* srcSRV, int srcW, int srcH, bool forceFullGray)
 {
     if (!srcSRV) return;
     auto& dx = DirectX11::GetInstance();
@@ -123,12 +123,45 @@ void PostEffectManager::RenderSRVWithPostEffects(ID3D11ShaderResourceView* srcSR
     ctx->VSSetShader(m_pVertexShader->GetVertexShader(), nullptr, 0);
     ctx->PSSetShader(m_pPixelShader->GetPixelShader(), nullptr, 0);
 
+    // If caller requested a forced full-screen gray or global grayscale flag is enabled,
+    // temporarily force the circle-gray CB to cover the whole screen so the monochrome shader outputs gray.
+    bool prevCircleActive = m_CircleEffectActive;
+    float prevCircleRadius = m_CircleRadius;
+    bool prevIsExpanding = m_IsExpanding;
+    bool changedCB = false;
+    if (forceFullGray || m_IsGray)
+    {
+        m_CircleEffectActive = true;
+        m_IsExpanding = true; // ensure shader uses expanding branch (gray inside)
+        // large radius ensures full-screen effect regardless of aspect
+        m_CircleRadius = 1000.0f;
+        changedCB = true;
+    }
+
     UpdateConstantBuffer();
     ctx->PSSetConstantBuffers(0, 1, &m_CircleGrayCB);
+
+    // Debug log: report gray/force state and circle radius
+    {
+        std::stringstream ss;
+        ss << "PostEffect: RenderSRVWithPostEffects forceFullGray=" << (forceFullGray?1:0)
+           << " m_IsGray=" << (m_IsGray?1:0)
+           << " CircleActive=" << (m_CircleEffectActive?1:0)
+           << " CircleRadius=" << m_CircleRadius;
+        Log::GetInstance().LogInfo(ss.str());
+    }
 
     ctx->PSSetShaderResources(0, 1, &finalSRV);
     ctx->PSSetSamplers(0, 1, &m_Sampler);
     ctx->Draw(4, 0);
+
+    // restore circle effect state if we modified it
+    if (changedCB)
+    {
+        m_CircleEffectActive = prevCircleActive;
+        m_CircleRadius = prevCircleRadius;
+        m_IsExpanding = prevIsExpanding;
+    }
 
     ID3D11ShaderResourceView* nullSRV = nullptr;
     ctx->PSSetShaderResources(0, 1, &nullSRV);
@@ -578,7 +611,6 @@ void PostEffectManager::UpdateConstantBuffer()
         cb->IsExpanding = m_IsExpanding ? 1.0f : 0.0f;
         cb->EffectActive = m_CircleEffectActive ? 1.0f : 0.0f;
         cb->AspectRatio = static_cast<float>(WND_W) / static_cast<float>(WND_H);
-        cb->GlobalGray = m_IsGray ? 1.0f : 0.0f;
         ctx->Unmap(m_CircleGrayCB, 0);
     }
 }

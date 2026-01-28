@@ -675,11 +675,16 @@ void FrameCaptureManager::RenderPlayback(float deltaTime)
 
     if (m_bRewindMode)
     {
-        // 巻き戻し中はグレースケールを適用して PostEffect 経由で描画
+        // 巻き戻し中は強制グレースケールで PostEffect 経由描画
         auto& pe = PostEffectManager::GetInstance();
         bool prevGray = pe.IsGray();
         pe.SetGray(true);
-        pe.RenderSRVWithPostEffects(m_CaptureSRVs[frameIndex], m_TargetCaptureWidth, m_TargetCaptureHeight);
+        {
+            std::stringstream ss;
+            ss << "FrameCapture: Rewind draw frameIndex=" << frameIndex << " TargetTex=" << m_TargetCaptureWidth << "x" << m_TargetCaptureHeight << " m_IsGray=" << pe.IsGray();
+            Log::GetInstance().LogInfo(ss.str());
+        }
+        pe.RenderSRVWithPostEffects(m_CaptureSRVs[frameIndex], m_TargetCaptureWidth, m_TargetCaptureHeight, true);
         pe.SetGray(prevGray);
     }
     else

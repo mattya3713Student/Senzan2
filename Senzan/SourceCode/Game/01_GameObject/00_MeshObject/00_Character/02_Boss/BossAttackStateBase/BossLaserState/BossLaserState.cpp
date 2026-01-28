@@ -36,7 +36,7 @@ void BossLaserState::Enter()
     m_EffectPlayed = false;
 
     FacePlayerInstantYaw();
-    m_pOwner->SetAnimSpeed(1.5);
+    m_pOwner->SetAnimSpeed(1.0);
     m_pOwner->ChangeAnim(Boss::enBossAnim::LaserCharge);
 }
 

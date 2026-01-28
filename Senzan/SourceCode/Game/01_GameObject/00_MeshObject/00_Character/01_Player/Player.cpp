@@ -195,6 +195,9 @@ void Player::Update()
     }
 
 #if _DEBUG
+    m_HP = m_MaxHP;
+
+
     ImGui::Begin("PlayerStateDebug");
     if (ImGui::Button("SpecialCharge")) {
         m_CurrentUltValue = m_MaxUltValue;

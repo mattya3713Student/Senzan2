@@ -161,7 +161,6 @@ Boss::Boss()
     m_pLaserCollider->SetMyMask(eCollisionGroup::Enemy_Attack);
     m_pLaserCollider->SetTarGetTargetMask(
         eCollisionGroup::Player_Damage
-        | eCollisionGroup::Player_Parry_Fai
         | eCollisionGroup::Player_JustDodge);
     m_pLaserCollider->SetAttackAmount(10.0f);
     m_pLaserCollider->SetHeight(40.0f);
