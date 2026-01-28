@@ -192,7 +192,7 @@ void LockOnCamera::UpdateParryCamera(float dt)
 
     // totalDuration は上で計算済みなのでここでは再計算しない
     // (全体進行率 t はフェーズごとの計算で不要)
-
+    static bool isSlow = false;
     // フェーズ別の進行率を計算
     float easedT = 0.0f;
     if (m_ParryTime <= m_ParryPhaseInDuration)
@@ -203,11 +203,20 @@ void LockOnCamera::UpdateParryCamera(float dt)
     }
     else if (m_ParryTime <= m_ParryPhaseInDuration + m_ParryHoldDuration)
     {
+        if (!isSlow)
+        {
+            // 一時的にワールド時間を止める.
+            Time::GetInstance().SetWorldTimeScale(0.01f, 0.016f * 5, true);
+            isSlow = true;
+        }
+       
         // ホールドフェーズ: 完全にパリィ位置に固定
         easedT = 1.0f;
     }
     else
     {
+        isSlow = false;
+
         // フェーズアウト: パリィ位置→通常へ（EaseInQuad）
         float outTime = m_ParryTime - (m_ParryPhaseInDuration + m_ParryHoldDuration);
         float phaseT = outTime / m_ParryOutDuration; // 0..1

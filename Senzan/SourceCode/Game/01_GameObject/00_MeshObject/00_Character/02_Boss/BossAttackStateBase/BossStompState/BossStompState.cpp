@@ -4,6 +4,7 @@
 #include "Game/04_Time/Time.h"
 #include "System/Singleton/ImGui/CImGuiManager.h"
 #include "System/Utility/FileManager/FileManager.h"
+#include "System/Utility/Math/Easing/Easing.h"
 
 BossStompState::BossStompState(Boss* owner)
 	: BossAttackStateBase(owner)
@@ -45,6 +46,18 @@ void BossStompState::DrawImGui()
     // legacy pre-slow removed
     CImGuiManager::Slider<float>(IMGUI_JP("遅延中アニメ速度"), m_SlowAnimSpeed, 0.0f, 2.0f, true);
     CImGuiManager::Slider<float>(IMGUI_JP("スロー継続時間"), m_SlowDuration, 0.0f, 10.0f, true);
+    ImGui::Separator();
+    ImGui::Text(IMGUI_JP("垂直移動設定"));
+    ImGui::Checkbox(IMGUI_JP("垂直イージングを使用"), &m_UseVerticalEasing);
+    CImGuiManager::Slider<float>(IMGUI_JP("上昇高さ"), m_AscentHeight, 0.0f, 200.0f, true);
+    CImGuiManager::Slider<float>(IMGUI_JP("上昇時間"), m_AscentDuration, 0.01f, 5.0f, true);
+    CImGuiManager::Slider<float>(IMGUI_JP("下降時間"), m_DescentDuration, 0.01f, 5.0f, true);
+    // Easing selection - simple combo
+    const char* easingNames[] = { "Liner","InSine","OutSine","InOutSine","InQuad","OutQuad","InOutQuad","InCubic","OutCubic","InOutCubic","InQuart","OutQuart","InOutQuart","InQuint","OutQuint","InOutQuint","InExpo","OutExpo","InOutExpo","InCirc","OutCirc","InOutCirc","InBack","OutBack","InOutBack","InElastic","OutElastic","InOutElastic","InBounce","OutBounce","InOutBounce" };
+    int ascendIndex = static_cast<int>(m_AscentEasing);
+    int descendIndex = static_cast<int>(m_DescentEasing);
+    if (ImGui::Combo(IMGUI_JP("上昇イージング"), &ascendIndex, easingNames, IM_ARRAYSIZE(easingNames))) m_AscentEasing = static_cast<MyEasing::Type>(ascendIndex);
+    if (ImGui::Combo(IMGUI_JP("下降イージング"), &descendIndex, easingNames, IM_ARRAYSIZE(easingNames))) m_DescentEasing = static_cast<MyEasing::Type>(descendIndex);
     // pre-slow removed; use m_WaitSeconds / m_SlowAnimSpeed
     // 上昇/落下パラメータは一時無効化
     // CImGuiManager::Slider<float>(IMGUI_JP("上昇時間"), m_AscentTime, 0.0f, 5.0f, true);
@@ -114,6 +127,13 @@ void BossStompState::LoadSettings()
     if (j.contains("StompRadius")) m_StompRadius = j["StompRadius"].get<float>();
     if (j.contains("StompDamage")) m_StompDamage = j["StompDamage"].get<float>();
     if (j.contains("StompActive")) m_StompActive = j["StompActive"].get<bool>();
+    // vertical easing params
+    if (j.contains("UseVerticalEasing")) m_UseVerticalEasing = j["UseVerticalEasing"].get<bool>();
+    if (j.contains("AscentHeight")) m_AscentHeight = j["AscentHeight"].get<float>();
+    if (j.contains("AscentDuration")) m_AscentDuration = j["AscentDuration"].get<float>();
+    if (j.contains("DescentDuration")) m_DescentDuration = j["DescentDuration"].get<float>();
+    if (j.contains("AscentEasing")) m_AscentEasing = static_cast<MyEasing::Type>(j["AscentEasing"].get<int>());
+    if (j.contains("DescentEasing")) m_DescentEasing = static_cast<MyEasing::Type>(j["DescentEasing"].get<int>());
     // (local collider windows moved to base m_ColliderWindows)
     // stomp コライダー設定の読み込み
     if (j.contains("StompRadius") || j.contains("StompDamage") || j.contains("StompActive")) {
@@ -149,6 +169,13 @@ void BossStompState::SaveSettings() const
     j["StompRadius"] = m_StompRadius;
     j["StompDamage"] = m_StompDamage;
     j["StompActive"] = m_StompActive;
+    // vertical easing params
+    j["UseVerticalEasing"] = m_UseVerticalEasing;
+    j["AscentHeight"] = m_AscentHeight;
+    j["AscentDuration"] = m_AscentDuration;
+    j["DescentDuration"] = m_DescentDuration;
+    j["AscentEasing"] = static_cast<int>(m_AscentEasing);
+    j["DescentEasing"] = static_cast<int>(m_DescentEasing);
     // collider windows persisted via base SerializeSettings/SaveSettings
     // stomp コライダー設定保存
     if (auto* pStomp = m_pOwner ? m_pOwner->GetStompCollider() : nullptr) {
@@ -278,6 +305,9 @@ void BossStompState::Update()
 			float dist = DirectX::XMVectorGetX(DirectX::XMVector3Length(vDiff));
 			m_Distance = dist;
 			DirectX::XMStoreFloat3(&m_MoveVec, DirectX::XMVector3Normalize(DirectX::XMVectorSetY(vDiff, 0.0f)));
+			// initialize vertical easing timers when movement starts
+			m_VerticalTimer = 0.0f;
+			m_StartY = m_pOwner->GetPosition().y;
 			if (pStompCollider) {
 				// Follow UpdateBaseLogic: set base collider params so UpdateColliderWindows will apply them on activation
 				m_ColliderWidth = (m_StompRadius > 0.0f) ? m_StompRadius : 30.0f; // radius stored in base width
@@ -372,6 +402,36 @@ void BossStompState::BossAttack()
     };
 
     m_pOwner->AddPosition(movement);
+
+    // vertical easing: when moving, update Y according to ascent/descent easing
+    if (m_UseVerticalEasing)
+    {
+        // advance vertical timer
+        m_VerticalTimer += dt;
+        float totalVert = m_AscentDuration + m_DescentDuration;
+        float t = std::min(m_VerticalTimer, totalVert);
+
+        float newY = m_StartY;
+        if (t <= m_AscentDuration)
+        {
+            // ascent phase: 0 -> apex
+            float out; MyEasing::UpdateEasing(m_AscentEasing, t, m_AscentDuration, 0.0f, m_AscentHeight, out);
+            newY = m_StartY + out;
+        }
+        else
+        {
+            // descent: apex -> ground (startY)
+            float descendT = t - m_AscentDuration;
+            float out; MyEasing::UpdateEasing(m_DescentEasing, descendT, m_DescentDuration, m_AscentHeight, 0.0f, out);
+            newY = m_StartY + out;
+        }
+        // If vertical sequence finished, snap exactly to start Y (ground)
+        if (m_VerticalTimer >= (m_AscentDuration + m_DescentDuration))
+        {
+            newY = m_StartY;
+        }
+        m_pOwner->SetPositionY(newY);
+    }
 
     // If movement finished, ensure flags / list updated
     if (progress >= 1.0f)

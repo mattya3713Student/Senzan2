@@ -88,6 +88,15 @@ private:
 	float m_MoveTimer = 0.0f;      // elapsed time since movement started
 	float m_Distance = 0.0f;       // total horizontal distance to move
 	DirectX::XMFLOAT3 m_MoveVec;   // normalized horizontal direction vector
+    // vertical control for ascent/descent
+    bool m_UseVerticalEasing = true;
+    float m_AscentHeight = 10.0f;       // peak additional height relative to start
+    float m_AscentDuration = 0.25f;     // seconds
+    float m_DescentDuration = 0.55f;    // seconds
+    MyEasing::Type m_AscentEasing = MyEasing::Type::OutSine;
+    MyEasing::Type m_DescentEasing = MyEasing::Type::InQuad;
+    float m_VerticalTimer = 0.0f;       // timer for vertical easing
+    float m_StartY = 0.0f;
 
 	//====================================================
 	// 飛びかかり（前方移動）用メンバ変数.
