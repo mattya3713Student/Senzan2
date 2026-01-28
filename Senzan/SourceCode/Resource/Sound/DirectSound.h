@@ -65,4 +65,6 @@ private:
     std::vector<char> m_bufferData;
     WAVEFORMATEX m_wavFormat = {};
     DWORD m_bufferSize = 0;
+    // 最後に設定された再生周波数（ピッチ調整後）
+    DWORD m_currentFrequency = 0;
 };

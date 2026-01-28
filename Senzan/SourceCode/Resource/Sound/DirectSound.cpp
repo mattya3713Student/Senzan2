@@ -73,7 +73,12 @@ bool DirectSound::SetFrequency(DWORD frequency)
 {
     if (!m_lpSoundBuffer) return false;
     // 周波数の範囲チェックはDirectSound側で行われる
-    return SUCCEEDED(m_lpSoundBuffer->SetFrequency(frequency));
+    if (SUCCEEDED(m_lpSoundBuffer->SetFrequency(frequency)))
+    {
+        m_currentFrequency = frequency;
+        return true;
+    }
+    return false;
 }
 
 DWORD DirectSound::GetOriginalFrequency() const
@@ -91,9 +96,9 @@ void DirectSound::Release()
     }
 }
 
-void DirectSound::Play(bool isLoop)
+LPDIRECTSOUNDBUFFER DirectSound::Play(bool isLoop)
 {
-    if (!m_lpSoundBuffer) return;
+    if (!m_lpSoundBuffer) return nullptr;
 
     // ループ再生は必ず先頭から再生（BGMなど）
     if (isLoop)
@@ -116,20 +121,10 @@ void DirectSound::Play(bool isLoop)
         ZeroMemory(&dsbd, sizeof(dsbd));
         dsbd.dwSize = sizeof(dsbd);
         dsbd.dwFlags = DSBCAPS_CTRLPAN | DSBCAPS_CTRLVOLUME | DSBCAPS_GLOBALFOCUS;
-        dsbd.dwBufferBytes = 0; // 後で SetBufferData するために 0 に
-        dsbd.lpwfxFormat = nullptr;
+        dsbd.dwBufferBytes = m_bufferSize;
+        dsbd.lpwfxFormat = &m_wavFormat;
 
         LPDIRECTSOUNDBUFFER newBuf = nullptr;
-        // 既存バッファから複製するには CreateSoundBuffer で同容量フォーマット指定が必要。
-        // ここでは簡易的に既存のセカンダリバッファを複製するために GetFormat/Lock を使用して新規バッファを作成。
-
-        // 1) 現在のフォーマットを取得
-        WAVEFORMATEX wfx = {};
-        DSBCAPS caps = {};
-        // try to get format via lock/unlock fallback
-        // To keep code concise, we'll attempt CreateSoundBuffer with same dsbd parameters used in Init.
-        // Note: This may fail for complex formats; in practice maintain a pool of buffers instead.
-
         if (SUCCEEDED(m_lpDSInterface->CreateSoundBuffer(&dsbd, &newBuf, NULL)))
         {
             // 新規バッファに WAV データを書き込む
@@ -139,6 +134,11 @@ void DirectSound::Play(bool isLoop)
             {
                 memcpy(pBuf, m_bufferData.data(), static_cast<size_t>(lockSize));
                 newBuf->Unlock(pBuf, lockSize, NULL, 0);
+            }
+            // 複製バッファにも直近に設定された周波数（ピッチ）を適用
+            if (m_currentFrequency != 0)
+            {
+                newBuf->SetFrequency(m_currentFrequency);
             }
             newBuf->Play(0, 0, 0);
             return newBuf;
