@@ -7,6 +7,7 @@
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossThrowingState/BossThrowingState.h"
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossSpinningState/BossSpinningState.h"
 #include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossLaserState/BossLaserState.h"
+#include "00_MeshObject/00_Character/02_Boss/BossAttackStateBase/BossMoveContinueState/BossMoveContinueState.h"
 #include "System/Singleton/ImGui/CImGuiManager.h"
 #include <algorithm>
 #include <random>
@@ -215,6 +216,19 @@ void BossMoveState::Update()
     ImGui::SliderFloat(IMGUI_JP("CD"), &s_CooldownDefault[6], 0.0f, 10.0f);
     ImGui::PopID();
 
+    // 7: MoveContinue (そのまま移動3秒)
+    ImGui::PushID(7);
+    ImGui::Checkbox(IMGUI_JP("そのまま移動(3s)"), &s_Enable[7]); ImGui::SameLine();
+    ImGui::SetNextItemWidth(100);
+    if (ImGui::SliderFloat(IMGUI_JP("重み"), &displayWeight[7], 0.0f, 100.0f)) { normalizeDisplayWeights(7); anyDisplayChanged = true; }
+    {
+        ImGui::SameLine(); ImGui::Text("%0.0f%%", displayWeight[7]);
+    }
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(80);
+    ImGui::SliderFloat(IMGUI_JP("CD"), &s_CooldownDefault[7], 0.0f, 10.0f);
+    ImGui::PopID();
+
     // Apply display changes back to internal weights (keep internal representation consistent with displayed percentages)
     if (anyDisplayChanged)
     {
@@ -413,6 +427,7 @@ void BossMoveState::Update()
             case AttackId::Stomp: pushCandidate(AttackId::Stomp, [this]() { return std::make_unique<BossStompState>(m_pOwner); }, distIndex); break;
             case AttackId::Throwing: pushCandidate(AttackId::Throwing, [this]() { return std::make_unique<BossThrowingState>(m_pOwner); }, distIndex); break;
             case AttackId::Laser: pushCandidate(AttackId::Laser, [this]() { return std::make_unique<BossLaserState>(m_pOwner); }, distIndex); break;
+            case AttackId::MoveContinue: pushCandidate(AttackId::MoveContinue, [this]() { return std::make_unique<BossMoveContinueState>(m_pOwner); }, distIndex); break;
             default: break;
             }
         }
@@ -425,6 +440,7 @@ void BossMoveState::Update()
             pushCandidate(AttackId::Stomp, [this]() { return std::make_unique<BossStompState>(m_pOwner); }, distIndex);
             pushCandidate(AttackId::Throwing, [this]() { return std::make_unique<BossThrowingState>(m_pOwner); }, distIndex);
             pushCandidate(AttackId::Laser, [this]() { return std::make_unique<BossLaserState>(m_pOwner); }, distIndex);
+            pushCandidate(AttackId::MoveContinue, [this]() { return std::make_unique<BossMoveContinueState>(m_pOwner); }, distIndex);
         }
 
         if (!weighted.empty())

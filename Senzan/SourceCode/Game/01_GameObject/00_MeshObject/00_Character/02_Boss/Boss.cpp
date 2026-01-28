@@ -11,6 +11,7 @@
 #include "BossAttackStateBase/BossStompState/BossStompState.h"
 #include "BossAttackStateBase/BossSlashState/BossSlashState.h"
 #include "BossAttackStateBase/BossShoutState/BossShoutState.h"
+#include "BossAttackStateBase/BossMoveContinueState/BossMoveContinueState.h"
 
 #include "System/Utility/StateMachine/StateMachine.h"
 

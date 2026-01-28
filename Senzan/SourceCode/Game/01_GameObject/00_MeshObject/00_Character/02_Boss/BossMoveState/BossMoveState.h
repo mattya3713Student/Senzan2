@@ -15,6 +15,7 @@ class BossSlashState;
 class BossChargeState;
 class BossChargeSlashState;
 class BossLaserState;
+class BossMoveContinueState;
 class BossShoutState;
 class BossSlashState;
 class BossJumpOnlState;
@@ -57,7 +58,8 @@ public:
         Stomp = 4,      // とびかかり
         Throwing = 5,   // 岩投げ
         Laser = 6,      // レーザー.
-        Count = 7
+        MoveContinue = 7, // そのまま移動3秒
+        Count = 8
     };
 
     MovePhase m_Phase = MovePhase::Start;
@@ -115,26 +117,26 @@ private:
 	static inline float s_RepeatPenalty = 0.25f;
 
     // Per-attack settings (indexed by AttackId::Count)
-    static inline std::array<bool, Count> s_Enable = { true, true, true, true, true, true, true };
+    static inline std::array<bool, Count> s_Enable = { true, true, true, true, true, true, true, true };
 
     // Distances: Near / Mid (遠距離削除)
     enum DistanceIndex { Near = 0, Mid = 1, DistCount = 2 };
 
     // weights[distance][attack] - stored/edited as percentages that sum to ~100 per distance
     static inline std::array<std::array<float, Count>, DistCount> s_Weight = { {
-        std::array<float, Count>{ 15.0f, 15.0f, 15.0f, 15.0f, 15.0f, 15.0f, 10.0f }, // Near (sum = 100)
-        std::array<float, Count>{ 15.0f, 15.0f, 15.0f, 15.0f, 15.0f, 15.0f, 10.0f }  // Mid (sum = 100)
+        std::array<float, Count>{ 12.5f, 12.5f, 12.5f, 12.5f, 12.5f, 12.5f, 12.5f, 12.5f }, // Near (sum = 100)
+        std::array<float, Count>{ 12.5f, 12.5f, 12.5f, 12.5f, 12.5f, 12.5f, 12.5f, 12.5f }  // Mid (sum = 100)
     } };
 
-    static inline std::array<float, Count> s_CooldownDefault = { 2.0f, 4.0f, 2.0f, 3.0f, 2.5f, 2.0f, 4.0f };
-    // 表示用日本語ラベル (順序: Jump, Shout, Slash, Spinning, Stomp, Throwing, Laser)
-    static inline const char* s_AttackNames[Count] = { "ジャンプ", "叫び", "通常", "回転", "とびかかり", "岩投げ", "レーザー" };
+    static inline std::array<float, Count> s_CooldownDefault = { 2.0f, 4.0f, 2.0f, 3.0f, 2.5f, 2.0f, 4.0f, 1.0f };
+    // 表示用日本語ラベル (順序: Jump, Shout, Slash, Spinning, Stomp, Throwing, Laser, MoveContinue)
+    static inline const char* s_AttackNames[Count] = { "ジャンプ", "叫び", "通常", "回転", "とびかかり", "岩投げ", "レーザー", "そのまま移動" };
     // 内部保存用ID（英語）。JSONキーなどで使う。
-    static inline const char* s_AttackIds[Count] = { "Jump", "Shout", "Slash", "Spinning", "Stomp", "Throwing", "Laser" };
+    static inline const char* s_AttackIds[Count] = { "Jump", "Shout", "Slash", "Spinning", "Stomp", "Throwing", "Laser", "MoveContinue" };
     static inline const char* s_DistanceIds[DistCount] = { "Near", "Mid" };
 
     // === デバッグ強制攻撃選択 ===
-    static inline int s_ForceAttackIndex = -1;    // -1: ランダム, 0-6: 強制選択
+    static inline int s_ForceAttackIndex = -1;    // -1: ランダム, 0-7: 強制選択
 
     // runtime cooldown/last-attack tracking
     std::array<float, Count> m_CooldownRemaining{};

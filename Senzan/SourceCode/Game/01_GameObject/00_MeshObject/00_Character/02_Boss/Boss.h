@@ -35,6 +35,7 @@ class BossShoutState;       //叫び攻撃.
 class BossJumpOnlState;
 class BossLaserState;
 class BossDeadState;
+class BossMoveContinueState;
 
 class BossThrowingState;
 class BossSpinningState;
@@ -64,6 +65,7 @@ class Boss
     friend BossThrowingState;
     friend BossSpinningState;
     friend BossParryState;
+    friend BossMoveContinueState;
 
     //ボスのアニメーションの列挙.
     enum class enBossAnim : byte
