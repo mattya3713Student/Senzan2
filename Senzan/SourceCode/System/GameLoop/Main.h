@@ -7,6 +7,7 @@ class CGame;
 class Time;
 
 class Loader;
+class FrameCaptureManager;
 
 /**************************************************
 *	メインクラス.

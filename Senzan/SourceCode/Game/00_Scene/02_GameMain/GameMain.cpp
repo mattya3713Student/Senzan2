@@ -29,6 +29,7 @@
 #include "System/Singleton/PostEffectManager/PostEffectManager.h"
 #include "System/Singleton/SnowBallManager/SnowBallManager.h"
 #include "System/Singleton/ParryManager/ParryManager.h"
+#include "System/Singleton/FrameCaptureManager/FrameCaptureManager.h"
 
 #if _DEBUG
 #include "System/Singleton/ImGui/CImGuiManager.h"
@@ -38,15 +39,15 @@
 
 // コンストラクタ.
 GameMain::GameMain()
-	: SceneBase		()
-	, m_spCamera	( nullptr )
+    : SceneBase        ()
+    , m_spCamera    ( nullptr )
     , m_upGround    (std::make_unique<Ground>())
     , m_upSkyDome   (std::make_unique<SkyDome>())
-	, m_spLight		(std::make_shared<DirectionLight>())
-	, m_upBoss		(std::make_unique<Boss>())
-	, m_upPlayer	(std::make_unique<Player>())
-	, m_upUI		(std::make_shared<UIGameMain>())
-	, m_TimeLimit   (10800.0f*Time::GetInstance().GetDeltaTime())
+    , m_spLight        (std::make_shared<DirectionLight>())
+    , m_upBoss        (std::make_unique<Boss>())
+    , m_upPlayer    (std::make_unique<Player>())
+    , m_upUI        (std::make_shared<UIGameMain>())
+    , m_TimeLimit   (10800.0f*Time::GetInstance().GetDeltaTime())
     , m_upUIOver    ()
     , m_upUIEnding  ()
 {
@@ -65,20 +66,20 @@ GameMain::~GameMain()
 
 void GameMain::Initialize()
 {
-	// ライト設定.
-	m_spLight->SetDirection(DirectX::XMFLOAT3(1.5f, 1.f, -1.f));
-	LightManager::AttachDirectionLight(m_spLight);
+    // ライト設定.
+    m_spLight->SetDirection(DirectX::XMFLOAT3(1.5f, 1.f, -1.f));
+    LightManager::AttachDirectionLight(m_spLight);
 
-	// カメラ設定.
-	m_spCamera = std::make_shared<LockOnCamera>(std::ref(*m_upPlayer), std::ref(*m_upBoss));
-	CameraManager::GetInstance().SetCamera(m_spCamera);
-	CameraManager::GetInstance().SetPosition({ 0.f, 3.f, 40.f });
+    // カメラ設定.
+    m_spCamera = std::make_shared<LockOnCamera>(std::ref(*m_upPlayer), std::ref(*m_upBoss));
+    CameraManager::GetInstance().SetCamera(m_spCamera);
+    CameraManager::GetInstance().SetPosition({ 0.f, 3.f, 40.f });
 
-	// ParryManager に Player と Boss の参照を設定
-	ParryManager::GetInstance().Initialize(m_upPlayer.get(), m_upBoss.get());
+    // ParryManager に Player と Boss の参照を設定
+    ParryManager::GetInstance().Initialize(m_upPlayer.get(), m_upBoss.get());
 
-	SoundManager::GetInstance().Play("Main", true);
-	SoundManager::GetInstance().SetVolume("Main", 8000);
+    SoundManager::GetInstance().Play("Main", true);
+    SoundManager::GetInstance().SetVolume("Main", 8000);
 }
 
 void GameMain::Create()
@@ -133,8 +134,8 @@ void GameMain::Update()
 
     m_upSkyDome->Update();
     m_upGround->Update();
-	m_upBoss->Update();
-	m_upBoss->SetTargetPos(m_upPlayer->GetPosition());
+    m_upBoss->Update();
+    m_upBoss->SetTargetPos(m_upPlayer->GetPosition());
 
     SnowBallManager::GetInstance().Update();
 
@@ -149,56 +150,59 @@ void GameMain::Update()
     UIUpdate();
 
 #if _DEBUG
-	ImGui::Begin("Gamemain Debug");
-	bool gray = PostEffectManager::GetInstance().IsGray();
-	if (ImGui::Checkbox("GrayScale", &gray)) {
-		PostEffectManager::GetInstance().SetGray(gray);
-	}
-	ImGui::Text("Time: %.3f", Time::GetInstance().GetTimerProgress());
-	if (ImGui::Button("Restart Timer")) {
-		Time::GetInstance().StartTimer(m_TimeLimit);
-	}
-	
-	ImGui::End();
+    ImGui::Begin("Gamemain Debug");
+    bool gray = PostEffectManager::GetInstance().IsGray();
+    if (ImGui::Checkbox("GrayScale", &gray)) {
+        PostEffectManager::GetInstance().SetGray(gray);
+    }
+    ImGui::Text("Time: %.3f", Time::GetInstance().GetTimerProgress());
+    if (ImGui::Button("Restart Timer")) {
+        Time::GetInstance().StartTimer(m_TimeLimit);
+    }
+    
+    ImGui::End();
+
+    // フレームキャプチャマネージャのデバッグUI
+    FrameCaptureManager::GetInstance().DebugImGui();
 #endif
 }
 
 void GameMain::LateUpdate()
 {
-	m_upPlayer->LateUpdate();
-	m_upBoss->LateUpdate();
-	CameraManager::GetInstance().LateUpdate();
+    m_upPlayer->LateUpdate();
+    m_upBoss->LateUpdate();
+    CameraManager::GetInstance().LateUpdate();
 
-	m_upUI->LateUpdate();
+    m_upUI->LateUpdate();
     CollisionDetector::GetInstance().ExecuteCollisionDetection();
 }
 
 
 void GameMain::Draw()
 {
-	Shadow::Begin();
-	m_upGround->DrawDepth();
-	Shadow::End();
+    Shadow::Begin();
+    m_upGround->DrawDepth();
+    Shadow::End();
 
-	const bool useGray = PostEffectManager::GetInstance().IsGray();
-	const bool useCircleGray = PostEffectManager::GetInstance().IsCircleGrayActive();
-	const bool useBlur = PostEffectManager::GetInstance().IsBlurEnabled();
-	if (useGray || useCircleGray || useBlur) {
-		PostEffectManager::GetInstance().BeginSceneRender();
-	}
+    const bool useGray = PostEffectManager::GetInstance().IsGray();
+    const bool useCircleGray = PostEffectManager::GetInstance().IsCircleGrayActive();
+    const bool useBlur = PostEffectManager::GetInstance().IsBlurEnabled();
+    if (useGray || useCircleGray || useBlur) {
+        PostEffectManager::GetInstance().BeginSceneRender();
+    }
    
-	m_upGround->Draw();
+    m_upGround->Draw();
     m_upSkyDome->Draw();
     m_upBoss->Draw();
-	m_upPlayer->Draw();
+    m_upPlayer->Draw();
 
     SnowBallManager::GetInstance().Draw();
 
-	if (useGray || useCircleGray || useBlur) {
-		PostEffectManager::GetInstance().DrawToBackBuffer();
-	}
+    if (useGray || useCircleGray || useBlur) {
+        PostEffectManager::GetInstance().DrawToBackBuffer();
+    }
 
-	m_upUI->Draw();
+    m_upUI->Draw();
 
     if (m_upUIOver || m_upUIEnding)
     {
@@ -207,13 +211,13 @@ void GameMain::Draw()
     }
 
 #if _DEBUG
-	CollisionVisualizer::GetInstance().Draw();
+    CollisionVisualizer::GetInstance().Draw();
 #endif // _DEBUG
 }
 
 HRESULT GameMain::LoadData()
 {
-	return S_OK; // 成功を返す
+    return S_OK; // 成功を返す
 }
 
 void GameMain::UIUpdate()

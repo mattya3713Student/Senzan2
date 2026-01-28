@@ -8,6 +8,7 @@
 #include "Graphic/DirectX/DirectX9/DirectX9.h"
 #include "Graphic/DirectX/DirectX11/DirectX11.h"
 #include "Singleton/PostEffectManager/PostEffectManager.h"
+#include "Singleton/FrameCaptureManager/FrameCaptureManager.h"
 #include "02_UIObject/Fade/FadeManager.h"
 
 #include "System/Singleton/ResourceManager/EffectManager/EffekseerManager.h"
@@ -76,6 +77,7 @@ void Main::Create()
 
 	SceneManager::GetInstance().LoadData();
 	PostEffectManager::GetInstance().Initialize();
+	FrameCaptureManager::GetInstance().Initialize();
 }
 
 // 更新処理.
@@ -84,6 +86,15 @@ void Main::Update()
 	CImGuiManager::NewFrameSetting();
 
 	DebugImgui();
+
+	// フレームキャプチャマネージャ更新
+	FrameCaptureManager::GetInstance().Update(Time::GetInstance().GetDeltaTime());
+
+	// 再生中はゲームロジックをスキップ
+	if (FrameCaptureManager::GetInstance().IsPlaying())
+	{
+		return;
+	}
 
 	SceneManager::GetInstance().Update();
 
@@ -122,6 +133,17 @@ void Main::Draw()
 		return;
 	}
 
+	auto& fc = FrameCaptureManager::GetInstance();
+
+	// 再生中はキャプチャしたフレームを描画
+	if (fc.IsPlaying())
+	{
+		fc.RenderPlayback(Time::GetInstance().GetDeltaTime());
+		CImGuiManager::Render();
+		DirectX11::GetInstance().Present();
+		return;
+	}
+
 	// バックバッファのクリア.
 	DirectX11::GetInstance().ClearBackBuffer();
 
@@ -142,6 +164,12 @@ void Main::Draw()
 		// 通常描画（レンダーターゲットを戻してから描画）
 		DirectX11::GetInstance().ResetRenderTarget();
 		SceneManager::Draw();
+	}
+
+	// キャプチャ中はフレームをコピー
+	if (fc.IsCapturing())
+	{
+		fc.CaptureFrame();
 	}
 
 	CImGuiManager::Render();
