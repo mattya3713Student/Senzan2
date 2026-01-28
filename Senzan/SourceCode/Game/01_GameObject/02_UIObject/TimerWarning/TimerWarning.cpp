@@ -1,223 +1,195 @@
 ﻿#include "TimerWarning.h"
-#include "02_UIObject/UILoader/UILoader.h"
-
-#include "Graphic/DirectX/DirectX11/DirectX11.h"
 #include "Game/04_Time/Time.h"
 #include "Math/Easing/Easing.h"
 #include "Utility/Math/Random/Random.h"
-#include "ImGui/CImGuiManager.h"
+#include "Graphic/DirectX/DirectX11/DirectX11.h"
 
-TimerWarning::TimerWarning(std::shared_ptr<UIObject> pObje)
-    : m_pMainSparkle(pObje)
-    , m_IsAnimating(false)
-    , m_Timer(0.0f)
-    , m_Duration(0.8f)
-    , m_StartScale(0.0f)
-    , m_PeakScale(0.6f)
-    , m_ToPeakTime(0.3f)
-    , m_PeakTime(0.6f)
-    , m_StartRotSpead(10.0f)
-    , m_PeakRotSpead(2.0f)
-    , m_EndRotSpead(7.0f)
 
-    , m_IsGaugeMax(false)
-    , m_SpawnTimer(0.0f)
-    , m_SpawnInterval(0.4f)
-    , m_ParticlesStartAlpha(0.7f)
-    , m_ParticlesDecAlpha(1.0f)
-    , m_ParticlesSize(0.05f)
-    , m_ParticlesAngle(1.6f)
-    , m_ParticlesSpead(60.0f)
+TimerWarning::TimerWarning(std::shared_ptr<UIObject> pBaseUI)
+    : m_pBaseUI             (pBaseUI)
+    , m_CircleCount         (32)
+    , m_TargetPos           (547.0f, -130.0f, -10.0f)
+    , m_TargetPivot         (0.5f, -0.35f)
+    , m_GlobalRotation      (0.0f)
+    , m_Phase1AnimetionTimer(0.0f)
+    , m_Phase2AnimetionTimer(0.0f)
+    , m_Phase3AnimetionTimer(0.0f)
+    , m_Phase1AnimetionTime (15.0f * Time::GetInstance().GetDeltaTime())
+    , m_Phase2AnimetionTime (15.0f * Time::GetInstance().GetDeltaTime())
+    , m_Phase3AnimetionTime (15.0f * Time::GetInstance().GetDeltaTime())
+    , m_Phase1Triggered     (false)
+    , m_Phase2Triggered     (false)
+    , m_Phase3Triggered     (false)
+    , m_Phase1Peaked        (false)
+    , m_Phase2Peaked        (false)
+    , m_Phase3Peaked        (false)
 {
 }
 
-//----------------------------------------------------------------.
-
-TimerWarning::~TimerWarning()
-{
-}
-
-//----------------------------------------------------------------.
+TimerWarning::~TimerWarning() {}
 
 void TimerWarning::Create()
 {
-    m_pMainSparkle->SetAlpha(0.0f);
-    m_pMainSparkle->SetScale({ 0.0f,0.0f,0.0f });
-}
-
-//----------------------------------------------------------------.
-
-void TimerWarning::DoPeakAnim()
-{
-    m_IsAnimating = true;
-    m_Timer = 0.0f;
-
-}
-
-//----------------------------------------------------------------.
-
-void TimerWarning::SetULTGaugeStatus(bool isMax, DirectX::XMFLOAT3 pos, DirectX::XMFLOAT2 size)
-{
-    m_IsGaugeMax = isMax;
-    m_GaugeX = { pos.x - (size.x / 2),pos.x + (size.x / 2) };
-    m_GaugeY = { pos.y - (size.y / 2),pos.y + (size.y / 2) };
-}
-
-//----------------------------------------------------------------.
-
-void TimerWarning::UpDateParticles(float dt)
-{
-    if (m_IsGaugeMax)
+    m_Circles.clear();
+    for (int i = 0; i < m_CircleCount; ++i)
     {
-        m_SpawnTimer += dt;
-        if (m_SpawnTimer >= m_SpawnInterval)
+        ChildCircle child;
+        child.ui = std::make_shared<UIObject>();
+        child.ui->AttachSprite(m_pBaseUI->GetSprite());
+
+        child.ui->SetPosition(m_TargetPos);
+        // AnchorではなくPivotに設定 (ユーザー指摘に基づき)
+        child.ui->SetPivot(m_TargetPivot);
+
+        // ラジアンで均等配置 (0 ～ 6.28)
+        child.angle = (6.28f / (float)m_CircleCount) * i;
+        child.ui->SetRotation({ 0, 0, child.angle });
+
+        child.ui->SetScale({ 0.0f, 0.0f, 1.0f });
+        child.ui->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f });
+
+        m_Circles.push_back(child);
+    }
+}
+void TimerWarning::Update(float ratio)
+{float dt = Time::GetInstance().GetUnscaledDeltaTime();
+
+    // 1. フェーズ管理 (ループの外でタイマーを更新)
+    if (ratio >= 0.333f && ratio <= 0.666f) {
+        m_Phase1AnimetionTimer += dt;
+        if (!m_Phase1Triggered) {
+            SetRandomScales(true);
+            SetRandomColors();
+            m_Phase1Triggered = true;
+            m_Phase1Peaked = false; // 初期化
+        }
+    } else {
+        m_Phase1Triggered = false;
+        m_Phase1AnimetionTimer = 0.0f;
+    }
+
+    if (ratio >= 0.666f && ratio <= 0.9f) {
+        m_Phase2AnimetionTimer += dt;
+        if (!m_Phase2Triggered) {
+            SetRandomScales(true);
+            SetRandomColors();
+            m_Phase2Triggered = true;
+            m_Phase2Peaked = false;
+        }
+    } else {
+        m_Phase2Triggered = false;
+        m_Phase2AnimetionTimer = 0.0f;
+    }
+    if (ratio >= 0.9f) {
+        m_Phase3AnimetionTimer += dt;
+        if (!m_Phase3Triggered) {
+            SetRandomScales(false);
+            SetRandomColors();
+            m_Phase3Triggered = true;
+        }
+    }
+
+    m_GlobalRotation += m_Phase3AnimetionTimer;
+
+    // 3. 各サークルの更新
+    for (int i = 0; i < m_CircleCount; ++i)
+    {
+        auto& circle = m_Circles[i];
+        DirectX::XMFLOAT3 currentColor = { 1.0f, 1.0f, 1.0f };
+        float targetScale = 0.0f;
+        float rotOffset = 0.0f;
+        float animT = 0.0f;
+
+        // --- Phase 1: 黄色 ---
+        if (0.333f <= ratio && ratio <= 0.666f)
         {
-            m_SpawnTimer = 0.0f;
-
-            auto pNewUI = std::make_shared<UIObject>();
-            pNewUI->AttachSprite(m_pMainSparkle->GetSprite());
-
-            float x = MyRand::GetRandomPercentage(m_GaugeX.x, m_GaugeX.y);
-            float y = MyRand::GetRandomPercentage(m_GaugeY.x, m_GaugeY.y);
-
-            pNewUI->SetPosition({ x, y, 0.0f });
-
-            pNewUI->SetScale({ m_ParticlesSize, m_ParticlesSize, 1.0f });
-            pNewUI->SetColor(m_pMainSparkle->GetColor());
-            pNewUI->SetAlpha(m_ParticlesStartAlpha);
-
-            SparkleParticle particle;
-            particle.ui = pNewUI;
-
-            // ランダム方向（-1 ～ 1）
-            float dirX = MyRand::GetRandomPercentage(-m_ParticlesAngle, m_ParticlesAngle);
-            float dirY = MyRand::GetRandomPercentage(-m_ParticlesAngle, m_ParticlesAngle);
-
-            // 正規化
-            float len = sqrtf(dirX * dirX + dirY * dirY);
-            if (len != 0.0f)
-            {
-                dirX /= len;
-                dirY /= len;
+            if (!m_Phase1Peaked) {
+                MyEasing::UpdateEasing(MyEasing::Type::OutQuint, m_Phase1AnimetionTimer, m_Phase1AnimetionTime, 0.0f, 1.0f, animT);
+                if (m_Phase1AnimetionTimer >= m_Phase1AnimetionTime) {
+                    m_Phase1Peaked = true;
+                    m_Phase1AnimetionTimer = 0.0f; // 収束用にリセット
+                }
+            } else {
+                MyEasing::UpdateEasing(MyEasing::Type::InQuint, m_Phase1AnimetionTimer, m_Phase1AnimetionTime, 1.0f, 0.0f, animT);
             }
 
-            // 速度（調整用）
-            float speed = MyRand::GetRandomPercentage(0.0f, m_ParticlesSpead);
-
-            particle.velocity = { dirX * speed, dirY * speed };
-
-            m_Particles.push_back(particle);
+            currentColor = { 0.9f, 0.9f, 0.0f }; // アルファにanimTを反映
+            targetScale = circle.randomScale * animT;
+            rotOffset = m_GlobalRotation * 0.f;
         }
-    }
-
-    auto it = m_Particles.begin();
-    while (it != m_Particles.end())
-    {
-        auto& particle = *it;
-        auto& pUI = particle.ui;
-
-        // ---- 移動 ----
-        auto pos = pUI->GetPosition();
-        pos.x += particle.velocity.x * dt;
-        pos.y += particle.velocity.y * dt;
-        pUI->SetPosition(pos);
-
-        // ---- フェード ----
-        float alpha = pUI->GetAlpha();
-        alpha -= m_ParticlesDecAlpha * dt;
-        pUI->SetAlpha(alpha);
-
-        if (alpha <= 0.0f)
+        // --- Phase 2: 赤色 ---
+        else if (0.666f <= ratio && ratio <= 0.9f)
         {
-            it = m_Particles.erase(it);
+            if (!m_Phase2Peaked) {
+                MyEasing::UpdateEasing(MyEasing::Type::OutQuint, m_Phase2AnimetionTimer, m_Phase2AnimetionTime, 0.0f, 1.0f, animT);
+                if (m_Phase2AnimetionTimer >= m_Phase2AnimetionTime) {
+                    m_Phase2Peaked = true;
+                    m_Phase2AnimetionTimer = 0.0f;
+                }
+            } else {
+                MyEasing::UpdateEasing(MyEasing::Type::InQuint, m_Phase2AnimetionTimer, m_Phase2AnimetionTime, 1.0f, 0.0f, animT);
+            }
+
+            currentColor = { 0.9f, 0.0f, 0.0f };
+            targetScale = circle.randomScale * animT;
+            rotOffset = m_GlobalRotation * 0.f;
         }
-        else
+        // --- Phase 3: 最終警告 ---
+        else if (0.9f <= ratio)
         {
-            pUI->Update();
-            ++it;
+            MyEasing::UpdateEasing(MyEasing::Type::OutQuint, m_Phase3AnimetionTimer, m_Phase3AnimetionTime, 0.0f, 1.0f, animT);
+
+            currentColor = { 0.9f, 0.0f, 0.0f };
+            targetScale = circle.randomScale * animT;
+            rotOffset = m_GlobalRotation;
         }
+
+
+        float stretch = 0.f, scaleX = circle.randomScale, scaleY = circle.randomScale;
+        if (!m_Phase3Triggered) {
+            stretch = 0.8f;
+            scaleX = targetScale;
+            scaleY = targetScale * (1.0f + animT * (circle.randomScale * stretch));
+        }
+
+        circle.ui->SetScale({ scaleX, scaleY, 1.0f });
+        circle.ui->SetColor({ currentColor.x, currentColor.y, currentColor.z, circle.ui->GetAlpha() });
+        circle.ui->SetRotation({ 0, 0, circle.angle + rotOffset });
+        circle.ui->Update();
     }
 }
-
-//----------------------------------------------------------------.
-
-void TimerWarning::Update()
-{
-    float dt = Time::GetInstance().GetUnscaledDeltaTime();
-    UpDateParticles(dt);
-
-    if (m_IsAnimating)
-    {
-        m_Timer += dt;
-        float duration = 1.f; // 全体時間.
-        float progress = m_Timer / duration;
-        if (progress > 1.0f) progress = 1.0f;
-
-        float currentScale = 0.0f;
-        float currentAlpha = 0.0f;
-        float rot = m_pMainSparkle->GetRotation().z;
-
-        if (progress < m_ToPeakTime)
-        {
-            // --- 1. 拡大フェーズ ---.
-            float t = progress / m_ToPeakTime;
-            // 拡大.
-            MyEasing::UpdateEasing(MyEasing::Type::OutCirc, t, 1.0f, 0.0f, m_PeakScale, currentScale);
-            MyEasing::UpdateEasing(MyEasing::Type::OutQuint, t, 1.0f, 0.0f, 1.0f, currentAlpha);
-            // 回転.
-            rot += m_StartRotSpead * dt;
-        }
-        else if (progress < m_PeakTime)
-        {
-            // --- 2. 静止維持フェーズ ---.
-            currentScale = m_PeakScale;
-            currentAlpha = 1.0f;
-            // 維持中もゆっくり回し続ける.
-            float t = (progress - m_ToPeakTime) / (m_PeakTime - m_ToPeakTime);
-            rot += m_PeakRotSpead * dt;
-        }
-        else
-        {
-            // --- 3. 急加速縮小フェーズ ---.
-            float t = (progress - m_PeakTime) / (1.0f - m_PeakTime);
-            // InExpoで吸い込まれるように一瞬で消す.
-            MyEasing::UpdateEasing(MyEasing::Type::InCirc, t, 1.0f, m_PeakScale, 0.0f, currentScale);
-            MyEasing::UpdateEasing(MyEasing::Type::InExpo, t, 1.0f, 1.0f, 0.0f, currentAlpha);
-            rot += m_EndRotSpead * dt;
-        }
-
-        m_pMainSparkle->SetRotation({ 0, 0, rot });
-        m_pMainSparkle->SetScale({ currentScale, currentScale, 1.0f });
-        m_pMainSparkle->SetAlpha(currentAlpha);
-
-        if (progress >= 1.0f)
-        {
-            m_IsAnimating = false;
-            m_pMainSparkle->SetAlpha(0.0f);
-        }
-    }
-    m_pMainSparkle->Update();
-}
-
-//----------------------------------------------------------------.
-
-void TimerWarning::LateUpdate()
-{
-}
-
-//----------------------------------------------------------------.
 
 void TimerWarning::Draw()
 {
     DirectX11::GetInstance().SetDepth(false);
 
-    // パーティクルを全部描画
-    for (auto& part : m_Particles) {
-        part.ui->Draw();
+    for (auto& circle : m_Circles)
+    {
+        circle.ui->Draw();
     }
 
-    // 主張演出を描画
-    m_pMainSparkle->Draw();
-
     DirectX11::GetInstance().SetDepth(true);
+}
+
+
+void TimerWarning::SetRandomScales(bool high)
+{
+    for (auto& circle : m_Circles)
+    {
+        if (high) {
+            circle.randomScale = MyRand::GetRandomPercentage(0.6f, 1.4f);
+        }
+        else {
+            circle.randomScale = MyRand::GetRandomPercentage(1.2f, 1.4f);
+        }
+    }
+}
+
+
+void TimerWarning::SetRandomColors()
+{
+    for (auto& circle : m_Circles)
+    {
+        circle.ui->SetAlpha(MyRand::GetRandomPercentage(0.6f, 1.0f));
+    }
 }

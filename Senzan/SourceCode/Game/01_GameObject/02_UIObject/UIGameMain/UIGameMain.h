@@ -6,6 +6,7 @@
 *	ゲームメインUIクラス.
 **/
 class ULTSparkle;
+class TimerWarning;
 
 class UIGameMain
 {
@@ -103,11 +104,13 @@ private:
 private:
 	std::vector<std::shared_ptr<UIObject>> m_pUIs;
 	std::shared_ptr<ULTSparkle> m_pULTSparkle;
+	std::shared_ptr<TimerWarning> m_pTimerWarning;
 	DirectX::XMFLOAT4 m_ComboColor;
 
 	float m_GuageDelSpeed;
 	float m_ClockSecInitRot;
 	float m_ClockSecNow;
+	float m_TimeProgress;
 
 	int m_Combo;
 	int m_ComboBefore;

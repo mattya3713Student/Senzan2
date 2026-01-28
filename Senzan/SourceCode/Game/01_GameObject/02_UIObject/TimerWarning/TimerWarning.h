@@ -1,65 +1,58 @@
 ﻿#pragma once
-#pragma once
-#pragma once
 #include "02_UIObject/UIObject.h"
 
 /*********************************************
-*	ULT演出クラス.
+*	Timer危険演出クラス.
 **/
 
 class TimerWarning
 {
 public:
-    struct SparkleParticle
-    {
-        std::shared_ptr<UIObject> ui;
-        DirectX::XMFLOAT2 velocity; // 移動方向＋速度
-    };
-
-public:
-    TimerWarning(std::shared_ptr<UIObject> pObje);
+    TimerWarning(std::shared_ptr<UIObject> pBaseUI);
     ~TimerWarning();
 
-    void Update();
-    void LateUpdate();
+    void Create();
+    void Update(float ratio);
     void Draw();
 
-    void Create();
-
-    // スパークルのアニメーションを実行.
-    void DoPeakAnim();
-    // ゲージが最大かどうかを外部からセットする
-    void SetULTGaugeStatus(bool isMax, DirectX::XMFLOAT3 pos, DirectX::XMFLOAT2 size);
-
 private:
-    void UpDateParticles(float dt);
+    // ランダムスケールを再設定する関数
+    void SetRandomScales(bool high);
+    // ランダムスケールを再設定する関数
+    void SetRandomColors();
 private:
-    std::shared_ptr<UIObject> m_pMainSparkle;
-    std::vector<SparkleParticle> m_Particles;
+    struct ChildCircle {
+        std::shared_ptr<UIObject> ui;
+        float angle         = 0.0f;
+        float currentScale  = 0.0f;
+        float randomScale   = 0.0f;
+    };
 
-    DirectX::XMFLOAT2 m_GaugeX;
-    DirectX::XMFLOAT2 m_GaugeY;
+    std::shared_ptr<UIObject> m_pBaseUI;
+    std::vector<ChildCircle> m_Circles;
 
-    bool   m_IsAnimating;
-    float  m_Timer;
-    float  m_Duration;
-    float  m_StartScale;
-    float  m_PeakScale;
-    float  m_ToPeakTime;
-    float  m_PeakTime;
+    // 演出用定数
+    const int m_CircleCount;
+    const DirectX::XMFLOAT3 m_TargetPos;
+    const DirectX::XMFLOAT2 m_TargetPivot;
 
-    float  m_StartRotSpead;
-    float  m_PeakRotSpead;
-    float  m_EndRotSpead;
+    float m_GlobalRotation; // 0.8以降で使用する回転値
 
-    bool  m_IsGaugeMax;
-    float m_SpawnTimer;
-    float m_SpawnInterval;
-    float m_ParticlesStartAlpha;
-    float m_ParticlesDecAlpha;
-    float m_ParticlesSize;
+    // アニメーション制御用
+    float m_Phase1AnimetionTimer;
+    float m_Phase2AnimetionTimer;
+    float m_Phase3AnimetionTimer;
+    float m_Phase1AnimetionTime;
+    float m_Phase2AnimetionTime;
+    float m_Phase3AnimetionTime;
 
-    float m_ParticlesAngle;
-    float m_ParticlesSpead;
+    // フェーズ切り替わり検知用
+    bool m_Phase1Triggered;
+    bool m_Phase2Triggered;
+    bool m_Phase3Triggered;
+
+    bool m_Phase1Peaked;
+    bool m_Phase2Peaked;
+    bool m_Phase3Peaked;
 
 };
