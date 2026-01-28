@@ -195,7 +195,10 @@ void Main::Loop()
 	}
 	while (!FadeManager::GetInstance().IsFadeCompleted(Fade::FadeType::FadeOut))
 	{
+		// Update fade and ensure the backbuffer is cleared each frame
+		// so the fade sprite doesn't composite over an uninitialized/back buffer.
 		FadeManager::GetInstance().Update();
+		DirectX11::GetInstance().ClearBackBuffer();
 		FadeManager::GetInstance().Draw();
 		DirectX11::GetInstance().Present();
 	}

@@ -106,45 +106,6 @@ void UIGameMain::Update()
 	m_BossDamage.Update(dt);
 
     m_pULTSparkle->Update();
-
-	// デバッグ用のImGui.
-	//	UIのデバッグ以外で通すと表示に齟齬が出るので消す.
-#if _DEBUG
-    // --- ImGui Debug ---.
-	ImGui::Begin("UI Gauge Debug");
-
-	ImGui::Text("=== Player HP ===");
-	ImGui::DragFloat("HP Max", &m_DebugPlayerHPMax, 1.0f, 1.0f, 9999.0f);
-	ImGui::DragFloat("HP Now", &m_DebugPlayerHP, 1.0f, 0.0f, m_DebugPlayerHPMax);
-		SetPlayerHP(m_DebugPlayerHPMax, m_DebugPlayerHP);
-
-	ImGui::Separator();
-
-	ImGui::Text("=== Player ULT ===");
-	ImGui::DragFloat("ULT Max", &m_DebugPlayerUltMax, 1.0f, 1.0f, 9999.0f);
-	ImGui::DragFloat("ULT Now", &m_DebugPlayerUlt, 1.0f, 0.0f, m_DebugPlayerUltMax);
-		SetPlayerUlt(m_DebugPlayerUltMax, m_DebugPlayerUlt);
-
-	ImGui::Separator();
-
-	ImGui::Text("=== Boss HP ===");
-	ImGui::DragFloat("Boss HP Max", &m_DebugBossHPMax, 5.0f, 1.0f, 99999.0f);
-	ImGui::DragFloat("Boss HP Now", &m_DebugBossHP, 5.0f, 0.0f, m_DebugBossHPMax);
-		SetBossHP(m_DebugBossHPMax, m_DebugBossHP);
-
-	ImGui::Separator();
-
-	// --- Combo Test ---.
-	ImGui::Text("=== Combo ===");
-	if (ImGui::Button("+ Combo")) m_Combo++;
-	ImGui::SameLine();
-	if (ImGui::Button("- Combo")) m_Combo--;
-	ImGui::Text("Combo : %d", m_Combo);
-
-	ImGui::End();
-#endif
-
-
 	m_ComboColor = GetComboColor(m_Combo);
 
 	for (auto& ui : m_pUIs)

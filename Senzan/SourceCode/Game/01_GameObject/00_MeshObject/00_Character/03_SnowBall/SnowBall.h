@@ -76,4 +76,8 @@ private:
 
     // 跳ね返り時の速度
     float m_BounceSpeed;
+    // パリィ時にボスへ到達させるための補助データ
+    DirectX::XMFLOAT3 m_ParryStartPos; // パリィ開始時の位置
+    float m_ParryElapsed;              // 経過時間
+    float m_ParryDuration;             // 到達にかける時間（秒）
 };

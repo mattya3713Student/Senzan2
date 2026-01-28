@@ -26,15 +26,11 @@ SnowBall::SnowBall()
     , m_ShouldDestroy(false)
     , m_HasBrokenVisual(false)
     , m_BounceSpeed(60.0f)
+    , m_ParryStartPos({0.0f,0.0f,0.0f})
+    , m_ParryElapsed(0.0f)
+    , m_ParryDuration(1.0f)
 {
     AttachMesh(MeshManager::GetInstance().GetSkinMesh("snowball_nomal"));
-
-    // 初期位置を画面外の遠くへ
-    Init_Pos = { 1000.0f, -1000.0f, 1000.0f };
-    DirectX::XMFLOAT3 scale = { 0.5f, 0.5f, 0.5f }; // サイズを少し大きく修正
-
-    m_spTransform->SetPosition(Init_Pos);
-    m_spTransform->SetScale(scale);
 
     IsVisible = false;
     IsAction = false;
@@ -45,9 +41,10 @@ SnowBall::SnowBall()
     m_pAttackCollider->SetMyMask(eCollisionGroup::Enemy_Attack);
     // パリィで跳ね返す挙動に対応するために Player_Parry_Suc をターゲットに追加
     m_pAttackCollider->SetTarGetTargetMask(eCollisionGroup::Player_Damage | eCollisionGroup::Player_Parry_Suc);
-    m_pAttackCollider->SetAttackAmount(30.0f);
-    m_pAttackCollider->SetHeight(5.0f);
-    m_pAttackCollider->SetRadius(3.0f);
+    m_pAttackCollider->SetPositionOffset({ 0.0f, 10.f, 0.0f });
+    m_pAttackCollider->SetAttackAmount(8.0f);
+    m_pAttackCollider->SetHeight(25.0f);
+    m_pAttackCollider->SetRadius(8.f);
     m_pAttackCollider->SetActive(true);
     m_pAttackCollider->SetColor(Color::eColor::Red);
     m_upColliders->AddCollider(std::move(attackCol));
@@ -132,22 +129,21 @@ void SnowBall::Update()
     // 跳ね返り状態: Boss に到達したら割れて消える
     if (m_State == State::Parried)
     {
-        // 移動方向は Boss_Pos - currentPos
         using namespace DirectX;
-        XMFLOAT3 cur = m_spTransform->Position;
-        XMVECTOR curV = XMLoadFloat3(&cur);
+        // 経過時間を進めて、パリィ開始位置から Boss_Pos まで線形補間する
+        m_ParryElapsed += deltaTime;
+        float s = m_ParryDuration > 0.0f ? (m_ParryElapsed / m_ParryDuration) : 1.0f;
+        if (s > 1.0f) s = 1.0f;
+
+        XMVECTOR startV = XMLoadFloat3(&m_ParryStartPos);
         XMVECTOR bossV = XMLoadFloat3(&Boss_Pos);
-        XMVECTOR dir = XMVector3Normalize(XMVectorSubtract(bossV, curV));
-        XMVECTOR move = XMVectorScale(dir, m_BounceSpeed * deltaTime);
-        XMVECTOR newPosV = XMVectorAdd(curV, move);
+        XMVECTOR newPosV = XMVectorLerp(startV, bossV, s);
         XMFLOAT3 newPos; XMStoreFloat3(&newPos, newPosV);
         m_spTransform->SetPosition(newPos);
 
-        // 近づいたら割れて消える
-        XMVECTOR distV = XMVector3Length(XMVectorSubtract(bossV, newPosV));
-        float dist; XMStoreFloat(&dist, distV);
-        if (dist <= 1.5f)
+        if (s >= 1.0f)
         {
+            // 到達したら割れ表示にする
             HandleHitVisual();
         }
         return;
@@ -223,7 +219,7 @@ void SnowBall::Launch()
 	XMStoreFloat3(&Current_Pos, P1_Vec);
 
 	m_spTransform->SetPosition(Boss_Pos);
-	m_spTransform->SetScale({ 0.1f, 0.1f, 0.1f });
+	m_spTransform->SetScale({ 0.3f, 0.3f, 0.3f });
 	ThrowingTime = 0.0f;
 	IsAction = true;
 	IsVisible = true;
@@ -284,6 +280,10 @@ void SnowBall::HandleCollision()
 			// パリィ成功: 跳ね返るように振る舞う
 			m_IsParried = true;
 			m_State = State::Parried;
+			// パリィ開始位置を保存して補間タイマーをリセット
+			m_ParryStartPos = m_spTransform->Position;
+			m_ParryElapsed = 0.0f;
+			m_ParryDuration = 1.0f; // 1秒で到達する
 			// 当たり判定は跳ね返し中不要なので無効化
 			if (m_pAttackCollider) m_pAttackCollider->SetActive(false);
 			return;
@@ -305,8 +305,12 @@ void SnowBall::OnParried()
 	// 旧来の単純な割れ処理は不要になった。
 	// 今は HandleCollision でパリィを検出して State::Parried に遷移する。
 	// この関数は互換性のために残すが、直接状態を操作しない。
+	// 互換性のために OnParried でも同様の初期化を行う
 	m_IsParried = true;
 	m_ParriedAnimTime = 0.0f;
 	IsAction = false;
+	m_ParryStartPos = m_spTransform->Position;
+	m_ParryElapsed = 0.0f;
+	m_ParryDuration = 1.0f;
 }
 
