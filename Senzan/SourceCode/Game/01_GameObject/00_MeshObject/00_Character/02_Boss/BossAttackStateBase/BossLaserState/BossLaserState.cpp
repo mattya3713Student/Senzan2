@@ -84,8 +84,7 @@ void BossLaserState::Update()
             if (t > 1.0f) t = 1.0f;
             float radius = m_LaserRadius * t;
             col->SetRadius(radius);
-            col->SetPositionOffset(0.0f, 0.0f, radius);
-
+            col->SetPositionOffset(0.0f, 0.0f, radius * -15.f);
         }
         if (m_FireElapsed >= m_FireDuration || m_pOwner->IsAnimEnd(Boss::enBossAnim::Laser)) {
             if (auto* col = m_pOwner->GetShoutCollider()) {

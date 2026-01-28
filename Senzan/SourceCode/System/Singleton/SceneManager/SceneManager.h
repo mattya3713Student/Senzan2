@@ -17,8 +17,6 @@ enum class eList
 {
 	Title,		// タイトル.
 	GameMain,	// メイン.
-	GameOver,	// ゲームオーバー.
-	Ending, 	// エンディング.
 
 	// テスト用シーン.
 #if _DEBUG
@@ -60,8 +58,6 @@ private:
 		switch (scene) {
 		case eList::Title:    return "Title";
 		case eList::GameMain: return "GameMain";
-		case eList::GameOver: return "GameOver";
-		case eList::Ending:   return "Ending";
 		case eList::Mattya:  return "MattyaTest";
 		case eList::Memeu:   return "MemeuTest";
 		case eList::L:       return "LTest";

@@ -31,7 +31,7 @@
 #include "System/Singleton/ParryManager/ParryManager.h"
 #include "System/Singleton/FrameCaptureManager/FrameCaptureManager.h"
 
-#if _DEBUG
+#if _DEBUG || ENABLE_FRAMECAPTURE_IMGUI
 #include "System/Singleton/ImGui/CImGuiManager.h"
 #endif
 
@@ -84,6 +84,8 @@ void GameMain::Initialize()
 
 void GameMain::Create()
 {
+    // フレームキャプチャのロールキャプチャを開始(Gameシーン開始から常に保存)
+    FrameCaptureManager::GetInstance().StartRollingCapture(10, 60);
 }
 
 void GameMain::Update()
@@ -149,7 +151,7 @@ void GameMain::Update()
 
     UIUpdate();
 
-#if _DEBUG
+#if _DEBUG || ENABLE_FRAMECAPTURE_IMGUI
     ImGui::Begin("Gamemain Debug");
     bool gray = PostEffectManager::GetInstance().IsGray();
     if (ImGui::Checkbox("GrayScale", &gray)) {

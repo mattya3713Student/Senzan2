@@ -34,7 +34,11 @@ void BossMoveContinueState::Update()
     vToPlayer = DirectX::XMVectorSetY(vToPlayer, 0.0f);
     float distanceToPlayer = DirectX::XMVectorGetX(DirectX::XMVector3Length(vToPlayer));
 
-    constexpr float STRAFE_RANGE = 20.0f;
+    // Use tunable members instead of local constants
+    const float STRAFE_RANGE = 20.0f;
+
+    // slightly increase rotation speed for snappier strafing
+    m_RotationSpeed = 0.4; // was 0.1
 
     switch (m_Phase)
     {
@@ -45,9 +49,10 @@ void BossMoveContinueState::Update()
         break;
     case MovePhase::Run:
     {
-        constexpr float APPROACH_SPEED = 10.0f;
+        // Use configurable forward move speed
+        float approachSpeed = m_MoveSpeed;
         DirectX::XMVECTOR vMoveDir = DirectX::XMVector3Normalize(vToPlayer);
-        DirectX::XMVECTOR vNewPos = DirectX::XMVectorAdd(vBossPos, DirectX::XMVectorScale(vMoveDir, APPROACH_SPEED * delta));
+        DirectX::XMVECTOR vNewPos = DirectX::XMVectorAdd(vBossPos, DirectX::XMVectorScale(vMoveDir, approachSpeed * delta));
 
         DirectX::XMFLOAT3 newPosF;
         DirectX::XMStoreFloat3(&newPosF, vNewPos);

@@ -2,18 +2,26 @@
 #include "Graphic/DirectX/DirectX11/DirectX11.h"
 #include "Game/05_InputDevice/Input.h"
 #include "Game/04_Time/Time.h"
+#include "System/Singleton/PostEffectManager/PostEffectManager.h"
 
 #include <d3dcompiler.h>
 #include <fstream>
 
 #pragma comment(lib, "d3dcompiler.lib")
 
-#if _DEBUG
+// FrameCaptureManager の ImGui を Release でも有効にする場合は 1 にする
+#define ENABLE_FRAMECAPTURE_IMGUI 1
+
+#if _DEBUG || ENABLE_FRAMECAPTURE_IMGUI
 #include "System/Singleton/ImGui/CImGuiManager.h"
 #endif
 
 // FileManagerを利用してjson読み書き
 #include "System/Utility/FileManager/FileManager.h"
+// ログ出力
+#include "System/Singleton/Debug/Log/DebugLog.h"
+// シーンマネージャ
+#include "System/Singleton/SceneManager/SceneManager.h"
 
 namespace
 {
@@ -60,24 +68,25 @@ namespace
 
 	// ピクセルシェーダー（インラインHLSL）
 	const char* g_PS_Source = R"(
-		Texture2D g_Texture : register(t0);
-		SamplerState g_Sampler : register(s0);
-		struct PS_INPUT
-		{
-			float4 Pos : SV_POSITION;
-			float2 Tex : TEXCOORD0;
-		};
-		float4 main(PS_INPUT input) : SV_Target
-		{
-			return g_Texture.Sample(g_Sampler, input.Tex);
-		}
-	)";
+	Texture2D g_Texture : register(t0);
+	SamplerState g_Sampler : register(s0);
+	struct PS_INPUT
+	{
+		float4 Pos : SV_POSITION;
+		float2 Tex : TEXCOORD0;
+	};
+	float4 main(PS_INPUT input) : SV_Target
+	{
+		float4 c = g_Texture.Sample(g_Sampler, input.Tex);
+		return float4(c.rgb, 1.0f);
+	}
+)";
 }
 
 // コンストラクタ
 FrameCaptureManager::FrameCaptureManager()
 	: m_CaptureDuration(5.0f)
-	, m_CaptureFPS(30)
+	, m_CaptureFPS(60)
 	, m_MaxFrames(0)
 	, m_bCapturing(false)
 	, m_CaptureTimer(0.0f)
@@ -96,6 +105,14 @@ FrameCaptureManager::FrameCaptureManager()
 	, m_pPixelShader(nullptr)
 	, m_pInputLayout(nullptr)
 	, m_bInitialized(false)
+    , m_bRolling(false)
+    , m_bRewindMode(false)
+    , m_bReloadOnComplete(false)
+    , m_SampleIntervalFrames(30)
+    , m_AssumedFPS(60)
+    , m_FrameCounter(0)
+    , m_DownsampleFactor(1)
+    , m_PlaybackIntervalBackup(0.0f)
 {
 }
 
@@ -147,6 +164,46 @@ void FrameCaptureManager::StartCapture(float seconds, int fps)
 	m_bCapturing = true;
 }
 
+// 常時ロールバッファキャプチャ開始
+void FrameCaptureManager::StartRollingCapture(int sampleIntervalFrames, int assumedFPS)
+{
+    if (m_bRolling) return;
+    m_bRolling = true;
+
+    m_SampleIntervalFrames = sampleIntervalFrames;
+    m_AssumedFPS = assumedFPS;
+
+    // ダウンサンプリング因子はコンストラクタのデフォルト（m_DownsampleFactor）を使用する
+
+    // バッファサイズ = 3分 * assumedFPS / sampleIntervalFrames + 10
+    m_MaxFrames = (3 * 60 * m_AssumedFPS) / std::max(1, m_SampleIntervalFrames) + 10;
+
+    // キャプチャ間隔はサンプル間隔に基づき計算（フレームごとのアキュムレータは still Time-driven）
+    // m_FrameInterval は秒単位の目安にしておく（assumedFPS を使用）
+    m_FrameInterval = static_cast<float>(m_SampleIntervalFrames) / static_cast<float>(m_AssumedFPS);
+
+    // 既存のテクスチャを解放してから再作成
+    ReleaseCaptureTextures();
+    CreateCaptureTextures();
+
+    m_CaptureTimer = 0.0f;
+    m_FrameAccumulator = 0.0f;
+    m_WriteIndex = 0;
+    m_CapturedFrameCount = 0;
+    m_FrameCounter = 0;
+
+#if _DEBUG
+    {
+        std::stringstream ss;
+        ss << "FrameCapture: StartRolling sampleInterval=" << m_SampleIntervalFrames
+           << " assumedFPS=" << m_AssumedFPS
+           << " maxFrames=" << m_MaxFrames
+           << " downsample=" << m_DownsampleFactor;
+        Log::GetInstance().LogInfo(ss.str());
+    }
+#endif
+}
+
 // キャプチャ停止
 void FrameCaptureManager::StopCapture()
 {
@@ -156,63 +213,356 @@ void FrameCaptureManager::StopCapture()
 // 更新処理
 void FrameCaptureManager::Update(float deltaTime)
 {
-	// キャプチャ中の処理
-	if (m_bCapturing)
-	{
-		m_CaptureTimer += deltaTime;
-		m_FrameAccumulator += deltaTime;
+    // 通常の一回キャプチャモード
+    if (m_bCapturing)
+    {
+        m_CaptureTimer += deltaTime;
+        m_FrameAccumulator += deltaTime;
 
-		// フレーム間隔ごとにキャプチャ
-		while (m_FrameAccumulator >= m_FrameInterval && m_CapturedFrameCount < m_MaxFrames)
-		{
-			CaptureFrame();
-			m_FrameAccumulator -= m_FrameInterval;
-		}
+        // フレーム間隔ごとにキャプチャ
+        while (m_FrameAccumulator >= m_FrameInterval && m_CapturedFrameCount < m_MaxFrames)
+        {
+            CaptureFrame();
+            m_FrameAccumulator -= m_FrameInterval;
+        }
 
-		// 指定秒数経過でキャプチャ終了
-		if (m_CaptureTimer >= m_CaptureDuration)
-		{
-			StopCapture();
-		}
-	}
+        // 指定秒数経過でキャプチャ終了
+        if (m_CaptureTimer >= m_CaptureDuration)
+        {
+            StopCapture();
+        }
+    }
+
+    // ロールバッファ常時キャプチャ
+    if (m_bRolling)
+    {
+        // フレーム単位でカウントして、sample interval毎に1キャプチャを行う
+        m_FrameCounter++;
+        if (m_FrameCounter >= m_SampleIntervalFrames)
+        {
+            m_FrameCounter = 0;
+            // キャプチャ実行（時刻ベースの間隔は無視）
+            CaptureFrame();
+            // m_CapturedFrameCount は最大 m_MaxFrames を上限にする
+            if (m_CapturedFrameCount < m_MaxFrames) m_CapturedFrameCount++;
+        }
+    }
 
 	// 再生トリガーキー判定（キャプチャ完了後のみ）
-	if (!m_bCapturing && m_CapturedFrameCount > 0 && !m_bPlaying)
+    if (!m_bCapturing && m_CapturedFrameCount > 0 && !m_bPlaying && !m_bRewindMode)
 	{
-		if (Input::IsKeyDown(m_PlaybackTriggerKey))
-		{
-			StartPlayback(true);
-		}
+        if (Input::IsKeyDown(m_PlaybackTriggerKey))
+        {
+            // F9 押下で巻き戻しモード開始（再生を 60fps で行う）
+            m_bRewindMode = true;
+            m_PlaybackIndex = m_CapturedFrameCount - 1;
+            m_PlaybackAccumulator = 0.0f;
+            // Backup current frame interval and set to 60 FPS for rewind playback
+            m_PlaybackIntervalBackup = m_FrameInterval;
+            m_FrameInterval = 1.0f / 60.0f;
+            m_bPlaying = true; // reuse playing state for rendering rewind
+            m_bReloadOnComplete = true; // シーン再構築を行う
+        }
 	}
 }
 
 // バックバッファをコピー
 void FrameCaptureManager::CaptureFrame()
 {
-	if (!m_bCapturing || m_CapturedFrameCount >= m_MaxFrames) return;
-	if (m_CaptureTextures.empty()) return;
+    // キャプチャモードまたはロールモードのいずれかでない場合は何もしない
+    if (!m_bCapturing && !m_bRolling) return;
+    if (m_CaptureTextures.empty()) return;
 
 	auto* pDevice = DirectX11::GetInstance().GetDevice();
 	auto* pContext = DirectX11::GetInstance().GetContext();
 	auto* pSwapChain = DirectX11::GetInstance().GetSwapChain();
 	if (!pDevice || !pContext || !pSwapChain) return;
 
-	// バックバッファを取得
-	ID3D11Texture2D* pBackBuffer = nullptr;
-	HRESULT hr = pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
-	if (FAILED(hr) || !pBackBuffer) return;
+    // PostEffectManager が有効な場合のみリゾルブ済みテクスチャを使う
+    auto& pe = PostEffectManager::GetInstance();
+    bool usePostEffect = pe.IsGray() || pe.IsCircleGrayActive() || pe.IsBlurEnabled();
+    // フェード（円形グレースケール）が進行中の場合はキャプチャを開始せず待機する
+    if (pe.IsCircleGrayActive())
+    {
+#if ENABLE_FRAMECAPTURE_IMGUI
+        Log::GetInstance().LogInfo("FrameCapture: Skipping capture while circle fade active");
+#endif
+        return;
+    }
+    
+    if (m_MaxFrames <= 0) {
+        // nothing created
+#if _DEBUG
+        Log::GetInstance().LogWarning("FrameCapture: m_MaxFrames <= 0, skipping capture");
+#endif
+        return;
+    }
 
-	// バックバッファをキャプチャテクスチャにコピー
-	int index = m_WriteIndex % m_MaxFrames;
-	pContext->CopyResource(m_CaptureTextures[index], pBackBuffer);
+    int index = m_WriteIndex % m_MaxFrames;
 
-	pBackBuffer->Release();
+    // 目標テクスチャが作成されていない場合は失敗ログを出して書き込みインデックスを進める
+    if (index < 0 || index >= static_cast<int>(m_CaptureTextures.size()) || m_CaptureTextures[index] == nullptr)
+    {
+#if _DEBUG
+        std::stringstream ss;
+        ss << "FrameCapture: target texture missing at index=" << index << ", skipping write";
+        Log::GetInstance().LogWarning(ss.str());
+#endif
+        m_WriteIndex++;
+        if (m_CapturedFrameCount < m_MaxFrames) m_CapturedFrameCount++;
+        return;
+    }
 
-	m_WriteIndex++;
-	if (m_CapturedFrameCount < m_MaxFrames)
-	{
-		m_CapturedFrameCount++;
-	}
+    if (usePostEffect && pe.GetSceneResolvedTex()) {
+        // PostEffect が有効で SceneResolvedTex がある場合はそれを使う
+        // リゾルブ済みテクスチャがバックバッファ解像度の場合はダウンサンプリングしてコピー
+        D3D11_TEXTURE2D_DESC srcDesc;
+        pe.GetSceneResolvedTex()->GetDesc(&srcDesc);
+        if (m_DownsampleFactor > 1) {
+            // ソフトウェア的ダウンサンプリング：Resolve -> ステージング -> サンプリングは重い
+            // ここではシンプルに CopyResource しておき、ダウンサンプリングは未実装（将来の改善点）。
+            // If downsampling requested, render the source SRV into the downsampled RTV
+            if (m_DownsampleFactor > 1 && m_CaptureRTVs[index]) {
+                ID3D11ShaderResourceView* srcSRV = pe.GetSceneSRV();
+                // Set render target to downsampled texture
+                ID3D11RenderTargetView* prevRTV = nullptr;
+                ID3D11DepthStencilView* prevDSV = DirectX11::GetInstance().GetBackBufferDSV();
+                // Save current RTV (use ResetRenderTarget to restore later)
+                pContext->OMGetRenderTargets(1, &prevRTV, nullptr);
+                // Save and set viewport to match downsampled render target so fullscreen quad covers whole target
+                D3D11_VIEWPORT prevViewports[16];
+                UINT prevNumViewports = 16;
+                pContext->RSGetViewports(&prevNumViewports, prevViewports);
+                D3D11_VIEWPORT vp = { 0.0f, 0.0f, static_cast<FLOAT>(m_TargetCaptureWidth), static_cast<FLOAT>(m_TargetCaptureHeight), 0.0f, 1.0f };
+                pContext->RSSetViewports(1, &vp);
+                pContext->OMSetRenderTargets(1, &m_CaptureRTVs[index], nullptr);
+                // Draw fullscreen quad sampling srcSRV
+                pContext->PSSetShaderResources(0, 1, &srcSRV);
+                pContext->VSSetShader(m_pVertexShader, nullptr, 0);
+                pContext->PSSetShader(m_pPixelShader, nullptr, 0);
+                UINT stride = sizeof(FullscreenVertex);
+                UINT offset = 0;
+                pContext->IASetVertexBuffers(0, 1, &m_pFullscreenVB, &stride, &offset);
+                pContext->IASetInputLayout(m_pInputLayout);
+                pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+                pContext->PSSetSamplers(0, 1, &m_pSamplerState);
+                pContext->Draw(6, 0);
+                // Unbind
+                ID3D11ShaderResourceView* nullSRV = nullptr;
+                pContext->PSSetShaderResources(0, 1, &nullSRV);
+                // Restore previous RTV
+                pContext->OMSetRenderTargets(1, &prevRTV, prevDSV);
+                // Restore previous viewports
+                if (prevNumViewports > 0) pContext->RSSetViewports(prevNumViewports, prevViewports);
+                if (prevRTV) prevRTV->Release();
+            }
+            else {
+                pContext->CopyResource(m_CaptureTextures[index], pe.GetSceneResolvedTex());
+            }
+        } else {
+            pContext->CopyResource(m_CaptureTextures[index], pe.GetSceneResolvedTex());
+        }
+#if ENABLE_FRAMECAPTURE_IMGUI
+        Log::GetInstance().LogInfo("FrameCapture: Using PostEffect resolved texture");
+#endif
+    }
+    else {
+        // バックバッファを取得してコピーまたはダウンサンプリングレンダー
+        ID3D11Texture2D* pBackBuffer = nullptr;
+        HRESULT hr = pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
+        if (FAILED(hr) || !pBackBuffer) {
+#if ENABLE_FRAMECAPTURE_IMGUI
+            Log::GetInstance().LogError("FrameCapture: Failed to get back buffer");
+#endif
+            return;
+        }
+
+        D3D11_TEXTURE2D_DESC backDesc;
+        pBackBuffer->GetDesc(&backDesc);
+
+#if ENABLE_FRAMECAPTURE_IMGUI
+        {
+            std::stringstream ss;
+            ss << "FrameCapture: BackBuffer SampleCount=" << backDesc.SampleDesc.Count 
+               << " Format=" << backDesc.Format 
+               << " Size=" << backDesc.Width << "x" << backDesc.Height;
+            Log::GetInstance().LogInfo(ss.str());
+        }
+#endif
+
+        if (m_DownsampleFactor > 1 && m_CaptureRTVs[index]) {
+            // Create SRV for backbuffer temporarily
+            ID3D11ShaderResourceView* backSRV = nullptr;
+            ID3D11Texture2D* pTempResolved = nullptr;
+            // If backbuffer is MSAA, CreateShaderResourceView with TEXTURE2D will fail (E_INVALIDARG).
+            // Resolve into a non-MSAA texture first, then create SRV from that.
+            if (backDesc.SampleDesc.Count > 1)
+            {
+                D3D11_TEXTURE2D_DESC tmpDesc = {};
+                tmpDesc.Width = backDesc.Width;
+                tmpDesc.Height = backDesc.Height;
+                tmpDesc.MipLevels = 1;
+                tmpDesc.ArraySize = 1;
+                tmpDesc.Format = backDesc.Format;
+                tmpDesc.SampleDesc.Count = 1; // non-MSAA
+                tmpDesc.SampleDesc.Quality = 0;
+                tmpDesc.Usage = D3D11_USAGE_DEFAULT;
+                tmpDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+                tmpDesc.CPUAccessFlags = 0;
+                tmpDesc.MiscFlags = 0;
+
+                HRESULT hrTmp = pDevice->CreateTexture2D(&tmpDesc, nullptr, &pTempResolved);
+                if (FAILED(hrTmp) || pTempResolved == nullptr)
+                {
+                    std::stringstream ss;
+                    ss << "FrameCapture: CreateTexture2D for resolve temp failed hr=0x" << std::hex << hrTmp;
+                    Log::GetInstance().LogError(ss.str());
+                    pBackBuffer->Release();
+                    return;
+                }
+
+                // Resolve MSAA backbuffer into non-MSAA texture
+                pContext->ResolveSubresource(pTempResolved, 0, pBackBuffer, 0, backDesc.Format);
+
+                D3D11_SHADER_RESOURCE_VIEW_DESC backSrvDesc = {};
+                backSrvDesc.Format = tmpDesc.Format;
+                backSrvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+                backSrvDesc.Texture2D.MostDetailedMip = 0;
+                backSrvDesc.Texture2D.MipLevels = 1;
+                HRESULT hrCreateSRV = pDevice->CreateShaderResourceView(pTempResolved, &backSrvDesc, &backSRV);
+                if (FAILED(hrCreateSRV) || backSRV == nullptr)
+                {
+                    std::stringstream ss;
+                    ss << "FrameCapture: CreateSRV for resolved backbuffer failed hr=0x" << std::hex << hrCreateSRV;
+                    Log::GetInstance().LogError(ss.str());
+                    if (pTempResolved) pTempResolved->Release();
+                    pBackBuffer->Release();
+                    return;
+                }
+            }
+            else
+            {
+                D3D11_SHADER_RESOURCE_VIEW_DESC backSrvDesc = {};
+                backSrvDesc.Format = backDesc.Format;
+                backSrvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+                backSrvDesc.Texture2D.MostDetailedMip = 0;
+                backSrvDesc.Texture2D.MipLevels = 1;
+                HRESULT hrCreateSRV = pDevice->CreateShaderResourceView(pBackBuffer, &backSrvDesc, &backSRV);
+                if (FAILED(hrCreateSRV) || backSRV == nullptr) {
+                    std::stringstream ss;
+                    ss << "FrameCapture: CreateSRV for backbuffer failed hr=0x" << std::hex << hrCreateSRV;
+                    Log::GetInstance().LogError(ss.str());
+                    pBackBuffer->Release();
+                    return;
+                }
+            }
+
+            // Render sample into downsampled RTV
+            ID3D11RenderTargetView* prevRTV = nullptr;
+            ID3D11DepthStencilView* prevDSV = nullptr;
+            pContext->OMGetRenderTargets(1, &prevRTV, &prevDSV);
+            pContext->OMSetRenderTargets(1, &m_CaptureRTVs[index], nullptr);
+            // Ensure viewport matches the capture target so the quad fills entire texture
+            D3D11_VIEWPORT prevViewports2[16];
+            UINT prevNumViewports2 = 16;
+            pContext->RSGetViewports(&prevNumViewports2, prevViewports2);
+            D3D11_VIEWPORT vp2 = { 0.0f, 0.0f, static_cast<FLOAT>(m_TargetCaptureWidth), static_cast<FLOAT>(m_TargetCaptureHeight), 0.0f, 1.0f };
+            pContext->RSSetViewports(1, &vp2);
+            pContext->PSSetShaderResources(0, 1, &backSRV);
+            pContext->VSSetShader(m_pVertexShader, nullptr, 0);
+            pContext->PSSetShader(m_pPixelShader, nullptr, 0);
+            UINT stride = sizeof(FullscreenVertex);
+            UINT offset = 0;
+            pContext->IASetVertexBuffers(0, 1, &m_pFullscreenVB, &stride, &offset);
+            pContext->IASetInputLayout(m_pInputLayout);
+            pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+            pContext->PSSetSamplers(0, 1, &m_pSamplerState);
+            pContext->Draw(6, 0);
+            ID3D11ShaderResourceView* nullSRV = nullptr;
+            pContext->PSSetShaderResources(0, 1, &nullSRV);
+            pContext->OMSetRenderTargets(1, &prevRTV, prevDSV);
+            if (prevNumViewports2 > 0) pContext->RSSetViewports(prevNumViewports2, prevViewports2);
+            if (prevRTV) prevRTV->Release();
+            if (prevDSV) prevDSV->Release();
+            if (backSRV) backSRV->Release();
+            if (pTempResolved) pTempResolved->Release();
+        }
+        else {
+            if (backDesc.SampleDesc.Count > 1) {
+                // MSAA の場合は ResolveSubresource を使って非MSAAテクスチャへ解決
+                pContext->ResolveSubresource(m_CaptureTextures[index], 0, pBackBuffer, 0, backDesc.Format);
+            }
+            else {
+                // 通常はコピーで良い
+                pContext->CopyResource(m_CaptureTextures[index], pBackBuffer);
+            }
+        }
+
+        pBackBuffer->Release();
+    }
+
+#if ENABLE_FRAMECAPTURE_IMGUI
+    // デバッグ: コピー直後のキャプチャテクスチャの先頭ピクセルをCPU読み出ししてログ出力
+    if (m_CaptureTextures[index]) {
+        D3D11_TEXTURE2D_DESC capturedDesc;
+        m_CaptureTextures[index]->GetDesc(&capturedDesc);
+
+        // 対応フォーマットのみチェック
+        if (capturedDesc.Format == DXGI_FORMAT_R8G8B8A8_UNORM || capturedDesc.Format == DXGI_FORMAT_B8G8R8A8_UNORM) {
+            D3D11_TEXTURE2D_DESC stagDesc = {};
+            stagDesc.Width = capturedDesc.Width;
+            stagDesc.Height = capturedDesc.Height;
+            stagDesc.MipLevels = 1;
+            stagDesc.ArraySize = 1;
+            stagDesc.Format = capturedDesc.Format;
+            stagDesc.SampleDesc.Count = 1;
+            stagDesc.Usage = D3D11_USAGE_STAGING;
+            stagDesc.BindFlags = 0;
+            stagDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+            stagDesc.MiscFlags = 0;
+
+            ID3D11Texture2D* pStaging = nullptr;
+            HRESULT hrSt = pDevice->CreateTexture2D(&stagDesc, nullptr, &pStaging);
+            if (SUCCEEDED(hrSt) && pStaging) {
+                pContext->CopyResource(pStaging, m_CaptureTextures[index]);
+
+                D3D11_MAPPED_SUBRESOURCE mapped = {};
+                HRESULT hrMap = pContext->Map(pStaging, 0, D3D11_MAP_READ, 0, &mapped);
+                if (SUCCEEDED(hrMap)) {
+                    unsigned char* pData = reinterpret_cast<unsigned char*>(mapped.pData);
+                    unsigned int r = 0, g = 0, b = 0, a = 0;
+                    if (capturedDesc.Format == DXGI_FORMAT_R8G8B8A8_UNORM) {
+                        r = pData[0]; g = pData[1]; b = pData[2]; a = pData[3];
+                    }
+                    else { // BGRA
+                        b = pData[0]; g = pData[1]; r = pData[2]; a = pData[3];
+                    }
+                    {
+                        std::stringstream ss;
+                        ss << "FrameCapture Debug idx=" << index << " firstpixel RGBA=" << r << "," << g << "," << b << "," << a;
+                        Log::GetInstance().LogInfo(ss.str());
+
+                        m_CapturedFrameCount = index;
+                    }
+                    pContext->Unmap(pStaging, 0);
+                }
+                else {
+                    OutputDebugStringA("FrameCapture Debug: Map staging failed\n");
+                }
+                pStaging->Release();
+            }
+            else {
+                OutputDebugStringA("FrameCapture Debug: Create staging failed\n");
+            }
+        }
+        else {
+            OutputDebugStringA("FrameCapture Debug: Unsupported format for quick read\n");
+        }
+    }
+#endif
+
+    m_WriteIndex++;
+
 }
 
 // 再生開始
@@ -223,6 +573,8 @@ void FrameCaptureManager::StartPlayback(bool loop)
 	m_bLoopPlayback = loop;
 	m_PlaybackIndex = 0;
 	m_PlaybackAccumulator = 0.0f;
+	// Backup current frame interval so we can restore after special playback modes
+	m_PlaybackIntervalBackup = m_FrameInterval;
 	m_bPlaying = true;
 }
 
@@ -230,6 +582,12 @@ void FrameCaptureManager::StartPlayback(bool loop)
 void FrameCaptureManager::StopPlayback()
 {
 	m_bPlaying = false;
+	// Restore frame interval if it was changed for special playback
+	if (m_PlaybackIntervalBackup > 0.0f)
+	{
+		m_FrameInterval = m_PlaybackIntervalBackup;
+		m_PlaybackIntervalBackup = 0.0f;
+	}
 }
 
 // 再生用描画
@@ -245,7 +603,15 @@ void FrameCaptureManager::RenderPlayback(float deltaTime)
 	while (m_PlaybackAccumulator >= m_FrameInterval)
 	{
 		m_PlaybackAccumulator -= m_FrameInterval;
-		m_PlaybackIndex++;
+        // 巻き戻し中は逆方向に進める
+        if (m_bRewindMode)
+        {
+            m_PlaybackIndex--;
+        }
+        else
+        {
+            m_PlaybackIndex++;
+        }
 
 		if (m_PlaybackIndex >= m_CapturedFrameCount)
 		{
@@ -267,45 +633,82 @@ void FrameCaptureManager::RenderPlayback(float deltaTime)
         StopPlayback();
         return;
     }
-    int frameIndex = m_PlaybackIndex % m_CapturedFrameCount;
+
+    // 巻き戻し時の完了チェック（負インデックスになる前に検出）
+    if (m_bRewindMode && m_PlaybackIndex < 0)
+    {
+        // 巻き戻し完了
+        m_bRewindMode = false;
+        m_bPlaying = false;
+        if (m_bReloadOnComplete)
+        {
+            m_bReloadOnComplete = false;
+            SceneManager::GetInstance().LoadScene(eList::GameMain);
+        }
+        return;
+    }
+
+    int frameIndex = 0;
+    if (m_bRewindMode)
+    {
+        // 巻き戻し中は範囲内のインデックスをそのまま使う
+        frameIndex = std::clamp(m_PlaybackIndex, 0, m_CapturedFrameCount - 1);
+    }
+    else
+    {
+        frameIndex = m_PlaybackIndex % m_CapturedFrameCount;
+    }
+
     if (m_CaptureSRVs.empty() || !m_CaptureSRVs[frameIndex]) {
         // 無効なSRVなら再生を停止してデフォルト描画にフォールバック
         StopPlayback();
         return;
     }
 
-	// バックバッファをクリア
-	DirectX11::GetInstance().ClearBackBuffer();
-	DirectX11::GetInstance().ResetRenderTarget();
+    // バックバッファをクリア
+    DirectX11::GetInstance().ClearBackBuffer();
+    DirectX11::GetInstance().ResetRenderTarget();
 
-	// 深度テストOFF、アルファブレンドOFF
-	DirectX11::GetInstance().SetDepth(false);
-	DirectX11::GetInstance().SetAlphaBlend(false);
+    // 深度テストOFF、アルファブレンドOFF
+    DirectX11::GetInstance().SetDepth(false);
+    DirectX11::GetInstance().SetAlphaBlend(false);
 
-	// シェーダー設定
-	pContext->VSSetShader(m_pVertexShader, nullptr, 0);
-	pContext->PSSetShader(m_pPixelShader, nullptr, 0);
-	pContext->IASetInputLayout(m_pInputLayout);
+    if (m_bRewindMode)
+    {
+        // 巻き戻し中はグレースケールを適用して PostEffect 経由で描画
+        auto& pe = PostEffectManager::GetInstance();
+        bool prevGray = pe.IsGray();
+        pe.SetGray(true);
+        pe.RenderSRVWithPostEffects(m_CaptureSRVs[frameIndex], m_TargetCaptureWidth, m_TargetCaptureHeight);
+        pe.SetGray(prevGray);
+    }
+    else
+    {
+        // シェーダー設定
+        pContext->VSSetShader(m_pVertexShader, nullptr, 0);
+        pContext->PSSetShader(m_pPixelShader, nullptr, 0);
+        pContext->IASetInputLayout(m_pInputLayout);
 
-	// 頂点バッファ設定
-	UINT stride = sizeof(FullscreenVertex);
-	UINT offset = 0;
-	pContext->IASetVertexBuffers(0, 1, &m_pFullscreenVB, &stride, &offset);
-	pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        // 頂点バッファ設定
+        UINT stride = sizeof(FullscreenVertex);
+        UINT offset = 0;
+        pContext->IASetVertexBuffers(0, 1, &m_pFullscreenVB, &stride, &offset);
+        pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	// テクスチャとサンプラー設定
-	pContext->PSSetShaderResources(0, 1, &m_CaptureSRVs[frameIndex]);
-	pContext->PSSetSamplers(0, 1, &m_pSamplerState);
+        // テクスチャとサンプラー設定
+        pContext->PSSetShaderResources(0, 1, &m_CaptureSRVs[frameIndex]);
+        pContext->PSSetSamplers(0, 1, &m_pSamplerState);
 
-	// 描画
-	pContext->Draw(6, 0);
+        // 描画
+        pContext->Draw(6, 0);
 
-	// シェーダーリソースをアンバインド
-	ID3D11ShaderResourceView* nullSRV = nullptr;
-	pContext->PSSetShaderResources(0, 1, &nullSRV);
+        // シェーダーリソースをアンバインド
+        ID3D11ShaderResourceView* nullSRV = nullptr;
+        pContext->PSSetShaderResources(0, 1, &nullSRV);
+    }
 
-	// 深度テストを戻す
-	DirectX11::GetInstance().SetDepth(true);
+    // 深度テストを戻す
+    DirectX11::GetInstance().SetDepth(true);
 }
 
 // フレーム保存用テクスチャの作成
@@ -324,10 +727,16 @@ void FrameCaptureManager::CreateCaptureTextures()
 	pBackBuffer->GetDesc(&backBufferDesc);
 	pBackBuffer->Release();
 
-	// キャプチャ用テクスチャを作成
+    // ダウンサンプリング解像度計算
+    int outWidth = backBufferDesc.Width / std::max(1, m_DownsampleFactor);
+    int outHeight = backBufferDesc.Height / std::max(1, m_DownsampleFactor);
+    m_TargetCaptureWidth = outWidth;
+    m_TargetCaptureHeight = outHeight;
+
+    // キャプチャ用テクスチャを作成（ダウンサンプリング解像度）
     D3D11_TEXTURE2D_DESC texDesc = {};
-	texDesc.Width = backBufferDesc.Width;
-	texDesc.Height = backBufferDesc.Height;
+    texDesc.Width = outWidth;
+    texDesc.Height = outHeight;
     m_CaptureWidth = backBufferDesc.Width;
     m_CaptureHeight = backBufferDesc.Height;
 	texDesc.MipLevels = 1;
@@ -342,16 +751,30 @@ void FrameCaptureManager::CreateCaptureTextures()
 
 	m_CaptureTextures.resize(m_MaxFrames);
 	m_CaptureSRVs.resize(m_MaxFrames);
+    m_CaptureRTVs.resize(m_MaxFrames);
 
-	for (int i = 0; i < m_MaxFrames; ++i)
-	{
-		hr = pDevice->CreateTexture2D(&texDesc, nullptr, &m_CaptureTextures[i]);
-		if (FAILED(hr))
-		{
-			m_CaptureTextures[i] = nullptr;
-			m_CaptureSRVs[i] = nullptr;
-			continue;
-		}
+    for (int i = 0; i < m_MaxFrames; ++i)
+    {
+        // Create texture with RTV bind so we can render downsampled content into it
+        D3D11_TEXTURE2D_DESC texDescRT = texDesc;
+        texDescRT.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+        hr = pDevice->CreateTexture2D(&texDescRT, nullptr, &m_CaptureTextures[i]);
+        if (FAILED(hr))
+        {
+            m_CaptureTextures[i] = nullptr;
+            m_CaptureSRVs[i] = nullptr;
+            // Failed to create texture -> stop creating further to avoid repeated allocation failures
+            std::stringstream ss;
+            ss << "FrameCapture: CreateTexture2D failed at i=" << i << " hr=" << std::hex << hr;
+            Log::GetInstance().LogError(ss.str());
+            // shrink vectors to created count
+            int created = i;
+            m_CaptureTextures.resize(created);
+            m_CaptureSRVs.resize(created);
+            m_CaptureRTVs.resize(created);
+            m_MaxFrames = created;
+            break;
+        }
 
 		// SRV作成
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
@@ -360,12 +783,42 @@ void FrameCaptureManager::CreateCaptureTextures()
 		srvDesc.Texture2D.MostDetailedMip = 0;
 		srvDesc.Texture2D.MipLevels = 1;
 
-		hr = pDevice->CreateShaderResourceView(m_CaptureTextures[i], &srvDesc, &m_CaptureSRVs[i]);
-		if (FAILED(hr))
-		{
-			m_CaptureSRVs[i] = nullptr;
-		}
+        hr = pDevice->CreateShaderResourceView(m_CaptureTextures[i], &srvDesc, &m_CaptureSRVs[i]);
+        if (FAILED(hr))
+        {
+            m_CaptureSRVs[i] = nullptr;
+            std::stringstream ss; ss << "FrameCapture: CreateSRV failed at i=" << i << " hr=" << std::hex << hr; Log::GetInstance().LogError(ss.str());
+        }
+        else
+        {
+            // デバッグ用: SRV が作成できたことをログ出力
+            // (Releaseビルドでは無効化するため _DEBUG に限定)
+#if ENABLE_FRAMECAPTURE_IMGUI
+            Log::GetInstance().LogInfo("FrameCapture: Created SRV for frame");
+#endif
+        }
+        // Create RTV for rendering into (downsample target)
+        D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+        rtvDesc.Format = texDesc.Format;
+        rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+        rtvDesc.Texture2D.MipSlice = 0;
+        ID3D11RenderTargetView* pRTV = nullptr;
+        hr = pDevice->CreateRenderTargetView(m_CaptureTextures[i], &rtvDesc, &pRTV);
+        if (SUCCEEDED(hr)) {
+            m_CaptureRTVs[i] = pRTV;
+        } else {
+            m_CaptureRTVs[i] = nullptr;
+            std::stringstream ss; ss << "FrameCapture: CreateRTV failed at i=" << i << " hr=" << std::hex << hr; Log::GetInstance().LogWarning(ss.str());
+        }
 	}
+
+    // Ensure m_MaxFrames matches actually created count
+    if (static_cast<int>(m_CaptureTextures.size()) < m_MaxFrames) {
+        m_MaxFrames = static_cast<int>(m_CaptureTextures.size());
+    }
+
+    // ダウンサンプリング用レンダーターゲット（SRV 作成済みのテクスチャをレンダーターゲットとしても使う場合）
+    // ただし、CreateTexture2D で BindFlags に RTV を加えて作る必要があるため、ここでは必要なら追加実装。
 }
 
 // フレーム保存用テクスチャの解放
@@ -382,6 +835,12 @@ void FrameCaptureManager::ReleaseCaptureTextures()
 		if (pTex) pTex->Release();
 	}
 	m_CaptureTextures.clear();
+
+    for (auto* pRTV : m_CaptureRTVs)
+    {
+        if (pRTV) pRTV->Release();
+    }
+    m_CaptureRTVs.clear();
 
 	m_CapturedFrameCount = 0;
 	m_WriteIndex = 0;
@@ -535,7 +994,7 @@ void FrameCaptureManager::SaveSettings(const std::string& filePath)
 // ImGuiデバッグ表示
 void FrameCaptureManager::DebugImGui()
 {
-#if _DEBUG
+#if _DEBUG || ENABLE_FRAMECAPTURE_IMGUI
 	if (ImGui::Begin(IMGUI_JP("フレームキャプチャ")))
 	{
 		ImGui::Text(IMGUI_JP("状態: %s"), 
@@ -621,7 +1080,31 @@ void FrameCaptureManager::DebugImGui()
 
         // デバッグ用: 特定フレーム表示
         ImGui::Separator();
-        ImGui::Text(IMGUI_JP("解像度: %d x %d"), m_CaptureWidth, m_CaptureHeight);
+        ImGui::Text(IMGUI_JP("解像度: %d x %d"), m_CaptureWidth, m_CaptureHeight); 
+
+        // ダウンサンプル因子を実行時に調整できるようにする
+        int downsample = m_DownsampleFactor;
+        if (ImGui::SliderInt(IMGUI_JP("ダウンサンプル因子 (1=フル, 大きいほど粗く)"), &downsample, 1, 8))
+        {
+            if (downsample != m_DownsampleFactor)
+            {
+                // 変更中はキャプチャ／再生を停止してテクスチャを再作成
+                StopCapture();
+                StopPlayback();
+                m_DownsampleFactor = downsample;
+                ReleaseCaptureTextures();
+                CreateCaptureTextures();
+#if ENABLE_FRAMECAPTURE_IMGUI
+                std::stringstream ss;
+                ss << "FrameCapture: Downsample factor changed to " << m_DownsampleFactor;
+                Log::GetInstance().LogInfo(ss.str());
+#endif
+            }
+        }
+
+        // 作成されたキャプチャテクスチャのターゲット解像度を表示
+        ImGui::Text(IMGUI_JP("キャプチャターゲット解像度: %d x %d"), m_TargetCaptureWidth, m_TargetCaptureHeight);
+
         if (m_CapturedFrameCount > 0)
         {
             if (ImGui::SliderInt(IMGUI_JP("表示フレーム選択"), &m_DebugSelectedFrame, 0, m_CapturedFrameCount - 1))
@@ -635,7 +1118,7 @@ void FrameCaptureManager::DebugImGui()
                 ID3D11ShaderResourceView* srv = m_CaptureSRVs[m_DebugSelectedFrame];
                 if (srv)
                 {
-                    ImVec2 size(320, 180);
+                    ImVec2 size(WND_WF, WND_HF);
                     ImGui::Image((void*)srv, size);
                 }
                 else
@@ -646,5 +1129,5 @@ void FrameCaptureManager::DebugImGui()
         }
 	}
 	ImGui::End();
-#endif
+#endif // _DEBUG || ENABLE_FRAMECAPTURE_IMGUI
 }

@@ -107,7 +107,7 @@ void Main::Update()
 	// マウスを画面中央に固定する.
 	constexpr int Esc = VK_ESCAPE;
 	static bool wasEscPressed = false;
-#if _DEBUG
+#if ENABLE_FRAMECAPTURE_IMGUI
 	if (Input::IsKeyDown(Esc))
 	{
 		wasEscPressed = !wasEscPressed;
@@ -373,7 +373,7 @@ void Main::IsExitGame()
 
 void Main::DebugImgui()
 {
-#if _DEBUG
+#if ENABLE_FRAMECAPTURE_IMGUI
 	ImGui::Begin("Performance Monitor");
 
 	// 基本的なFPS表示.

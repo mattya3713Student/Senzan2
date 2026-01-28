@@ -145,10 +145,10 @@ protected:
 
 
 	//---共有---.
-	PlayerState::eID	m_NextStateID; 		// 次遷移ステート.
-	bool	m_IsStateChangeRequest; 			// 次遷移ステートフラグ.
+	PlayerState::eID	m_NextStateID; 	// 次遷移ステート.
+	bool	m_IsStateChangeRequest; 	// 次遷移ステートフラグ.
 
-	DirectX::XMFLOAT3	m_MoveVec; 			// 一時保存の移動ベクトル.
+	DirectX::XMFLOAT3	m_MoveVec; 		// 一時保存の移動ベクトル.
 
 	int				m_Combo; 			// コンボ.
 	float			m_CurrentUltValue; 	// 閃値.
@@ -165,7 +165,7 @@ protected:
 	bool				m_IsDead; 			// 死亡中か否か.
 
 	//---MoveMent関連---.
-	float				m_RunMoveSpeed; 		// 移動速度.
+	float				m_RunMoveSpeed; 	// 移動速度.
 
 	//---Combat関連---.
 	DirectX::XMFLOAT3	m_TargetPos; 		// 敵の座標.
