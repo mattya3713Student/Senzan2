@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 // Enable FrameCapture ImGui display even in Release builds when set to 1.
-#define ENABLE_FRAMECAPTURE_IMGUI 1
+#define ENABLE_FRAMECAPTURE_IMGUI 0
 
 #include "System/Singleton/SingletonTemplate.h"
 #include <D3D11.h>
@@ -155,6 +155,11 @@ private:
     bool m_bReloadOnComplete;
     // シーンリロード要求フラグ（次フレームでシーンをリロード）
     bool m_bRequestSceneReload;
+
+    // FPS低下時のキャプチャスキップ機能
+    bool  m_bSkipOnLowFPS;          // FPS低下時にスキップするかどうか
+    float m_MinFPSThreshold;        // スキップ判定の閾値FPS（デフォルト60）
+    int   m_SkippedFrameCount;      // スキップしたフレーム数（デバッグ用）
 
 	// フルスクリーンクワッド用リソース
 	ID3D11Buffer*             m_pFullscreenVB;      // 頂点バッファ
