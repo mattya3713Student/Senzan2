@@ -129,7 +129,11 @@ void GameMain::Update()
             if (!decidecontinue) {
                 SoundManager::GetInstance().Play("Decide");
                 SoundManager::GetInstance().SetVolume("Decide", 8000);
-                SceneManager::LoadScene(eList::GameMain);
+
+                // 巻き戻し開始.
+                FrameCaptureManager::GetInstance().SetPlaybackTriggerKey(true);
+                return;
+                SceneManager::LoadScene(eList::GameMain, false);
             }
             else{
                 SoundManager::GetInstance().Play("Decide");

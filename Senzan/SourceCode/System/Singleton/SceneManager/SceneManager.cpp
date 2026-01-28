@@ -158,9 +158,20 @@ bool SceneManager::IsCurrentSceneMattya() const
 #endif
 }
 
-void SceneManager::LoadScene(eList Scene)
+void SceneManager::LoadScene(eList Scene, bool useFade /*= true*/)
 {
     SceneManager& pI = GetInstance();
+    if (!useFade)
+    {
+        // Immediately replace the scene without fade.
+        if (pI.m_pScene) {
+            pI.m_pScene.reset();
+        }
+        pI.MakeScene(Scene);
+        if (pI.m_pScene) pI.m_pScene->Create();
+        return;
+    }
+
     if (pI.m_IsSceneChanging) return;
 
     pI.m_NextSceneID = Scene;

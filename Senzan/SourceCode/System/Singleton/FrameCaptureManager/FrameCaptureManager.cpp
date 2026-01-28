@@ -98,7 +98,7 @@ FrameCaptureManager::FrameCaptureManager()
 	, m_bLoopPlayback(true)
 	, m_PlaybackIndex(0)
 	, m_PlaybackAccumulator(0.0f)
-	, m_PlaybackTriggerKey(VK_F9)
+	, m_IsPlaybackTriggerKey()
 	, m_pFullscreenVB(nullptr)
 	, m_pSamplerState(nullptr)
 	, m_pVertexShader(nullptr)
@@ -251,7 +251,7 @@ void FrameCaptureManager::Update(float deltaTime)
 	// 再生トリガーキー判定（キャプチャ完了後のみ）
     if (!m_bCapturing && m_CapturedFrameCount > 0 && !m_bPlaying && !m_bRewindMode)
 	{
-        if (Input::IsKeyDown(m_PlaybackTriggerKey))
+        if (Input::IsKeyDown(VK_F9) || m_IsPlaybackTriggerKey)
         {
             // F9 押下で巻き戻しモード開始（再生を 60fps で行う）
             m_bRewindMode = true;
@@ -973,7 +973,7 @@ void FrameCaptureManager::LoadSettings(const std::string& filePath)
 		if (j.contains("CaptureFPS"))
 			m_CaptureFPS = j["CaptureFPS"].get<int>();
 		if (j.contains("PlaybackTriggerKey"))
-			m_PlaybackTriggerKey = j["PlaybackTriggerKey"].get<int>();
+            m_IsPlaybackTriggerKey = j["PlaybackTriggerKey"].get<bool>();
 	}
 	catch (...)
 	{
@@ -987,7 +987,7 @@ void FrameCaptureManager::SaveSettings(const std::string& filePath)
 	json j;
 	j["CaptureDuration"] = m_CaptureDuration;
 	j["CaptureFPS"] = m_CaptureFPS;
-	j["PlaybackTriggerKey"] = m_PlaybackTriggerKey;
+	j["PlaybackTriggerKey"] = m_IsPlaybackTriggerKey;
 
 	std::ofstream file(filePath);
 	if (file.is_open())
