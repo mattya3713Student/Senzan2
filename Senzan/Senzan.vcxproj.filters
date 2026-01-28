@@ -147,6 +147,7 @@
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossLaserState\BossLaserState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\02_UIObject\ULTSparkle\ULTSparkle.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossMoveContinueState\BossMoveContinueState.cpp" />
+    <ClCompile Include="SourceCode\System\Singleton\FrameCaptureManager\FrameCaptureManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SourceCode\Constant.h" />
@@ -309,6 +310,7 @@
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossLaserState\BossLaserState.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\ULTSparkle\ULTSparkle.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossMoveContinueState\BossMoveContinueState.h" />
+    <ClInclude Include="SourceCode\System\Singleton\FrameCaptureManager\FrameCaptureManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Shader\PMX\Header.hlsli" />
@@ -318,6 +320,7 @@
     <None Include="SourceCode\System\Utility\String\FilePath\FilePath.inl" />
     <None Include="tools\add_author_header.py" />
     <None Include="Data\Shader\Blur\GaussianBlurRuntime.hlsl" />
+    <None Include="Data\Json\FrameCaptureSettings.json" />
   </ItemGroup>
   <ItemGroup>
     <Font Include="Data\ImGui\Font\arial.ttf" />
