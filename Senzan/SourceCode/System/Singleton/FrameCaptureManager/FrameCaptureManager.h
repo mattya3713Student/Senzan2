@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 // Enable FrameCapture ImGui display even in Release builds when set to 1.
-#define ENABLE_FRAMECAPTURE_IMGUI 0
+#define ENABLE_FRAMECAPTURE_IMGUI 1
 
 #include "System/Singleton/SingletonTemplate.h"
 #include <D3D11.h>
