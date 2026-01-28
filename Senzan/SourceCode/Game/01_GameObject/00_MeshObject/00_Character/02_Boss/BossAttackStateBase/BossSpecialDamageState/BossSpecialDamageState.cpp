@@ -42,6 +42,7 @@ void BossSpecialDamageState::Update()
         if (m_TakeDamageReplayEnabled && m_ReplayTimer >= m_TakeDamageReplayTime)
         {
             m_pOwner->SetAnimSpeed(m_TakeDamageAnimSpeed);
+            m_pOwner->SetAnimTime(0.0);
             m_pOwner->ChangeAnim(Boss::enBossAnim::Hit);
             m_ReplayTimer = 0.0f;
         }
@@ -51,18 +52,23 @@ void BossSpecialDamageState::Update()
             m_Phase = Phase::Down;
             m_PhaseTimer = 0.0f;
             m_pOwner->SetAnimSpeed(m_DownAnimSpeed);
-            m_pOwner->ChangeAnim(Boss::enBossAnim::Dead);
+            m_pOwner->SetIsLoop(false);
+            m_pOwner->SetAnimTime(0.0);
+            m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchParis);
         }
     }
     break;
 
     case Phase::Down:
     {
-        if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Dead))
+        if (m_pOwner->IsAnimEnd(Boss::enBossAnim::FlinchParis))
         {
             m_Phase = Phase::DownContinue;
             m_PhaseTimer = 0.0f;
-            m_pOwner->SetIsLoop(false);
+            m_pOwner->SetIsLoop(true);
+            m_pOwner->SetAnimSpeed(m_DownContinueSpeed);
+            m_pOwner->SetAnimTime(0.0);
+            m_pOwner->ChangeAnim(Boss::enBossAnim::Flinch);
         }
     }
     break;
@@ -75,14 +81,14 @@ void BossSpecialDamageState::Update()
             m_Phase = Phase::GetUp;
             m_PhaseTimer = 0.0f;
             m_pOwner->SetAnimSpeed(m_GetUpAnimSpeed);
-            m_pOwner->ChangeAnim(Boss::enBossAnim::Idol);
+            m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchToIdol);
         }
     }
     break;
 
     case Phase::GetUp:
     {
-        if (m_pOwner->IsAnimEnd(Boss::enBossAnim::Idol))
+        if (m_pOwner->IsAnimEnd(Boss::enBossAnim::FlinchToIdol))
         {
             m_Phase = Phase::End;
         }
@@ -113,33 +119,35 @@ void BossSpecialDamageState::Exit()
 void BossSpecialDamageState::DrawImGui()
 {
 #if _DEBUG
-    ImGui::Begin(IMGUI_JP("BossSpecialDamage State"));
-    ImGui::Text(IMGUI_JP("Phase: %d"), static_cast<int>(m_Phase));
-    ImGui::Text(IMGUI_JP("PhaseTimer: %.2f"), m_PhaseTimer);
-    ImGui::Text(IMGUI_JP("ReplayTimer: %.2f"), m_ReplayTimer);
+    ImGui::Begin(IMGUI_JP("ボス：特殊被ダメージ"));
+    ImGui::Text(IMGUI_JP("フェーズ: %d"), static_cast<int>(m_Phase));
+    ImGui::Text(IMGUI_JP("フェーズ経過時間: %.2f"), m_PhaseTimer);
+    ImGui::Text(IMGUI_JP("再生タイマー: %.2f"), m_ReplayTimer);
 
     ImGui::Separator();
-    ImGui::Text(IMGUI_JP("--- TakeDamage ---"));
-    CImGuiManager::Slider<float>(IMGUI_JP("Duration"), m_TakeDamageDuration, 0.0f, 10.0f, true);
-    CImGuiManager::Slider<float>(IMGUI_JP("AnimSpeed"), m_TakeDamageAnimSpeed, 0.1f, 5.0f, true);
-    CImGuiManager::Slider<float>(IMGUI_JP("ReplayTime"), m_TakeDamageReplayTime, 0.1f, 5.0f, true);
-    ImGui::Checkbox(IMGUI_JP("ReplayEnabled"), &m_TakeDamageReplayEnabled);
+    ImGui::Text(IMGUI_JP("--- 被ダメ時設定 ---"));
+    CImGuiManager::Slider<float>(IMGUI_JP("ダメージ持続時間(秒)"), m_TakeDamageDuration, 0.0f, 10.0f, true);
+    CImGuiManager::Slider<float>(IMGUI_JP("被ダメアニメ速度"), m_TakeDamageAnimSpeed, 0.1f, 5.0f, true);
+    CImGuiManager::Slider<float>(IMGUI_JP("再生成間隔(秒)"), m_TakeDamageReplayTime, 0.1f, 5.0f, true);
+    ImGui::Checkbox(IMGUI_JP("再生成を有効にする"), &m_TakeDamageReplayEnabled);
 
     ImGui::Separator();
-    ImGui::Text(IMGUI_JP("--- Down ---"));
-    CImGuiManager::Slider<float>(IMGUI_JP("DownAnimSpeed"), m_DownAnimSpeed, 0.1f, 5.0f, true);
-    CImGuiManager::Slider<float>(IMGUI_JP("DownTransitionTime"), m_DownTransitionTime, 0.0f, 2.0f, true);
-    CImGuiManager::Slider<float>(IMGUI_JP("DownContinueDuration"), m_DownContinueDuration, 0.0f, 10.0f, true);
+    ImGui::Text(IMGUI_JP("--- ダウン開始設定 ---"));
+    CImGuiManager::Slider<float>(IMGUI_JP("ダウン入りアニメ速度"), m_DownAnimSpeed, 0.1f, 5.0f, true);
+
+    ImGui::Text(IMGUI_JP("--- ダウン継続設定 ---"));
+    CImGuiManager::Slider<float>(IMGUI_JP("ダウン継続アニメ速度"), m_DownContinueSpeed, 0.1f, 5.0f, true);
+    CImGuiManager::Slider<float>(IMGUI_JP("ダウン継続時間(秒)"), m_DownContinueDuration, 0.0f, 10.0f, true);
 
     ImGui::Separator();
-    ImGui::Text(IMGUI_JP("--- GetUp ---"));
-    CImGuiManager::Slider<float>(IMGUI_JP("GetUpAnimSpeed"), m_GetUpAnimSpeed, 0.1f, 5.0f, true);
-    CImGuiManager::Slider<float>(IMGUI_JP("GetUpTransitionTime"), m_GetUpTransitionTime, 0.0f, 2.0f, true);
+    ImGui::Text(IMGUI_JP("--- 立ち上がり設定 ---"));
+    CImGuiManager::Slider<float>(IMGUI_JP("立ち上がりアニメ速度"), m_GetUpAnimSpeed, 0.1f, 5.0f, true);
+    CImGuiManager::Slider<float>(IMGUI_JP("立ち上がり遷移時間(秒)"), m_GetUpTransitionTime, 0.0f, 2.0f, true);
 
     ImGui::Separator();
-    if (ImGui::Button(IMGUI_JP("Load"))) { try { LoadSettings(); } catch (...) {} }
+    if (ImGui::Button(IMGUI_JP("読み込み"))) { try { LoadSettings(); } catch (...) {} }
     ImGui::SameLine();
-    if (ImGui::Button(IMGUI_JP("Save"))) { try { SaveSettings(); } catch (...) {} }
+    if (ImGui::Button(IMGUI_JP("保存"))) { try { SaveSettings(); } catch (...) {} }
     BossAttackStateBase::DrawImGui();
     ImGui::End();
 #endif

@@ -27,6 +27,7 @@ private:
     float m_TakeDamageReplayTime = 0.5f;
     bool m_TakeDamageReplayEnabled = true;
     float m_DownAnimSpeed = 1.0f;
+    float m_DownContinueSpeed = 1.0f;
     float m_DownTransitionTime = 0.3f;
     float m_DownContinueDuration = 3.0f;
     float m_GetUpAnimSpeed = 1.0f;
