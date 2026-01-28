@@ -29,6 +29,8 @@ public:
     // パリィ成功を通知（Playerから呼び出される）.
     // withDelay = true の場合、ボスのパリィはアニメ再生後に delay 秒待機する挙動になる。
     void OnParrySuccess(bool withDelay = false);
+    // Called when player enters SpecialAttack state to coordinate boss behavior
+    void Enter();
 
 	// パリィ成功時のカメラ演出が完了したか.
 	bool IsParryCameraFinished() const;

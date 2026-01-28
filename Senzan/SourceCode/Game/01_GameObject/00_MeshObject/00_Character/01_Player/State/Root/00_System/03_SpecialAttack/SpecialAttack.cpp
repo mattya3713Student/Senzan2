@@ -43,6 +43,7 @@ void SpecialAttack::Enter()
     m_pOwner->PlayEffectAtWorldPos("Special", m_pOwner->GetPosition(), 8.f);
     m_pOwner->SetSpecial(true);
 }
+
 void SpecialAttack::Update()
 {
     float deltaTime = m_pOwner->GetDelta();

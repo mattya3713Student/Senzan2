@@ -96,6 +96,11 @@ public:
     // ClearBuffer と同じ
     void ResetCapture() { ClearBuffer(); }
 
+    // ローリングキャプチャの一時停止/再開（コンテニュー画面などで使用）
+    void PauseRollingCapture() { m_bRollingPaused = true; }
+    void ResumeRollingCapture() { m_bRollingPaused = false; }
+    bool IsRollingPaused() const { return m_bRollingPaused; }
+
     // 巻き戻しエフェクトの初期化
     void InitRewindEffect(float intensity = 0.25f, float chromatic = 1.0f, float grayscale = 1.0f);
 
@@ -157,6 +162,8 @@ private:
     
     // ロールバッファモードフラグ
     bool m_bRolling;
+    // ローリングキャプチャ一時停止フラグ（コンテニュー画面などでキャプチャを停止）
+    bool m_bRollingPaused;
     // サンプリング間隔（フレーム数）
     int m_SampleIntervalFrames;
     // 想定FPS（バッファサイズ計算用）

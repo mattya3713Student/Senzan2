@@ -164,6 +164,7 @@ FrameCaptureManager::FrameCaptureManager()
 	, m_pInputLayout(nullptr)
 	, m_bInitialized(false)
     , m_bRolling(false)
+    , m_bRollingPaused(false)
     , m_bRewindMode(false)
     , m_bReloadOnComplete(false)
     , m_bRequestSceneReload(false)
@@ -296,8 +297,8 @@ void FrameCaptureManager::Update(float deltaTime)
         }
     }
 
-    // ロールバッファ常時キャプチャ
-    if (m_bRolling)
+    // ロールバッファ常時キャプチャ（一時停止中はスキップ）
+    if (m_bRolling && !m_bRollingPaused)
     {
         // フレーム単位でカウントして、sample interval毎に1キャプチャを行う
         m_FrameCounter++;

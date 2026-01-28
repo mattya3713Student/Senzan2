@@ -379,7 +379,7 @@ void PostEffectManager::BeginSceneRender()
     ID3D11ShaderResourceView* nullSRV = nullptr;
     ctx->PSSetShaderResources(0, 1, &nullSRV);
 
-    float clearColor[4] = { 0.0f, 0.0f, 0.6f, 1.0f };
+    float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
     ctx->ClearRenderTargetView(m_SceneRTV, clearColor);
     ctx->ClearDepthStencilView(m_SceneDSV, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
