@@ -47,7 +47,7 @@ GameMain::GameMain()
     , m_upBoss        (std::make_unique<Boss>())
     , m_upPlayer    (std::make_unique<Player>())
     , m_upUI        (std::make_shared<UIGameMain>())
-    , m_TimeLimit   (10800.0f/**Time::GetInstance().GetDeltaTime()*/)
+    , m_TimeLimit   (1800.0f*Time::GetInstance().GetDeltaTime())
     , m_upUIOver    ()
     , m_upUIEnding  ()
 {
