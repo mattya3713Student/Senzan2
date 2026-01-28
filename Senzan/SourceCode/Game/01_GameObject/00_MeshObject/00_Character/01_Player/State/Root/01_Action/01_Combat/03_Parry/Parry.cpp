@@ -48,7 +48,7 @@ void Parry::Update()
 {
     Combat::Update();
 
-#if _DEBUG
+#if ENABLE_FRAMECAPTURE_IMGUI
     if (ImGui::Begin(IMGUI_JP("Parry Debug")))
     {
         ImGui::Checkbox(IMGUI_JP("強制オフセットを使用"), &m_UseForceOffset);
@@ -61,9 +61,30 @@ void Parry::Update()
         {
             if (m_UseForceOffset && m_pOwner)
             {
-                DirectX::XMVECTOR v_target_pos = DirectX::XMLoadFloat3(&m_pOwner->m_TargetPos);
+                // ターゲット基準で回転させたオフセットを適用
+                DirectX::XMFLOAT3 target_pos = m_pOwner->m_TargetPos;
+                DirectX::XMVECTOR v_target_pos = DirectX::XMLoadFloat3(&target_pos);
+                DirectX::XMFLOAT3 player_pos = m_pOwner->GetPosition();
+                DirectX::XMVECTOR v_player_pos = DirectX::XMLoadFloat3(&player_pos);
+
+                // 水平方向のみで角度を決定
+                v_target_pos = DirectX::XMVectorSetY(v_target_pos, 0.f);
+                v_player_pos = DirectX::XMVectorSetY(v_player_pos, 0.f);
+
+                DirectX::XMVECTOR v_diff = DirectX::XMVectorSubtract(v_target_pos, v_player_pos);
+                v_diff = DirectX::XMVector3Normalize(v_diff);
+                DirectX::XMFLOAT3 diff; DirectX::XMStoreFloat3(&diff, v_diff);
+                float rad = std::atan2f(diff.x, diff.z);
+
+                // オフセットを Y 回転で回す（高さは保持）
                 DirectX::XMVECTOR v_offset = DirectX::XMLoadFloat3(&m_ForceOffset);
-                DirectX::XMVECTOR v_new_pos = DirectX::XMVectorAdd(v_target_pos, v_offset);
+                DirectX::XMVECTOR v_off_y = DirectX::XMVectorSplatY(v_offset);
+                DirectX::XMVECTOR v_off_xz = DirectX::XMVectorSetY(v_offset, 0.f);
+                DirectX::XMMATRIX rot = DirectX::XMMatrixRotationY(rad);
+                DirectX::XMVECTOR v_rotated = DirectX::XMVector3Transform(v_off_xz, rot);
+                v_rotated = DirectX::XMVectorSetY(v_rotated, DirectX::XMVectorGetY(v_off_y));
+
+                DirectX::XMVECTOR v_new_pos = DirectX::XMVectorAdd(v_target_pos, v_rotated);
                 DirectX::XMFLOAT3 new_pos; DirectX::XMStoreFloat3(&new_pos, v_new_pos);
                 m_pOwner->SetPosition(new_pos);
             }
@@ -98,8 +119,7 @@ void Parry::Update()
             m_pOwner->GetTransform()->SetRotationY(rad);
 
             m_pOwner->m_MoveVec = diff_vec;
-            // パリィ成功時に強制オフセットが有効なら、ただし雪玉でパリィされた場合は適用しない
-           
+
                 // 雪玉によるパリィだったらオフセット適用をスキップ
             if (ParryManager::GetInstance().WasLastParriedBySnowball())
             {
@@ -107,8 +127,14 @@ void Parry::Update()
             }
             else
             {
+                // ターゲット基準で回転させたオフセットを適用（高さは保持）
                 DirectX::XMVECTOR v_offset = DirectX::XMLoadFloat3(&m_ForceOffset);
-                DirectX::XMVECTOR v_new_pos = DirectX::XMVectorAdd(v_target_pos, v_offset);
+                DirectX::XMVECTOR v_off_y = DirectX::XMVectorSplatY(v_offset);
+                DirectX::XMVECTOR v_off_xz = DirectX::XMVectorSetY(v_offset, 0.f);
+                DirectX::XMMATRIX rot = DirectX::XMMatrixRotationY(rad);
+                DirectX::XMVECTOR v_rotated = DirectX::XMVector3Transform(v_off_xz, rot);
+                v_rotated = DirectX::XMVectorSetY(v_rotated, DirectX::XMVectorGetY(v_off_y));
+                DirectX::XMVECTOR v_new_pos = DirectX::XMVectorAdd(v_target_pos, v_rotated);
                 DirectX::XMFLOAT3 new_pos; DirectX::XMStoreFloat3(&new_pos, v_new_pos);
                 m_pOwner->SetPosition(new_pos);
             }

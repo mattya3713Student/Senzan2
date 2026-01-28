@@ -1,5 +1,8 @@
 ﻿#pragma once
 
+// Enable FrameCapture ImGui display even in Release builds when set to 1.
+#define ENABLE_FRAMECAPTURE_IMGUI 1
+
 #include "System/Singleton/SingletonTemplate.h"
 #include <D3D11.h>
 #include <vector>
@@ -70,6 +73,13 @@ public:
 	int  GetCaptureFPS() const { return m_CaptureFPS; }
 	void SetCaptureFPS(int fps) { m_CaptureFPS = fps; }
 
+    // 常時ロールバッファキャプチャ（Gameシーン開始から常に保存）
+    // sampleIntervalFrames: 何フレームごとに1枚保存するか（例:30 で30フレームに1回）
+    // assumedFPS: バッファサイズ計算時に用いる想定FPS（既定 60）。
+    // バッファサイズ = 3分 * assumedFPS / sampleIntervalFrames + 10
+    void StartRollingCapture(int sampleIntervalFrames = 30, int assumedFPS = 60);
+    bool IsRolling() const { return m_bRolling; }
+
 	// 再生トリガーキー（VK_F9をデフォルトとする）
 	void SetPlaybackTriggerKey(int vkKey) { m_PlaybackTriggerKey = vkKey; }
 	int  GetPlaybackTriggerKey() const { return m_PlaybackTriggerKey; }
@@ -110,13 +120,32 @@ private:
 	// DirectX11リソース
 	std::vector<ID3D11Texture2D*>          m_CaptureTextures;   // キャプチャ用テクスチャ
 	std::vector<ID3D11ShaderResourceView*> m_CaptureSRVs;       // シェーダーリソースビュー
+	std::vector<ID3D11RenderTargetView*>    m_CaptureRTVs;       // レンダーターゲットビュー（ダウンサンプリング用）
 
 	// キャプチャ解像度
 	int m_CaptureWidth;
 	int m_CaptureHeight;
+    // 実際に作成するキャプチャテクスチャのサイズ（ダウンサンプリング後）
+    int m_TargetCaptureWidth;
+    int m_TargetCaptureHeight;
+    // ダウンサンプリング因子（1 = オリジナル, 2 = 半分幅/高さ -> 1/4 面積）
+    int m_DownsampleFactor;
 
 	// デバッグ用選択フレーム
 	int m_DebugSelectedFrame;
+    
+    // ロールバッファモードフラグ
+    bool m_bRolling;
+    // サンプリング間隔（フレーム数）
+    int m_SampleIntervalFrames;
+    // 想定FPS（バッファサイズ計算用）
+    int m_AssumedFPS;
+    // ゲームフレームカウンタ（ロールキャプチャ用）
+    int m_FrameCounter;
+    // 巻き戻しモード
+    bool m_bRewindMode;
+    // 再読み込みフラグ（巻き戻し完了後にシーンを再構築）
+    bool m_bReloadOnComplete;
 
 	// フルスクリーンクワッド用リソース
 	ID3D11Buffer*             m_pFullscreenVB;      // 頂点バッファ
@@ -127,4 +156,7 @@ private:
 
 	// 初期化済みフラグ
 	bool m_bInitialized;
+
+    // 動的にテクスチャを作成するヘルパ
+    bool CreateCaptureTextureAt(int index);
 };
