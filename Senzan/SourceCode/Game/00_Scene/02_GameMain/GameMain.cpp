@@ -104,6 +104,8 @@ void GameMain::Initialize()
     PostEffectManager::GetInstance().SetGray(false);
     PostEffectManager::GetInstance().SetBlurEnabled(false);
 
+    FrameCaptureManager::GetInstance().ResetCapture();
+
     SoundManager::GetInstance().Play("Main", true);
     SoundManager::GetInstance().SetVolume("Main", 8000);
 }

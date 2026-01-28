@@ -10,7 +10,7 @@
 #pragma comment(lib, "d3dcompiler.lib")
 
 // FrameCaptureManager の ImGui を Release でも有効にする場合は 1 にする
-#define ENABLE_FRAMECAPTURE_IMGUI 1
+#define ENABLE_FRAMECAPTURE_IMGUI 0
 
 #if _DEBUG || ENABLE_FRAMECAPTURE_IMGUI
 #include "System/Singleton/ImGui/CImGuiManager.h"
@@ -81,6 +81,62 @@ namespace
 		return float4(c.rgb, 1.0f);
 	}
 )";
+
+	// 巻き戻し用ピクセルシェーダー（歪み + クロマティックアベレーション + グレースケール）
+	const char* g_PS_Rewind_Source = R"(
+	Texture2D g_Texture : register(t0);
+	SamplerState g_Sampler : register(s0);
+	cbuffer RewindCB : register(b0)
+	{
+		float Time;
+		float Intensity;
+		float Chromatic;
+		float Grayscale; // グレースケール強度 (0.0 = カラー, 1.0 = 完全白黒)
+	};
+	struct PS_INPUT
+	{
+		float4 Pos : SV_POSITION;
+		float2 Tex : TEXCOORD0;
+	};
+
+	float2 CurlWarp(float2 uv, float t, float intensity)
+	{
+		float2 center = uv - 0.5;
+		float len = length(center);
+		float angle = atan2(center.y, center.x);
+		float offset = sin(len * 10.0 - t * 8.0) * 0.012 * intensity * (1.0 + 3.0 * len);
+		float2 result = uv + offset * float2(cos(angle), sin(angle));
+		return result;
+	}
+
+	float4 main(PS_INPUT input) : SV_Target
+	{
+		float2 uv = input.Tex;
+
+		float2 uvR = CurlWarp(uv, Time, Intensity) + Chromatic * float2(0.003, 0.0);
+		float2 uvG = CurlWarp(uv, Time * 1.1, Intensity * 0.85);
+		float2 uvB = CurlWarp(uv, Time * 0.9, Intensity * 0.7) - Chromatic * float2(0.003, 0.0);
+
+		float r = g_Texture.Sample(g_Sampler, uvR).r;
+		float g = g_Texture.Sample(g_Sampler, uvG).g;
+		float b = g_Texture.Sample(g_Sampler, uvB).b;
+
+		float3 col = float3(r, g, b);
+
+		// vignette（周辺減光）
+		float vign = smoothstep(0.9, 0.4, length(uv - 0.5));
+		col *= lerp(1.0, 0.6, vign * Intensity);
+
+		// 軽い暗転で戻る感を演出
+		col *= lerp(0.7, 1.0, 1.0 - Intensity * 0.5);
+
+		// グレースケール変換（輝度計算）
+		float luma = dot(col, float3(0.299, 0.587, 0.114));
+		col = lerp(col, float3(luma, luma, luma), Grayscale);
+
+		return float4(col, 1.0);
+	}
+)";
 }
 
 // コンストラクタ
@@ -103,6 +159,8 @@ FrameCaptureManager::FrameCaptureManager()
 	, m_pSamplerState(nullptr)
 	, m_pVertexShader(nullptr)
 	, m_pPixelShader(nullptr)
+	, m_pRewindPixelShader(nullptr)
+	, m_pRewindCB(nullptr)
 	, m_pInputLayout(nullptr)
 	, m_bInitialized(false)
     , m_bRolling(false)
@@ -114,6 +172,10 @@ FrameCaptureManager::FrameCaptureManager()
     , m_FrameCounter(0)
     , m_DownsampleFactor(1)
     , m_PlaybackIntervalBackup(0.0f)
+    , m_RewindTime(0.0f)
+    , m_RewindIntensity(0.25f)
+    , m_RewindChromatic(1.0f)
+    , m_RewindGrayscale(1.0f)  // 完全白黒
 {
 }
 
@@ -604,8 +666,8 @@ bool FrameCaptureManager::ConsumeReloadRequest()
     return false;
 }
 
-// キャプチャ状態をリセット（新しいシーン開始時に呼ぶ）
-void FrameCaptureManager::ResetCapture()
+// バッファ初期化（タイトルへ戻る時などに呼ぶ）
+void FrameCaptureManager::ClearBuffer()
 {
     StopPlayback();
     m_bCapturing = false;
@@ -621,15 +683,26 @@ void FrameCaptureManager::ResetCapture()
     m_PlaybackIndex = 0;
     m_PlaybackAccumulator = 0.0f;
     m_FrameCounter = 0;
+    m_RewindTime = 0.0f;
     
     // テクスチャは解放して新しいシーンでCreate時に再作成される
     ReleaseCaptureTextures();
+}
+
+// 巻き戻しエフェクトの初期化
+void FrameCaptureManager::InitRewindEffect(float intensity, float chromatic, float grayscale)
+{
+    m_RewindTime = 0.0f;
+    m_RewindIntensity = intensity;
+    m_RewindChromatic = chromatic;
+    m_RewindGrayscale = grayscale;
 }
 
 // 再生用描画
 void FrameCaptureManager::RenderPlayback(float deltaTime)
 {
 	if (!m_bPlaying || m_CapturedFrameCount == 0) return;
+
 
 	auto* pContext = DirectX11::GetInstance().GetContext();
 	if (!pContext) return;
@@ -711,17 +784,60 @@ void FrameCaptureManager::RenderPlayback(float deltaTime)
     DirectX11::GetInstance().SetDepth(false);
     DirectX11::GetInstance().SetAlphaBlend(false);
 
-    if (m_bRewindMode)
+    if (m_bRewindMode && m_pRewindPixelShader)
     {
-        // 巻き戻し中は強制グレースケールで PostEffect 経由描画
+        // 巻き戻し専用描画（歪みシェーダを使用）
+        m_RewindTime += deltaTime;
+
+        // 強度は巻き戻しの進行に応じて減衰させる（開始時に強め、終盤は弱め）
+        float norm = 0.0f;
+        if (m_CapturedFrameCount > 1)
+            norm = static_cast<float>(frameIndex) / static_cast<float>(m_CapturedFrameCount - 1);
+        // norm: 0 (最初のフレーム) .. 1 (最後のフレーム)
+        // Intensity: 高 -> 低
+        float intensity = m_RewindIntensity * (1.0f - norm * 0.7f);
+
+        // シェーダバインド
+        pContext->VSSetShader(m_pVertexShader, nullptr, 0);
+        pContext->PSSetShader(m_pRewindPixelShader, nullptr, 0);
+        pContext->IASetInputLayout(m_pInputLayout);
+
+        // 頂点バッファ設定
+        UINT stride = sizeof(FullscreenVertex);
+        UINT offset = 0;
+        pContext->IASetVertexBuffers(0, 1, &m_pFullscreenVB, &stride, &offset);
+        pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+        // テクスチャとサンプラー設定
+        pContext->PSSetShaderResources(0, 1, &m_CaptureSRVs[frameIndex]);
+        pContext->PSSetSamplers(0, 1, &m_pSamplerState);
+
+        // 定数バッファ更新
+        if (m_pRewindCB)
+        {
+            D3D11_MAPPED_SUBRESOURCE mapped = {};
+            if (SUCCEEDED(pContext->Map(m_pRewindCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))
+            {
+                float cb[4] = { m_RewindTime, intensity, m_RewindChromatic, m_RewindGrayscale };
+                memcpy(mapped.pData, cb, sizeof(cb));
+                pContext->Unmap(m_pRewindCB, 0);
+            }
+            pContext->PSSetConstantBuffers(0, 1, &m_pRewindCB);
+        }
+
+        // 描画
+        pContext->Draw(6, 0);
+
+        // アンバインド
+        ID3D11ShaderResourceView* nullSRV = nullptr;
+        pContext->PSSetShaderResources(0, 1, &nullSRV);
+    }
+    else if (m_bRewindMode)
+    {
+        // フォールバック: PostEffectManager 経由のグレースケール（既存実装）
         auto& pe = PostEffectManager::GetInstance();
         bool prevGray = pe.IsGray();
         pe.SetGray(true);
-        {
-            std::stringstream ss;
-            ss << "FrameCapture: Rewind draw frameIndex=" << frameIndex << " TargetTex=" << m_TargetCaptureWidth << "x" << m_TargetCaptureHeight << " m_IsGray=" << pe.IsGray();
-            Log::GetInstance().LogInfo(ss.str());
-        }
         pe.RenderSRVWithPostEffects(m_CaptureSRVs[frameIndex], m_TargetCaptureWidth, m_TargetCaptureHeight, true);
         pe.SetGray(prevGray);
     }
@@ -979,6 +1095,35 @@ void FrameCaptureManager::CreateFullscreenQuadResources()
 		pPSBlob->GetBufferSize(),
 		nullptr, &m_pPixelShader);
 	pPSBlob->Release();
+
+	// 巻き戻し用ピクセルシェーダーのコンパイル
+	ID3DBlob* pRewindPSBlob = nullptr;
+	hr = D3DCompile(
+		g_PS_Rewind_Source, strlen(g_PS_Rewind_Source), "PSRewind",
+		nullptr, nullptr, "main", "ps_4_0",
+		D3DCOMPILE_ENABLE_STRICTNESS, 0,
+		&pRewindPSBlob, &pErrorBlob);
+	if (SUCCEEDED(hr) && pRewindPSBlob)
+	{
+		hr = pDevice->CreatePixelShader(
+			pRewindPSBlob->GetBufferPointer(),
+			pRewindPSBlob->GetBufferSize(),
+			nullptr, &m_pRewindPixelShader);
+		pRewindPSBlob->Release();
+	}
+	else
+	{
+		if (pErrorBlob) pErrorBlob->Release();
+	}
+
+	// 巻き戻し用定数バッファ作成
+	D3D11_BUFFER_DESC cbDesc = {};
+	cbDesc.Usage = D3D11_USAGE_DYNAMIC;
+	cbDesc.ByteWidth = sizeof(float) * 4; // Time, Intensity, Chromatic, Padding
+	cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	cbDesc.MiscFlags = 0;
+	pDevice->CreateBuffer(&cbDesc, nullptr, &m_pRewindCB);
 }
 
 // フルスクリーンクワッド用リソースの解放
@@ -986,6 +1131,8 @@ void FrameCaptureManager::ReleaseFullscreenQuadResources()
 {
 	if (m_pInputLayout) { m_pInputLayout->Release(); m_pInputLayout = nullptr; }
 	if (m_pPixelShader) { m_pPixelShader->Release(); m_pPixelShader = nullptr; }
+	if (m_pRewindPixelShader) { m_pRewindPixelShader->Release(); m_pRewindPixelShader = nullptr; }
+	if (m_pRewindCB) { m_pRewindCB->Release(); m_pRewindCB = nullptr; }
 	if (m_pVertexShader) { m_pVertexShader->Release(); m_pVertexShader = nullptr; }
 	if (m_pSamplerState) { m_pSamplerState->Release(); m_pSamplerState = nullptr; }
 	if (m_pFullscreenVB) { m_pFullscreenVB->Release(); m_pFullscreenVB = nullptr; }

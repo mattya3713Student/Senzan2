@@ -1051,6 +1051,12 @@ void SkinMesh::SendCBufferPerMaterial(MY_SKINMATERIAL* pMaterial)
 		cb.Ambient.w *= m_GlobalAlpha;
 		cb.Specular.w *= m_GlobalAlpha;
 
+		// ディゾルブパラメータ設定
+		cb.Dissolve.x = m_DissolveThreshold;    // 閾値
+		cb.Dissolve.y = m_DissolveEdgeWidth;    // エッジ幅
+		cb.Dissolve.z = m_DissolveEnabled ? 1.0f : 0.0f; // 有効フラグ
+		cb.Dissolve.w = 0.0f;                   // 予約
+
 		memcpy_s(pDat.pData, pDat.RowPitch,
 			reinterpret_cast<void*>(&cb), sizeof(cb));
 

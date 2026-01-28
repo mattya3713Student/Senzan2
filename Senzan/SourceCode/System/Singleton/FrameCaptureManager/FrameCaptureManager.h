@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 // Enable FrameCapture ImGui display even in Release builds when set to 1.
-#define ENABLE_FRAMECAPTURE_IMGUI 1
+#define ENABLE_FRAMECAPTURE_IMGUI 0
 
 #include "System/Singleton/SingletonTemplate.h"
 #include <D3D11.h>
@@ -73,6 +73,7 @@ public:
 	int  GetCaptureFPS() const { return m_CaptureFPS; }
 	void SetCaptureFPS(int fps) { m_CaptureFPS = fps; }
 
+
     // 常時ロールバッファキャプチャ（Gameシーン開始から常に保存）
     // sampleIntervalFrames: 何フレームごとに1枚保存するか（例:30 で30フレームに1回）
     // assumedFPS: バッファサイズ計算時に用いる想定FPS（既定 60）。
@@ -80,14 +81,27 @@ public:
     void StartRollingCapture(int sampleIntervalFrames = 30, int assumedFPS = 60);
     bool IsRolling() const { return m_bRolling; }
 
+
 	// 再生トリガーキー（VK_F9をデフォルトとする）
 	void SetPlaybackTriggerKey(bool isplayback) { m_IsPlaybackTriggerKey = isplayback; }
 
     // シーンリロード要求をチェック（Update内で呼ぶ）
     bool ConsumeReloadRequest();
 
+    // バッファ初期化（タイトルへ戻る時などに呼ぶ）
+    // キャプチャ停止、再生停止、テクスチャ解放を行う
+    void ClearBuffer();
+
     // キャプチャ状態をリセット（新しいシーン開始時に呼ぶ）
-    void ResetCapture();
+    // ClearBuffer と同じ
+    void ResetCapture() { ClearBuffer(); }
+
+    // 巻き戻しエフェクトの初期化
+    void InitRewindEffect(float intensity = 0.25f, float chromatic = 1.0f, float grayscale = 1.0f);
+
+
+    // 巻き戻しモード判定
+    bool IsRewindMode() const { return m_bRewindMode; }
 
 private:
 	// フレーム保存用テクスチャの作成
@@ -161,7 +175,15 @@ private:
 	ID3D11SamplerState*       m_pSamplerState;      // サンプラーステート
 	ID3D11VertexShader*       m_pVertexShader;      // 頂点シェーダー
 	ID3D11PixelShader*        m_pPixelShader;       // ピクセルシェーダー
+	ID3D11PixelShader*        m_pRewindPixelShader; // 巻き戻し用ピクセルシェーダー
+	ID3D11Buffer*             m_pRewindCB;          // 巻き戻し用定数バッファ
 	ID3D11InputLayout*        m_pInputLayout;       // 入力レイアウト
+
+	// 巻き戻しエフェクトのパラメータ
+	float m_RewindTime;       // シェーダー用時間
+	float m_RewindIntensity;  // 歪み強度
+	float m_RewindChromatic;  // 色ずれ強度
+	float m_RewindGrayscale;  // グレースケール強度 (0.0 = カラー, 1.0 = 完全白黒)
 
 	// 初期化済みフラグ
 	bool m_bInitialized;

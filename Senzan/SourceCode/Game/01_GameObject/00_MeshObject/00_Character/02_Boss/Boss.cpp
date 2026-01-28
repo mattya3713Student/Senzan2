@@ -218,7 +218,6 @@ void Boss::Update()
 	Character::Update();
 
 	m_State->Update();
- 
 
 #if _DEBUG
     // デバッグ用: ImGui で任意のボスステートに切り替えられるボタン群
