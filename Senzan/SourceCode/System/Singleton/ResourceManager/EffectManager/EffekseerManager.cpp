@@ -39,7 +39,7 @@ void EffekseerManager::UpdateHandle(::Effekseer::Handle handle)
 		return; // ハンドルまたはカメラがない場合は描画しない.
 	}
 	m_pManager->BeginUpdate();
-	m_pManager->UpdateHandle(handle, 0.7f);	
+	m_pManager->UpdateHandle(handle, Time::GetInstance().GetDeltaTime() * 60.0f);
 	m_pManager->EndUpdate();
 }
 

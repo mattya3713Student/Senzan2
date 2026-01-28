@@ -26,7 +26,7 @@ namespace PlayerState {
 
     private:
         float m_CurrentTime = 0.0f;       // 経過時間
-        float m_DurationTime = 0.06f;       // 攻撃間隔
+        float m_DurationTime = 0.04f;       // 攻撃間隔
         float m_DurationTimer = 0.0f;       // 攻撃間隔タイマー
 
         float m_AttackDuration;    // 攻撃演出時間
