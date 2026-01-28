@@ -2,6 +2,7 @@
 #include "System/Utility/Math/Math.h"	
 
 #include <DirectXMath.h>
+#include <cmath>
 //---------------------------------------------------------------------------------
 // ヘルパーメソッドの実装
 //---------------------------------------------------------------------------------
@@ -25,8 +26,29 @@ void Transform::SetRotationX(float X)
 
 void Transform::SetRotationY(float Y)
 {
-	Rotation.y = Y;
-	UpdateQuaternionFromRotation();
+    // Snap yaw to desired value while preserving current pitch and roll.
+    // Construct target quaternion from current pitch (Rotation.x), desired yaw, and current roll (Rotation.z).
+    float desiredYaw = Y;
+
+    const float twoPI = 2.0f * DirectX::XM_PI;
+    // Normalize desired yaw into [-PI, PI]
+    desiredYaw = std::fmod(desiredYaw, twoPI);
+    if (desiredYaw <= -DirectX::XM_PI) desiredYaw += twoPI;
+    else if (desiredYaw > DirectX::XM_PI) desiredYaw -= twoPI;
+
+    DirectX::XMVECTOR currentQuat = DirectX::XMLoadFloat4(&Quaternion);
+    DirectX::XMVECTOR targetQuat = DirectX::XMQuaternionRotationRollPitchYaw(Rotation.x, desiredYaw, Rotation.z);
+
+    // Ensure quaternion hemisphere matches to avoid 180deg long-path flips
+    float dot = DirectX::XMVectorGetX(DirectX::XMVector4Dot(currentQuat, targetQuat));
+    if (dot < 0.0f)
+    {
+        targetQuat = DirectX::XMVectorNegate(targetQuat);
+    }
+
+    DirectX::XMStoreFloat4(&Quaternion, DirectX::XMQuaternionNormalize(targetQuat));
+    // Synchronize Euler rotation from quaternion
+    UpdateRotationFromQuaternion();
 }
 
 void Transform::SetRotationZ(float Z)

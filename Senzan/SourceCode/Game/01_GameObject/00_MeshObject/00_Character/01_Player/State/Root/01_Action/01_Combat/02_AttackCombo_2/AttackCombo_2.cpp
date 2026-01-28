@@ -81,7 +81,7 @@ void AttackCombo_2::Enter()
     }
     else
     {
-        // 敵方向を使用
+        // 敵方向を使用.
         m_pOwner->m_MoveVec = diff_vec;
     }
 }

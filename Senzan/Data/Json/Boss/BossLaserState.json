@@ -4,7 +4,7 @@
     "Charge": 1.0,
     "Exit": 1.0
   },
-  "ChargeDuration": 1.7699999809265137,
+  "ChargeDuration": 1.0,
   "ColliderWindows": [],
   "FireDuration": 0.6000000238418579,
   "LaserDamage": 10.0,

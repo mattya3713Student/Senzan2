@@ -154,7 +154,7 @@ Boss::Boss()
     m_pSpinningCollider->SetColor(Color::eColor::Red);
 	m_upColliders->AddCollider(std::move(spinning_collider));
 
-    // 回転攻撃の当たり判定作成.
+    // レーザー攻撃の当たり判定作成.
     auto laser_collider = std::make_unique<CapsuleCollider>(m_spTransform);
 	m_pLaserCollider = laser_collider.get();
     m_pLaserCollider->SetMyMask(eCollisionGroup::Enemy_Attack);
@@ -279,12 +279,9 @@ void Boss::LateUpdate()
 	// ステートマシーンの最終更新を実行.
 	m_State->LateUpdate();
 
-    // コライダーのオフセット適用は各ステートの UpdateBaseLogic で行う
-    // 衝突処理
-    HandleParryDetection();
+    // 衝突処理.
     HandleDamageDetection();
     HandleAttackDetection();
-    HandleDodgeDetection();
 }
 
 void Boss::Draw()
@@ -339,8 +336,6 @@ LPD3DXANIMATIONCONTROLLER Boss::GetAnimCtrl() const
 void Boss::Hit(float damage)
 {
     m_HP -= damage;
-    //いったんこの10ダメだけにしておく.
-    //最後はTenをBaseにして+や-を使用する感じになると思っている.
     if (m_HP <= 0.0f)
     {
         //死んだときにDeadStateclassに入る.
@@ -450,72 +445,6 @@ void Boss::HandleAttackDetection()
 			}
 		}
 	}
-}
-
-void Boss::HandleDodgeDetection()
-{
-	if (!m_upColliders) return;
-
-	const auto& internal_colliders = m_upColliders->GetInternalColliders();
-
-	for (const auto& collider_ptr : internal_colliders)
-	{
-		const ColliderBase* current_collider = collider_ptr.get();
-
-		if ((current_collider->GetMyMask() & eCollisionGroup::Player_JustDodge) == eCollisionGroup::None) {
-			continue;
-		}
-
-		for (const CollisionInfo& info : current_collider->GetCollisionEvents())
-		{
-			if (!info.IsHit) continue;
-			const ColliderBase* otherCollider = info.ColliderB;
-			if (!otherCollider) { continue; }
-
-			eCollisionGroup other_group = otherCollider->GetMyMask();
-
-			if ((other_group & eCollisionGroup::Player_Attack) != eCollisionGroup::None)
-			{
-				//Parry();
-				// 1フレームに1回.
-				return;
-			}
-		}
-	}
-}
-
-void Boss::HandleParryDetection()
-{
-    // Player側の当たり判定で呼び出し、ParryManagerでBossの初期化実行
-
-	//if (!m_upColliders) return;
-
-	//const auto& internal_colliders = m_upColliders->GetInternalColliders();
-
-	//for (const auto& collider_ptr : internal_colliders)
-	//{
-	//	const ColliderBase* current_collider = collider_ptr.get();
-
-	//	if ((current_collider->GetMyMask() & eCollisionGroup::Enemy_Attack) == eCollisionGroup::None) {
-	//		continue;
-	//	}
-
-	//	for (const CollisionInfo& info : current_collider->GetCollisionEvents())
-	//	{
-	//		if (!info.IsHit) continue;
-	//		const ColliderBase* otherCollider = info.ColliderB;
-	//		if (!otherCollider) { continue; }
-
-	//		eCollisionGroup other_group = otherCollider->GetMyMask();
-
-	//		if ((other_group & eCollisionGroup::Player_Parry_Fai) != eCollisionGroup::None
-	//		&& (other_group & eCollisionGroup::Player_Parry_Suc) != eCollisionGroup::None)
-	//		{
-	//			// 一フレーム1回.
-	//			return;
-	//		}
-	//	}
-	//}
 }
 
 ColliderBase* Boss::GetSlashCollider() const
