@@ -16,7 +16,10 @@ TimerWarning::TimerWarning(std::shared_ptr<UIObject> pBaseUI)
     , m_Phase3AnimetionTimer(0.0f)
     , m_Phase1AnimetionTime (15.0f * Time::GetInstance().GetDeltaTime())
     , m_Phase2AnimetionTime (15.0f * Time::GetInstance().GetDeltaTime())
-    , m_Phase3AnimetionTime (15.0f * Time::GetInstance().GetDeltaTime())
+    , m_Phase3AnimetionTime (25.0f * Time::GetInstance().GetDeltaTime())
+    , m_Phase1Time          (0.333f)
+    , m_Phase2Time          (0.666f)
+    , m_Phase3Time          (0.95f)
     , m_Phase1Triggered     (false)
     , m_Phase2Triggered     (false)
     , m_Phase3Triggered     (false)
@@ -55,7 +58,7 @@ void TimerWarning::Update(float ratio)
 {float dt = Time::GetInstance().GetUnscaledDeltaTime();
 
     // 1. フェーズ管理 (ループの外でタイマーを更新)
-    if (ratio >= 0.333f && ratio <= 0.666f) {
+    if (ratio >= m_Phase1Time && ratio <= m_Phase2Time) {
         m_Phase1AnimetionTimer += dt;
         if (!m_Phase1Triggered) {
             SetRandomScales(true);
@@ -68,7 +71,7 @@ void TimerWarning::Update(float ratio)
         m_Phase1AnimetionTimer = 0.0f;
     }
 
-    if (ratio >= 0.666f && ratio <= 0.9f) {
+    if (ratio >= m_Phase2Time && ratio <= m_Phase3Time) {
         m_Phase2AnimetionTimer += dt;
         if (!m_Phase2Triggered) {
             SetRandomScales(true);
@@ -80,16 +83,20 @@ void TimerWarning::Update(float ratio)
         m_Phase2Triggered = false;
         m_Phase2AnimetionTimer = 0.0f;
     }
-    if (ratio >= 0.9f) {
+    if (ratio >= m_Phase3Time) {
         m_Phase3AnimetionTimer += dt;
+        SetRandomScales(false);
         if (!m_Phase3Triggered) {
-            SetRandomScales(false);
             SetRandomColors();
             m_Phase3Triggered = true;
         }
     }
 
-    m_GlobalRotation += m_Phase3AnimetionTimer;
+    float maxSpeed = 6.28f * 1.5f;
+    float minSpeed = 6.28f * 0.0f;
+    float accelAlpha = (ratio - m_Phase3Time) / 0.1f;
+    float rotSpeed = minSpeed + (maxSpeed - minSpeed) * accelAlpha * dt;
+    m_GlobalRotation += rotSpeed;
 
     // 3. 各サークルの更新
     for (int i = 0; i < m_CircleCount; ++i)
@@ -101,7 +108,7 @@ void TimerWarning::Update(float ratio)
         float animT = 0.0f;
 
         // --- Phase 1: 黄色 ---
-        if (0.333f <= ratio && ratio <= 0.666f)
+        if (m_Phase1Time <= ratio && ratio <= m_Phase2Time)
         {
             if (!m_Phase1Peaked) {
                 MyEasing::UpdateEasing(MyEasing::Type::OutQuint, m_Phase1AnimetionTimer, m_Phase1AnimetionTime, 0.0f, 1.0f, animT);
@@ -113,12 +120,12 @@ void TimerWarning::Update(float ratio)
                 MyEasing::UpdateEasing(MyEasing::Type::InQuint, m_Phase1AnimetionTimer, m_Phase1AnimetionTime, 1.0f, 0.0f, animT);
             }
 
-            currentColor = { 0.9f, 0.9f, 0.0f }; // アルファにanimTを反映
+            currentColor = { m_Phase3Time, m_Phase3Time, 0.0f }; // アルファにanimTを反映
             targetScale = circle.randomScale * animT;
             rotOffset = m_GlobalRotation * 0.f;
         }
         // --- Phase 2: 赤色 ---
-        else if (0.666f <= ratio && ratio <= 0.9f)
+        else if (m_Phase2Time <= ratio && ratio <= m_Phase3Time)
         {
             if (!m_Phase2Peaked) {
                 MyEasing::UpdateEasing(MyEasing::Type::OutQuint, m_Phase2AnimetionTimer, m_Phase2AnimetionTime, 0.0f, 1.0f, animT);
@@ -130,22 +137,32 @@ void TimerWarning::Update(float ratio)
                 MyEasing::UpdateEasing(MyEasing::Type::InQuint, m_Phase2AnimetionTimer, m_Phase2AnimetionTime, 1.0f, 0.0f, animT);
             }
 
-            currentColor = { 0.9f, 0.0f, 0.0f };
+            currentColor = { m_Phase3Time, 0.0f, 0.0f };
             targetScale = circle.randomScale * animT;
             rotOffset = m_GlobalRotation * 0.f;
         }
         // --- Phase 3: 最終警告 ---
-        else if (0.9f <= ratio)
+        else if (m_Phase3Time <= ratio && i % 2 == 0)
         {
             MyEasing::UpdateEasing(MyEasing::Type::OutQuint, m_Phase3AnimetionTimer, m_Phase3AnimetionTime, 0.0f, 1.0f, animT);
 
-            currentColor = { 0.9f, 0.0f, 0.0f };
+            // 点滅速度（高いほど速い）
+            float flashSpeed = 25.0f;
+            // -1.0 ～ 1.0 のサイン波を 0.0 ～ 1.0 に変換
+            float colorPulse = (sinf(m_GlobalRotation * flashSpeed) + 1.0f) * 0.5f;
+
+            // 赤(0.9, 0, 0) と ほぼ黒(0.1, 0, 0) の間で補間
+            // Lerp(a, b, t) = a + (b - a) * t
+            currentColor.x = 0.6f + (0.8f * colorPulse);
+            currentColor.y = 0.0f;
+            currentColor.z = 0.0f;
+
             targetScale = circle.randomScale * animT;
             rotOffset = m_GlobalRotation;
         }
 
 
-        float stretch = 0.f, scaleX = circle.randomScale, scaleY = circle.randomScale;
+        float stretch = 0.f, scaleX = targetScale, scaleY = targetScale;
         if (!m_Phase3Triggered) {
             stretch = 0.8f;
             scaleX = targetScale;
@@ -180,7 +197,7 @@ void TimerWarning::SetRandomScales(bool high)
             circle.randomScale = MyRand::GetRandomPercentage(0.6f, 1.4f);
         }
         else {
-            circle.randomScale = MyRand::GetRandomPercentage(1.2f, 1.4f);
+            circle.randomScale = MyRand::GetRandomPercentage(0.6f, 0.7f);
         }
     }
 }
