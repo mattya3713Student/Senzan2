@@ -31,7 +31,9 @@ namespace PlayerState {
 
         float m_AttackDuration;    // 攻撃演出時間
         float m_OraOraDamage = 25.0f;     // 連続ダメージ
-        float m_AttackDamage = 300.0f;     // 必殺技ダメージ
-        bool m_HasActivated = false;       // 攻撃判定発生済みか
+        float m_AttackDamage = 300.0f;    // 必殺技ダメージ
+        bool m_HasActivated = false;      // 攻撃判定発生済みか
+        float m_Distance;                 // Bossとの距離.
+        float m_LastAttackMove;           // 最終段の移動倍率.
     };
 }
