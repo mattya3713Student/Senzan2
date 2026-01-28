@@ -4560,7 +4560,7 @@ public:
 		\~Japanese
 		更新する前にBeginUpdate、更新し終わった後にEndUpdateを実行する必要がある。
 	*/
-	virtual void UpdateHandle(Handle handle, float deltaFrame = 1.0f) = 0;
+	virtual void UpdateHandle(Handle handle, float deltaFrame) = 0;
 
 	/**
 		@brief

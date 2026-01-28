@@ -38,7 +38,7 @@ UIGameMain::UIGameMain()
 	, m_ClockSecNow		( 0.0f )
 	, m_Combo			( 0 )
 	, m_ComboBefore		( 0 )
-	, m_ComboMax		( 99 )
+	, m_ComboMax		( 999 )
 	, m_PlayerHP		()
 	, m_PlayerDamage	()
 	, m_PlayerUlt		()
@@ -136,15 +136,20 @@ void UIGameMain::Update()
 			ui->SetRotationZ(m_ClockSecNow);
 		}
 		else if (ui->GetUIName() == "Number0_0") {
-			ui->AttachSprite(ResourceManager::GetSprite2D("Number" + std::to_string((m_Combo / 10) % 10)));
+			ui->AttachSprite(ResourceManager::GetSprite2D("Number" + std::to_string((m_Combo / 100) % 10)));
 			ui->SetColor(m_ComboColor);
 			if (m_ComboChanged) { ui->SetColor(ColorPreset::LightGray); }
 		}
 		else if (ui->GetUIName() == "Number0_1") {
-			ui->AttachSprite(ResourceManager::GetSprite2D("Number" + std::to_string(m_Combo % 10)));
+			ui->AttachSprite(ResourceManager::GetSprite2D("Number" + std::to_string((m_Combo / 10) % 10)));
 			ui->SetColor(m_ComboColor);
 			if (m_ComboChanged) { ui->SetColor(ColorPreset::LightGray); }
 		}
+        else if (ui->GetUIName() == "Number0_2") {
+            ui->AttachSprite(ResourceManager::GetSprite2D("Number" + std::to_string(m_Combo % 10)));
+            ui->SetColor(m_ComboColor);
+            if (m_ComboChanged) { ui->SetColor(ColorPreset::LightGray); }
+        }
 		else if (ui->GetUIName() == "Combo_0") {
 			ui->SetColor(m_ComboColor);
 		}
