@@ -12,7 +12,7 @@ public :
     struct SparkleParticle
     {
         std::shared_ptr<UIObject> ui;
-        DirectX::XMFLOAT2 velocity; // 移動方向＋速度
+        DirectX::XMFLOAT2 velocity = {0.f,0.f}; // 移動方向＋速度
     };
 
 public:
