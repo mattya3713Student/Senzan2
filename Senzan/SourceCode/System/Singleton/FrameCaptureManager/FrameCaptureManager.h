@@ -113,6 +113,8 @@ private:
 	bool  m_bLoopPlayback;          // ループ再生フラグ
 	int   m_PlaybackIndex;          // 再生位置
 	float m_PlaybackAccumulator;    // 再生用フレーム蓄積時間
+    // Backup of frame interval before special playback (used to restore after rewind playback)
+    float m_PlaybackIntervalBackup;
 
 	// 操作トリガー
 	int   m_PlaybackTriggerKey;     // 再生開始キー（VKコード）

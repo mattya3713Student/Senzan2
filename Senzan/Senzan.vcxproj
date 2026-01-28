@@ -235,8 +235,6 @@
     <ClCompile Include="SourceCode\Game\00_Scene\00_Base\SceneBase.cpp" />
     <ClCompile Include="SourceCode\Game\00_Scene\01_Title\Title.cpp" />
     <ClCompile Include="SourceCode\Game\00_Scene\02_GameMain\GameMain.cpp" />
-    <ClCompile Include="SourceCode\Game\00_Scene\03_GameOver\GameOver.cpp" />
-    <ClCompile Include="SourceCode\Game\00_Scene\04_Ending\Ending.cpp" />
     <ClCompile Include="SourceCode\Game\00_Scene\Ex_Test\00_mattya3713\MattyaTestScene.cpp" />
     <ClCompile Include="SourceCode\Game\00_Scene\Ex_Test\01_memeu1101\MemeuTestScene.cpp" />
     <ClCompile Include="SourceCode\Game\00_Scene\Ex_Test\02_L\LTestScene.cpp" />
@@ -415,8 +413,6 @@
     <ClInclude Include="SourceCode\Game\00_Scene\00_Base\SceneBase.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\01_Title\Title.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\02_GameMain\GameMain.h" />
-    <ClInclude Include="SourceCode\Game\00_Scene\03_GameOver\GameOver.h" />
-    <ClInclude Include="SourceCode\Game\00_Scene\04_Ending\Ending.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\Ex_Test\00_mattya3713\MattyaTestScene.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\Ex_Test\01_memeu1101\MemeuTestScene.h" />
     <ClInclude Include="SourceCode\Game\00_Scene\Ex_Test\02_L\LTestScene.h" />

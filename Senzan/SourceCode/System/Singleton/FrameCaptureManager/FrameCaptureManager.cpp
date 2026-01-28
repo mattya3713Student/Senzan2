@@ -86,7 +86,7 @@ namespace
 // コンストラクタ
 FrameCaptureManager::FrameCaptureManager()
 	: m_CaptureDuration(5.0f)
-	, m_CaptureFPS(30)
+	, m_CaptureFPS(60)
 	, m_MaxFrames(0)
 	, m_bCapturing(false)
 	, m_CaptureTimer(0.0f)
@@ -112,6 +112,7 @@ FrameCaptureManager::FrameCaptureManager()
     , m_AssumedFPS(60)
     , m_FrameCounter(0)
     , m_DownsampleFactor(1)
+    , m_PlaybackIntervalBackup(0.0f)
 {
 }
 
@@ -252,10 +253,13 @@ void FrameCaptureManager::Update(float deltaTime)
 	{
         if (Input::IsKeyDown(m_PlaybackTriggerKey))
         {
-            // F9 押下で巻き戻しモード開始
+            // F9 押下で巻き戻しモード開始（再生を 60fps で行う）
             m_bRewindMode = true;
             m_PlaybackIndex = m_CapturedFrameCount - 1;
             m_PlaybackAccumulator = 0.0f;
+            // Backup current frame interval and set to 60 FPS for rewind playback
+            m_PlaybackIntervalBackup = m_FrameInterval;
+            m_FrameInterval = 1.0f / 60.0f;
             m_bPlaying = true; // reuse playing state for rendering rewind
             m_bReloadOnComplete = true; // シーン再構築を行う
         }
@@ -277,6 +281,14 @@ void FrameCaptureManager::CaptureFrame()
     // PostEffectManager が有効な場合のみリゾルブ済みテクスチャを使う
     auto& pe = PostEffectManager::GetInstance();
     bool usePostEffect = pe.IsGray() || pe.IsCircleGrayActive() || pe.IsBlurEnabled();
+    // フェード（円形グレースケール）が進行中の場合はキャプチャを開始せず待機する
+    if (pe.IsCircleGrayActive())
+    {
+#if ENABLE_FRAMECAPTURE_IMGUI
+        Log::GetInstance().LogInfo("FrameCapture: Skipping capture while circle fade active");
+#endif
+        return;
+    }
     
     if (m_MaxFrames <= 0) {
         // nothing created
@@ -561,6 +573,8 @@ void FrameCaptureManager::StartPlayback(bool loop)
 	m_bLoopPlayback = loop;
 	m_PlaybackIndex = 0;
 	m_PlaybackAccumulator = 0.0f;
+	// Backup current frame interval so we can restore after special playback modes
+	m_PlaybackIntervalBackup = m_FrameInterval;
 	m_bPlaying = true;
 }
 
@@ -568,6 +582,12 @@ void FrameCaptureManager::StartPlayback(bool loop)
 void FrameCaptureManager::StopPlayback()
 {
 	m_bPlaying = false;
+	// Restore frame interval if it was changed for special playback
+	if (m_PlaybackIntervalBackup > 0.0f)
+	{
+		m_FrameInterval = m_PlaybackIntervalBackup;
+		m_PlaybackIntervalBackup = 0.0f;
+	}
 }
 
 // 再生用描画
@@ -645,38 +665,50 @@ void FrameCaptureManager::RenderPlayback(float deltaTime)
         return;
     }
 
-	// バックバッファをクリア
-	DirectX11::GetInstance().ClearBackBuffer();
-	DirectX11::GetInstance().ResetRenderTarget();
+    // バックバッファをクリア
+    DirectX11::GetInstance().ClearBackBuffer();
+    DirectX11::GetInstance().ResetRenderTarget();
 
-	// 深度テストOFF、アルファブレンドOFF
-	DirectX11::GetInstance().SetDepth(false);
-	DirectX11::GetInstance().SetAlphaBlend(false);
+    // 深度テストOFF、アルファブレンドOFF
+    DirectX11::GetInstance().SetDepth(false);
+    DirectX11::GetInstance().SetAlphaBlend(false);
 
-	// シェーダー設定
-	pContext->VSSetShader(m_pVertexShader, nullptr, 0);
-	pContext->PSSetShader(m_pPixelShader, nullptr, 0);
-	pContext->IASetInputLayout(m_pInputLayout);
+    if (m_bRewindMode)
+    {
+        // 巻き戻し中はグレースケールを適用して PostEffect 経由で描画
+        auto& pe = PostEffectManager::GetInstance();
+        bool prevGray = pe.IsGray();
+        pe.SetGray(true);
+        pe.RenderSRVWithPostEffects(m_CaptureSRVs[frameIndex], m_TargetCaptureWidth, m_TargetCaptureHeight);
+        pe.SetGray(prevGray);
+    }
+    else
+    {
+        // シェーダー設定
+        pContext->VSSetShader(m_pVertexShader, nullptr, 0);
+        pContext->PSSetShader(m_pPixelShader, nullptr, 0);
+        pContext->IASetInputLayout(m_pInputLayout);
 
-	// 頂点バッファ設定
-	UINT stride = sizeof(FullscreenVertex);
-	UINT offset = 0;
-	pContext->IASetVertexBuffers(0, 1, &m_pFullscreenVB, &stride, &offset);
-	pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        // 頂点バッファ設定
+        UINT stride = sizeof(FullscreenVertex);
+        UINT offset = 0;
+        pContext->IASetVertexBuffers(0, 1, &m_pFullscreenVB, &stride, &offset);
+        pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	// テクスチャとサンプラー設定
-	pContext->PSSetShaderResources(0, 1, &m_CaptureSRVs[frameIndex]);
-	pContext->PSSetSamplers(0, 1, &m_pSamplerState);
+        // テクスチャとサンプラー設定
+        pContext->PSSetShaderResources(0, 1, &m_CaptureSRVs[frameIndex]);
+        pContext->PSSetSamplers(0, 1, &m_pSamplerState);
 
-	// 描画
-	pContext->Draw(6, 0);
+        // 描画
+        pContext->Draw(6, 0);
 
-	// シェーダーリソースをアンバインド
-	ID3D11ShaderResourceView* nullSRV = nullptr;
-	pContext->PSSetShaderResources(0, 1, &nullSRV);
+        // シェーダーリソースをアンバインド
+        ID3D11ShaderResourceView* nullSRV = nullptr;
+        pContext->PSSetShaderResources(0, 1, &nullSRV);
+    }
 
-	// 深度テストを戻す
-	DirectX11::GetInstance().SetDepth(true);
+    // 深度テストを戻す
+    DirectX11::GetInstance().SetDepth(true);
 }
 
 // フレーム保存用テクスチャの作成

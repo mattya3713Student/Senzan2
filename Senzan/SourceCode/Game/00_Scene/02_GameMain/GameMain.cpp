@@ -84,9 +84,8 @@ void GameMain::Initialize()
 
 void GameMain::Create()
 {
-    // フレームキャプチャのロールキャプチャを開始（Gameシーン開始から常に保存）
-    // Start rolling capture: sample every 30 frames (approx 0.5s @60fps), assume 60fps for buffer size calc
-    FrameCaptureManager::GetInstance().StartRollingCapture(30, 60);
+    // フレームキャプチャのロールキャプチャを開始(Gameシーン開始から常に保存)
+    FrameCaptureManager::GetInstance().StartRollingCapture(10, 60);
 }
 
 void GameMain::Update()

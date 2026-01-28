@@ -12,6 +12,128 @@ namespace {
     constexpr char BLUR_RUNTIME_PS[] = "Data\\Shader\\Blur\\GaussianBlurRuntime.hlsl";
 }
 
+// Render an external SRV through post effects and output to backbuffer.
+void PostEffectManager::RenderSRVWithPostEffects(ID3D11ShaderResourceView* srcSRV, int srcW, int srcH)
+{
+    if (!srcSRV) return;
+    auto& dx = DirectX11::GetInstance();
+    auto ctx = dx.GetContext();
+
+    // We'll render the provided SRV into our blur / accumulation pipeline similar to DrawToBackBuffer.
+    // First, if blur is requested, run blur passes using srcSRV as input into m_BlurRTV[0]/[1].
+    ID3D11ShaderResourceView* finalSRV = srcSRV;
+
+    if (m_BlurEnabled && m_BlurSRV[0] && m_BlurSRV[1])
+    {
+        // Unbind to avoid RTV/SRV race
+        ID3D11ShaderResourceView* nullsrvs[8] = { nullptr };
+        ctx->PSSetShaderResources(0, 8, nullsrvs);
+
+        // Horizontal pass -> m_BlurRTV[0]
+        ctx->OMSetRenderTargets(1, &m_BlurRTV[0], nullptr);
+        ctx->IASetInputLayout(nullptr);
+        ctx->IASetVertexBuffers(0, 0, nullptr, nullptr, nullptr);
+        ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+
+        ctx->VSSetShader(m_pVertexShader->GetVertexShader(), nullptr, 0);
+        ctx->PSSetShader(m_pBlurPixelShader->GetPixelShader(), nullptr, 0);
+
+        float texW = (float)srcW / std::max(1.0f, m_BlurRadiusFactor);
+        float texH = (float)srcH / std::max(1.0f, m_BlurRadiusFactor);
+        UpdateBlurCB(texW, texH, true);
+        ctx->PSSetConstantBuffers(0, 1, &m_BlurCB);
+
+        ctx->PSSetShaderResources(0, 1, &srcSRV);
+        ctx->PSSetSamplers(0, 1, &m_Sampler);
+        ctx->Draw(4, 0);
+
+        // Vertical pass -> m_BlurRTV[1]
+        ctx->PSSetShaderResources(0, 8, nullsrvs);
+        ctx->OMSetRenderTargets(1, &m_BlurRTV[1], nullptr);
+        ctx->PSSetShader(m_pBlurPixelShader->GetPixelShader(), nullptr, 0);
+
+        UpdateBlurCB(texW, texH, false);
+        ctx->PSSetConstantBuffers(0, 1, &m_BlurCB);
+
+        ID3D11ShaderResourceView* srv0 = m_BlurSRV[0];
+        ctx->PSSetShaderResources(0, 1, &srv0);
+        ctx->PSSetSamplers(0, 1, &m_Sampler);
+        ctx->Draw(4, 0);
+
+        finalSRV = m_BlurSRV[1];
+        ctx->PSSetShaderResources(0, 8, nullsrvs);
+    }
+
+    // Motion blur accumulation if enabled
+    if (m_MotionBlurEnabled && m_AccumRTV && m_AccumSRV && m_pBlendPixelShader)
+    {
+        if (!m_IsAccumInitialized)
+        {
+            ctx->OMSetRenderTargets(1, &m_AccumRTV, nullptr);
+            ctx->IASetInputLayout(nullptr);
+            ctx->IASetVertexBuffers(0, 0, nullptr, nullptr, nullptr);
+            ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+            ctx->VSSetShader(m_pVertexShader->GetVertexShader(), nullptr, 0);
+            ctx->PSSetShader(m_pPixelShader->GetPixelShader(), nullptr, 0);
+            ctx->PSSetShaderResources(0, 1, &m_SceneSRV); // use current scene SRV as base
+            ctx->PSSetSamplers(0, 1, &m_Sampler);
+            ctx->Draw(4, 0);
+            m_IsAccumInitialized = true;
+        }
+        else
+        {
+            ID3D11ShaderResourceView* prevSRV = m_AccumSRV;
+            ctx->OMSetRenderTargets(1, &m_AccumRTV, nullptr);
+            ctx->IASetInputLayout(nullptr);
+            ctx->IASetVertexBuffers(0, 0, nullptr, nullptr, nullptr);
+            ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+            ctx->VSSetShader(m_pVertexShader->GetVertexShader(), nullptr, 0);
+            ctx->PSSetShader(m_pBlendPixelShader->GetPixelShader(), nullptr, 0);
+
+            D3D11_MAPPED_SUBRESOURCE mapped;
+            if (SUCCEEDED(ctx->Map(m_BlendCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))
+            {
+                float* v = static_cast<float*>(mapped.pData);
+                v[0] = m_MotionBlurAmount;
+                v[1] = v[2] = v[3] = 0.0f;
+                ctx->Unmap(m_BlendCB, 0);
+            }
+            ctx->PSSetConstantBuffers(1, 1, &m_BlendCB);
+
+            ctx->PSSetShaderResources(0, 1, &finalSRV);
+            ctx->PSSetShaderResources(1, 1, &prevSRV);
+            ctx->PSSetSamplers(0, 1, &m_Sampler);
+            ctx->Draw(4, 0);
+
+            ID3D11ShaderResourceView* nullsrvs[2] = { nullptr, nullptr };
+            ctx->PSSetShaderResources(0, 2, nullsrvs);
+
+            finalSRV = m_AccumSRV;
+        }
+    }
+
+    // Finally, output finalSRV to backbuffer
+    ID3D11RenderTargetView* rtv = dx.GetBackBufferRTV();
+    ctx->OMSetRenderTargets(1, &rtv, dx.GetBackBufferDSV());
+
+    ctx->IASetInputLayout(nullptr);
+    ctx->IASetVertexBuffers(0, 0, nullptr, nullptr, nullptr);
+    ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+
+    ctx->VSSetShader(m_pVertexShader->GetVertexShader(), nullptr, 0);
+    ctx->PSSetShader(m_pPixelShader->GetPixelShader(), nullptr, 0);
+
+    UpdateConstantBuffer();
+    ctx->PSSetConstantBuffers(0, 1, &m_CircleGrayCB);
+
+    ctx->PSSetShaderResources(0, 1, &finalSRV);
+    ctx->PSSetSamplers(0, 1, &m_Sampler);
+    ctx->Draw(4, 0);
+
+    ID3D11ShaderResourceView* nullSRV = nullptr;
+    ctx->PSSetShaderResources(0, 1, &nullSRV);
+}
+
 //-------------------------------------------------------------------------------------------------------------------------------------
 
 PostEffectManager::PostEffectManager()

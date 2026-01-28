@@ -15,7 +15,7 @@ public:
     void Exit() override;
 
 private:
-    float m_Duration = 3.0f; // 3 seconds
+    float m_Duration = 5.0f; 
     float m_Timer = 0.0f;
     float m_MoveSpeed = 10.0f; // forward move speed
     // Movement logic copied from BossMoveState (phases: Start/Run/Stop/Strafe)
@@ -31,5 +31,7 @@ private:
     float m_RotationAngle = 0.0f;
     double m_RotationSpeed = 0.1;
     float m_rotationDirection = 1.0f;
+    // Lerp multiplier used when tracking strafe ideal position. Larger = faster tracking
+    float m_StrafeLerp = 3.5f;
     float m_BaseAngle = 0.0f;
 };

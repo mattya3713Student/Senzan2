@@ -44,7 +44,7 @@ Boss::Boss()
 	, m_State(std::make_unique<StateMachine<Boss>>(this))
 	, m_PlayerPos{}
 	, m_TurnSpeed(0.1f)
-	, m_MoveSpeed(0.3f)
+	, m_MoveSpeed(3.f)
 	, m_vCurrentMoveVelocity(0.f, 0.f, 0.f)
 	, deleta_time(0.f)
 
