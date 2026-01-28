@@ -46,6 +46,10 @@ private:
     float m_Phase2AnimetionTime;
     float m_Phase3AnimetionTime;
 
+    float m_Phase1Time;
+    float m_Phase2Time;
+    float m_Phase3Time;
+
     // フェーズ切り替わり検知用
     bool m_Phase1Triggered;
     bool m_Phase2Triggered;
