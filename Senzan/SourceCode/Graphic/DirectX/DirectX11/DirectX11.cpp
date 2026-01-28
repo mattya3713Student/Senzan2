@@ -361,13 +361,13 @@ void DirectX11::SetDepth(bool flag)
 //この関数を呼び出した後にレンダリングをすること.
 void DirectX11::ClearBackBuffer()
 {
-	DirectX11& pI = GetInstance();
+DirectX11& pI = GetInstance();
 
-	//画面のクリア.
-	float ClearColor[4] = { 0.0f, 0.0f, 0.6f, 1.0f };	//クリア色（RGBAの順）.
-	//カラーバックバッファ.
-	pI.m_pContext11->ClearRenderTargetView(
-		pI.m_pBackBuffer_TexRTV, ClearColor);
+//画面のクリア.
+float ClearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };	//クリア色（RGBAの順）.
+//カラーバックバッファ.
+pI.m_pContext11->ClearRenderTargetView(
+pI.m_pBackBuffer_TexRTV, ClearColor);
 	//デプスステンシルバックバッファ.
 	pI.m_pContext11->ClearDepthStencilView(
 		pI.m_pBackBuffer_DSTexDSV,

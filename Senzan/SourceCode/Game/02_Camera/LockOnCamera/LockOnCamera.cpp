@@ -5,7 +5,7 @@
 #include "Game/04_Time/Time.h"
 #include "System/Singleton/ImGui/CImGuiManager.h"
 #include "System/Utility/FileManager/FileManager.h"
-#include "System/Singleton/ParryManager/ParryManager.h"
+#include "System/Singleton/CombatCoordinator/CombatCoordinator.h"
 
 LockOnCamera::LockOnCamera(const Player& player, const Boss& target)
     : m_rPlayer(player)
@@ -29,72 +29,72 @@ void LockOnCamera::Update()
     float dt = Time::GetInstance().GetDeltaTime();
 
 #if _DEBUG
-	if (ImGui::Begin(IMGUI_JP("LockOnCamera Debug")))
-	{
-		// 距離は明示的ターゲット使用時は無効化
-		if (!m_UseExplicitTarget) {
-			ImGui::DragFloat(IMGUI_JP("距離"), &m_Distance, 0.1f, 1.0f, 50.0f);
-		} else {
-			ImGui::Text(IMGUI_JP("距離: 明示的ターゲット使用中で無効"));
-		}
-		ImGui::DragFloat(IMGUI_JP("追従速度"), &m_FollowSpeed, 0.05f, 0.1f, 10.0f);
-		ImGui::DragFloat(IMGUI_JP("高さオフセット"), &m_HeightOffset, 0.1f, 0.0f, 20.0f);
-		ImGui::DragFloat(IMGUI_JP("注視点高さ"), &m_LookOffset, 0.1f, 0.0f, 20.0f);
-		ImGui::DragFloat(IMGUI_JP("注視点補間"), &m_LookLerp, 0.01f, 0.0f, 1.0f);
+	//if (ImGui::Begin(IMGUI_JP("LockOnCamera Debug")))
+	//{
+	//	// 距離は明示的ターゲット使用時は無効化
+	//	if (!m_UseExplicitTarget) {
+	//		ImGui::DragFloat(IMGUI_JP("距離"), &m_Distance, 0.1f, 1.0f, 50.0f);
+	//	} else {
+	//		ImGui::Text(IMGUI_JP("距離: 明示的ターゲット使用中で無効"));
+	//	}
+	//	ImGui::DragFloat(IMGUI_JP("追従速度"), &m_FollowSpeed, 0.05f, 0.1f, 10.0f);
+	//	ImGui::DragFloat(IMGUI_JP("高さオフセット"), &m_HeightOffset, 0.1f, 0.0f, 20.0f);
+	//	ImGui::DragFloat(IMGUI_JP("注視点高さ"), &m_LookOffset, 0.1f, 0.0f, 20.0f);
+	//	ImGui::DragFloat(IMGUI_JP("注視点補間"), &m_LookLerp, 0.01f, 0.0f, 1.0f);
 
-		// FOV controls (display as degrees)
-		float defaultFovDeg = DirectX::XMConvertToDegrees(m_DefaultFOV);
-		float parryFovDeg = DirectX::XMConvertToDegrees(m_ParryFOV);
-		if (ImGui::DragFloat(IMGUI_JP("デフォルトFOV(度)"), &defaultFovDeg, 0.1f, 10.0f, 170.0f))
-		{
-			m_DefaultFOV = DirectX::XMConvertToRadians(defaultFovDeg);
-			if (m_CameraMode != eCameraMode::Parry)
-			{
-				m_CurrentFOV = m_DefaultFOV;
-				SetFOV(m_CurrentFOV);
-			}
-		}
-		if (ImGui::DragFloat(IMGUI_JP("パリィFOV(度)"), &parryFovDeg, 0.1f, 10.0f, 170.0f))
-		{
-			m_ParryFOV = DirectX::XMConvertToRadians(parryFovDeg);
-		}
+	//	// FOV controls (display as degrees)
+	//	float defaultFovDeg = DirectX::XMConvertToDegrees(m_DefaultFOV);
+	//	float parryFovDeg = DirectX::XMConvertToDegrees(m_ParryFOV);
+	//	if (ImGui::DragFloat(IMGUI_JP("デフォルトFOV(度)"), &defaultFovDeg, 0.1f, 10.0f, 170.0f))
+	//	{
+	//		m_DefaultFOV = DirectX::XMConvertToRadians(defaultFovDeg);
+	//		if (m_CameraMode != eCameraMode::Parry)
+	//		{
+	//			m_CurrentFOV = m_DefaultFOV;
+	//			SetFOV(m_CurrentFOV);
+	//		}
+	//	}
+	//	if (ImGui::DragFloat(IMGUI_JP("パリィFOV(度)"), &parryFovDeg, 0.1f, 10.0f, 170.0f))
+	//	{
+	//		m_ParryFOV = DirectX::XMConvertToRadians(parryFovDeg);
+	//	}
 
-		ImGui::Separator();
-		ImGui::Text(IMGUI_JP("パリィカメラ設定"));
-		ImGui::DragFloat(IMGUI_JP("パリィ: 到達時間"), &m_ParryPhaseInDuration, 0.01f, 0.01f, 3.0f);
-		ImGui::DragFloat(IMGUI_JP("パリィ: 滞在時間"), &m_ParryHoldDuration, 0.01f, 0.0f, 3.0f);
-		ImGui::DragFloat(IMGUI_JP("パリィ: 戻る時間"), &m_ParryOutDuration, 0.01f, 0.01f, 3.0f);
-		ImGui::DragFloat(IMGUI_JP("パリィ時高さ"), &m_ParryHeightOffset, 0.1f, -5.0f, 10.0f);
-		ImGui::DragFloat(IMGUI_JP("パリィ時注視点高さ"), &m_ParryLookOffset, 0.1f, 0.0f, 15.0f);
-		ImGui::DragFloat(IMGUI_JP("パリィ時距離"), &m_ParryDistance, 0.1f, 1.0f, 20.0f);
-		ImGui::DragFloat(IMGUI_JP("パリィ: 横オフセット"), &m_ParryHorizontalOffset, 0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat(IMGUI_JP("パリィ: 前方オフセット"), &m_ParryForwardOffset, 0.01f, -10.0f, 10.0f);
+	//	ImGui::Separator();
+	//	ImGui::Text(IMGUI_JP("パリィカメラ設定"));
+	//	ImGui::DragFloat(IMGUI_JP("パリィ: 到達時間"), &m_ParryPhaseInDuration, 0.01f, 0.01f, 3.0f);
+	//	ImGui::DragFloat(IMGUI_JP("パリィ: 滞在時間"), &m_ParryHoldDuration, 0.01f, 0.0f, 3.0f);
+	//	ImGui::DragFloat(IMGUI_JP("パリィ: 戻る時間"), &m_ParryOutDuration, 0.01f, 0.01f, 3.0f);
+	//	ImGui::DragFloat(IMGUI_JP("パリィ時高さ"), &m_ParryHeightOffset, 0.1f, -5.0f, 10.0f);
+	//	ImGui::DragFloat(IMGUI_JP("パリィ時注視点高さ"), &m_ParryLookOffset, 0.1f, 0.0f, 15.0f);
+	//	ImGui::DragFloat(IMGUI_JP("パリィ時距離"), &m_ParryDistance, 0.1f, 1.0f, 20.0f);
+	//	ImGui::DragFloat(IMGUI_JP("パリィ: 横オフセット"), &m_ParryHorizontalOffset, 0.01f, -10.0f, 10.0f);
+	//	ImGui::DragFloat(IMGUI_JP("パリィ: 前方オフセット"), &m_ParryForwardOffset, 0.01f, -10.0f, 10.0f);
 
-		ImGui::Separator();
-		ImGui::Text(IMGUI_JP("明示的ターゲット"));
-		ImGui::Checkbox(IMGUI_JP("明示的な目標/注視点を使用"), &m_UseExplicitTarget);
-		float camOff[3] = { m_ExplicitCameraPosOffset.x, m_ExplicitCameraPosOffset.y, m_ExplicitCameraPosOffset.z };
-		if (ImGui::DragFloat3(IMGUI_JP("カメラ位置オフセット (相対: x,y,z)"), camOff, 0.1f)) {
-			m_ExplicitCameraPosOffset = { camOff[0], camOff[1], camOff[2] };
-		}
-		float lookOff[3] = { m_ExplicitLookPosOffset.x, m_ExplicitLookPosOffset.y, m_ExplicitLookPosOffset.z };
-		if (ImGui::DragFloat3(IMGUI_JP("注視点オフセット (相対: x,y,z)"), lookOff, 0.1f)) {
-			m_ExplicitLookPosOffset = { lookOff[0], lookOff[1], lookOff[2] };
-		}
+	//	ImGui::Separator();
+	//	ImGui::Text(IMGUI_JP("明示的ターゲット"));
+	//	ImGui::Checkbox(IMGUI_JP("明示的な目標/注視点を使用"), &m_UseExplicitTarget);
+	//	float camOff[3] = { m_ExplicitCameraPosOffset.x, m_ExplicitCameraPosOffset.y, m_ExplicitCameraPosOffset.z };
+	//	if (ImGui::DragFloat3(IMGUI_JP("カメラ位置オフセット (相対: x,y,z)"), camOff, 0.1f)) {
+	//		m_ExplicitCameraPosOffset = { camOff[0], camOff[1], camOff[2] };
+	//	}
+	//	float lookOff[3] = { m_ExplicitLookPosOffset.x, m_ExplicitLookPosOffset.y, m_ExplicitLookPosOffset.z };
+	//	if (ImGui::DragFloat3(IMGUI_JP("注視点オフセット (相対: x,y,z)"), lookOff, 0.1f)) {
+	//		m_ExplicitLookPosOffset = { lookOff[0], lookOff[1], lookOff[2] };
+	//	}
 
-		if (ImGui::Button(IMGUI_JP("パリィカメラテスト"))) {
-			StartParryCamera();
-		}
+	//	if (ImGui::Button(IMGUI_JP("パリィカメラテスト"))) {
+	//		StartParryCamera();
+	//	}
 
-		if (ImGui::Button(IMGUI_JP("Load"))) {
-			try { LoadSettings(); } catch (...) {}
-		}
-		ImGui::SameLine();
-		if (ImGui::Button(IMGUI_JP("Save"))) {
-			try { SaveSettings(); } catch (...) {}
-		}
-		ImGui::End();
-	}
+	//	if (ImGui::Button(IMGUI_JP("Load"))) {
+	//		try { LoadSettings(); } catch (...) {}
+	//	}
+	//	ImGui::SameLine();
+	//	if (ImGui::Button(IMGUI_JP("Save"))) {
+	//		try { SaveSettings(); } catch (...) {}
+	//	}
+	//	ImGui::End();
+	//}
 #endif
 
     // カメラモードに応じて更新処理を分岐.
@@ -286,10 +286,10 @@ void LockOnCamera::UpdateParryCamera(float dt)
     DirectX::XMVECTOR vNextPos = DirectX::XMVectorLerp(vCurrentPos, vIdealPos, lerpFactor);
 
     // 雪玉由来のパリィだったら、XZ成分は現在値を維持してYだけ補間する
-    if (!m_ParryBySnowball && ParryManager::GetInstance().WasLastParriedBySnowball())
+    if (!m_ParryBySnowball && CombatCoordinator::GetInstance().WasLastParriedBySnowball())
     {
         m_ParryBySnowball = true;
-        ParryManager::GetInstance().ClearLastParriedFlag();
+        CombatCoordinator::GetInstance().ClearLastParriedFlag();
     }
     if (m_ParryBySnowball)
     {

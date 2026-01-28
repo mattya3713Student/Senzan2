@@ -28,7 +28,7 @@
 #include "System/Singleton/SceneManager/SceneManager.h"
 #include "System/Singleton/PostEffectManager/PostEffectManager.h"
 #include "System/Singleton/SnowBallManager/SnowBallManager.h"
-#include "System/Singleton/ParryManager/ParryManager.h"
+#include "System/Singleton/CombatCoordinator/CombatCoordinator.h"
 #include "System/Singleton/FrameCaptureManager/FrameCaptureManager.h"
 
 #if _DEBUG || ENABLE_FRAMECAPTURE_IMGUI
@@ -74,8 +74,8 @@ GameMain::GameMain()
 // デストラクタ.
 GameMain::~GameMain()
 {
-    // シーン終了時に ParryManager の参照をクリア
-    ParryManager::GetInstance().Clear();
+    // シーン終了時に CombatCoordinator の参照をクリア
+    CombatCoordinator::GetInstance().Clear();
 
     SoundManager::GetInstance().AllStop();
 }
@@ -97,8 +97,8 @@ void GameMain::Initialize()
     // 雪玉設定.
     SnowBallManager::GetInstance().Init();
 
-    // ParryManager に Player と Boss の参照を設定
-    ParryManager::GetInstance().Initialize(m_upPlayer.get(), m_upBoss.get());
+    // CombatCoordinator に Player と Boss の参照を設定
+    CombatCoordinator::GetInstance().Initialize(m_upPlayer.get(), m_upBoss.get());
 
     // ポストエフェクトのキャンセル.
     PostEffectManager::GetInstance().SetGray(false);

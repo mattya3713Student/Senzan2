@@ -136,7 +136,7 @@
     <ClCompile Include="SourceCode\Game\02_Camera\FirstPersonCamera\FirstPersonCamera.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossMoveState\BossMoveState.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\05_SkyDome\SkyDome.cpp" />
-    <ClCompile Include="SourceCode\System\Singleton\ParryManager\ParryManager.cpp" />
+    <ClCompile Include="SourceCode\System\Singleton\CombatCoordinator\CombatCoordinator.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\SnowBallManager\SnowBallManager.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\03_SnowBall\SnowBallManager.cpp" />
     <ClCompile Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossSpinningState\BossSpinningState.cpp" />
@@ -299,7 +299,7 @@
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossParryState\BossParryState.h" />
     <ClInclude Include="SourceCode\Game\02_Camera\FirstPersonCamera\FirstPersonCamera.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\05_SkyDome\SkyDome.h" />
-    <ClInclude Include="SourceCode\System\Singleton\ParryManager\ParryManager.h" />
+    <ClInclude Include="SourceCode\System\Singleton\CombatCoordinator\CombatCoordinator.h" />
     <ClInclude Include="SourceCode\System\Singleton\SnowBallManager\SnowBallManager.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\03_SnowBall\SnowBallManager.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossSpinningState\BossSpinningState.h" />
@@ -311,6 +311,7 @@
     <ClInclude Include="SourceCode\System\Singleton\FrameCaptureManager\FrameCaptureManager.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\TimerWarning\TimerWarning.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\02_Boss\BossAttackStateBase\BossSpecialDamageState\BossSpecialDamageState.h" />
+    <ClInclude Include="SourceCode\System\Singleton\ParryManager\ParryManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Shader\PMX\Header.hlsli" />

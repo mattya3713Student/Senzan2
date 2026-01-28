@@ -3,7 +3,7 @@
 #include "Game/03_Collision/00_Core/01_Capsule/CapsuleCollider.h"
 #include "Game/03_Collision/00_Core/ColliderBase.h"
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
-#include "System/Singleton/ParryManager/ParryManager.h"
+#include "System/Singleton/CombatCoordinator/CombatCoordinator.h"
 #include "Resource/Mesh/02_Skin/SkinMesh.h"
 #include <algorithm>
 
@@ -286,8 +286,8 @@ void SnowBall::HandleCollision()
 			m_ParryDuration = 1.0f; // 1秒で到達する
 			// 当たり判定は跳ね返し中不要なので無効化
 			if (m_pAttackCollider) m_pAttackCollider->SetActive(false);
-            // ParryManager に雪玉がパリィされたことを通知
-            ParryManager::GetInstance().NotifyParriedBySnowball();
+            // CombatCoordinator に雪玉がパリィされたことを通知
+            CombatCoordinator::GetInstance().NotifyParriedBySnowball();
 			return;
 		}
 

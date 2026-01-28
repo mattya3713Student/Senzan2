@@ -90,6 +90,9 @@ virtual ~Player() override;
 // Set just-dodge timing flag (used by Scene to propagate enemy just-windows)
 void SetIsJustDodgeTiming(bool v) { m_IsJustDodgeTiming = v; }
 
+    // Allow external managers to cancel the player's attack collider
+    void CancelAttackCollider() { SetAttackColliderActive(false); }
+
 virtual void Update() override;
 	virtual void LateUpdate() override;
 	virtual void Draw() override;

@@ -353,7 +353,7 @@
     <ClCompile Include="SourceCode\System\GameLoop\WinMain.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\Debug\CollisionVisualizer\CollisionVisualizer.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\ImGui\CImGuiManager.cpp" />
-    <ClCompile Include="SourceCode\System\Singleton\ParryManager\ParryManager.cpp" />
+    <ClCompile Include="SourceCode\System\Singleton\CombatCoordinator\CombatCoordinator.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\PostEffectManager\PostEffectManager.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\ResourceManager\EffectManager\EffekseerManager.cpp" />
     <ClCompile Include="SourceCode\System\Singleton\ResourceManager\ResourceManager.cpp" />
@@ -393,6 +393,7 @@
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\TimerWarning\TimerWarning.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\ULTSparkle\ULTSparkle.h" />
     <ClInclude Include="SourceCode\System\Singleton\FrameCaptureManager\FrameCaptureManager.h" />
+    <ClInclude Include="SourceCode\System\Singleton\ParryManager\ParryManager.h" />
     <ClInclude Include="SourceCode\System\Singleton\SnowBallManager\SnowBallManager.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\00_MeshObject\00_Character\05_SkyDome\SkyDome.h" />
     <ClInclude Include="SourceCode\Game\01_GameObject\02_UIObject\Select\Select.h" />
@@ -410,7 +411,7 @@
     <ClInclude Include="SourceCode\Game\03_Collision\Sprite\SpriteCollider.h" />
     <ClInclude Include="SourceCode\Resource\Effect\EffectResource.h" />
     <ClInclude Include="SourceCode\Resource\Sound\DirectSound.h" />
-    <ClInclude Include="SourceCode\System\Singleton\ParryManager\ParryManager.h" />
+    <ClInclude Include="SourceCode\System\Singleton\CombatCoordinator\CombatCoordinator.h" />
     <ClInclude Include="SourceCode\System\Singleton\PostEffectManager\PostEffectManager.h" />
     <ClInclude Include="SourceCode\System\Singleton\ResourceManager\EffectManager\EffekseerManager.h" />
     <ClInclude Include="SourceCode\System\Singleton\ResourceManager\SoundManager\SoundManager.h" />

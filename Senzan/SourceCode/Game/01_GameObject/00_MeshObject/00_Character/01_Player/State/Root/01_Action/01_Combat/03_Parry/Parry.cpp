@@ -5,7 +5,7 @@
 #include "Game/04_Time/Time.h"
 #include <cmath>
 #include "System/Singleton/ImGui/CImGuiManager.h"
-#include "System/Singleton/ParryManager/ParryManager.h"
+#include "System/Singleton/CombatCoordinator/CombatCoordinator.h"
 
 namespace PlayerState {
 Parry::Parry(Player* owner)
@@ -121,9 +121,9 @@ void Parry::Update()
             m_pOwner->m_MoveVec = diff_vec;
 
                 // 雪玉によるパリィだったらオフセット適用をスキップ
-            if (ParryManager::GetInstance().WasLastParriedBySnowball())
+            if (CombatCoordinator::GetInstance().WasLastParriedBySnowball())
             {
-                ParryManager::GetInstance().ClearLastParriedFlag();
+                CombatCoordinator::GetInstance().ClearLastParriedFlag();
             }
             else
             {

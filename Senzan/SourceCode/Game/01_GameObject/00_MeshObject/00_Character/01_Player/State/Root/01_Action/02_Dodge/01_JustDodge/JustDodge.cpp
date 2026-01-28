@@ -6,7 +6,7 @@
 #include "Game/05_InputDevice/VirtualPad.h"
 #include "System/Singleton/CameraManager/CameraManager.h"
 #include "System/Singleton/PostEffectManager/PostEffectManager.h"
-#include "System/Singleton/ParryManager/ParryManager.h"
+#include "System/Singleton/CombatCoordinator/CombatCoordinator.h"
 #include "Resource/Effect/EffectResource.h"
 #include "Resource/Mesh/02_Skin/SkinMesh.h"
 
@@ -56,7 +56,7 @@ void JustDodge::Enter()
     m_pOwner->m_CurrentUltValue += 900.0f * m_pOwner->ComboMultiplier();
 
     // タイムスケールを戻す && Boss攻撃判定を消す.
-    ParryManager::GetInstance().StartJustDodge(0.1f);
+    CombatCoordinator::GetInstance().StartJustDodge(0.1f);
 
     // 残像エフェクトの初期化.
     m_AfterImageTimer = 0.0f;
@@ -194,7 +194,7 @@ void JustDodge::Exit()
     PostEffectManager::GetInstance().SetGray(false);
 
     // タイムスケールを戻す.
-    ParryManager::GetInstance().EndJustDodge();
+    CombatCoordinator::GetInstance().EndJustDodge();
 
     // エフェクトは Player 側で管理されるので、ステート終了時には何もしない
     // （エフェクトは duration 経過後に自然終了する）

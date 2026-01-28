@@ -1,4 +1,4 @@
-﻿#include "ParryManager.h"
+﻿#include "CombatCoordinator.h"
 
 #include "Game/01_GameObject/00_MeshObject/00_Character/01_Player/Player.h"
 #include "Game/01_GameObject/00_MeshObject/00_Character/02_Boss/Boss.h"
@@ -7,30 +7,30 @@
 #include "Game/02_Camera/LockOnCamera/LockOnCamera.h"
 #include "System/Singleton/ResourceManager/SoundManager/SoundManager.h"
 
-ParryManager::ParryManager()
+CombatCoordinator::CombatCoordinator()
 	: m_pPlayer(nullptr)
 	, m_pBoss(nullptr)
 {
 }
 
-ParryManager::~ParryManager()
+CombatCoordinator::~CombatCoordinator()
 {
 	Clear();
 }
 
-void ParryManager::Initialize(Player* player, Boss* boss)
+void CombatCoordinator::Initialize(Player* player, Boss* boss)
 {
 	m_pPlayer = player;
 	m_pBoss = boss;
 }
 
-void ParryManager::Clear()
+void CombatCoordinator::Clear()
 {
 	m_pPlayer = nullptr;
 	m_pBoss = nullptr;
 }
 
-void ParryManager::OnParrySuccess(bool withDelay)
+void CombatCoordinator::OnParrySuccess(bool withDelay)
 {
     // カメラ演出(シェイク + パリィカメラ).
     CameraManager::GetInstance().ShakeCamera(0.40f, 0.5f);
@@ -51,22 +51,22 @@ void ParryManager::OnParrySuccess(bool withDelay)
     }
 }
 
-void ParryManager::NotifyParriedBySnowball()
+void CombatCoordinator::NotifyParriedBySnowball()
 {
     m_LastParriedBySnowball = true;
 }
 
-bool ParryManager::WasLastParriedBySnowball() const
+bool CombatCoordinator::WasLastParriedBySnowball() const
 {
     return m_LastParriedBySnowball;
 }
 
-void ParryManager::ClearLastParriedFlag()
+void CombatCoordinator::ClearLastParriedFlag()
 {
     m_LastParriedBySnowball = false;
 }
 
-void ParryManager::HitSpecialAttackToBoss()
+void CombatCoordinator::HitSpecialAttackToBoss()
 {
     if (m_pBoss)
     {
@@ -74,7 +74,7 @@ void ParryManager::HitSpecialAttackToBoss()
     }
 }
 
-void ParryManager::StartJustDodge(float TimeScale)
+void CombatCoordinator::StartJustDodge(float TimeScale)
 {
     if (m_pBoss)
     {
@@ -85,7 +85,37 @@ void ParryManager::StartJustDodge(float TimeScale)
     }
 }
 
-void ParryManager::EndJustDodge()
+void CombatCoordinator::StartPlayerJustDodge(float TimeScale)
+{
+    if (m_pPlayer)
+    {
+        // Forward to Player: set just dodge timing and start effect
+        m_pPlayer->SetIsJustDodgeTiming(true);
+        // Player owns the effect; call StartJustDodgeEffect with default params
+        m_pPlayer->StartJustDodgeEffect(m_pPlayer->GetPosition(), m_pPlayer->GetPosition(), 1.0f, 1.0f);
+        // Also reduce world time scale to create the slow-mo feel
+        // Player state may expect Time::SetWorldTimeScale, but CombatCoordinator shouldn't include Time header here;
+        // callers can still use CombatCoordinator to coordinate. We set player's internal flag only.
+    }
+}
+
+void CombatCoordinator::EndPlayerJustDodge()
+{
+    if (m_pPlayer)
+    {
+        m_pPlayer->SetIsJustDodgeTiming(false);
+    }
+}
+
+void CombatCoordinator::CancelPlayerAttackCollider()
+{
+    if (m_pPlayer)
+    {
+        m_pPlayer->CancelAttackCollider();
+    }
+}
+
+void CombatCoordinator::EndJustDodge()
 {
     if (m_pBoss)
     {
@@ -96,7 +126,7 @@ void ParryManager::EndJustDodge()
     }
 }
 
-void ParryManager::DisableBossAttackColliders()
+void CombatCoordinator::DisableBossAttackColliders()
 {
     if (m_pBoss)
     {
@@ -104,7 +134,7 @@ void ParryManager::DisableBossAttackColliders()
     }
 }
 
-void ParryManager::DamageToBoss(float DamageAmount)
+void CombatCoordinator::DamageToBoss(float DamageAmount)
 {
     if (m_pBoss)
     {
@@ -112,7 +142,7 @@ void ParryManager::DamageToBoss(float DamageAmount)
     }
 }
 
-bool ParryManager::IsParryCameraFinished() const
+bool CombatCoordinator::IsParryCameraFinished() const
 {
 	auto camera = CameraManager::GetInstance().GetCurrentCamera();
 	if (!camera) return true;
@@ -125,7 +155,7 @@ bool ParryManager::IsParryCameraFinished() const
 	return true;
 }
 
-void ParryManager::JustCancelAttackCollider()
+void CombatCoordinator::JustCancelAttackCollider()
 {
     if (m_pBoss)
     {

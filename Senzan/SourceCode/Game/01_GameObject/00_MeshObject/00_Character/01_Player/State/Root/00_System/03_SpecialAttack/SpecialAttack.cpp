@@ -3,7 +3,7 @@
 #include "Game/01_GameObject/00_MeshObject/00_Character/01_Player/Player.h"
 #include "Game/04_Time/Time.h"
 #include "System/Singleton/CameraManager/CameraManager.h"
-#include "System/Singleton/ParryManager/ParryManager.h"
+#include "System/Singleton/CombatCoordinator/CombatCoordinator.h"
 
 namespace PlayerState {
 SpecialAttack::SpecialAttack(Player* owner)
@@ -58,8 +58,8 @@ void SpecialAttack::Update()
     // 攻撃判定発生（演出中盤）
     if(m_DurationTime < m_DurationTimer && m_CurrentTime <= m_EffectDuration)
     {
-        ParryManager::GetInstance().DamageToBoss(m_OraOraDamage);
-        ParryManager::GetInstance().HitSpecialAttackToBoss();
+        CombatCoordinator::GetInstance().DamageToBoss(m_OraOraDamage);
+        CombatCoordinator::GetInstance().HitSpecialAttackToBoss();
         m_pOwner->m_Combo += 3;
         m_DurationTimer = 0.0f;
         SoundManager::GetInstance().Play("Damage");
@@ -104,7 +104,7 @@ void SpecialAttack::Update()
     {
         m_HasActivated = true;
         m_pOwner->PlayEffectAtWorldPos("Special2", m_pOwner->GetPosition(), 8.f);
-        ParryManager::GetInstance().DamageToBoss(m_AttackDamage);
+        CombatCoordinator::GetInstance().DamageToBoss(m_AttackDamage);
         SoundManager::GetInstance().Play("Throw");
         SoundManager::GetInstance().SetVolume("Throw", 8500);
         SoundManager::GetInstance().Play("BreakSnow");

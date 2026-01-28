@@ -36,7 +36,7 @@
 
 #include "System/Singleton/CollisionDetector/CollisionDetector.h"
 #include "System/Singleton/CameraManager/CameraManager.h"
-#include "System/Singleton/ParryManager/ParryManager.h"
+#include "System/Singleton/CombatCoordinator/CombatCoordinator.h"
 #include "Graphic/DirectX/DirectX11/DirectX11.h"
 #include "Resource/Effect/EffectResource.h"
 #include <random>
@@ -534,7 +534,7 @@ void Player::HandleParry_SuccessDetection()
 				// パリィ成功時のカメラ演出（シェイク）
 				CameraManager::GetInstance().ShakeCamera(0.15f, 0.3f);
 
-                ParryManager::GetInstance().OnParrySuccess(true);
+                CombatCoordinator::GetInstance().OnParrySuccess(true);
 
             // パリィエフェクトを衝突点に出す（小さなランダムオフセットを追加）
                 for(int i = 0 ; i < 3; ++i)
@@ -594,7 +594,7 @@ void Player::HandleParry_FailDetection()
 				// パリィ成功時のカメラ演出（シェイク）
 				CameraManager::GetInstance().ShakeCamera(0.15f, 0.3f);
 			    // Boss に通知（アニメ再生のみ）
-			    ParryManager::GetInstance().OnParrySuccess(false);
+			    CombatCoordinator::GetInstance().OnParrySuccess(false);
 
                 // パリィエフェクトを衝突点に出す（ランダム回転）
                 {
