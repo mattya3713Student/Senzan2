@@ -39,6 +39,7 @@ void BossSpecialDamageState::Update()
         m_PhaseTimer += dt;
         m_ReplayTimer += dt;
 
+        // ダメージアニメーションをリプレイ（Playerが終わるまで繰り返す）
         if (m_TakeDamageReplayEnabled && m_ReplayTimer >= m_TakeDamageReplayTime)
         {
             m_pOwner->SetAnimSpeed(m_TakeDamageAnimSpeed);
@@ -46,16 +47,7 @@ void BossSpecialDamageState::Update()
             m_pOwner->ChangeAnim(Boss::enBossAnim::Hit);
             m_ReplayTimer = 0.0f;
         }
-
-        if (m_PhaseTimer >= m_TakeDamageDuration)
-        {
-            m_Phase = Phase::Down;
-            m_PhaseTimer = 0.0f;
-            m_pOwner->SetAnimSpeed(m_DownAnimSpeed);
-            m_pOwner->SetIsLoop(false);
-            m_pOwner->SetAnimTime(0.0);
-            m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchParis);
-        }
+        // Downへの遷移はForceTransitionToDown()で行うため、自動遷移は無効
     }
     break;
 
@@ -109,6 +101,20 @@ void BossSpecialDamageState::LateUpdate()
 
 void BossSpecialDamageState::Draw()
 {
+}
+
+void BossSpecialDamageState::ForceTransitionToDown()
+{
+    // TakeDamageフェーズ中の場合のみDownに遷移
+    if (m_Phase == Phase::TakeDamage)
+    {
+        m_Phase = Phase::Down;
+        m_PhaseTimer = 0.0f;
+        m_pOwner->SetAnimSpeed(m_DownAnimSpeed);
+        m_pOwner->SetIsLoop(false);
+        m_pOwner->SetAnimTime(0.0);
+        m_pOwner->ChangeAnim(Boss::enBossAnim::FlinchParis);
+    }
 }
 
 void BossSpecialDamageState::Exit()

@@ -41,9 +41,9 @@
 #include "Resource/Effect/EffectResource.h"
 #include <random>
 
-#if _DEBUG
+//#if _DEBUG
 #include "System/Singleton/ImGui/CImGuiManager.h"
-#endif
+//#endif
 
 Player::Player()
 	: Character         ()
@@ -62,6 +62,7 @@ Player::Player()
 	, m_RunMoveSpeed    ( 50.f )
 	, m_IsSuccessParry  ( false )
 	, m_pAttackCollider ( nullptr )
+	, m_pPressCollider  ( nullptr )
 	, m_IsJustDodgeTiming( false )
 	, m_TargetPos        ( { 0.f,0.f,0.f } )
 	, m_DebugForcedState ( PlayerState::eID::None )
@@ -130,6 +131,8 @@ Player::Player()
 	// 押し戻しの追加.
 	std::unique_ptr<CapsuleCollider> pressCollider = std::make_unique<CapsuleCollider>(m_spTransform);
 
+	m_pPressCollider = pressCollider.get();  // ポインタを保存
+
 	pressCollider->SetColor(Color::eColor::Cyan);
 	pressCollider->SetHeight(3.0f);
 	pressCollider->SetRadius(1.0f);
@@ -194,13 +197,13 @@ void Player::Update()
         m_pJustDodgeEffect->Update(GetDelta());
     }
 
-#if _DEBUG
+//#if _DEBUG
     ImGui::Begin("PlayerStateDebug");
     if (ImGui::Button("SpecialCharge")) {
         m_CurrentUltValue = m_MaxUltValue;
     }
     ImGui::End();
-#endif
+//#endif
 
 }
 

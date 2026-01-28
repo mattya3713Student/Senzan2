@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "System/Singleton/SingletonTemplate.h"
+#include <DirectXMath.h>
 
 class Player;
 class Boss;
@@ -54,6 +55,10 @@ public:
     void ClearLastParriedFlag();
 
     void HitSpecialAttackToBoss();
+    // ボスの前方向を取得
+    DirectX::XMFLOAT3 GetBossForward() const;
+    // ボスをダウンさせる（SpecialAttack終了時）
+    void ForceBossDown();
     // Entrypoints to control Player from external callers (Manager-level hooks)
     // These provide a simple interface to trigger player-side effects from CombatCoordinator.
     void StartPlayerJustDodge(float TimeScale);

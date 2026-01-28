@@ -38,6 +38,7 @@ public:
     // 注視点補間値を設定.
     void SetLookLerp(float lerp) { m_LookLerp = lerp; }
 
+
     // パリィカメラ演出開始.
     void StartParryCamera();
     // パリィカメラ演出終了（通常モードへ復帰）.
@@ -51,6 +52,8 @@ public:
     void EndSpecialCamera();
     // 必殺技カメラ演出中か.
     bool IsSpecialCameraActive() const { return m_CameraMode == eCameraMode::Special; }
+    // 最終ポーズカメラ開始（プレイヤーの左下から見上げる）
+    void StartFinalPoseCamera();
 
     // 設定の保存/読み込み
     void SaveSettings() const;
@@ -105,6 +108,21 @@ private:
 
     // 必殺技カメラ演出用.
     float m_SpecialLookLerp = 1.0f;     // 必殺技時の注視点補間（1.0=ボス完全ロック）.
+    DirectX::XMFLOAT3 m_SpecialFixedCameraPos = { 0.0f, 0.0f, 0.0f }; // 発動時の固定カメラ位置
+    DirectX::XMFLOAT3 m_SpecialFixedLookPos = { 0.0f, 0.0f, 0.0f };   // 発動時の固定注視点
+    
+    // 必殺技カメラ弧移動用
+    float m_SpecialArcAngle = 0.0f;       // 現在の弧の角度
+    float m_SpecialArcRadius = 20.0f;     // ボスからの距離
+    float m_SpecialArcHeight = 8.0f;      // カメラの高さ
+    float m_SpecialArcSpeed = 0.8f;       // 弧移動の速度（ラジアン/秒）
+    
+    // 最終ポーズカメラ用
+    bool m_IsFinalPoseCamera = false;     // 最終ポーズカメラ中か
+    float m_FinalPoseLeftOffset = 5.0f;   // 左オフセット
+    float m_FinalPoseDownOffset = 2.0f;   // 下オフセット
+    float m_FinalPoseBackOffset = 3.0f;   // 後ろオフセット
+    float m_FinalPoseLookUpOffset = 3.0f; // 注視点高さオフセット
 
     // FOV control for parry and special effects (radians).
     // Defaults: 50deg and 40deg in radians

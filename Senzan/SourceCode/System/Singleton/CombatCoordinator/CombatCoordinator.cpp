@@ -16,7 +16,6 @@ CombatCoordinator::CombatCoordinator()
 
 void CombatCoordinator::Enter()
 {
-    // If boss is present, transition it to special damage state
     if (m_pBoss)
     {
         m_pBoss->GetStateMachine()->ChangeState(std::make_shared<BossSpecialDamageState>(m_pBoss));
@@ -170,5 +169,28 @@ void CombatCoordinator::JustCancelAttackCollider()
     if (m_pBoss)
     {
         m_pBoss->SetNextAttackCansel();
+    }
+}
+
+DirectX::XMFLOAT3 CombatCoordinator::GetBossForward() const
+{
+    if (m_pBoss)
+    {
+        return m_pBoss->GetTransform()->GetForward();
+    }
+    return DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f);
+}
+
+void CombatCoordinator::ForceBossDown()
+{
+    if (m_pBoss)
+    {
+        // ボスの現在のステートがBossSpecialDamageStateの場合、Downに遷移させる
+        auto currentState = m_pBoss->GetStateMachine()->m_pCurrentState;
+        auto specialDamageState = std::dynamic_pointer_cast<BossSpecialDamageState>(currentState);
+        if (specialDamageState)
+        {
+            specialDamageState->ForceTransitionToDown();
+        }
     }
 }

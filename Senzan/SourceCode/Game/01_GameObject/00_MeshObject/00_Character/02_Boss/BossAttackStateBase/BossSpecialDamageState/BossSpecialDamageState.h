@@ -20,6 +20,10 @@ public:
     void LoadSettings() override;
     void SaveSettings() const override;
     std::filesystem::path GetSettingsFileName() const override { return std::filesystem::path("BossSpecialDamageState.json"); }
+    
+    // 外部からDownフェーズに遷移させる
+    void ForceTransitionToDown();
+    
 private:
     Phase m_Phase = Phase::TakeDamage;
     float m_TakeDamageDuration = 2.0f;
