@@ -578,6 +578,7 @@ void PostEffectManager::UpdateConstantBuffer()
         cb->IsExpanding = m_IsExpanding ? 1.0f : 0.0f;
         cb->EffectActive = m_CircleEffectActive ? 1.0f : 0.0f;
         cb->AspectRatio = static_cast<float>(WND_W) / static_cast<float>(WND_H);
+        cb->GlobalGray = m_IsGray ? 1.0f : 0.0f;
         ctx->Unmap(m_CircleGrayCB, 0);
     }
 }
