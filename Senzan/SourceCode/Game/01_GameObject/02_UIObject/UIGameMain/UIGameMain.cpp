@@ -6,6 +6,7 @@
 #include "Math/Easing/Easing.h"
 #include "ResourceManager/ResourceManager.h"
 #include "02_UIObject/ULTSparkle/ULTSparkle.h"
+#include "02_UIObject/TimerWarning/TimerWarning.h"
 
 #if _DEBUG
 #include "Singleton/ImGui/CImGuiManager.h"
@@ -32,6 +33,7 @@ namespace {
 UIGameMain::UIGameMain()
 	: m_pUIs			()
     , m_pULTSparkle     ()
+    , m_pTimerWarning   ()
 	, m_ComboColor		()
 	, m_GuageDelSpeed	()
 	, m_ClockSecInitRot	( 6.28f )
@@ -83,6 +85,11 @@ void UIGameMain::Create()
             m_pULTSparkle = std::make_shared<ULTSparkle>(ui);
             shouldRemove = true;
         }
+        else if (ui->GetUIName() == "Circle_0") {
+            m_pTimerWarning = std::make_shared<TimerWarning>(ui);
+            m_pTimerWarning->Create();
+            shouldRemove = true;
+        }
 
         if (shouldRemove) {
             it = m_pUIs.erase(it);
@@ -106,6 +113,7 @@ void UIGameMain::Update()
 	m_BossDamage.Update(dt);
 
     m_pULTSparkle->Update();
+    m_pTimerWarning->Update(m_TimeProgress);
 	m_ComboColor = GetComboColor(m_Combo);
 
 	for (auto& ui : m_pUIs)
@@ -176,7 +184,8 @@ void UIGameMain::LateUpdate()
 
 void UIGameMain::Draw()
 {
-	for (auto& ui : m_pUIs)
+    m_pTimerWarning->Draw();
+    for (auto& ui : m_pUIs)
 	{
 		DirectX11::GetInstance().SetDepth(false);
 		ui->Draw();
@@ -197,6 +206,7 @@ void UIGameMain::SetCombo(int num)
 void UIGameMain::SetTime(float progress)
 {
 	m_ClockSecNow = m_ClockSecInitRot * progress;
+    m_TimeProgress = progress;
 }
 
 //-----------------------------------------------------------------------.
