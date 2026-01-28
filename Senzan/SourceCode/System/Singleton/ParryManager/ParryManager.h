@@ -50,6 +50,8 @@ public:
     void NotifyParriedBySnowball();
     bool WasLastParriedBySnowball() const;
     void ClearLastParriedFlag();
+
+    void HitSpecialAttackToBoss();
 private:
 	Player* m_pPlayer = nullptr;
 	Boss* m_pBoss = nullptr;

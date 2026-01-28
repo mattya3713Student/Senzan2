@@ -20,6 +20,7 @@ Player* PlayerStateBase::GetPlayer() const
 // 正面へラープ回転.
 void PlayerStateBase::RotetToFront()
 {
+    if(m_pOwner->IsSpecial()) return;
     DirectX::XMFLOAT3 move_vec = m_pOwner->m_MoveVec;
 
     // 小さなノイズを吸収するためのイプシロン

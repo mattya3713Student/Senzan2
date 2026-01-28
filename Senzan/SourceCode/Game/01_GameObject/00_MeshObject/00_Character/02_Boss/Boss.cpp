@@ -324,6 +324,15 @@ void Boss::OnParried(bool withDelay)
     m_State->ChangeState(std::make_shared<BossParryState>(this, withDelay));
 }
 
+void Boss::OnSpecial()
+{
+    // 全ての攻撃コライダーを無効化.
+    OffAttackCollider();
+
+    // BossParryStateへ遷移.
+    m_State->ChangeState(std::make_shared<BossParryState>(this));
+}
+
 StateMachine<Boss>* Boss::GetStateMachine()
 {
 	return m_State.get();

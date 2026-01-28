@@ -116,6 +116,9 @@ public:
     // withDelay=true の場合、指定秒数だけパリィ後に次フェーズへ移行する挙動になる。
     void OnParried();
     void OnParried(bool withDelay);
+
+    void OnSpecial();
+
     // パリィ被弾フラグを取得.
     bool IsParried() const { return m_IsParried; }
 

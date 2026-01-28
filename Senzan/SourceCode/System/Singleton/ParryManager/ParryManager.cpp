@@ -66,6 +66,14 @@ void ParryManager::ClearLastParriedFlag()
     m_LastParriedBySnowball = false;
 }
 
+void ParryManager::HitSpecialAttackToBoss()
+{
+    if (m_pBoss)
+    {
+        m_pBoss->OnSpecial();
+    }
+}
+
 void ParryManager::StartJustDodge(float TimeScale)
 {
     if (m_pBoss)
