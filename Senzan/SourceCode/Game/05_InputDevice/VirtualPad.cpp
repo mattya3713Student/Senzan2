@@ -63,7 +63,7 @@ bool VirtualPad::checkActionState(eGameAction action,
                 }
 
                 // トリガーが閾値 (0.1f) 以上であれば押されていると判定.
-                if (triggerValue >= 0.1f) return true;
+                if (triggerValue >= 0.4f) return true;
                 break;
             }
 

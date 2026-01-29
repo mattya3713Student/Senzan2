@@ -197,13 +197,13 @@ void Player::Update()
         m_pJustDodgeEffect->Update(GetDelta());
     }
 
-//#if _DEBUG
+#if _DEBUG
     ImGui::Begin("PlayerStateDebug");
     if (ImGui::Button("SpecialCharge")) {
         m_CurrentUltValue = m_MaxUltValue;
     }
     ImGui::End();
-//#endif
+#endif
 
 }
 

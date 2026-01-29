@@ -118,6 +118,8 @@ void SpecialAttack::Update()
         }
     }
 
+    CombatCoordinator::GetInstance().DamageToBoss(10.5f);
+
     // 往復斬撃の更新
     UpdateSlashRush(deltaTime);
 
